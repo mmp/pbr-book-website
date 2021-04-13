@@ -1,0 +1,1532 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Scene Definition</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface.html">Scene Description Interface</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Scene Definition</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html">(Previous: Initialization and Rendering Options)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:api-world-block"></span><h2>B.3 Scene Definition</h2><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p>After the user has set up the overall rendering options, the
+<a href="#pbrtWorldBegin"><tt>pbrtWorldBegin()</tt></a> call marks the start of the description of the shapes,
+materials, and lights in the scene.  It sets the current rendering state to
+<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#APIState::WorldBlock"><tt>APIState::WorldBlock</tt></a>, resets the CTMs to identity matrices, and
+enables all of the CTMs.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-11"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="Initialization_and_Rendering_Options.html#fragment-APIFunctionDefinitions-10"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-12"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtWorldBegin"></span>pbrtWorldBegin() {
+    VERIFY_OPTIONS("WorldBegin");
+    currentApiState = <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#APIState::WorldBlock" class="code">APIState</a>::WorldBlock;
+    for (int i = 0; i &lt; <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#MaxTransforms" class="code">MaxTransforms</a>; ++i)
+        curTransform[i] = <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>();
+    activeTransformBits = <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#AllTransformsBits" class="code">AllTransformsBits</a>;
+    namedCoordinateSystems["world"] = curTransform;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#HierarchicalGraphicsState"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="HierarchicalGraphicsState"></span><h3>B.3.1  Hierarchical Graphics State</h3><p>
+
+
+</p>
+<p>As the scene&rsquo;s lights, geometry, and participating media are specified, a
+variety of attributes can be set as well.  In addition to the CTMs, these
+include information about textures and the current material.  When a geometric
+primitive or light source is then added to the scene, the current attributes
+are used when creating the corresponding object.  These data are all known as
+the <em>graphics state.</em>
+
+</p>
+<p>It is useful for a rendering API to provide some functionality for managing the
+graphics state.  <tt>pbrt</tt> has API calls that allow the current graphics state to be
+managed with an <em>attribute stack</em>; the user can push the current set of
+attributes, make changes to their values, and then later pop back to the
+previously pushed attribute values.  For example, a scene description file
+might contain the following:
+</p>
+<div class="fragmentcode">Material "matte"
+AttributeBegin
+  Material "plastic"
+  Translate 5 0 0
+  Shape "sphere" "float radius" [1]
+AttributeEnd
+Shape "sphere" "float radius" [1]</div><p>
+
+
+</p>
+<p>The first sphere is affected by the translation and is bound to the plastic
+material, while the second sphere is matte and isn&rsquo;t translated.  Changes to
+attributes made inside a <a href="#pbrtAttributeBegin"><tt>pbrtAttributeBegin()</tt></a>/<a href="#pbrtAttributeEnd"><tt>pbrtAttributeEnd()</tt></a>
+block are forgotten at the end of the block.  Being able to save and restore
+attributes in this manner is a classic idiom for scene description in computer
+graphics.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>The graphics state is stored in the <a href="#GraphicsState"><tt>GraphicsState</tt></a> structure.  As was
+done previously with <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions"><tt>RenderOptions</tt></a>, we&rsquo;ll be adding members to it throughout
+this section.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APILocalClasses-3"></span><div class="fragmentname">&lt;&lt;API Local Classes&gt;&gt;+=&nbsp;<a href="Initialization_and_Rendering_Options.html#fragment-APILocalClasses-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">struct <span class="anchor" id="GraphicsState"></span>GraphicsState {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-GraphicsStateMethods-0">Graphics State Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1950" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1950"><i></i></a><div id="fragbit-1950" class="collapse"><div class="fragmentcode">       std::shared_ptr&lt;<a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; CreateMaterial(const ParamSet &amp;params);
+       MediumInterface CreateMediumInterface();</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="Initialization_and_Rendering_Options.html#fragment-GraphicsState-0">Graphics State</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1951" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1951"><i></i></a><div id="fragbit-1951" class="collapse"><div class="fragmentcode">       std::string currentInsideMedium, currentOutsideMedium;
+       std::map&lt;std::string, std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt;&gt; floatTextures;
+       std::map&lt;std::string,
+                std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt;&gt; spectrumTextures;
+       ParamSet materialParams;
+       std::string material = "matte";
+       std::map&lt;std::string, std::shared_ptr&lt;<a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt;&gt; namedMaterials;
+       std::string currentNamedMaterial;
+       ParamSet areaLightParams;
+       std::string areaLight;
+       bool reverseOrientation = false;</div></div>
+};</div><p>
+
+
+</p>
+<p>When <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#pbrtInit"><tt>pbrtInit()</tt></a> is called, the current graphics state is initialized  to
+hold default values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIInitialization-2"></span><div class="fragmentname">&lt;&lt;API Initialization&gt;&gt;+=&nbsp;<a href="Initialization_and_Rendering_Options.html#fragment-APIInitialization-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">graphicsState = GraphicsState();</div><p>
+
+
+</p>
+<p>A <tt>vector</tt> of <a href="#GraphicsState"><tt>GraphicsState</tt></a>s is used as a stack to perform
+hierarchical state management.  When <a href="#pbrtAttributeBegin"><tt>pbrtAttributeBegin()</tt></a> is called, the
+current <a href="#GraphicsState"><tt>GraphicsState</tt></a> is copied and pushed onto this stack.
+<a href="#pbrtAttributeEnd"><tt>pbrtAttributeEnd()</tt></a> then simply pops the state from this stack.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-12"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-11"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-13"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtAttributeBegin"></span>pbrtAttributeBegin() { 
+    VERIFY_WORLD("AttributeBegin");
+    pushedGraphicsStates.push_back(graphicsState);
+    pushedTransforms.push_back(curTransform);
+    pushedActiveTransformBits.push_back(activeTransformBits);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIStaticData-4"></span><div class="fragmentname">&lt;&lt;API Static Data&gt;&gt;+=&nbsp;<a href="Initialization_and_Rendering_Options.html#fragment-APIStaticData-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIStaticData-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static GraphicsState <span class="anchor" id="graphicsState"></span>graphicsState;
+static std::vector&lt;GraphicsState&gt; <span class="anchor" id="pushedGraphicsStates"></span>pushedGraphicsStates;
+static std::vector&lt;TransformSet&gt; <span class="anchor" id="pushedTransforms"></span>pushedTransforms;
+static std::vector&lt;uint32_t&gt; <span class="anchor" id="pushedActiveTransformBits"></span>pushedActiveTransformBits;</div><p>
+
+
+</p>
+<p><a href="#pbrtAttributeEnd"><tt>pbrtAttributeEnd()</tt></a> also verifies that we do not have attribute stack
+underflow by checking to see if the stack is empty.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-13"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-12"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-14"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtAttributeEnd"></span>pbrtAttributeEnd() {
+    VERIFY_WORLD("AttributeEnd");
+    if (!pushedGraphicsStates.size()) {  
+        <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("Unmatched pbrtAttributeEnd() encountered. " 
+              "Ignoring it."); 
+        return; 
+    } 
+    graphicsState = pushedGraphicsStates.back();
+    pushedGraphicsStates.pop_back();
+    curTransform = pushedTransforms.back();
+    pushedTransforms.pop_back();
+    activeTransformBits = pushedActiveTransformBits.back();
+    pushedActiveTransformBits.pop_back();
+}</div><p>
+
+
+</p>
+<p>The API also provides <a href="#pbrtTransformBegin"><tt>pbrtTransformBegin()</tt></a> and <a href="#pbrtTransformEnd"><tt>pbrtTransformEnd()</tt></a>
+calls.  These functions are similar to <a href="#pbrtAttributeBegin"><tt>pbrtAttributeBegin()</tt></a> and
+<a href="#pbrtAttributeEnd"><tt>pbrtAttributeEnd()</tt></a>, except that they only push and pop the CTMs.  We
+frequently want to apply a transformation to a texture, but since the list
+of named textures is stored in the graphics state, we cannot use
+<a href="#pbrtAttributeBegin"><tt>pbrtAttributeBegin()</tt></a> to save the transformation matrix.  Since the
+implementations of 
+<a href="#pbrtTransformBegin"><tt>pbrtTransformBegin()</tt></a> and <a href="#pbrtTransformEnd"><tt>pbrtTransformEnd()</tt></a> are
+very similar to <a href="#pbrtAttributeBegin"><tt>pbrtAttributeBegin()</tt></a> and <a href="#pbrtAttributeEnd"><tt>pbrtAttributeEnd()</tt></a>,
+respectively, they are not shown here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDeclarations-3"></span><div class="fragmentname">&lt;&lt;API Function Declarations&gt;&gt;+=&nbsp;<a href="Initialization_and_Rendering_Options.html#fragment-APIFunctionDeclarations-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDeclarations-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtTransformBegin"></span>pbrtTransformBegin();
+void <span class="anchor" id="pbrtTransformEnd"></span>pbrtTransformEnd();</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TextureandMaterialParameters"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:tex-material-params"></span><span id="TextureandMaterialParameters"></span><h3>B.3.2  Texture and Material Parameters</h3><p>
+
+
+
+</p>
+<p>Recall that all of the materials in <tt>pbrt</tt> use textures to describe all of their
+parameters.  For example, the diffuse color of the matte material class is
+always obtained from a texture, even if the material is intended to have a
+constant reflectivity (in which case a <a href="../Texture/Texture_Interface_and_Basic_Textures.html#ConstantTexture"><tt>ConstantTexture</tt></a> is used).
+
+</p>
+<p>Before a material can be created, it is necessary to create these textures
+to pass to the material creation procedures.  Textures can be either
+explicitly created and later referred to by name or implicitly created on
+the fly to represent a constant parameter.  These two methods of texture
+creation are hidden by the <a href="#TextureParams"><tt>TextureParams</tt></a> class.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TextureParamsDeclarations-0"></span><div class="fragmentname">&lt;&lt;TextureParams Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="TextureParams"></span>TextureParams {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-TextureParamsPublicMethods-0">TextureParams Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1952" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1952"><i></i></a><div id="fragbit-1952" class="collapse"><div class="fragmentcode">       TextureParams(const ParamSet &amp;geomParams, const ParamSet &amp;materialParams,
+               std::map&lt;std::string, std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt;&gt; &amp;fTex,
+               std::map&lt;std::string, std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt;&gt; &amp;sTex)
+           : floatTextures(fTex), spectrumTextures(sTex),
+             geomParams(geomParams), materialParams(materialParams) {
+       }
+       std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; GetSpectrumTexture(const std::string &amp;name,
+               const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;def) const;
+       std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; GetFloatTexture(const std::string &amp;name,
+               Float def) const;
+       std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; GetFloatTextureOrNull(const std::string &amp;name) const;
+       Float FindFloat(const std::string &amp;n, Float d) const {
+           return geomParams.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneFloat" class="code">FindOneFloat</a>(n, materialParams.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneFloat" class="code">FindOneFloat</a>(n, d));
+       }
+       std::string FindString(const std::string &amp;n, const std::string &amp;d = "") const {
+           return geomParams.FindOneString(n, materialParams.FindOneString(n, d));
+       }
+       std::string FindFilename(const std::string &amp;n, const std::string &amp;d = "") const {
+           return geomParams.FindOneFilename(n, materialParams.FindOneFilename(n, d));
+       }
+       int FindInt(const std::string &amp;n, int d) const {
+           return geomParams.FindOneInt(n, materialParams.FindOneInt(n, d));
+       }
+       bool FindBool(const std::string &amp;n, bool d) const {
+           return geomParams.FindOneBool(n, materialParams.FindOneBool(n, d));
+       }
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> FindPoint3f(const std::string &amp;n, const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;d) const {
+           return geomParams.FindOnePoint3f(n, materialParams.FindOnePoint3f(n, d));
+       }
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> FindVector3f(const std::string &amp;n, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;d) const {
+           return geomParams.FindOneVector3f(n, materialParams.FindOneVector3f(n, d));
+       }
+       <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> FindNormal3f(const std::string &amp;n, const <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> &amp;d) const {
+           return geomParams.FindOneNormal3f(n, materialParams.FindOneNormal3f(n, d));
+       }
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> FindSpectrum(const std::string &amp;n, const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;d) const {
+           return geomParams.FindOneSpectrum(n, materialParams.FindOneSpectrum(n, d));
+       }
+       void ReportUnused() const {
+           geomParams.ReportUnused();
+           materialParams.ReportUnused();
+       }
+       const ParamSet &amp;GetGeomParams() const { return geomParams; }
+       const ParamSet &amp;GetMaterialParams() const { return materialParams; }</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-TextureParamsPrivateData-0">TextureParams Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1953" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1953"><i></i></a><div id="fragbit-1953" class="collapse"><div class="fragmentcode">       std::map&lt;std::string, std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt;&gt; &amp;floatTextures;
+       std::map&lt;std::string,
+                std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt;&gt; &amp;spectrumTextures;
+       const ParamSet &amp;geomParams, &amp;materialParams;</div></div>
+};</div><p>
+
+
+</p>
+<p>The <a href="#TextureParams"><tt>TextureParams</tt></a> class stores references to associative arrays of
+previously defined named <tt>Float</tt> and <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum"><tt>Spectrum</tt></a> textures, as well
+as two references to <a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet"><tt>ParamSet</tt></a>s that will be searched for named
+textures.  Its constructor, which won&rsquo;t be included here, just initializes
+these references from parameters passed to it.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TextureParamsPrivateData-0"></span><div class="fragmentname">&lt;&lt;TextureParams Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::map&lt;std::string, std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt;&gt; &amp;<span class="anchor" id="TextureParams::floatTextures"></span>floatTextures;
+std::map&lt;std::string,
+         std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt;&gt; &amp;<span class="anchor" id="TextureParams::spectrumTextures"></span>spectrumTextures;
+const ParamSet &amp;<span class="anchor" id="TextureParams::geomParams"></span>geomParams, <span class="anchor" id="TextureParams::materialParams"></span>&amp;materialParams;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>Here we will show the code for finding a texture of <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum"><tt>Spectrum</tt></a> type; the
+code for finding a <tt>Float</tt> texture is analogous.
+The <a href="#TextureParams::GetSpectrumTexture"><tt>TextureParams::GetSpectrumTexture()</tt></a> method takes a parameter name
+(e.g., &ldquo;Kd&rdquo;), as well as a default <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum"><tt>Spectrum</tt></a> value.  If no texture has been
+explicitly specified for the parameter, a constant texture will be created that
+returns the default spectrum value.
+
+</p>
+<p>Finding the texture is performed in several stages; the order of these
+stages is significant.  First, the parameter list from the <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> for which
+a <a href="../Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a> is being created is searched for a named reference to an
+explicitly defined texture.  If no such texture is found, then the material
+parameters are searched.  Finally, if no explicit texture has been found,
+the two parameter lists are searched in turn for supplied constant values.
+If no such constants are found, the default is used.
+
+</p>
+<p>The order of these steps is crucial, because <tt>pbrt</tt> allows a shape to override
+individual elements of the material that is bound to it.  For example,
+the user should be able to create a scene description that contains the lines
+</p>
+<div class="fragmentcode">Material "matte" "color Kd" [ 1 0 0 ]
+Shape "sphere" "color Kd" [ 0 1 0 ]</div><p>
+
+
+</p>
+<p>These two commands create a green matte sphere: because the shape&rsquo;s
+parameter list is searched first, the <tt>Kd</tt> parameter from the 
+<tt>Shape</tt> will be used when the <a href="../Materials/Material_Interface_and_Implementations.html#MatteMaterial"><tt>MatteMaterial</tt></a> constructor
+is called.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TextureParamsMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;TextureParams Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; 
+<span class="anchor" id="TextureParams::GetSpectrumTexture"></span>TextureParams::GetSpectrumTexture(const std::string &amp;n,
+                                  const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;def) const {
+    std::string name = <a href="#TextureParams::geomParams" class="code">geomParams</a>.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindTexture" class="code">FindTexture</a>(n);
+    if (name == "") name = <a href="#TextureParams::materialParams" class="code">materialParams</a>.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindTexture" class="code">FindTexture</a>(n);
+    if (name != "") {
+        if (<a href="#TextureParams::spectrumTextures" class="code">spectrumTextures</a>.find(name) != <a href="#TextureParams::spectrumTextures" class="code">spectrumTextures</a>.end())
+            return <a href="#TextureParams::spectrumTextures" class="code">spectrumTextures</a>[name];
+        else
+            <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("Couldn't find spectrum texture named \"%s\" "
+                  "for parameter \"%s\"", name.c_str(), n.c_str());
+    }
+    <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> val = <a href="#TextureParams::materialParams" class="code">materialParams</a>.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneSpectrum" class="code">FindOneSpectrum</a>(n, def);
+    val = <a href="#TextureParams::geomParams" class="code">geomParams</a>.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneSpectrum" class="code">FindOneSpectrum</a>(n, val);
+    return std::make_shared&lt;ConstantTexture&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt;(val);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><span class="anchor" id="TextureParams::FindPoint3f"></span>
+<span class="anchor" id="TextureParams::FindVector3f"></span>
+<span class="anchor" id="TextureParams::FindNormal3f"></span>
+<span class="anchor" id="TextureParams::FindString"></span>
+<span class="anchor" id="TextureParams::FindFilename"></span>
+<span class="anchor" id="TextureParams::FindSpectrum"></span>
+<span class="anchor" id="TextureParams::FindBool"></span>
+<span class="anchor" id="TextureParams::ReportUnused"></span>
+
+</p>
+<p>Because an instance of the <a href="#TextureParams"><tt>TextureParams</tt></a> class is passed to material creation
+routines that might need to access non-texture parameter values, we
+also provide ways to access the other parameter list types.  These
+methods return parameters from the geometric parameter list, if found.
+Otherwise, the material parameter list is searched, and finally
+the default value is returned.  
+
+</p>
+<p>The <a href="#TextureParams::FindFloat"><tt>TextureParams::FindFloat()</tt></a> method is shown here. The other
+access methods are similar and omitted.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TextureParamsPublicMethods-0"></span><div class="fragmentname">&lt;&lt;TextureParams Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float <span class="anchor" id="TextureParams::FindFloat"></span>FindFloat(const std::string &amp;n, Float d) const {
+    return geomParams.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneFloat" class="code">FindOneFloat</a>(n, materialParams.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneFloat" class="code">FindOneFloat</a>(n, d));
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SurfaceandMaterialDescription"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="SurfaceandMaterialDescription"></span><h3>B.3.3  Surface and Material Description</h3><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="#pbrtTexture"><tt>pbrtTexture()</tt></a> method creates a named texture that can be referred to
+later.  In addition to the texture name, its <em>type</em> is specified.
+<tt>pbrt</tt> supports only &ldquo;float&rdquo; and &ldquo;spectrum&rdquo; as texture types.
+The supplied parameter list is used to create a <a href="#TextureParams"><tt>TextureParams</tt></a> object,
+which will be passed to the desired texture&rsquo;s creation routine. 
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-14"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-13"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-15"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtTexture"></span>pbrtTexture(const std::string &amp;name, const std::string &amp;type, 
+                 const std::string &amp;texname, const ParamSet &amp;params) {
+    VERIFY_WORLD("<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>");
+    TextureParams tp(params, params, graphicsState.<a href="#GraphicsState::floatTextures" class="code">floatTextures</a>,
+                     graphicsState.<a href="#GraphicsState::spectrumTextures" class="code">spectrumTextures</a>);
+    if (type == "float")  {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-CreatemonoFloattextureandstoreinmonofloatTextures-0">Create <tt>Float</tt> texture and store in <tt>floatTextures</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1954" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1954"><i></i></a><div id="fragbit-1954" class="collapse"><div class="fragmentcode">           if (graphicsState.<a href="#GraphicsState::floatTextures" class="code">floatTextures</a>.find(name) != 
+               graphicsState.<a href="#GraphicsState::floatTextures" class="code">floatTextures</a>.end())
+               <a href="../Utilities/Communicating_with_the_User.html#Info" class="code">Info</a>("<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a> \"%s\" being redefined", name.c_str());
+           <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#WARN_IF_ANIMATED_TRANSFORM" class="code">WARN_IF_ANIMATED_TRANSFORM</a>("<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>");
+           std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; ft =
+               MakeFloatTexture(texname, curTransform[0], tp);
+           if (ft) graphicsState.<a href="#GraphicsState::floatTextures" class="code">floatTextures</a>[name] = ft;</div></div>
+    }
+    else if (type == "color" || type == "spectrum")  {
+        &lt;&lt;<span class="fragmentname">Create <tt>color</tt> texture and store in <tt>spectrumTextures</tt></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1955" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1955"><i></i></a><div id="fragbit-1955" class="collapse"><div class="fragmentcode">           if (graphicsState.spectrumTextures.find(name) != graphicsState.spectrumTextures.end())
+               <a href="../Utilities/Communicating_with_the_User.html#Info" class="code">Info</a>("<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a> \"%s\" being redefined", name.c_str());
+           WARN_IF_ANIMATED_TRANSFORM("<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>");
+           std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; st = MakeSpectrumTexture(texname,
+               curTransform[0], tp);
+           if (st) graphicsState.spectrumTextures[name] = st;</div></div>
+    }
+    else
+        <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a> type \"%s\" unknown.", type.c_str());
+}</div><p>
+
+
+</p>
+<p>Creating the texture is simple.  This function first checks to see if a
+texture of the same name and type already exists and issues a warning if
+so.  Then, the <tt>MakeFloatTexture()</tt> routine calls the creation
+function for the appropriate <a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture"><tt>Texture</tt></a> implementation, and the returned
+texture class is added to the <a href="#GraphicsState::floatTextures"><tt>GraphicsState::floatTextures</tt></a>
+associative array.  The code for creating a spectrum texture is similar and
+not shown.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CreatemonoFloattextureandstoreinmonofloatTextures-0"></span><div class="fragmentname">&lt;&lt;Create <tt>Float</tt> texture and store in <tt>floatTextures</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (graphicsState.<a href="#GraphicsState::floatTextures" class="code">floatTextures</a>.find(name) != 
+    graphicsState.<a href="#GraphicsState::floatTextures" class="code">floatTextures</a>.end())
+    <a href="../Utilities/Communicating_with_the_User.html#Info" class="code">Info</a>("<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a> \"%s\" being redefined", name.c_str());
+<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#WARN_IF_ANIMATED_TRANSFORM" class="code">WARN_IF_ANIMATED_TRANSFORM</a>("<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>");
+std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; ft =
+    MakeFloatTexture(texname, curTransform[0], tp);
+if (ft) graphicsState.<a href="#GraphicsState::floatTextures" class="code">floatTextures</a>[name] = ft;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsState-1"></span><div class="fragmentname">&lt;&lt;Graphics State&gt;&gt;+=&nbsp;<a href="Initialization_and_Rendering_Options.html#fragment-GraphicsState-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GraphicsState-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::map&lt;std::string, std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt;&gt; <span class="anchor" id="GraphicsState::floatTextures"></span>floatTextures;
+std::map&lt;std::string,
+         std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt;&gt; <span class="anchor" id="GraphicsState::spectrumTextures"></span>spectrumTextures;</div><p>
+
+
+</p>
+<p>The current material is specified by a call to <a href="#pbrtMaterial"><tt>pbrtMaterial()</tt></a>.  Its
+<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet"><tt>ParamSet</tt></a> is stored until a <a href="../Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a> object needs to be created
+later when a shape is specified.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDeclarations-4"></span><div class="fragmentname">&lt;&lt;API Function Declarations&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDeclarations-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDeclarations-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtMaterial"></span>pbrtMaterial(const std::string &amp;name, const ParamSet &amp;params);</div><p>
+
+
+</p>
+<p>The default material is matte.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsState-2"></span><div class="fragmentname">&lt;&lt;Graphics State&gt;&gt;+=&nbsp;<a href="#fragment-GraphicsState-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GraphicsState-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">ParamSet <span class="anchor" id="GraphicsState::materialParams"></span>materialParams;
+std::string <span class="anchor" id="GraphicsState::material"></span>material = "matte";</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>pbrt</tt> also supports the notion of creating a <a href="../Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a> with a given
+set of parameters and then associating an arbitrary name with the
+combination of material and parameter
+settings.  <a href="#pbrtMakeNamedMaterial"><tt>pbrtMakeNamedMaterial()</tt></a> creates such an association,
+and <a href="#pbrtNamedMaterial"><tt>pbrtNamedMaterial()</tt></a> sets the current material and material
+parameters based on a previously defined named material.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDeclarations-5"></span><div class="fragmentname">&lt;&lt;API Function Declarations&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDeclarations-4"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtMakeNamedMaterial"></span>pbrtMakeNamedMaterial(const std::string &amp;name,
+                           const ParamSet &amp;params);
+void <span class="anchor" id="pbrtNamedMaterial"></span>pbrtNamedMaterial(const std::string &amp;name);</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsState-3"></span><div class="fragmentname">&lt;&lt;Graphics State&gt;&gt;+=&nbsp;<a href="#fragment-GraphicsState-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GraphicsState-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::map&lt;std::string, std::shared_ptr&lt;<a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt;&gt; <span class="anchor" id="GraphicsState::namedMaterials"></span>namedMaterials;
+std::string <span class="anchor" id="GraphicsState::currentNamedMaterial"></span>currentNamedMaterial;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#LightSources"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:ri-light-sources"></span><span id="LightSources"></span><h3>B.3.4  Light Sources</h3><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p><tt>pbrt</tt>&rsquo;s API provides two ways for the user to specify light sources for the
+scene.  The first, <a href="#pbrtLightSource"><tt>pbrtLightSource()</tt></a>, defines a light source that doesn&rsquo;t
+have geometry associated with it (e.g., a point light or a directional light).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-15"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-14"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-16"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtLightSource"></span>pbrtLightSource(const std::string &amp;name, const ParamSet &amp;params) {
+    VERIFY_WORLD("LightSource");
+    WARN_IF_ANIMATED_TRANSFORM("LightSource");
+    MediumInterface mi = graphicsState.<a href="#GraphicsState::CreateMediumInterface" class="code">CreateMediumInterface</a>();
+    std::shared_ptr&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; lt =
+        <a href="../Scene_Description_Interface/Adding_New_Object_Implementations.html#MakeLight" class="code">MakeLight</a>(name, params, curTransform[0], mi);
+    if (!lt)
+        <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("LightSource: light type \"%s\" unknown.", name.c_str());
+    else
+        renderOptions-&gt;<a href="#RenderOptions::lights" class="code">lights</a>.push_back(lt);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RenderOptionsPublicData-4"></span><div class="fragmentname">&lt;&lt;RenderOptions Public Data&gt;&gt;+=&nbsp;<a href="Initialization_and_Rendering_Options.html#fragment-RenderOptionsPublicData-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-RenderOptionsPublicData-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::vector&lt;std::shared_ptr&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt;&gt; <span class="anchor" id="RenderOptions::lights"></span>lights;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The second API call to describe light sources, <a href="#pbrtAreaLightSource"><tt>pbrtAreaLightSource()</tt></a>,
+specifies an area light source.  All shape specifications that appear
+between an area light source call up to the end of the current attribute
+block are treated as emissive.
+Thus, when an area light is specified via <a href="#pbrtAreaLightSource"><tt>pbrtAreaLightSource()</tt></a>, it can&rsquo;t
+be created immediately since the shapes to follow are needed to define the
+light source&rsquo;s geometry.  Therefore, this function just saves the name of
+the area light source type and the parameters given to it.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsState-4"></span><div class="fragmentname">&lt;&lt;Graphics State&gt;&gt;+=&nbsp;<a href="#fragment-GraphicsState-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">ParamSet <span class="anchor" id="GraphicsState::areaLightParams"></span>areaLightParams;
+std::string <span class="anchor" id="GraphicsState::areaLight"></span>areaLight;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-16"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-15"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-17"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtAreaLightSource"></span>pbrtAreaLightSource(const std::string &amp;name, 
+                         const ParamSet &amp;params) {
+    VERIFY_WORLD("AreaLightSource");
+    graphicsState.areaLight = name;
+    graphicsState.areaLightParams = params;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Shapes"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:api-api-shapes-regions"></span><span id="Shapes"></span><h3>B.3.5  Shapes</h3><p>
+
+
+
+</p>
+<p>The <a href="#pbrtShape"><tt>pbrtShape()</tt></a> function creates one or more new <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> objects
+and adds them to the scene.  This function is relatively complicated, in
+that it has to create area light sources if an area light is being defined,
+it has to handle animated and static shapes differently, and it also has to
+deal with creating object instances when needed.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-17"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-16"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-18"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtShape"></span>pbrtShape(const std::string &amp;name, const ParamSet &amp;params) {
+    VERIFY_WORLD("<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>");
+    std::vector&lt;std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt;&gt; prims;
+    std::vector&lt;std::shared_ptr&lt;<a href="../Light_Sources/Area_Lights.html#AreaLight" class="code">AreaLight</a>&gt;&gt; areaLights;
+    if (!curTransform.<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#TransformSet::IsAnimated" class="code">IsAnimated</a>()) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-InitializemonoprimsandmonoareaLightsforstaticshape-0">Initialize <tt>prims</tt> and <tt>areaLights</tt> for static shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1956" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1956"><i></i></a><div id="fragbit-1956" class="collapse"><div class="fragmentcode">           &lt;&lt;<span class="fragmentname"><a href="#fragment-Createshapesforshapemononame-0">Create shapes for shape <tt>name</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1957" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1957"><i></i></a><div id="fragbit-1957" class="collapse"><div class="fragmentcode">              <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *ObjToWorld, *WorldToObj;
+              transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[0], &amp;ObjToWorld, &amp;WorldToObj);
+              std::vector&lt;std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt;&gt; shapes =
+                  <a href="#MakeShapes" class="code">MakeShapes</a>(name, ObjToWorld, WorldToObj,
+                             graphicsState.reverseOrientation, params);
+              if (shapes.size() == 0) return;</div></div>
+           std::shared_ptr&lt;<a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; mtl = graphicsState.<a href="#GraphicsState::CreateMaterial" class="code">CreateMaterial</a>(params);
+           params.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::ReportUnused" class="code">ReportUnused</a>();
+           MediumInterface mi = graphicsState.<a href="#GraphicsState::CreateMediumInterface" class="code">CreateMediumInterface</a>();
+           for (auto s : shapes) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Possiblycreatearealightforshape-0">Possibly create area light for shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1958" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1958"><i></i></a><div id="fragbit-1958" class="collapse"><div class="fragmentcode">                  std::shared_ptr&lt;<a href="../Light_Sources/Area_Lights.html#AreaLight" class="code">AreaLight</a>&gt; area;
+                  if (<a href="#GraphicsState::areaLightParams" class="code">graphicsState</a>.<a href="#GraphicsState::areaLight" class="code">areaLight</a> != "") {
+                      area = MakeAreaLight(<a href="#GraphicsState::areaLightParams" class="code">graphicsState</a>.<a href="#GraphicsState::areaLight" class="code">areaLight</a>, curTransform[0],
+                                           mi, <a href="#GraphicsState::areaLightParams" class="code">graphicsState</a>.areaLightParams, s);
+                      areaLights.push_back(area);
+                  }</div></div>
+               prims.push_back(
+                   std::make_shared&lt;GeometricPrimitive&gt;(s, mtl, area, mi));
+           }</div></div>
+    } else {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-InitializemonoprimsandmonoareaLightsforanimatedshape-0">Initialize <tt>prims</tt> and <tt>areaLights</tt> for animated shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1959" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1959"><i></i></a><div id="fragbit-1959" class="collapse"><div class="fragmentcode">           &lt;&lt;<span class="fragmentname"><a href="#fragment-Createinitialshapeorshapesforanimatedshape-0">Create initial shape or shapes for animated shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1960" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1960"><i></i></a><div id="fragbit-1960" class="collapse"><div class="fragmentcode">              if (graphicsState.<a href="#GraphicsState::areaLight" class="code">areaLight</a> != "")
+                  <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Ignoring currently set area light when creating "
+                          "animated shape");
+              <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *identity;
+              transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>(), &amp;identity, nullptr);
+              std::vector&lt;std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt;&gt; shapes =
+                  <a href="#MakeShapes" class="code">MakeShapes</a>(name, identity, identity,
+                             graphicsState.reverseOrientation, params);
+              if (shapes.size() == 0) return;</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-CreatemonoGeometricPrimitivesforanimatedshape-0">Create <tt>GeometricPrimitive</tt>(s) for animated shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1961" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1961"><i></i></a><div id="fragbit-1961" class="collapse"><div class="fragmentcode">              std::shared_ptr&lt;<a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; mtl = graphicsState.<a href="#GraphicsState::CreateMaterial" class="code">CreateMaterial</a>(params);
+              params.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::ReportUnused" class="code">ReportUnused</a>();
+              MediumInterface mi = graphicsState.CreateMediumInterface();
+              for (auto s : shapes)
+                  prims.push_back(
+                      std::make_shared&lt;GeometricPrimitive&gt;(s, mtl, nullptr, mi));</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-CreatesinglemonoTransformedPrimitiveformonoprims-0">Create single <tt>TransformedPrimitive</tt> for <tt>prims</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1962" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1962"><i></i></a><div id="fragbit-1962" class="collapse"><div class="fragmentcode">              &lt;&lt;<span class="fragmentname"><a href="#fragment-GetmonoanimatedObjectToWorldtransformforshape-0">Get <tt>animatedObjectToWorld</tt> transform for shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1963" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1963"><i></i></a><div id="fragbit-1963" class="collapse"><div class="fragmentcode">                 <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *ObjToWorld[2];
+                 transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[0], &amp;ObjToWorld[0], nullptr);
+                 transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[1], &amp;ObjToWorld[1], nullptr);
+                 <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> animatedObjectToWorld(
+                     ObjToWorld[0], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformStartTime" class="code">transformStartTime</a>,
+                     ObjToWorld[1], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformEndTime" class="code">transformEndTime</a>);</div></div>
+              if (prims.size() &gt; 1) {
+                  std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt; bvh = std::make_shared&lt;<a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel" class="code">BVHAccel</a>&gt;(prims);
+                  prims.clear();
+                  prims.push_back(bvh);
+              }
+              prims[0] = std::make_shared&lt;TransformedPrimitive&gt;(prims[0],
+                                                                animatedObjectToWorld);</div></div></div></div>
+    }
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AddmonoprimsandmonoareaLightstosceneorcurrentinstance-0">Add <tt>prims</tt> and <tt>areaLights</tt> to scene or current instance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1964" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1964"><i></i></a><div id="fragbit-1964" class="collapse"><div class="fragmentcode">       if (renderOptions-&gt;<a href="#RenderOptions::currentInstance" class="code">currentInstance</a>) {
+           if (areaLights.size())
+               <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Area <a href="#RenderOptions::lights" class="code">lights</a> not supported with object instancing");
+           renderOptions-&gt;<a href="#RenderOptions::currentInstance" class="code">currentInstance</a>-&gt;insert(
+               renderOptions-&gt;<a href="#RenderOptions::currentInstance" class="code">currentInstance</a>-&gt;end(), prims.begin(),
+               prims.end());
+       } else {
+           renderOptions-&gt;<a href="#RenderOptions::primitives" class="code">primitives</a>.insert(renderOptions-&gt;<a href="#RenderOptions::primitives" class="code">primitives</a>.end(),
+               prims.begin(), prims.end());
+           if (areaLights.size())
+               renderOptions-&gt;<a href="#RenderOptions::lights" class="code">lights</a>.insert(renderOptions-&gt;<a href="#RenderOptions::lights" class="code">lights</a>.end(),
+                   areaLights.begin(), areaLights.end());
+       }</div></div>
+}</div><p>
+
+
+</p>
+<p>Shapes that are animated are represented with <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>s,
+which include extra functionality to use <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform"><tt>AnimatedTransform</tt></a>s,
+while shapes that aren&rsquo;t animated use <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive"><tt>GeometricPrimitive</tt></a>s.  Therefore, there
+are two code paths here for those two cases.  
+
+</p>
+<p>The static shape case is mostly a matter of creating the appropriate
+<a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a>s, <a href="../Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a>, and <a href="../Volume_Scattering/Media.html#MediumInterface"><tt>MediumInterface</tt></a> to make
+corresponding <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive"><tt>GeometricPrimitive</tt></a>s.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InitializemonoprimsandmonoareaLightsforstaticshape-0"></span><div class="fragmentname">&lt;&lt;Initialize <tt>prims</tt> and <tt>areaLights</tt> for static shape&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">&lt;&lt;<span class="fragmentname"><a href="#fragment-Createshapesforshapemononame-0">Create shapes for shape <tt>name</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1965" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1965"><i></i></a><div id="fragbit-1965" class="collapse"><div class="fragmentcode">   <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *ObjToWorld, *WorldToObj;
+   transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[0], &amp;ObjToWorld, &amp;WorldToObj);
+   std::vector&lt;std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt;&gt; shapes =
+       <a href="#MakeShapes" class="code">MakeShapes</a>(name, ObjToWorld, WorldToObj,
+                  graphicsState.reverseOrientation, params);
+   if (shapes.size() == 0) return;</div></div>
+std::shared_ptr&lt;<a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; mtl = graphicsState.<a href="#GraphicsState::CreateMaterial" class="code">CreateMaterial</a>(params);
+params.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::ReportUnused" class="code">ReportUnused</a>();
+MediumInterface mi = graphicsState.<a href="#GraphicsState::CreateMediumInterface" class="code">CreateMediumInterface</a>();
+for (auto s : shapes) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Possiblycreatearealightforshape-0">Possibly create area light for shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1966" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1966"><i></i></a><div id="fragbit-1966" class="collapse"><div class="fragmentcode">       std::shared_ptr&lt;<a href="../Light_Sources/Area_Lights.html#AreaLight" class="code">AreaLight</a>&gt; area;
+       if (<a href="#GraphicsState::areaLightParams" class="code">graphicsState</a>.<a href="#GraphicsState::areaLight" class="code">areaLight</a> != "") {
+           area = MakeAreaLight(<a href="#GraphicsState::areaLightParams" class="code">graphicsState</a>.<a href="#GraphicsState::areaLight" class="code">areaLight</a>, curTransform[0],
+                                mi, <a href="#GraphicsState::areaLightParams" class="code">graphicsState</a>.areaLightParams, s);
+           areaLights.push_back(area);
+       }</div></div>
+    prims.push_back(
+        std::make_shared&lt;GeometricPrimitive&gt;(s, mtl, area, mi));
+}</div><p>
+
+
+</p>
+<p>The code below uses a <a href="#TransformCache"><tt>TransformCache</tt></a> (defined shortly), which
+allocates and stores a single <tt>Transform</tt> pointer for each unique
+transformation that is passed to its <tt>Lookup()</tt> method.  In this way,
+if many shapes in the scene have the same transformation matrix, a single
+<tt>Transform</tt> pointer can be shared among all of them.
+<a href="#MakeShapes"><tt>MakeShapes()</tt></a> then handles the details of creating the shape or shapes
+corresponding to the given shape name, passing the <a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet"><tt>ParamSet</tt></a> along to
+the shape&rsquo;s creation routine.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Createshapesforshapemononame-0"></span><div class="fragmentname">&lt;&lt;Create shapes for shape <tt>name</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *ObjToWorld, *WorldToObj;
+transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[0], &amp;ObjToWorld, &amp;WorldToObj);
+std::vector&lt;std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt;&gt; shapes =
+    <a href="#MakeShapes" class="code">MakeShapes</a>(name, ObjToWorld, WorldToObj,
+               graphicsState.reverseOrientation, params);
+if (shapes.size() == 0) return;</div><p>
+
+
+</p>
+<p><tt>TransformCache</tt> <span class="anchor" id="TransformCache"></span> is a small wrapper
+around an associative array from transformations to pairs of <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>
+pointers; the first pointer is equal to the transform, and the second is its
+inverse.  The <tt>Lookup()</tt> method<span class="anchor" id="TransformCache::Lookup"></span>
+just looks for the given transformation in the cache, allocates space for it
+and stores it and its inverse if not found, and returns the appropriate pointers.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TransformCachePrivateData-0"></span><div class="fragmentname">&lt;&lt;TransformCache Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::map&lt;<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>, std::pair&lt;<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *, <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *&gt;&gt; cache;
+<a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> arena;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIStaticData-5"></span><div class="fragmentname">&lt;&lt;API Static Data&gt;&gt;+=&nbsp;<a href="#fragment-APIStaticData-4"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">static TransformCache <span class="anchor" id="transformCache"></span>transformCache;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="#MakeShapes"><tt>MakeShapes()</tt></a> function takes the name of the shape to be created,
+the CTMs, and the <a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet"><tt>ParamSet</tt></a> for the new shape.  It calls an
+appropriate shape creation function based on the shape name provided (e.g.,
+for &ldquo;sphere,&rdquo; it calls <a href="../Scene_Description_Interface/Adding_New_Object_Implementations.html#CreateSphereShape"><tt>CreateSphereShape()</tt></a>, which is
+defined in Section&nbsp;<a href="../Scene_Description_Interface/Adding_New_Object_Implementations.html#sec:adding-plugins">A.4</a>). The shape creation routines
+may return multiple shapes; for triangle meshes, for example, the creation
+routine returns a vector of <a href="../Shapes/Triangle_Meshes.html#Triangle"><tt>Triangle</tt></a>s.  The implementation of this
+function is straightforward, so we won&rsquo;t include it here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIForwardDeclarations-0"></span><div class="fragmentname">&lt;&lt;API Forward Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::vector&lt;std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt;&gt; <span class="anchor" id="MakeShapes"></span>MakeShapes(const std::string &amp;name,
+        const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *ObjectToWorld, const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *WorldToObject,
+        bool reverseOrientation, const ParamSet &amp;paramSet);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="../Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a> for the shape is created by the
+<tt>MakeMaterial()</tt> call; its implementation is analogous to that of
+<a href="#MakeShapes"><tt>MakeShapes()</tt></a>.  If the specified material cannot be found (usually due
+to a typo in the material name), a matte material is created and a warning
+is issued.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsStateMethods-0"></span><div class="fragmentname">&lt;&lt;Graphics State Methods&gt;&gt;=&nbsp;<a href="#fragment-GraphicsStateMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; <span class="anchor" id="GraphicsState::CreateMaterial"></span>CreateMaterial(const ParamSet &amp;params);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Following the same basic approach, <tt>CreateMediumInterface()</tt> creates a
+<a href="../Volume_Scattering/Media.html#MediumInterface"><tt>MediumInterface</tt></a> based on the current named &ldquo;inside&rdquo; and &ldquo;outside&rdquo;
+media established with <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#pbrtMediumInterface"><tt>pbrtMediumInterface()</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsStateMethods-1"></span><div class="fragmentname">&lt;&lt;Graphics State Methods&gt;&gt;+=&nbsp;<a href="#fragment-GraphicsStateMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">MediumInterface <span class="anchor" id="GraphicsState::CreateMediumInterface"></span>CreateMediumInterface();</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>If an area light has been set in the current graphics state by
+<a href="#pbrtAreaLightSource"><tt>pbrtAreaLightSource()</tt></a>, the new shape is an emitter and an <a href="../Light_Sources/Area_Lights.html#AreaLight"><tt>AreaLight</tt></a>
+needs to be made for it.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Possiblycreatearealightforshape-0"></span><div class="fragmentname">&lt;&lt;Possibly create area light for shape&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="../Light_Sources/Area_Lights.html#AreaLight" class="code">AreaLight</a>&gt; area;
+if (<a href="#GraphicsState::areaLightParams" class="code">graphicsState</a>.<a href="#GraphicsState::areaLight" class="code">areaLight</a> != "") {
+    area = MakeAreaLight(<a href="#GraphicsState::areaLightParams" class="code">graphicsState</a>.<a href="#GraphicsState::areaLight" class="code">areaLight</a>, curTransform[0],
+                         mi, <a href="#GraphicsState::areaLightParams" class="code">graphicsState</a>.areaLightParams, s);
+    areaLights.push_back(area);
+}</div><p>
+
+
+</p>
+<p>If the transformation matrices are animated, the task is a little more
+complicated.  After <tt>Shape</tt> and <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive"><tt>GeometricPrimitive</tt></a> creation, a
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> is created to hold the shape or shapes that were
+created.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InitializemonoprimsandmonoareaLightsforanimatedshape-0"></span><div class="fragmentname">&lt;&lt;Initialize <tt>prims</tt> and <tt>areaLights</tt> for animated shape&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">&lt;&lt;<span class="fragmentname"><a href="#fragment-Createinitialshapeorshapesforanimatedshape-0">Create initial shape or shapes for animated shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1967" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1967"><i></i></a><div id="fragbit-1967" class="collapse"><div class="fragmentcode">   if (graphicsState.<a href="#GraphicsState::areaLight" class="code">areaLight</a> != "")
+       <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Ignoring currently set area light when creating "
+               "animated shape");
+   <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *identity;
+   transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>(), &amp;identity, nullptr);
+   std::vector&lt;std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt;&gt; shapes =
+       <a href="#MakeShapes" class="code">MakeShapes</a>(name, identity, identity,
+                  graphicsState.reverseOrientation, params);
+   if (shapes.size() == 0) return;</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-CreatemonoGeometricPrimitivesforanimatedshape-0">Create <tt>GeometricPrimitive</tt>(s) for animated shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1968" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1968"><i></i></a><div id="fragbit-1968" class="collapse"><div class="fragmentcode">   std::shared_ptr&lt;<a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; mtl = graphicsState.<a href="#GraphicsState::CreateMaterial" class="code">CreateMaterial</a>(params);
+   params.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::ReportUnused" class="code">ReportUnused</a>();
+   MediumInterface mi = graphicsState.CreateMediumInterface();
+   for (auto s : shapes)
+       prims.push_back(
+           std::make_shared&lt;GeometricPrimitive&gt;(s, mtl, nullptr, mi));</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-CreatesinglemonoTransformedPrimitiveformonoprims-0">Create single <tt>TransformedPrimitive</tt> for <tt>prims</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1969" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1969"><i></i></a><div id="fragbit-1969" class="collapse"><div class="fragmentcode">   &lt;&lt;<span class="fragmentname"><a href="#fragment-GetmonoanimatedObjectToWorldtransformforshape-0">Get <tt>animatedObjectToWorld</tt> transform for shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1970" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1970"><i></i></a><div id="fragbit-1970" class="collapse"><div class="fragmentcode">      <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *ObjToWorld[2];
+      transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[0], &amp;ObjToWorld[0], nullptr);
+      transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[1], &amp;ObjToWorld[1], nullptr);
+      <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> animatedObjectToWorld(
+          ObjToWorld[0], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformStartTime" class="code">transformStartTime</a>,
+          ObjToWorld[1], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformEndTime" class="code">transformEndTime</a>);</div></div>
+   if (prims.size() &gt; 1) {
+       std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt; bvh = std::make_shared&lt;<a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel" class="code">BVHAccel</a>&gt;(prims);
+       prims.clear();
+       prims.push_back(bvh);
+   }
+   prims[0] = std::make_shared&lt;TransformedPrimitive&gt;(prims[0],
+                                                     animatedObjectToWorld);</div></div></div><p>
+
+
+</p>
+<p>Because the <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> class doesn&rsquo;t handle animated transformations, 
+the initial shape or shapes for animated primitives are created with identity
+transformations.  All of the details related to the shape&rsquo;s transformation
+will be managed with the <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> that ends up holding the
+shape.  Animated transformations for light sources aren&rsquo;t currently
+supported in <tt>pbrt</tt>; thus, if an animated transform has been specified with
+an area light source, a warning is issued here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Createinitialshapeorshapesforanimatedshape-0"></span><div class="fragmentname">&lt;&lt;Create initial shape or shapes for animated shape&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (graphicsState.<a href="#GraphicsState::areaLight" class="code">areaLight</a> != "")
+    <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Ignoring currently set area light when creating "
+            "animated shape");
+<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *identity;
+transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>(), &amp;identity, nullptr);
+std::vector&lt;std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt;&gt; shapes =
+    <a href="#MakeShapes" class="code">MakeShapes</a>(name, identity, identity,
+               graphicsState.reverseOrientation, params);
+if (shapes.size() == 0) return;</div><p>
+
+
+</p>
+<p>Given the initial set of shapes, it&rsquo;s straightforward to create a
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive"><tt>GeometricPrimitive</tt></a> for each of them.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CreatemonoGeometricPrimitivesforanimatedshape-0"></span><div class="fragmentname">&lt;&lt;Create <tt>GeometricPrimitive</tt>(s) for animated shape&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; mtl = graphicsState.<a href="#GraphicsState::CreateMaterial" class="code">CreateMaterial</a>(params);
+params.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::ReportUnused" class="code">ReportUnused</a>();
+MediumInterface mi = graphicsState.CreateMediumInterface();
+for (auto s : shapes)
+    prims.push_back(
+        std::make_shared&lt;GeometricPrimitive&gt;(s, mtl, nullptr, mi));</div><p>
+
+
+</p>
+<p>If there are multiple <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive"><tt>GeometricPrimitive</tt></a>s, then it&rsquo;s worth collecting
+them in an aggregate and storing that in a <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>,
+rather than creating multiple <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>s. This way, the
+transformation only needs to be interpolated once and the ray is only
+transformed once, rather than redundantly doing both of these for each
+primitive that the ray intersects the bounds of. Intersection efficiency
+also benefits; see the discussion in Exercise B.5.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CreatesinglemonoTransformedPrimitiveformonoprims-0"></span><div class="fragmentname">&lt;&lt;Create single <tt>TransformedPrimitive</tt> for <tt>prims</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">&lt;&lt;<span class="fragmentname"><a href="#fragment-GetmonoanimatedObjectToWorldtransformforshape-0">Get <tt>animatedObjectToWorld</tt> transform for shape</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1971" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1971"><i></i></a><div id="fragbit-1971" class="collapse"><div class="fragmentcode">   <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *ObjToWorld[2];
+   transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[0], &amp;ObjToWorld[0], nullptr);
+   transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[1], &amp;ObjToWorld[1], nullptr);
+   <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> animatedObjectToWorld(
+       ObjToWorld[0], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformStartTime" class="code">transformStartTime</a>,
+       ObjToWorld[1], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformEndTime" class="code">transformEndTime</a>);</div></div>
+if (prims.size() &gt; 1) {
+    std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt; bvh = std::make_shared&lt;<a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel" class="code">BVHAccel</a>&gt;(prims);
+    prims.clear();
+    prims.push_back(bvh);
+}
+prims[0] = std::make_shared&lt;TransformedPrimitive&gt;(prims[0],
+                                                  animatedObjectToWorld);</div><p>
+
+
+</p>
+<p>The <a href="#TransformCache"><tt>TransformCache</tt></a> is used again, here to get transformations for the
+start and end time, which are then passed to the <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform"><tt>AnimatedTransform</tt></a>
+constructor.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GetmonoanimatedObjectToWorldtransformforshape-0"></span><div class="fragmentname">&lt;&lt;Get <tt>animatedObjectToWorld</tt> transform for shape&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *ObjToWorld[2];
+transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[0], &amp;ObjToWorld[0], nullptr);
+transformCache.<a href="#TransformCache::Lookup" class="code">Lookup</a>(curTransform[1], &amp;ObjToWorld[1], nullptr);
+<a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> animatedObjectToWorld(
+    ObjToWorld[0], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformStartTime" class="code">transformStartTime</a>,
+    ObjToWorld[1], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformEndTime" class="code">transformEndTime</a>);</div><p>
+
+
+</p>
+<p>If the user is in the middle of defining an object instance,
+<a href="#pbrtObjectBegin"><tt>pbrtObjectBegin()</tt></a> (defined in the following section) will have set
+the <tt>currentInstance</tt> member of <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#renderOptions"><tt>renderOptions</tt></a> to point to a
+<tt>vector</tt> that is collecting the shapes that define the instance.  In
+that case, the new shape or shapes are added to that array.  Otherwise, 
+the <a href="#RenderOptions::primitives"><tt>RenderOptions::primitives</tt></a> array is used&mdash;this array will
+eventually be passed to the <a href="../Introduction/pbrt_System_Overview.html#Scene"><tt>Scene</tt></a> constructor.  If it is also an area
+light, the corresponding <tt>areaLights</tt> are also added to the
+<a href="#RenderOptions::lights"><tt>RenderOptions::lights</tt></a> array, just as <a href="#pbrtLightSource"><tt>pbrtLightSource()</tt></a> does.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AddmonoprimsandmonoareaLightstosceneorcurrentinstance-0"></span><div class="fragmentname">&lt;&lt;Add <tt>prims</tt> and <tt>areaLights</tt> to scene or current instance&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (renderOptions-&gt;<a href="#RenderOptions::currentInstance" class="code">currentInstance</a>) {
+    if (areaLights.size())
+        <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Area <a href="#RenderOptions::lights" class="code">lights</a> not supported with object instancing");
+    renderOptions-&gt;<a href="#RenderOptions::currentInstance" class="code">currentInstance</a>-&gt;insert(
+        renderOptions-&gt;<a href="#RenderOptions::currentInstance" class="code">currentInstance</a>-&gt;end(), prims.begin(),
+        prims.end());
+} else {
+    renderOptions-&gt;<a href="#RenderOptions::primitives" class="code">primitives</a>.insert(renderOptions-&gt;<a href="#RenderOptions::primitives" class="code">primitives</a>.end(),
+        prims.begin(), prims.end());
+    if (areaLights.size())
+        renderOptions-&gt;<a href="#RenderOptions::lights" class="code">lights</a>.insert(renderOptions-&gt;<a href="#RenderOptions::lights" class="code">lights</a>.end(),
+            areaLights.begin(), areaLights.end());
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RenderOptionsPublicData-5"></span><div class="fragmentname">&lt;&lt;RenderOptions Public Data&gt;&gt;+=&nbsp;<a href="#fragment-RenderOptionsPublicData-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-RenderOptionsPublicData-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::vector&lt;std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt;&gt; <span class="anchor" id="RenderOptions::primitives"></span>primitives;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ObjectInstancing"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:api-object-instance"></span><span id="ObjectInstancing"></span><h3>B.3.6  Object Instancing</h3><p>
+
+
+
+</p>
+<p>All shapes that are specified between a <a href="#pbrtObjectBegin"><tt>pbrtObjectBegin()</tt></a> and
+<a href="#pbrtObjectEnd"><tt>pbrtObjectEnd()</tt></a> pair are used to create a named object instance (see the
+discussion of object instancing and the <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> class in
+Section&nbsp;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#sec:prim-instance-animated">4.1.2</a>).  <a href="#pbrtObjectBegin"><tt>pbrtObjectBegin()</tt></a> sets
+<a href="#RenderOptions::currentInstance"><tt>RenderOptions::currentInstance</tt></a> so that subsequent <a href="#pbrtShape"><tt>pbrtShape()</tt></a> calls
+can add the shape to this instance&rsquo;s vector of primitive references.  This
+function also pushes the graphics state, so that any changes made to the
+CTMs or other state while defining the instance don&rsquo;t last beyond the
+instance definition.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-18"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-17"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-19"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtObjectBegin"></span>pbrtObjectBegin(const std::string &amp;name) {
+    <a href="#pbrtAttributeBegin" class="code">pbrtAttributeBegin</a>();
+    if (renderOptions-&gt;<a href="#RenderOptions::currentInstance" class="code">currentInstance</a>)
+        <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("ObjectBegin called inside of instance definition");
+    renderOptions-&gt;<a href="#RenderOptions::instances" class="code">instances</a>[name] =
+        std::vector&lt;std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt;&gt;();
+    renderOptions-&gt;<a href="#RenderOptions::currentInstance" class="code">currentInstance</a> = &amp;renderOptions-&gt;<a href="#RenderOptions::instances" class="code">instances</a>[name];
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RenderOptionsPublicData-6"></span><div class="fragmentname">&lt;&lt;RenderOptions Public Data&gt;&gt;+=&nbsp;<a href="#fragment-RenderOptionsPublicData-5"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">std::map&lt;std::string, std::vector&lt;std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt;&gt;&gt; <span class="anchor" id="RenderOptions::instances"></span>instances;
+std::vector&lt;std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt;&gt; *<span class="anchor" id="RenderOptions::currentInstance"></span>currentInstance = nullptr;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-19"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-18"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-20"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtObjectEnd"></span>pbrtObjectEnd() {
+    VERIFY_WORLD("ObjectEnd");
+    if (!renderOptions-&gt;currentInstance)
+        <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("ObjectEnd called outside of instance definition");
+    renderOptions-&gt;currentInstance = nullptr;
+    <a href="#pbrtAttributeEnd" class="code">pbrtAttributeEnd</a>();
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>When an instance is used in the scene, the instance&rsquo;s vector
+of <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a>s needs to be found in the <a href="#RenderOptions::instances"><tt>RenderOptions::instances</tt></a>
+map, a <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> created, and the instance added to the
+scene.  Note that the <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> constructor takes the
+current transformation matrix from the time when <a href="#pbrtObjectInstance"><tt>pbrtObjectInstance()</tt></a>
+is called. The instance&rsquo;s complete world transformation is the composition
+of the CTM when it is instantiated with the CTM when it was originally
+created.
+
+</p>
+<p><a href="#pbrtObjectInstance"><tt>pbrtObjectInstance()</tt></a> first does some error checking to make sure
+that the instance is not being used inside the definition of another 
+instance and also that the named instance has been defined.  The error
+checking is simple and not shown here.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-20"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-19"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-21"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtObjectInstance"></span>pbrtObjectInstance(const std::string &amp;name) {
+    VERIFY_WORLD("ObjectInstance");
+    &lt;&lt;<span class="fragmentname">Perform object instance error checking</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1972" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1972"><i></i></a><div id="fragbit-1972" class="collapse"><div class="fragmentcode">       if (renderOptions-&gt;currentInstance) {
+           <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("ObjectInstance can't be called inside instance definition");
+           return;
+       }
+       if (renderOptions-&gt;instances.find(name) == renderOptions-&gt;instances.end()) {
+           <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("Unable to find instance named \"%s\"", name.c_str());
+           return;
+       }</div></div>
+    std::vector&lt;std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt;&gt; &amp;in =
+        renderOptions-&gt;<a href="#RenderOptions::instances" class="code">instances</a>[name];
+    if (in.size() == 0) return;
+    if (in.size() &gt; 1) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-CreateaggregateforinstancemonoPrimitives-0">Create aggregate for instance <tt>Primitive</tt>s</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1973" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1973"><i></i></a><div id="fragbit-1973" class="collapse"><div class="fragmentcode">           std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt; accel(
+               MakeAccelerator(renderOptions-&gt;AcceleratorName, in,
+                               renderOptions-&gt;AcceleratorParams));
+           if (!accel) accel = std::make_shared&lt;<a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel" class="code">BVHAccel</a>&gt;(in);
+           in.erase(in.begin(), in.end());
+           in.push_back(accel);</div></div>
+    }
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CreatemonoanimatedInstanceToWorldtransformforinstance-0">Create <tt>animatedInstanceToWorld</tt> transform for instance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1974" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1974"><i></i></a><div id="fragbit-1974" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *InstanceToWorld[2];
+       transformCache.Lookup(curTransform[0], &amp;InstanceToWorld[0], nullptr);
+       transformCache.Lookup(curTransform[1], &amp;InstanceToWorld[1], nullptr);
+       <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> animatedInstanceToWorld(InstanceToWorld[0],
+           renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformStartTime" class="code">transformStartTime</a>,
+           InstanceToWorld[1], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformEndTime" class="code">transformEndTime</a>);</div></div>
+    std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt; prim(
+        std::make_shared&lt;TransformedPrimitive&gt;(in[0],
+                                               animatedInstanceToWorld));
+    renderOptions-&gt;<a href="#RenderOptions::primitives" class="code">primitives</a>.push_back(prim);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CreatemonoanimatedInstanceToWorldtransformforinstance-0"></span><div class="fragmentname">&lt;&lt;Create <tt>animatedInstanceToWorld</tt> transform for instance&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *InstanceToWorld[2];
+transformCache.Lookup(curTransform[0], &amp;InstanceToWorld[0], nullptr);
+transformCache.Lookup(curTransform[1], &amp;InstanceToWorld[1], nullptr);
+<a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> animatedInstanceToWorld(InstanceToWorld[0],
+    renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformStartTime" class="code">transformStartTime</a>,
+    InstanceToWorld[1], renderOptions-&gt;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions::transformEndTime" class="code">transformEndTime</a>);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>If there is more than one primitive in an instance, then an aggregate needs
+to be built for it.  This must be done here rather than in the
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> constructor so that the resulting aggregate will
+be reused if this instance is used multiple times in the scene.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CreateaggregateforinstancemonoPrimitives-0"></span><div class="fragmentname">&lt;&lt;Create aggregate for instance <tt>Primitive</tt>s&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt; accel(
+    MakeAccelerator(renderOptions-&gt;AcceleratorName, in,
+                    renderOptions-&gt;AcceleratorParams));
+if (!accel) accel = std::make_shared&lt;<a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel" class="code">BVHAccel</a>&gt;(in);
+in.erase(in.begin(), in.end());
+in.push_back(accel);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#WorldEndandRendering"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:api-scene-creation"></span><span id="WorldEndandRendering"></span><h3>B.3.7  World End and Rendering</h3><p>
+
+
+
+</p>
+<p>When <tt>pbrtWorldEnd()</tt> is called, the scene has been fully specified
+and rendering can begin.  This routine makes sure that there aren&rsquo;t excess
+graphics state structures pushed on the state stack (issuing a warning if
+so), creates the <tt>Scene</tt> and <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a> objects, and then calls the
+<a href="../Introduction/pbrt_System_Overview.html#Integrator::Render"><tt>Integrator::Render()</tt></a> method.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-21"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-20"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-22"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtWorldEnd"></span>pbrtWorldEnd() {
+    VERIFY_WORLD("WorldEnd");
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Ensuretherearenopushedgraphicsstates-0">Ensure there are no pushed graphics states</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1975" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1975"><i></i></a><div id="fragbit-1975" class="collapse"><div class="fragmentcode">       while (pushedGraphicsStates.size()) {
+           <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Missing end to pbrtAttributeBegin()");
+           pushedGraphicsStates.pop_back();
+           pushedTransforms.pop_back();
+       }
+       while (pushedTransforms.size()) {
+           <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Missing end to pbrtTransformBegin()");
+           pushedTransforms.pop_back();
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Createsceneandrender-0">Create scene and render</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1976" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1976"><i></i></a><div id="fragbit-1976" class="collapse"><div class="fragmentcode">       std::unique_ptr&lt;<a href="../Introduction/pbrt_System_Overview.html#Integrator" class="code">Integrator</a>&gt; integrator(renderOptions-&gt;<a href="#RenderOptions::MakeIntegrator" class="code">MakeIntegrator</a>());
+       std::unique_ptr&lt;<a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a>&gt; scene(renderOptions-&gt;<a href="#RenderOptions::MakeScene" class="code">MakeScene</a>());
+       if (scene &amp;&amp; integrator)
+           integrator-&gt;<a href="../Introduction/pbrt_System_Overview.html#Integrator::Render" class="code">Render</a>(*scene);
+       <a href="../Utilities/Parallelism.html#TerminateWorkerThreads" class="code">TerminateWorkerThreads</a>();
+       </div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Cleanupafterrendering-0">Clean up after rendering</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1977" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1977"><i></i></a><div id="fragbit-1977" class="collapse"><div class="fragmentcode">       graphicsState = GraphicsState();
+       transformCache.Clear();
+       currentApiState = APIState::OptionsBlock;
+       <a href="../Utilities/Statistics.html#ReportThreadStats" class="code">ReportThreadStats</a>();
+       if (PbrtOptions.quiet == false) {
+           PrintStats(stdout);
+           ReportProfilerResults(stdout);
+       }
+       for (int i = 0; i &lt; <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#MaxTransforms" class="code">MaxTransforms</a>; ++i)
+           curTransform[i] = <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>();
+       activeTransformBits = <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#AllTransformsBits" class="code">AllTransformsBits</a>;
+       namedCoordinateSystems.erase(namedCoordinateSystems.begin(),
+                                    namedCoordinateSystems.end());
+       ImageTexture&lt;Float, Float&gt;::ClearCache();
+       ImageTexture&lt;RGBSpectrum, <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;::ClearCache();</div></div>
+}</div><p>
+
+
+</p>
+<p>If there are graphics states and/or transformations remaining on the
+respective stacks, a warning is issued for each one:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Ensuretherearenopushedgraphicsstates-0"></span><div class="fragmentname">&lt;&lt;Ensure there are no pushed graphics states&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">while (pushedGraphicsStates.size()) {
+    <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Missing end to pbrtAttributeBegin()");
+    pushedGraphicsStates.pop_back();
+    pushedTransforms.pop_back();
+}
+while (pushedTransforms.size()) {
+    <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Missing end to pbrtTransformBegin()");
+    pushedTransforms.pop_back();
+}</div><p>
+
+
+</p>
+<p>Now the <a href="#RenderOptions::MakeIntegrator"><tt>RenderOptions::MakeIntegrator()</tt></a> and
+<a href="#RenderOptions::MakeScene"><tt>RenderOptions::MakeScene()</tt></a> methods can create the corresponding
+objects based on the settings provided by the user.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Createsceneandrender-0"></span><div class="fragmentname">&lt;&lt;Create scene and render&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::unique_ptr&lt;<a href="../Introduction/pbrt_System_Overview.html#Integrator" class="code">Integrator</a>&gt; integrator(renderOptions-&gt;<a href="#RenderOptions::MakeIntegrator" class="code">MakeIntegrator</a>());
+std::unique_ptr&lt;<a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a>&gt; scene(renderOptions-&gt;<a href="#RenderOptions::MakeScene" class="code">MakeScene</a>());
+if (scene &amp;&amp; integrator)
+    integrator-&gt;<a href="../Introduction/pbrt_System_Overview.html#Integrator::Render" class="code">Render</a>(*scene);
+<a href="../Utilities/Parallelism.html#TerminateWorkerThreads" class="code">TerminateWorkerThreads</a>();
+</div><p>
+
+
+</p>
+<p>Creating the <a href="../Introduction/pbrt_System_Overview.html#Scene"><tt>Scene</tt></a> object is mostly a matter of creating
+the <a href="../Primitives_and_Intersection_Acceleration/Aggregates.html#Aggregate"><tt>Aggregate</tt></a> for all of the primitives and calling the <a href="../Introduction/pbrt_System_Overview.html#Scene"><tt>Scene</tt></a>
+constructor.  The
+<tt>MakeAccelerator()</tt> function
+isn&rsquo;t included here; it&rsquo;s similar in structure to <a href="#MakeShapes"><tt>MakeShapes()</tt></a>
+as far as  using the string passed to it to determine which accelerator
+construction function to call.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-22"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-21"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode"><a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> *RenderOptions::<span class="anchor" id="RenderOptions::MakeScene"></span>MakeScene() {
+    std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt; accelerator =
+        MakeAccelerator(AcceleratorName, primitives, AcceleratorParams);
+    if (!accelerator)
+        accelerator = std::make_shared&lt;<a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel" class="code">BVHAccel</a>&gt;(primitives);
+    <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> *scene = new <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a>(accelerator, lights);
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-EraseprimitivesandlightsfrommonoRenderOptions-0">Erase primitives and lights from <tt>RenderOptions</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1978" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1978"><i></i></a><div id="fragbit-1978" class="collapse"><div class="fragmentcode">       <a href="#RenderOptions::primitives" class="code">primitives</a>.erase(<a href="#RenderOptions::primitives" class="code">primitives</a>.begin(), <a href="#RenderOptions::primitives" class="code">primitives</a>.end());
+       <a href="#RenderOptions::lights" class="code">lights</a>.erase(<a href="#RenderOptions::lights" class="code">lights</a>.begin(), <a href="#RenderOptions::lights" class="code">lights</a>.end());</div></div>
+    return scene;
+}</div><p>
+
+
+</p>
+<p>After the scene has been created, <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#RenderOptions"><tt>RenderOptions</tt></a> clears the vectors of
+primitives and lights. This ensures that if a subsequent
+scene is defined then the scene description from this frame isn&rsquo;t
+inadvertently included.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-EraseprimitivesandlightsfrommonoRenderOptions-0"></span><div class="fragmentname">&lt;&lt;Erase primitives and lights from <tt>RenderOptions</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#RenderOptions::primitives" class="code">primitives</a>.erase(<a href="#RenderOptions::primitives" class="code">primitives</a>.begin(), <a href="#RenderOptions::primitives" class="code">primitives</a>.end());
+<a href="#RenderOptions::lights" class="code">lights</a>.erase(<a href="#RenderOptions::lights" class="code">lights</a>.begin(), <a href="#RenderOptions::lights" class="code">lights</a>.end());</div><p>
+
+
+</p>
+<p><a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a> creation in the <tt>MakeIntegrator()</tt> method 
+is again similar to how shapes and other named objects are created; the
+string name is used to dispatch to an object-specific creation function.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RenderOptionsPublicMethods-0"></span><div class="fragmentname">&lt;&lt;RenderOptions Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Introduction/pbrt_System_Overview.html#Integrator" class="code">Integrator</a> *<span class="anchor" id="RenderOptions::MakeIntegrator"></span>MakeIntegrator() const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>Once rendering is complete, the API transitions back to the &ldquo;options
+block&rdquo; rendering state, prints out any statistics gathered  
+during rendering, and clears the CTMs and named
+coordinate systems so that the next frame, if any, starts with a clean
+slate.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fragment-Cleanupafterrendering-0"></span><div class="fragmentname">&lt;&lt;Clean up after rendering&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">currentApiState = APIState::OptionsBlock;
+<a href="../Utilities/Statistics.html#ReportThreadStats" class="code">ReportThreadStats</a>();
+if (PbrtOptions.quiet == false) {
+    PrintStats(stdout);
+    ReportProfilerResults(stdout);
+}
+for (int i = 0; i &lt; <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#MaxTransforms" class="code">MaxTransforms</a>; ++i)
+    curTransform[i] = <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>();
+activeTransformBits = <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#AllTransformsBits" class="code">AllTransformsBits</a>;
+namedCoordinateSystems.erase(namedCoordinateSystems.begin(),
+                             namedCoordinateSystems.end());</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Scott Pilet and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Scene_Description_Interface/Adding_New_Object_Implementations.html">Scene Description Interface / Adding New Object Implementations</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

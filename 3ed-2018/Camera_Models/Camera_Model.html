@@ -1,0 +1,489 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Camera Model</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Camera_Models.html">Camera Models</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Camera Model</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Camera_Models.html">(Previous: Camera Models)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:camera-model"></span><h2>6.1 Camera Model</h2><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>The abstract <a href="#Camera"><tt>Camera</tt></a> base class holds generic camera options and
+defines the interface that all camera implementations must provide.  It is
+defined in the files <a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/camera.h"><tt>core/camera.h</tt></a><span class="anchor" id="corecamera.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/camera.cpp"><tt>core/camera.cpp</tt></a><span class="anchor" id="corecamera.cpp"></span>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraDeclarations-0"></span><div class="fragmentname">&lt;&lt;Camera Declarations&gt;&gt;=&nbsp;<a href="#fragment-CameraDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="Camera"></span>Camera {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CameraInterface-0">Camera Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-710" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-710"><i></i></a><div id="fragbit-710" class="collapse"><div class="fragmentcode">       <a href="#Camera" class="code">Camera</a>(const <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> &amp;CameraToWorld, Float shutterOpen,
+              Float shutterClose, <a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film" class="code">Film</a> *film, const <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> *medium);
+       virtual ~<a href="#Camera" class="code">Camera</a>();
+       virtual Float GenerateRay(const CameraSample &amp;sample,
+                                 <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> *ray) const = 0;
+       virtual Float GenerateRayDifferential(const CameraSample &amp;sample,
+                                             RayDifferential *rd) const;
+       virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> We(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *pRaster2 = nullptr) const;
+       virtual void Pdf_We(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, Float *pdfPos, Float *pdfDir) const;
+       virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Sample_Wi(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;ref, const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;u,
+                                  <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *wi, Float *pdf, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *pRaster,
+                                  <a href="../Light_Sources/Light_Interface.html#VisibilityTester" class="code">VisibilityTester</a> *vis) const;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CameraPublicData-0">Camera Public Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-711" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-711"><i></i></a><div id="fragbit-711" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> CameraToWorld;
+       const Float shutterOpen, shutterClose;
+       <a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film" class="code">Film</a> *film;
+       const <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> *medium;</div></div>
+};</div><p>
+
+
+</p>
+<p>The base <a href="#Camera"><tt>Camera</tt></a> constructor takes several parameters that are
+appropriate for all camera types.  One of the most important is the
+transformation that places the camera in the scene, which is stored in the
+<tt>CameraToWorld</tt> member variable.  The <a href="#Camera"><tt>Camera</tt></a> stores an
+<a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform"><tt>AnimatedTransform</tt></a> (rather than just a
+regular <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>) so that the camera itself can be moving over time.
+
+</p>
+<p>
+
+</p>
+<p>Real-world cameras have a shutter that opens for a short period of time to
+expose the film to light.  One result of this nonzero exposure time is
+<em>motion blur</em>: objects that are in motion relative to the camera during the exposure are blurred.
+All <a href="#Camera"><tt>Camera</tt></a>s therefore store a shutter open and shutter close time and
+are responsible for generating rays with associated times at which to sample
+the scene.  Given an appropriate distribution of ray times between the
+shutter open time and the shutter close time, it is possible to compute
+images that exhibit motion blur.
+
+</p>
+<p><a href="#Camera"><tt>Camera</tt></a>s also contain a pointer to an instance of the <a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film"><tt>Film</tt></a>
+class to represent the final image (<a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film"><tt>Film</tt></a> is described in
+Section&nbsp;<a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#sec:image-pipeline">7.9</a>), and a pointer to a <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> instance
+to represent the scattering medium that the camera lies in (<tt>Medium</tt>
+is described in Section&nbsp;<a href="../Volume_Scattering/Media.html#sec:media">11.3</a>).
+
+</p>
+<p>Camera implementations must pass along parameters that set these values to
+the <a href="#Camera"><tt>Camera</tt></a> constructor.  We will only show the constructor&rsquo;s
+prototype here because its implementation just copies the parameters to the
+corresponding member variables.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraInterface-0"></span><div class="fragmentname">&lt;&lt;Camera Interface&gt;&gt;=&nbsp;<a href="#fragment-CameraInterface-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#Camera" class="code">Camera</a>(const <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> &amp;CameraToWorld, Float shutterOpen,
+       Float shutterClose, <a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film" class="code">Film</a> *film, const <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> *medium);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraPublicData-0"></span><div class="fragmentname">&lt;&lt;Camera Public Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform" class="code">AnimatedTransform</a> <span class="anchor" id="Camera::CameraToWorld"></span>CameraToWorld;
+const Float <span class="anchor" id="Camera::shutterOpen"></span>shutterOpen, <span class="anchor" id="Camera::shutterClose"></span>shutterClose;
+<a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film" class="code">Film</a> *<span class="anchor" id="Camera::film"></span>film;
+const <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> *<span class="anchor" id="Camera::medium"></span>medium;</div><p>
+
+
+</p>
+<p>The first method that camera subclasses need to implement is
+<a href="#Camera::GenerateRay"><tt>Camera::GenerateRay()</tt></a>, which should compute the ray corresponding to
+a given sample.  It is important that the direction component of the
+returned ray be normalized&mdash;many other parts of the system will depend on
+this behavior.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraInterface-1"></span><div class="fragmentname">&lt;&lt;Camera Interface&gt;&gt;+=&nbsp;<a href="#fragment-CameraInterface-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Light_Transport_III_Bidirectional_Methods/The_Path-Space_Measurement_Equation.html#fragment-CameraInterface-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">virtual Float <span class="anchor" id="Camera::GenerateRay"></span>GenerateRay(const CameraSample &amp;sample,
+                          <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> *ray) const = 0;</div><p>
+
+
+</p>
+<p>The <a href="#CameraSample"><tt>CameraSample</tt></a>
+structure holds all of the sample values needed to specify a camera
+ray. Its <tt>pFilm</tt> member gives the point on the film to which
+the generated ray carries radiance. The point on the
+lens the ray passes through is in <tt>pLens</tt> (for cameras that include the
+notion of lenses), and <tt>CameraSample::time</tt> gives the time at which the
+ray should sample the scene; implementations should use this
+value to linearly interpolate within the
+<tt>shutterOpen</tt>&ndash;<tt>shutterClose</tt> time range.  (Choosing these
+various sample
+values carefully can greatly increase the quality
+of final images; this is the topic of much of
+Chapter&nbsp;<a href="../Sampling_and_Reconstruction.html#chap:sampling-reconstruction">7</a>.)
+
+</p>
+<p><tt>GenerateRay()</tt> also returns a floating-point value that affects how much the
+radiance arriving at the film plane along the generated ray will contribute
+to the final image.  Simple camera models can just return a value of&nbsp;1,
+but cameras that simulate real physical lens systems like the one in
+Section&nbsp;<a href="../Camera_Models/Realistic_Cameras.html#sec:realistic-cameras">6.4</a> set this value to indicate how
+much light the ray carries through the lenses based on their optical
+properties.  (See Sections&nbsp;<a href="../Camera_Models/Realistic_Cameras.html#sec:camera-measurement-equation">6.4.7</a>
+and&nbsp;<a href="../Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations.html#sec:mc-cameras">13.6.6</a> for more information about how exactly this weight
+is computed and used.)
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraDeclarations-1"></span><div class="fragmentname">&lt;&lt;Camera Declarations&gt;&gt;+=&nbsp;<a href="#fragment-CameraDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Projective_Camera_Models.html#fragment-CameraDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">struct <span class="anchor" id="CameraSample"></span>CameraSample {
+    <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> <span class="anchor" id="CameraSample::pFilm"></span>pFilm;
+    <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> <span class="anchor" id="CameraSample::pLens"></span>pLens;
+    Float <span class="anchor" id="CameraSample::time"></span>time;
+};</div><p>
+
+
+</p>
+<p>The <tt>GenerateRayDifferential()</tt> method computes a main ray like
+<tt>GenerateRay()</tt> but also computes the corresponding rays for pixels
+shifted one pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> directions on the film plane.  This
+information about how camera rays change as a function of position on the
+film helps give other parts of the system a notion of how much of the film
+area a particular camera ray&rsquo;s sample represents, which is particularly
+useful for anti-aliasing texture map lookups.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;Camera Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float <span class="anchor" id="Camera::GenerateRayDifferential"></span><a href="#Camera" class="code">Camera</a>::GenerateRayDifferential(const CameraSample &amp;sample, 
+        RayDifferential *rd) const {
+    Float wt = <a href="#Camera::GenerateRay" class="code">GenerateRay</a>(sample, rd);
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Findcamerarayaftershiftingonepixelinthexdirection-0">Find camera ray after shifting one pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> direction</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-712" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-712"><i></i></a><div id="fragbit-712" class="collapse"><div class="fragmentcode">       CameraSample sshift = sample;
+       sshift.<a href="#CameraSample::pFilm" class="code">pFilm</a>.x++;
+       <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> rx;
+       Float wtx = <a href="#Camera::GenerateRay" class="code">GenerateRay</a>(sshift, &amp;rx);
+       if (wtx == 0) return 0;
+       rd-&gt;<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxOrigin" class="code">rxOrigin</a> = rx.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>;
+       rd-&gt;<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxDirection" class="code">rxDirection</a> = rx.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>;</div></div>
+    &lt;&lt;<span class="fragmentname">Find camera ray after shifting one pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> direction</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-713" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-713"><i></i></a><div id="fragbit-713" class="collapse"><div class="fragmentcode">       sshift.<a href="#CameraSample::pFilm" class="code">pFilm</a>.x--;
+       sshift.<a href="#CameraSample::pFilm" class="code">pFilm</a>.y++;
+       <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ry;
+       Float wty = <a href="#Camera::GenerateRay" class="code">GenerateRay</a>(sshift, &amp;ry);
+       if (wty == 0) return 0;
+       rd-&gt;ryOrigin = ry.o;
+       rd-&gt;ryDirection = ry.d;</div></div>
+    rd-&gt;<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::hasDifferentials" class="code">hasDifferentials</a> = true;
+    return wt;    
+}</div><p>
+
+
+</p>
+<p>Finding the ray for one pixel over in <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> is just a matter of initializing
+a new <tt>CameraSample</tt> and copying the appropriate values returned by
+calling <tt>GenerateRay()</tt> into the
+<a href="../Geometry_and_Transformations/Rays.html#RayDifferential"><tt>RayDifferential</tt></a> structure.  The implementation of the fragment
+&lt;&lt;<span class="fragmentname">Find ray after shifting one pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> direction</span>&gt;&gt; follows
+similarly and isn&rsquo;t included here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Findcamerarayaftershiftingonepixelinthexdirection-0"></span><div class="fragmentname">&lt;&lt;Find camera ray after shifting one pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> direction&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">CameraSample sshift = sample;
+sshift.<a href="#CameraSample::pFilm" class="code">pFilm</a>.x++;
+<a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> rx;
+Float wtx = <a href="#Camera::GenerateRay" class="code">GenerateRay</a>(sshift, &amp;rx);
+if (wtx == 0) return 0;
+rd-&gt;<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxOrigin" class="code">rxOrigin</a> = rx.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>;
+rd-&gt;<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxDirection" class="code">rxDirection</a> = rx.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#CameraCoordinateSpaces"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:camera-coordinate-spaces"></span><span id="CameraCoordinateSpaces"></span><h3>6.1.1  Camera Coordinate Spaces</h3><p>
+
+
+
+</p>
+<p>We have already made use of two important modeling coordinate spaces,
+object space and world space.  We will now introduce an additional
+coordinate space, <em>camera space</em>, which has the camera at its origin.
+We have:
+
+</p>
+<p></p>
+<ul>
+<li> <em>Object space:</em> This is the coordinate system in which
+geometric primitives are defined.  For example, spheres in <tt>pbrt</tt> are defined
+to be centered at the origin of their object space.
+
+<li> <em>World space:</em> While each primitive may have its own object
+space, all objects in the scene are placed in relation to a single world
+space.  Each primitive has an object-to-world transformation that
+determines where it is located in world space.  World space is the standard
+frame that all other spaces are defined in terms of.
+
+<li> <em>Camera space:</em> A camera is placed in the scene at some
+world space point with a particular viewing direction and orientation.
+This camera defines a new coordinate system with its origin at
+the camera&rsquo;s location. The <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> axis of this coordinate system is mapped to
+the viewing direction, and the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> axis is mapped to the up direction.  This
+is a handy space for reasoning about which objects are potentially visible
+to the camera.  For example, if an object&rsquo;s camera space bounding box is
+entirely behind the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.347ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2302.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z equals 0</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="745" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1801" y="0"></use>
+</g>
+</svg> plane (and the camera doesn&rsquo;t have a field of
+view wider than 180 degrees), the object will not be visible to the camera.
+</ul><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Camera_Models/Projective_Camera_Models.html">Camera Models / Projective Camera Models</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

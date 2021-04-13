@@ -1,0 +1,245 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Exercises</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface.html">Scene Description Interface</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Exercises</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface/Further_Reading.html">(Previous: Further Reading)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>Exercises</h2><p>
+
+
+</p>
+<p></p>
+<ol>
+
+
+ <li class="exercise"><span class="exerciseicon">&#9314;</span> One approach for reducing renderer startup time is to 
+support a binary representation of internal data structures that can be
+written to disk.  For example, for complex
+scenes, creating the ray acceleration aggregates may take more time than
+the initial parsing of the scene file.  An alternative is to modify
+the system to have the capability of dumping out a representation of the
+acceleration structure and all of the primitives inside it after it is
+first created.  The resulting file could then be subsequently read back
+into memory much more quickly than rebuilding the data structure from
+scratch.  However, because C++ doesn&rsquo;t have native support for saving
+arbitrary objects to disk and then reading them back during a subsequent
+execution of the program (a capability known as <em>serialization</em> or
+<em>pickling</em>
+in other languages), adding this feature effectively requires extending
+many of the objects in <tt>pbrt</tt> to support this capability on their own.
+
+
+
+One additional advantage of this approach is that substantial amounts of
+computation can be invested in creating high-quality acceleration
+structures, with the knowledge that this cost doesn&rsquo;t need to be paid each
+time the scene is loaded into memory.  Implement support for serializing
+the scene representation and then reusing it across multiple renderings of
+the scene.  How is <tt>pbrt</tt>&rsquo;s start-up time (up until when rendering begins)
+affected?  What about overall rendering time?
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> The material assigned to object instances in <tt>pbrt</tt> is the
+current material when the instance was defined inside the
+<a href="../Scene_Description_Interface/Scene_Definition.html#pbrtObjectBegin"><tt>pbrtObjectBegin()</tt></a>/<a href="../Scene_Description_Interface/Scene_Definition.html#pbrtObjectEnd"><tt>pbrtObjectEnd()</tt></a> block.  This can be
+inconvenient if the user wants to use the same geometry multiple times in a
+scene, giving it a different material.  Fix the API and the implementation
+of the
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> class so that the material assigned to instances is
+the current material when the instance is instantiated, or, if the user
+hasn&rsquo;t set a material, the current material when the instance was created.
+
+ <li class="exercise"><span class="exerciseicon">&#9314;</span> Generalize <tt>pbrt</tt>&rsquo;s API for specifying animation; the current
+implementation only allows the user to provide two transformation matrices,
+only at the start and end of a fixed time range.  For specifying more
+complex motion, a more flexible approach may be useful.  One improvement is
+to allow the user to specify an arbitrary number of <em>keyframe</em>
+transformations, each associated with an arbitrary time.
+
+More generally, the system could be extended to support transformations
+that are explicit functions of time.  For example, a rotation could be
+described with an expression of the form <tt>Rotate (time * 2 + 1) 0 0 1</tt>
+to describe a time-varying rotation about the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> axis.  Extend <tt>pbrt</tt> to
+support a more general matrix animation scheme, and render images showing
+results that aren&rsquo;t possible with the current implementation. What is the
+performance impact of your changes for scenes with animated objects that
+don&rsquo;t need the generality of your improvements?
+
+ <li class="exercise"><span class="exerciseicon">&#9314;</span> Extend <tt>pbrt</tt>&rsquo;s API to have some retained mode semantics so that
+animated sequences of images can be rendered without needing to respecify
+the entire scene for each frame.  Make sure that it is possible to remove
+some objects from the scene, add others, modify objects&rsquo; materials and
+transformations from frame to frame, and so on.
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> In the current implementation, a
+unique <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> is created for each <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> with an
+animated transformation.  If many shapes have exactly the same animated
+transformation, this turns out to be a poor choice.  Consider the
+difference between a million-triangle mesh with an animated transformation
+versus a million independent triangles, all of which happen to have the
+same animated transformation.  
+
+In the first case, all of the triangles in the mesh are stored in a
+single instance of a <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> with an animated transformation.  If a
+ray intersects the conservative bounding box that encompasses all of the
+object&rsquo;s motion over the frame time, then it is transformed to the mesh&rsquo;s
+object space according to the interpolated transformation at the ray&rsquo;s
+time.  At this point, the intersection computation is no different from the
+intersection test with a static primitive; the only overhead due to the
+animation is from the larger bounding box and rays that hit the bounding
+box but not the animated primitive and the extra computation for matrix
+interpolation and transforming each ray once, according to its time.
+
+In the second case, each triangle is stored in its
+own <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>, all of which happen to have the
+same <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform"><tt>AnimatedTransform</tt></a>.  Each instance of <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> will
+have a large bounding box to encompass each triangle&rsquo;s motion, giving the
+acceleration structure a difficult set of inputs to deal with: many
+primitives with substantially overlapping bounding boxes.  The impact on
+ray&ndash;primitive intersection efficiency will be high: the ray will be
+redundantly transformed many times by what happens to be the same
+recomputed interpolated transformation, and many intersection tests will be
+performed due to the large bounding boxes.  Overall performance will be
+much worse than the first case.
+
+To address this case, modify the code that implements the <tt>pbrt</tt> API calls
+so that if independent shapes are provided with the same animated
+transformation, they&rsquo;re all collected into a single acceleration structure
+with a single animated transformation.  What is the performance improvement
+for the worst case outlined above?  Is there an impact for more typical
+scenes with animated primitives?
+
+</ol><p>
+
+
+
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../References.html">References</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

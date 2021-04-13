@@ -1,0 +1,962 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Texture Interface and Basic Textures</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Texture.html">Texture</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Texture Interface and Basic Textures</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Texture/Texture_Coordinate_Generation.html">(Previous: Texture Coordinate Generation)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:texture-interface"></span><h2>10.3 Texture Interface and Basic Textures</h2><p>
+
+
+
+</p>
+<p><span class="anchor" id="coretexture.h"></span>
+<span class="anchor" id="coretexture.cpp"></span>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p><a href="#Texture"><tt>Texture</tt></a> is a template class parameterized by the return type of its
+evaluation function.  This design makes it possible to reuse almost all of the
+code among textures that return different types. <tt>pbrt</tt> currently uses only <tt>Float</tt> and
+<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum"><tt>Spectrum</tt></a> textures.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TextureDeclarations-7"></span><div class="fragmentname">&lt;&lt;Texture Declarations&gt;&gt;+=&nbsp;<a href="Texture_Coordinate_Generation.html#fragment-TextureDeclarations-6"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Image_Texture.html#fragment-TextureDeclarations-8"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="Texture"></span>Texture {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-TextureInterface-0">Texture Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1015" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1015"><i></i></a><div id="fragbit-1015" class="collapse"><div class="fragmentcode">       virtual T Evaluate(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;) const = 0;
+       virtual ~<a href="#Texture" class="code">Texture</a>() { }</div></div>
+};</div><p>
+
+
+</p>
+<p>The key to <a href="#Texture"><tt>Texture</tt></a>&rsquo;s interface is its evaluation function; it returns
+a value of the template type <tt>T</tt>.  The only information it has access
+to in order to evaluate its value is the <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> at the
+point being shaded. Different textures in this chapter will use different
+parts of this structure to drive their evaluation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TextureInterface-0"></span><div class="fragmentname">&lt;&lt;Texture Interface&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">virtual T <span class="anchor" id="Texture::Evaluate"></span>Evaluate(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;) const = 0;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ConstantTexture"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ConstantTexture"></span><h3>10.3.1  Constant Texture</h3><p>
+
+
+</p>
+<p><a href="#ConstantTexture"><tt>ConstantTexture</tt></a> returns the same value no matter where it is
+evaluated.  Because it represents a constant function, it can be accurately
+reconstructed with any sampling rate and therefore needs no
+antialiasing.  Although this texture is trivial, it is actually quite
+useful.  By providing this class, all parameters to all <a href="../Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a>s can be
+represented as <a href="#Texture"><tt>Texture</tt></a>s, whether they are spatially varying or not.
+For example, a red diffuse object will have a <a href="#ConstantTexture"><tt>ConstantTexture</tt></a> that
+always returns red as the diffuse color of the material.  This way, the
+shading system always evaluates a texture to get
+the surface properties at a point, avoiding the need for separate textured
+and nontextured versions of materials.  This texture&rsquo;s implementation is in
+the files <a href="https://github.com/mmp/pbrt-v3/tree/master/src/textures/constant.h"><tt>textures/constant.h</tt></a><span class="anchor" id="texturesconstant.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/textures/constant.cpp"><tt>textures/constant.cpp</tt></a>.<span class="anchor" id="texturesconstant.cpp"></span>
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ConstantTextureDeclarations-0"></span><div class="fragmentname">&lt;&lt;ConstantTexture Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="ConstantTexture"></span>ConstantTexture : public <a href="#Texture" class="code">Texture</a>&lt;T&gt; {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ConstantTexturePublicMethods-0">ConstantTexture Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1016" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1016"><i></i></a><div id="fragbit-1016" class="collapse"><div class="fragmentcode">       ConstantTexture(const T &amp;value) : value(value) { }
+       T Evaluate(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;) const {
+           return value;
+       }</div></div>
+private:
+    T value;
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ConstantTexturePublicMethods-0"></span><div class="fragmentname">&lt;&lt;ConstantTexture Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">ConstantTexture(const T &amp;value) : value(value) { }
+T <span class="anchor" id="ConstantTexture::Evaluate"></span>Evaluate(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;) const {
+    return value;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ScaleTexture"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ScaleTexture"></span><h3>10.3.2  Scale Texture</h3><p>
+
+
+</p>
+<p>We have defined the texture interface in a way that makes it easy to use
+the output of one texture function when computing another.  This is useful
+since it lets us define generic texture operations using any of the other
+texture types.  The <a href="#ScaleTexture"><tt>ScaleTexture</tt></a> takes two textures and
+returns the product of their values when evaluated.  It is defined in
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/textures/scale.h"><tt>textures/scale.h</tt></a> <span class="anchor" id="texturesscale.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/textures/scale.cpp"><tt>textures/scale.cpp</tt></a>.<span class="anchor" id="texturesscale.cpp"></span>
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScaleTextureDeclarations-0"></span><div class="fragmentname">&lt;&lt;ScaleTexture Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T1, typename T2&gt;
+class <span class="anchor" id="ScaleTexture"></span>ScaleTexture : public <a href="#Texture" class="code">Texture</a>&lt;T2&gt; {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ScaleTexturePublicMethods-0">ScaleTexture Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1017" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1017"><i></i></a><div id="fragbit-1017" class="collapse"><div class="fragmentcode">       ScaleTexture(const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T1&gt;&gt; &amp;<a href="#ScaleTexture::tex1" class="code">tex1</a>,
+                    const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T2&gt;&gt; &amp;<a href="#ScaleTexture::tex2" class="code">tex2</a>)
+           : <a href="#ScaleTexture::tex1" class="code">tex1</a>(<a href="#ScaleTexture::tex1" class="code">tex1</a>), <a href="#ScaleTexture::tex2" class="code">tex2</a>(<a href="#ScaleTexture::tex2" class="code">tex2</a>) { }
+       T2 <a href="#Texture::Evaluate" class="code">Evaluate</a>(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;si) const {
+           return <a href="#ScaleTexture::tex1" class="code">tex1</a>-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si) * <a href="#ScaleTexture::tex2" class="code">tex2</a>-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si);
+       }</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ScaleTexturePrivateData-0">ScaleTexture Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1018" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1018"><i></i></a><div id="fragbit-1018" class="collapse"><div class="fragmentcode">       std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T1&gt;&gt; tex1;
+       std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T2&gt;&gt; tex2;</div></div>
+};</div><p>
+
+
+</p>
+<p>The attentive reader may notice that the <tt>shared_ptr</tt> parameters to the
+constructor are stored in member variables and wonder if there is a
+performance issue from this approach along the lines of the one described in
+Section&nbsp;<a href="../Materials/Bump_Mapping.html#sec:bump-mapping">9.3</a> with regard to the <tt>Bump()</tt> method.
+In this case we&rsquo;re fine: <tt>Texture</tt>s are only created at scene creation
+time, rather than at rendering time for each ray.  Therefore, there are no
+issues with contention at the memory location that stores the reference
+count for each <tt>shared_ptr</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScaleTexturePublicMethods-0"></span><div class="fragmentname">&lt;&lt;ScaleTexture Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ScaleTexturePublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">ScaleTexture(const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T1&gt;&gt; &amp;<a href="#ScaleTexture::tex1" class="code">tex1</a>,
+             const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T2&gt;&gt; &amp;<a href="#ScaleTexture::tex2" class="code">tex2</a>)
+    : <a href="#ScaleTexture::tex1" class="code">tex1</a>(<a href="#ScaleTexture::tex1" class="code">tex1</a>), <a href="#ScaleTexture::tex2" class="code">tex2</a>(<a href="#ScaleTexture::tex2" class="code">tex2</a>) { }</div><p>
+
+
+</p>
+<p>Note that the return types of the two textures can be different; the
+implementation here just requires that it be possible to multiply their
+values together.  Thus, a <tt>Float</tt> texture can be used to scale a
+<tt>Spectrum</tt> texture.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScaleTexturePrivateData-0"></span><div class="fragmentname">&lt;&lt;ScaleTexture Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T1&gt;&gt; <span class="anchor" id="ScaleTexture::tex1"></span>tex1;
+std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T2&gt;&gt; <span class="anchor" id="ScaleTexture::tex2"></span>tex2;</div><p>
+
+
+</p>
+<p><a href="#ScaleTexture"><tt>ScaleTexture</tt></a> ignores antialiasing, leaving it to its two subtextures
+to antialias themselves but not making an effort to antialias their
+product.  While it is easy to show that the product of two band-limited
+functions is also band limited, the maximum frequency present in the
+product may be greater than that of either of the two terms individually.
+Thus, even if the scale and value textures are perfectly antialiased, the
+result might not be.  Fortunately, the most common use of this texture is
+to scale another texture by a constant, in which case the other texture&rsquo;s
+antialiasing is sufficient.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScaleTexturePublicMethods-1"></span><div class="fragmentname">&lt;&lt;ScaleTexture Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ScaleTexturePublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">T2 <span class="anchor" id="ScaleTexture::Evaluate"></span><a href="#Texture::Evaluate" class="code">Evaluate</a>(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;si) const {
+    return <a href="#ScaleTexture::tex1" class="code">tex1</a>-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si) * <a href="#ScaleTexture::tex2" class="code">tex2</a>-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#MixTextures"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="MixTextures"></span><h3>10.3.3  Mix Textures</h3><p>
+
+
+</p>
+<p>The <a href="#MixTexture"><tt>MixTexture</tt></a> class is a more general variation of
+<a href="#ScaleTexture"><tt>ScaleTexture</tt></a>.  It takes three textures as input: two may be of any
+single type, and the third must return a floating-point value.  The floating-point
+texture is then used to linearly interpolate between the two other
+textures.  Note that a <a href="#ConstantTexture"><tt>ConstantTexture</tt></a> could be used for the
+floating-point value to achieve a uniform blend, or a more complex
+<a href="#Texture"><tt>Texture</tt></a> could be used to blend in a spatially nonuniform way.  This
+texture is defined in <a href="https://github.com/mmp/pbrt-v3/tree/master/src/textures/mix.h"><tt>textures/mix.h</tt></a> <span class="anchor" id="texturesmix.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/textures/mix.cpp"><tt>textures/mix.cpp</tt></a>.<span class="anchor" id="texturesmix.cpp"></span>
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MixTextureDeclarations-0"></span><div class="fragmentname">&lt;&lt;MixTexture Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="MixTexture"></span>MixTexture : public <a href="#Texture" class="code">Texture</a>&lt;T&gt; {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MixTexturePublicMethods-0">MixTexture Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1019" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1019"><i></i></a><div id="fragbit-1019" class="collapse"><div class="fragmentcode">       MixTexture(const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T&gt;&gt; &amp;<a href="#MixTexture::tex1" class="code">tex1</a>,
+                  const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T&gt;&gt; &amp;<a href="#MixTexture::tex2" class="code">tex2</a>,
+                  const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#MixTexture::amount" class="code">amount</a>)
+           : <a href="#MixTexture::tex1" class="code">tex1</a>(<a href="#MixTexture::tex1" class="code">tex1</a>), <a href="#MixTexture::tex2" class="code">tex2</a>(<a href="#MixTexture::tex2" class="code">tex2</a>), <a href="#MixTexture::amount" class="code">amount</a>(<a href="#MixTexture::amount" class="code">amount</a>) { }
+       T <a href="#Texture::Evaluate" class="code">Evaluate</a>(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;si) const { 
+           T t1 = <a href="#MixTexture::tex1" class="code">tex1</a>-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si), t2 = <a href="#MixTexture::tex2" class="code">tex2</a>-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si);
+           Float amt = <a href="#MixTexture::amount" class="code">amount</a>-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si);
+           return (1 - amt) * t1 + amt * t2;
+       }</div></div>
+private:
+    std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T&gt;&gt; <span class="anchor" id="MixTexture::tex1"></span>tex1, <span class="anchor" id="MixTexture::tex2"></span>tex2;
+    std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;Float&gt;&gt; <span class="anchor" id="MixTexture::amount"></span>amount;
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MixTexturePublicMethods-0"></span><div class="fragmentname">&lt;&lt;MixTexture Public Methods&gt;&gt;=&nbsp;<a href="#fragment-MixTexturePublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">MixTexture(const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T&gt;&gt; &amp;<a href="#MixTexture::tex1" class="code">tex1</a>,
+           const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;T&gt;&gt; &amp;<a href="#MixTexture::tex2" class="code">tex2</a>,
+           const std::shared_ptr&lt;<a href="#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#MixTexture::amount" class="code">amount</a>)
+    : <a href="#MixTexture::tex1" class="code">tex1</a>(<a href="#MixTexture::tex1" class="code">tex1</a>), <a href="#MixTexture::tex2" class="code">tex2</a>(<a href="#MixTexture::tex2" class="code">tex2</a>), <a href="#MixTexture::amount" class="code">amount</a>(<a href="#MixTexture::amount" class="code">amount</a>) { }</div><p>
+
+
+</p>
+<p>To evaluate the mixture, the three textures are evaluated and the
+floating-point value is used to linearly interpolate between the two.  When
+the blend amount <tt>amt</tt> is zero, the first texture&rsquo;s value is
+returned, and when it is one the second one&rsquo;s value is returned.  We will
+generally assume that <tt>amt</tt> will be between zero and one, but this
+behavior is not enforced, so extrapolation is possible as well.  As with
+the <a href="#ScaleTexture"><tt>ScaleTexture</tt></a>, antialiasing is ignored, so the introduction of
+aliasing here is a possibility.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MixTexturePublicMethods-1"></span><div class="fragmentname">&lt;&lt;MixTexture Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-MixTexturePublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">T <span class="anchor" id="MixTexture::Evaluate"></span><a href="#Texture::Evaluate" class="code">Evaluate</a>(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;si) const { 
+    T t1 = tex1-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si), t2 = tex2-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si);
+    Float amt = amount-&gt;<a href="#Texture::Evaluate" class="code">Evaluate</a>(si);
+    return (1 - amt) * t1 + amt * t2;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#BilinearInterpolation"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="BilinearInterpolation"></span><h3>10.3.4  Bilinear Interpolation</h3><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BilerpTextureDeclarations-0"></span><div class="fragmentname">&lt;&lt;BilerpTexture Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="BilerpTexture"></span>BilerpTexture : public <a href="#Texture" class="code">Texture</a>&lt;T&gt; {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BilerpTexturePublicMethods-0">BilerpTexture Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1020" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1020"><i></i></a><div id="fragbit-1020" class="collapse"><div class="fragmentcode">       BilerpTexture(std::unique_ptr&lt;TextureMapping2D&gt; <a href="#BilerpTexture::mapping" class="code">mapping</a>, const T &amp;<a href="#BilerpTexture::v00" class="code">v00</a>,
+                     const T &amp;<a href="#BilerpTexture::v01" class="code">v01</a>, const T &amp;<a href="#BilerpTexture::v10" class="code">v10</a>, const T &amp;<a href="#BilerpTexture::v11" class="code">v11</a>) 
+           : <a href="#BilerpTexture::mapping" class="code">mapping</a>(std::move(<a href="#BilerpTexture::mapping" class="code">mapping</a>)), <a href="#BilerpTexture::v00" class="code">v00</a>(<a href="#BilerpTexture::v00" class="code">v00</a>), <a href="#BilerpTexture::v01" class="code">v01</a>(<a href="#BilerpTexture::v01" class="code">v01</a>), <a href="#BilerpTexture::v10" class="code">v10</a>(<a href="#BilerpTexture::v10" class="code">v10</a>),
+             <a href="#BilerpTexture::v11" class="code">v11</a>(<a href="#BilerpTexture::v11" class="code">v11</a>) { }
+       T Evaluate(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;si) const { 
+           <a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a> dstdx, dstdy;
+           <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> st = <a href="#BilerpTexture::mapping" class="code">mapping</a>-&gt;<a href="../Texture/Texture_Coordinate_Generation.html#TextureMapping2D::Map" class="code">Map</a>(si, &amp;dstdx, &amp;dstdy);
+           return (1-st[0]) * (1-st[1]) * <a href="#BilerpTexture::v00" class="code">v00</a> + (1-st[0]) * (st[1]) * <a href="#BilerpTexture::v01" class="code">v01</a> +
+                  (  st[0]) * (1-st[1]) * <a href="#BilerpTexture::v10" class="code">v10</a> + (  st[0]) * (st[1]) * <a href="#BilerpTexture::v11" class="code">v11</a>;
+       }</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BilerpTexturePrivateData-0">BilerpTexture Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1021" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1021"><i></i></a><div id="fragbit-1021" class="collapse"><div class="fragmentcode">       std::unique_ptr&lt;TextureMapping2D&gt; mapping;
+       const T v00, v01, v10, v11;</div></div>
+};</div><p>
+
+
+</p>
+<p>The <a href="#BilerpTexture"><tt>BilerpTexture</tt></a> class provides bilinear interpolation among four
+constant values.  Values are defined at <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 1 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg>, and
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 1 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg> in <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.773ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2055.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis s comma t right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="859" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="1304" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1665" y="0"></use>
+</g>
+</svg> parameter space.  The value at a particular <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.773ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2055.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis s comma t right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="859" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="1304" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1665" y="0"></use>
+</g>
+</svg>
+position is found by interpolating between them.  It is defined in the files
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/textures/bilerp.h"><tt>textures/bilerp.h</tt></a>  <span class="anchor" id="texturesbilerp.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/textures/bilerp.cpp"><tt>textures/bilerp.cpp</tt></a>.<span class="anchor" id="texturesbilerp.cpp"></span>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BilerpTexturePublicMethods-0"></span><div class="fragmentname">&lt;&lt;BilerpTexture Public Methods&gt;&gt;=&nbsp;<a href="#fragment-BilerpTexturePublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">BilerpTexture(std::unique_ptr&lt;TextureMapping2D&gt; <a href="#BilerpTexture::mapping" class="code">mapping</a>, const T &amp;<a href="#BilerpTexture::v00" class="code">v00</a>,
+              const T &amp;<a href="#BilerpTexture::v01" class="code">v01</a>, const T &amp;<a href="#BilerpTexture::v10" class="code">v10</a>, const T &amp;<a href="#BilerpTexture::v11" class="code">v11</a>) 
+    : <a href="#BilerpTexture::mapping" class="code">mapping</a>(std::move(<a href="#BilerpTexture::mapping" class="code">mapping</a>)), <a href="#BilerpTexture::v00" class="code">v00</a>(<a href="#BilerpTexture::v00" class="code">v00</a>), <a href="#BilerpTexture::v01" class="code">v01</a>(<a href="#BilerpTexture::v01" class="code">v01</a>), <a href="#BilerpTexture::v10" class="code">v10</a>(<a href="#BilerpTexture::v10" class="code">v10</a>),
+      <a href="#BilerpTexture::v11" class="code">v11</a>(<a href="#BilerpTexture::v11" class="code">v11</a>) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BilerpTexturePrivateData-0"></span><div class="fragmentname">&lt;&lt;BilerpTexture Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::unique_ptr&lt;TextureMapping2D&gt; <span class="anchor" id="BilerpTexture::mapping"></span>mapping;
+const T <span class="anchor" id="BilerpTexture::v00"></span>v00, <span class="anchor" id="BilerpTexture::v01"></span>v01, <span class="anchor" id="BilerpTexture::v10"></span>v10, <span class="anchor" id="BilerpTexture::v11"></span>v11;</div><p>
+
+
+</p>
+<p>The interpolated value of the four values at an <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.773ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2055.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis s comma t right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="859" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="1304" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1665" y="0"></use>
+</g>
+</svg> position can be
+computed by three linear interpolations.  For example, we can first
+use <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 469.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">s</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="0" y="0"></use>
+</g>
+</svg> to interpolate between the values at <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 1 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg> and
+store that in a temporary <tt>tmp1</tt>.  We can then do the same for 
+the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 1 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg> values and store the result in <tt>tmp2</tt>.
+Finally, we use <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> to interpolate between <tt>tmp1</tt> and <tt>tmp2</tt>
+and obtain the final result.  Mathematically, this&nbsp;is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="31.295ex" height="10.176ex" style="vertical-align: -4.505ex;" viewBox="0 -2441.8 13474 4381.3" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartLayout 1st Row 1st Column normal t normal m normal p Subscript 1 2nd Column equals left-parenthesis 1 minus s right-parenthesis normal v 00 plus s normal v 10 2nd Row 1st Column normal t normal m normal p Subscript 2 2nd Column equals left-parenthesis 1 minus s right-parenthesis normal v 01 plus s normal v 11 3rd Row 1st Column normal r normal e normal s normal u normal l normal t 2nd Column equals left-parenthesis 1 minus t right-parenthesis normal t normal m normal p Subscript 1 Baseline plus t normal t normal m normal p Subscript 2 Baseline period EndLayout</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-74" d="M332 124c0 -64 -28 -135 -99 -135c-36 0 -129 12 -129 135v276h-85v22c98 4 128 111 129 193h25v-184h143v-31h-143v-278c0 -17 0 -108 67 -108c37 0 67 38 67 112v55h25v-57Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6D" d="M813 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31 c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c45 0 119 -11 133 -98c17 38 61 98 145 98c58 0 91 -20 105 -37c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-76" d="M508 400c-66 -1 -83 -44 -92 -67l-131 -325c-4 -10 -8 -19 -21 -19s-15 5 -21 19l-144 355c-13 31 -17 37 -80 37v31c30 -2 70 -3 97 -3l109 3v-31c-18 0 -57 0 -57 -26c0 0 0 -4 6 -17l112 -279l102 255c4 11 6 15 6 24c0 19 -11 42 -48 43v31l87 -3c23 0 52 1 75 3v-31 Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-75" d="M535 0l-144 -11v90c-29 -62 -73 -90 -129 -90c-152 0 -152 91 -152 169v150c0 89 0 92 -78 92v31l147 11v-332c0 -52 4 -99 88 -99c73 0 121 68 121 155v178c0 49 -8 56 -78 56v31l147 11v-355c0 -49 8 -56 78 -56v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6C" d="M255 0l-111 3l-111 -3v31c67 0 78 0 78 45v520c0 49 -8 56 -78 56v31l144 11v-618c0 -45 11 -45 78 -45v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(167,0)">
+<g transform="translate(-11,0)">
+<g transform="translate(222,1523)">
+ <use xlink:href="#E1-LATINMODERNMAIN-74" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6D" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1223" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="2516" y="-326"></use>
+</g>
+<g transform="translate(222,-26)">
+ <use xlink:href="#E1-LATINMODERNMAIN-74" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6D" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1223" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="2516" y="-326"></use>
+</g>
+<g transform="translate(0,-1575)">
+ <use xlink:href="#E1-LATINMODERNMAIN-72" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-65" x="392" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="837" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-75" x="1231" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6C" x="1788" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-74" x="2066" y="0"></use>
+</g>
+</g>
+<g transform="translate(2723,0)">
+<g transform="translate(0,1523)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1445" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2168" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="3169" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3638" y="0"></use>
+<g transform="translate(4028,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-76" x="0" y="0"></use>
+<g transform="translate(528,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="5586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="6587" y="0"></use>
+<g transform="translate(7223,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-76" x="0" y="0"></use>
+<g transform="translate(528,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+</g>
+</g>
+</g>
+<g transform="translate(0,-26)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1445" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2168" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="3169" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3638" y="0"></use>
+<g transform="translate(4028,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-76" x="0" y="0"></use>
+<g transform="translate(528,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="5586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="6587" y="0"></use>
+<g transform="translate(7223,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-76" x="0" y="0"></use>
+<g transform="translate(528,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="500" y="0"></use>
+</g>
+</g>
+</g>
+<g transform="translate(0,-1575)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1445" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2168" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="3169" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3530" y="0"></use>
+<g transform="translate(3920,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-74" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6D" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1223" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="2516" y="-326"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="6375" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="7376" y="0"></use>
+<g transform="translate(7904,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-74" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6D" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1223" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="2516" y="-326"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="10138" y="0"></use>
+</g>
+</g>
+</g>
+</g>
+</svg>
+</div>
+<p>
+
+
+</p>
+<p>Rather than storing the intermediate values explicitly, we can perform some
+algebraic rearrangement to give us the same result from an appropriately
+weighted average of the four corner values:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="62.516ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 26916.4 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal r normal e normal s normal u normal l normal t equals left-parenthesis 1 minus s right-parenthesis left-parenthesis 1 minus t right-parenthesis normal v 00 plus left-parenthesis 1 minus s right-parenthesis t normal v 01 plus s left-parenthesis 1 minus t right-parenthesis normal v 10 plus s t normal v 11 period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-75" d="M535 0l-144 -11v90c-29 -62 -73 -90 -129 -90c-152 0 -152 91 -152 169v150c0 89 0 92 -78 92v31l147 11v-332c0 -52 4 -99 88 -99c73 0 121 68 121 155v178c0 49 -8 56 -78 56v31l147 11v-355c0 -49 8 -56 78 -56v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6C" d="M255 0l-111 3l-111 -3v31c67 0 78 0 78 45v520c0 49 -8 56 -78 56v31l144 11v-618c0 -45 11 -45 78 -45v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-74" d="M332 124c0 -64 -28 -135 -99 -135c-36 0 -129 12 -129 135v276h-85v22c98 4 128 111 129 193h25v-184h143v-31h-143v-278c0 -17 0 -108 67 -108c37 0 67 38 67 112v55h25v-57Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-76" d="M508 400c-66 -1 -83 -44 -92 -67l-131 -325c-4 -10 -8 -19 -21 -19s-15 5 -21 19l-144 355c-13 31 -17 37 -80 37v31c30 -2 70 -3 97 -3l109 3v-31c-18 0 -57 0 -57 -26c0 0 0 -4 6 -17l112 -279l102 255c4 11 6 15 6 24c0 19 -11 42 -48 43v31l87 -3c23 0 52 1 75 3v-31 Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-72" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-65" x="392" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="837" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-75" x="1231" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6C" x="1788" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-74" x="2066" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="2733" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="3790" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="4179" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="4902" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="5903" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="6372" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="6762" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="7151" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="7874" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="8874" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="9236" y="0"></use>
+<g transform="translate(9625,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-76" x="0" y="0"></use>
+<g transform="translate(528,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="11184" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="12185" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="12574" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="13297" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="14298" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="14767" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="15157" y="0"></use>
+<g transform="translate(15685,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-76" x="0" y="0"></use>
+<g transform="translate(528,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="17243" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="18244" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="18714" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="19103" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="19826" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="20827" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="21188" y="0"></use>
+<g transform="translate(21578,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-76" x="0" y="0"></use>
+<g transform="translate(528,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="23136" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="24137" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="24773" y="0"></use>
+<g transform="translate(25301,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-76" x="0" y="0"></use>
+<g transform="translate(528,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="26637" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BilerpTexturePublicMethods-1"></span><div class="fragmentname">&lt;&lt;BilerpTexture Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-BilerpTexturePublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">T <span class="anchor" id="BilerpTexture::Evaluate"></span>Evaluate(const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;si) const { 
+    <a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a> dstdx, dstdy;
+    <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> st = <a href="#BilerpTexture::mapping" class="code">mapping</a>-&gt;<a href="../Texture/Texture_Coordinate_Generation.html#TextureMapping2D::Map" class="code">Map</a>(si, &amp;dstdx, &amp;dstdy);
+    return (1-st[0]) * (1-st[1]) * <a href="#BilerpTexture::v00" class="code">v00</a> + (1-st[0]) * (st[1]) * <a href="#BilerpTexture::v01" class="code">v01</a> +
+           (  st[0]) * (1-st[1]) * <a href="#BilerpTexture::v10" class="code">v10</a> + (  st[0]) * (st[1]) * <a href="#BilerpTexture::v11" class="code">v11</a>;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Texture/Image_Texture.html">Texture / Image Texture</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

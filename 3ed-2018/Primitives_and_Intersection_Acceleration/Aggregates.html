@@ -1,0 +1,238 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Aggregates</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Primitives_and_Intersection_Acceleration.html">Primitives and Intersection Acceleration</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Aggregates</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html">(Previous: Primitive Interface and Geometric Primitives)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:aggregates"></span><h2>4.2 Aggregates</h2><p>
+
+
+
+</p>
+<p>Acceleration structures are one of the components at the heart of any ray
+tracer.  Without algorithms to reduce the number of unnecessary ray
+intersection tests, tracing a single ray through a scene would take
+time linear in the number of primitives in the scene, since the ray would
+need to be tested against each primitive in turn to find the closest
+intersection.  However, doing so is extremely wasteful in most scenes, since
+the ray passes nowhere near the vast majority of primitives.  The goals of
+acceleration structures are to allow the quick, simultaneous rejection of
+<em>groups</em> of primitives and to order the search process so that
+nearby intersections are likely to be found first so that farther away ones can
+potentially be ignored.
+
+</p>
+<p>Because ray&ndash;object intersections can account for the bulk of execution
+time in ray tracers, there has been a substantial amount of research into
+algorithms for ray intersection acceleration.  We will not try to explore all
+of this work here but refer the interested reader to references in the
+&ldquo;Further Reading&rdquo;
+section at the end of this chapter and in particular Arvo and Kirk&rsquo;s chapter in <em>An Introduction
+to Ray Tracing</em> (Glassner&nbsp;<a href="Further_Reading.html#cite:Glassner:IntroRayTracing">1989a</a>), which has a useful taxonomy for classifying different
+approaches to ray-tracing
+acceleration.
+
+</p>
+<p>Broadly speaking, there are two main approaches to this problem: spatial
+subdivision and object subdivision.  Spatial subdivision algorithms
+decompose 3D space into regions (e.g., by superimposing a grid of
+axis-aligned boxes on the scene) and record which primitives overlap
+which regions.  In some algorithms, the regions may also be adaptively
+subdivided based on the number of primitives that overlap them.  When a ray
+intersection needs to be found, the sequence of these regions that the ray
+passes through is computed and only the primitives in the overlapping
+regions are tested for intersection.
+
+</p>
+<p>In contrast, object subdivision is based on progressively breaking the
+objects in the scene down into smaller sets of constituent objects.
+For example, a model of a room might be broken down into  four walls, a
+ceiling, and a chair.  If a ray doesn&rsquo;t intersect the room&rsquo;s bounding
+volume, then all of its primitives can be culled.  Otherwise, the ray
+is tested against each of them.  If it hits the chair&rsquo;s bounding volume, for
+example, then it might be tested against each of its legs, the seat, and the
+back.  Otherwise, the chair is culled.
+
+</p>
+<p>Both of these approaches have been quite successful at solving the general
+problem of ray intersection computational requirements; there&rsquo;s no
+fundamental reason to prefer one over the other.  The <a href="../Primitives_and_Intersection_Acceleration/Kd-Tree_Accelerator.html#KdTreeAccel"><tt>KdTreeAccel</tt></a> in
+this chapter is based on the spatial subdivision approach, and the
+<a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel"><tt>BVHAccel</tt></a> is based on object subdivision.
+
+</p>
+<p>The <a href="#Aggregate"><tt>Aggregate</tt></a> class provides an interface for grouping multiple
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a> objects together.  Because <a href="#Aggregate"><tt>Aggregate</tt></a>s themselves
+implement the <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a> interface, no special support is required
+elsewhere in <tt>pbrt</tt> for intersection acceleration.  <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a>s can
+be written as if there was just a single <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a> in the scene,
+checking for intersections without needing to be concerned about how
+they&rsquo;re actually found.  Furthermore, by implementing acceleration in this
+way, it is easy to experiment with new acceleration techniques by simply
+adding a new <a href="#Aggregate"><tt>Aggregate</tt></a> primitive to <tt>pbrt</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AggregateDeclarations-0"></span><div class="fragmentname">&lt;&lt;Aggregate Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="Aggregate"></span>Aggregate : public <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a> {
+public:
+    &lt;&lt;<span class="fragmentname">Aggregate Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-510" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-510"><i></i></a><div id="fragbit-510" class="collapse"><div class="fragmentcode">       const <a href="../Light_Sources/Area_Lights.html#AreaLight" class="code">AreaLight</a> *GetAreaLight() const;
+       const <a href="../Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> *GetMaterial() const;
+       void ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *isect,
+           <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, TransportMode mode, bool allowMultipleLobes) const;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Like <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>s do, the implementation
+of the <a href="#Aggregate"><tt>Aggregate</tt></a> intersection methods
+leave the <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::primitive"><tt>SurfaceInteraction::primitive</tt></a> pointer set to the primitive
+that the ray actually hit, not the aggregate that holds the primitive.
+Because <tt>pbrt</tt> uses this pointer to obtain information about the primitive
+being hit (its reflection and emission properties), the
+<tt>GetAreaLight()</tt>, <tt>GetMaterial()</tt>, and
+<tt>ComputeScatteringFunctions()</tt> methods of <tt>Aggregate</tt>s should
+never be called, so the implementations of those methods (not shown here)
+issue a run-time error.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Scott Pilet and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html">Primitives and Intersection Acceleration / Bounding Volume Hierarchies</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

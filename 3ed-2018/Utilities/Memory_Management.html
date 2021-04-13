@@ -1,0 +1,1281 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Memory Management</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Memory Management</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities/Communicating_with_the_User.html">(Previous: Communicating with the User)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:memory-management"></span><h2>A.4 Memory Management</h2><p>
+
+
+
+</p>
+<p>Memory management is often a complex issue in a system written in a
+language without garbage collection.  The situation is mostly simple in
+<tt>pbrt</tt>, since most dynamic memory allocation is done as the scene
+description file is parsed, and most of this memory remains in use until
+rendering is finished.  Nevertheless, there are a few issues related to
+memory management&mdash;most of them performance related&mdash;that warrant classes
+and utility routines to address them.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#VariableStackAllocation"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="VariableStackAllocation"></span><h3>A.4.1  Variable Stack Allocation</h3><p>
+
+
+</p>
+<p>Sometimes it is necessary to allocate a variable amount of memory that will
+be used temporarily in a single function but isn&rsquo;t needed after the
+function returns.  If only a small amount of memory is needed, the overhead
+of <tt>new</tt> and <tt>delete</tt> (or <tt>malloc()</tt> and
+<tt>free()</tt>) may be high relative to the amount of actual computation
+being done.  Instead, it
+is frequently more efficient to use <tt>alloca()</tt>, which
+allocates memory on the stack with just a few machine
+instructions.  This memory is automatically deallocated when the function
+exits, which also saves bookkeeping work in the routine that uses it.
+<span class="anchor" id="alloca"></span>
+
+</p>
+<p><tt>alloca()</tt> is an extremely useful tool, but there are two pitfalls to
+be aware of when using it.  First, because the memory is deallocated when
+the function that called <tt>alloca()</tt> returns, the pointer must not be returned from the
+function or stored in a data structure with a longer lifetime than the
+function that allocated it.  (However, the pointer may be passed to
+functions called by the allocating function.)  Second, stack size is limited,
+and so <tt>alloca()</tt> shouldn&rsquo;t be used for more than a few kilobytes of
+storage.  Unfortunately, there is no way to detect the error condition when
+more space is requested from <tt>alloca()</tt> than is available on the
+stack, so it&rsquo;s important to be conservative with its use.
+
+</p>
+<p><tt>pbrt</tt> provides a macro that makes it easy to allocate space
+for a given number of objects of a given type.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="A moment&rsquo;s thought
+should make clear why it&rsquo;s not possible to implement this functionality
+with an <tt>inline</tt> function.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalMacros-0"></span><div class="fragmentname">&lt;&lt;Global Macros&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">#define <span class="anchor" id="ALLOCA"></span>ALLOCA(TYPE, COUNT) (TYPE *)alloca((COUNT) * sizeof(TYPE))</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Cache-FriendlyMemoryUsage"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:cache-mem-allocation"></span><span id="Cache-FriendlyMemoryUsage"></span><h3>A.4.2  Cache-Friendly Memory Usage</h3><p>
+
+
+
+</p>
+<p>The speed at which memory can respond to read requests has historically
+been getting faster at a rate of roughly 10% per year, while the
+computational capabilities of modern CPUs have been growing much more
+quickly.  As such, a CPU will typically have to wait a hundred or so execution
+cycles to read from main memory.  The CPU is usually idle for much of this
+time, so a substantial amount of its computational potential may be lost.
+
+</p>
+<p>One of the most effective techniques to address this problem is the judicious
+use of small, fast cache memory located in the CPU itself.
+The cache holds recently accessed data and is able to
+service memory requests much faster than main memory,
+thus greatly reducing the frequency of stalls in the CPU.
+
+</p>
+<p>Because of the high penalty for accessing main memory, designing algorithms and
+data structures that make good use of the cache can substantially improve
+overall system performance.  This section will discuss general programming
+techniques for improving cache performance.  These techniques are used in many
+parts of <tt>pbrt</tt>, particularly the <a href="../Primitives_and_Intersection_Acceleration/Kd-Tree_Accelerator.html#KdTreeAccel"><tt>KdTreeAccel</tt></a>, <a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel"><tt>BVHAccel</tt></a>, <a href="../Texture/Image_Texture.html#MIPMap"><tt>MIPMap</tt></a>, and
+<a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film"><tt>Film</tt></a>.  We assume that the reader has a basic familiarity with
+computer architecture and caching technology; readers needing a review are
+directed to a computer architecture text such as Hennessy and Patterson
+(<a href="Further_Reading.html#cite:Patterson:Architecture">1997</a>).  In particular, the reader should be
+generally familiar with topics like cache lines, cache associativity, and
+the difference between compulsory, capacity, and conflict misses.
+
+</p>
+<p>One easy way to reduce the number of cache misses incurred by <tt>pbrt</tt> is to
+make sure that some key memory allocations are aligned with the blocks of
+memory that the cache manages.
+(<tt>pbrt</tt>&rsquo;s overall performance was improved by
+approximately 3% when allocation for the kd-tree accelerator in
+Section&nbsp;<a href="../Primitives_and_Intersection_Acceleration/Kd-Tree_Accelerator.html#sec:accel-kd-tree">4.4</a> was rewritten to use cache-aligned
+allocation.) 
+Figure&nbsp;<a href="#fig:cache-aligned">A.1</a> illustrates
+the basic technique.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:cache-aligned"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Cache%20line%20object%20layout.svg" title=""><img src="Cache%20line%20object%20layout.svg" width=464 height=156 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure A.1: The Layout of Three 16-Byte Objects in Memory on a System with
+32-Byte Cache Lines. <span class="legend"> Cache-aligned memory allocation ensures
+that the address returned by the memory allocation routines are aligned
+with the start of a cache line.  (a)&nbsp;The starting address is not cache
+aligned; the first and last of the three objects span two cache lines, such
+that two cache misses may be incurred when accessing their elements. 
+(b)&nbsp;The starting address is cache aligned, guaranteeing that a maximum of one
+cache miss will be incurred per object.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>The <a href="#AllocAligned"><tt>AllocAligned()</tt></a> and <a href="#FreeAligned"><tt>FreeAligned()</tt></a> functions
+provide an interface to allocate and release cache-aligned memory blocks.
+If the preprocessor constant <tt>PBRT_L1_CACHE_LINE_SIZE</tt> is not set, a
+default cache line size of 64 bytes is used, which is representative of
+many current architectures.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalConstants-4"></span><div class="fragmentname">&lt;&lt;Global Constants&gt;&gt;+=&nbsp;<a href="Main_Include_File.html#fragment-GlobalConstants-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">#ifndef PBRT_L1_CACHE_LINE_SIZE
+#define <span class="anchor" id="PBRT_L1_CACHE_LINE_SIZE"></span>PBRT_L1_CACHE_LINE_SIZE 64
+#endif</div><p>
+
+
+</p>
+<p>Unfortunately there aren&rsquo;t portable methods to allocate memory aligned to a
+particular granularity.  Therefore <tt>AllocAligned()</tt> must call various
+operating-system-specific functions to do these allocations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryAllocationFunctions-0"></span><div class="fragmentname">&lt;&lt;Memory Allocation Functions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void *<span class="anchor" id="AllocAligned"></span>AllocAligned(size_t size) {
+#if defined(PBRT_IS_WINDOWS)
+    return _aligned_malloc(size, PBRT_L1_CACHE_LINE_SIZE);
+#elif defined (PBRT_IS_OPENBSD) || defined(PBRT_IS_OSX)
+    void *ptr;
+    if (posix_memalign(&amp;ptr, PBRT_L1_CACHE_LINE_SIZE, size) != 0)
+        ptr = nullptr;
+    return ptr;
+#else
+    return memalign(PBRT_L1_CACHE_LINE_SIZE, size);
+#endif
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A convenience routine is also provided for allocating a collection of
+objects so that code like <tt>AllocAligned&lt;Foo&gt;(n)</tt> can be written to
+allocate an array of <tt>n</tt> instances of type <tt>Foo</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryDeclarations-1"></span><div class="fragmentname">&lt;&lt;Memory Declarations&gt;&gt;+=&nbsp;<a href="../Materials/BSDFs.html#fragment-MemoryDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-MemoryDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; T *AllocAligned(size_t count) {
+    return (T *)AllocAligned(count * sizeof(T));
+}</div><p>
+
+
+</p>
+<p>The routine for freeing aligned memory calls the corresponding
+operating-system-specific routine.  We won&rsquo;t include its implementation
+here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryDeclarations-2"></span><div class="fragmentname">&lt;&lt;Memory Declarations&gt;&gt;+=&nbsp;<a href="#fragment-MemoryDeclarations-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-MemoryDeclarations-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="FreeAligned"></span>FreeAligned(void *);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Another family of techniques for improving cache performance is based on
+reorganizing data structures themselves.  For example, using bit fields to
+reduce the size of a frequently used data structure can be helpful.  This
+approach improves the <em>spatial locality</em> of memory access at run time,
+since code that accesses multiple packed values won&rsquo;t incur more than one
+cache miss to get them all.  Furthermore, by reducing the overall size of
+the structure, this technique can reduce capacity misses if fewer cache
+lines are consequently needed to store the structure.
+
+</p>
+<p>If not all of the elements of a structure are frequently accessed, there
+are a few possible strategies to improve cache performance.  For example,
+if the structure has a size of 128 bytes and the computer has 64-byte cache
+lines, two cache misses may be needed to access it.  If the commonly used
+fields are collected into the first 64 bytes rather than being spread
+throughout, then no more than one cache miss will be incurred when only
+those fields are needed (<a href="Further_Reading.html#cite:truong98improving">Truong et&nbsp;al. 1998</a>).
+
+</p>
+<p>A related technique is <em>splitting</em>, where data structures are split into
+&ldquo;hot&rdquo; and &ldquo;cold&rdquo; parts, each stored in separate regions of memory.  For
+example, given an array of some structure type, we can split it into two
+arrays, one for the more frequently accessed (or &ldquo;hot&rdquo;) portions and one for
+the less frequently accessed (or &ldquo;cold&rdquo;) portions.  This way, cold data doesn&rsquo;t
+displace useful information in the cache except when it is actually needed.
+
+</p>
+<p>Cache-friendly programming is a complex engineering task, and we will
+not cover all the variations here.  Readers are directed to the &ldquo;Further
+Reading&rdquo; section of this appendix for more information.
+
+</p>
+<p>
+
+</p>
+<p>
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Arena-BasedAllocation"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:arena-alloc"></span><span id="Arena-BasedAllocation"></span><h3>A.4.3  Arena-Based Allocation</h3><p>
+
+
+
+</p>
+<p>Conventional wisdom says that the system&rsquo;s memory allocation routines (e.g.,
+<tt>malloc()</tt> and <tt>new()</tt>) are slow and that custom allocation routines
+for objects that are frequently allocated or freed can provide a measurable
+performance gain.  However, this conventional wisdom seems to be wrong.
+Wilson et al. (<a href="Further_Reading.html#cite:paul95dynamic">1995</a>), Johnstone and Wilson
+(<a href="Further_Reading.html#cite:Johnstone99">1999</a>), and Berger, Zorn, and McKinley
+(<a href="Further_Reading.html#cite:berger01composing">2001</a>, <a href="Further_Reading.html#cite:Berger02">2002</a>) all investigated
+the performance impact of memory allocation in real-world applications and
+found that custom allocators almost always result in <em>worse</em>
+performance than a well-tuned generic system memory allocation, in both
+execution time and memory use.
+
+</p>
+<p>One type of custom allocation technique that has proved to be useful in
+some cases is <em>arena-based allocation</em>, which allows the user to
+quickly allocate objects from a large contiguous region of memory.  In this
+scheme, individual objects are never explicitly freed; the entire region of
+memory is released when the lifetime of all of the allocated objects ends.
+This type of memory allocator is a natural fit for many of the objects in
+<tt>pbrt</tt>.
+
+</p>
+<p>There are two main advantages to arena-based allocation.  First, allocation is
+extremely fast, usually just requiring a pointer increment.  Second, it can
+improve locality of reference and lead to fewer cache misses, since the
+allocated objects are contiguous in memory.  A more general dynamic memory
+allocator will typically prepend a bookkeeping structure to each block it
+returns, which adversely affects locality of reference.
+
+</p>
+<p><tt>pbrt</tt> provides the <a href="#MemoryArena"><tt>MemoryArena</tt></a> class to implement this approach; it
+supports variable-sized allocation from the arena.
+
+</p>
+<p>The <a href="#MemoryArena"><tt>MemoryArena</tt></a> quickly allocates memory for objects of variable size
+by handing out pointers into a preallocated block.  It does not support
+freeing of individual blocks of memory, only freeing of all of the memory
+in the arena at once.  Thus, it is useful when a number of allocations need
+to be done quickly and all of the allocated objects have similar lifetimes.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryDeclarations-3"></span><div class="fragmentname">&lt;&lt;Memory Declarations&gt;&gt;+=&nbsp;<a href="#fragment-MemoryDeclarations-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-MemoryDeclarations-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="MemoryArena"></span>MemoryArena {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MemoryArenaPublicMethods-0">MemoryArena Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1876" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1876"><i></i></a><div id="fragbit-1876" class="collapse"><div class="fragmentcode">       <a href="#MemoryArena" class="code">MemoryArena</a>(size_t <a href="#MemoryArena::blockSize" class="code">blockSize</a> = 262144) : <a href="#MemoryArena::blockSize" class="code">blockSize</a>(<a href="#MemoryArena::blockSize" class="code">blockSize</a>) { }
+       ~<a href="#MemoryArena" class="code">MemoryArena</a>() {
+           FreeAligned(<a href="#MemoryArena::currentBlock" class="code">currentBlock</a>);
+           for (auto &amp;block : usedBlocks)
+               FreeAligned(block.second);
+           for (auto &amp;block : availableBlocks)
+               FreeAligned(block.second);
+       }
+       void *Alloc(size_t nBytes) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-RoundupmononBytestominimummachinealignment-0">Round up <tt>nBytes</tt> to minimum machine alignment</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1877" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1877"><i></i></a><div id="fragbit-1877" class="collapse"><div class="fragmentcode">              nBytes = ((nBytes + 15) &amp; (~15));</div></div>
+           if (<a href="#MemoryArena::currentBlockPos" class="code">currentBlockPos</a> + nBytes &gt; <a href="#MemoryArena::currentAllocSize" class="code">currentAllocSize</a>) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-AddcurrentblocktomonousedBlockslist-0">Add current block to <tt>usedBlocks</tt> list</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1878" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1878"><i></i></a><div id="fragbit-1878" class="collapse"><div class="fragmentcode">                  if (<a href="#MemoryArena::currentBlock" class="code">currentBlock</a>) {
+                      <a href="#MemoryArena::usedBlocks" class="code">usedBlocks</a>.push_back(std::make_pair(currentAllocSize, <a href="#MemoryArena::currentBlock" class="code">currentBlock</a>));
+                      <a href="#MemoryArena::currentBlock" class="code">currentBlock</a> = nullptr;
+                  }</div></div>
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-GetnewblockofmemoryformonoMemoryArena-0">Get new block of memory for <tt>MemoryArena</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1879" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1879"><i></i></a><div id="fragbit-1879" class="collapse"><div class="fragmentcode">                  &lt;&lt;<span class="fragmentname"><a href="#fragment-TrytogetmemoryblockfrommonoavailableBlocks-0">Try to get memory block from <tt>availableBlocks</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1880" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1880"><i></i></a><div id="fragbit-1880" class="collapse"><div class="fragmentcode">                     for (auto iter = availableBlocks.begin(); iter != availableBlocks.end();
+                          ++iter) {
+                         if (iter-&gt;first &gt;= nBytes) {
+                             currentAllocSize = iter-&gt;first;
+                             currentBlock = iter-&gt;second;
+                             availableBlocks.erase(iter);
+                             break;
+                         }
+                     }</div></div>
+                  if (!<a href="#MemoryArena::currentBlock" class="code">currentBlock</a>) {
+                      <a href="#MemoryArena::currentAllocSize" class="code">currentAllocSize</a> = std::max(nBytes, <a href="#MemoryArena::blockSize" class="code">blockSize</a>);
+                      <a href="#MemoryArena::currentBlock" class="code">currentBlock</a> = <a href="#AllocAligned" class="code">AllocAligned</a>&lt;uint8_t&gt;(<a href="#MemoryArena::currentAllocSize" class="code">currentAllocSize</a>);
+                  }
+                  currentBlockPos = 0;</div></div>
+           }
+           void *ret = <a href="#MemoryArena::currentBlock" class="code">currentBlock</a> + <a href="#MemoryArena::currentBlockPos" class="code">currentBlockPos</a>;
+           <a href="#MemoryArena::currentBlockPos" class="code">currentBlockPos</a> += nBytes;
+           return ret;
+       }
+       template&lt;typename T&gt; T *Alloc(size_t n = 1, bool runConstructor = true) {
+           T *ret = (T *)Alloc(n * sizeof(T));
+           if (runConstructor)
+               for (size_t i = 0; i &lt; n; ++i)
+                   new (&amp;ret[i]) T();
+           return ret;
+       }
+       void Reset() {
+           <a href="#MemoryArena::currentBlockPos" class="code">currentBlockPos</a> = 0;
+           availableBlocks.splice(availableBlocks.begin(), usedBlocks);
+       }
+       size_t TotalAllocated() const {
+           size_t total = <a href="#MemoryArena::currentAllocSize" class="code">currentAllocSize</a>;
+           for (const auto &amp;alloc : usedBlocks)
+               total += alloc.first;
+           for (const auto &amp;alloc : availableBlocks)
+               total += alloc.first;
+           return total;
+       }</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MemoryArenaPrivateData-0">MemoryArena Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1881" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1881"><i></i></a><div id="fragbit-1881" class="collapse"><div class="fragmentcode">       const size_t blockSize;
+       size_t currentBlockPos = 0, currentAllocSize = 0;
+       uint8_t *currentBlock = nullptr;
+       std::list&lt;std::pair&lt;size_t, uint8_t *&gt;&gt; usedBlocks, availableBlocks;</div></div>
+};</div><p>
+
+
+</p>
+<p><a href="#MemoryArena"><tt>MemoryArena</tt></a> allocates memory in chunks of size
+<a href="#MemoryArena::blockSize"><tt>MemoryArena::blockSize</tt></a>, the value of which is set by a parameter
+passed to the constructor.  If no value is provided to the constructor, a
+default of 256&nbsp;kB is used.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryArenaPublicMethods-0"></span><div class="fragmentname">&lt;&lt;MemoryArena Public Methods&gt;&gt;=&nbsp;<a href="#fragment-MemoryArenaPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#MemoryArena" class="code">MemoryArena</a>(size_t <a href="#MemoryArena::blockSize" class="code">blockSize</a> = 262144) : <a href="#MemoryArena::blockSize" class="code">blockSize</a>(<a href="#MemoryArena::blockSize" class="code">blockSize</a>) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryArenaPrivateData-0"></span><div class="fragmentname">&lt;&lt;MemoryArena Private Data&gt;&gt;=&nbsp;<a href="#fragment-MemoryArenaPrivateData-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">const size_t <span class="anchor" id="MemoryArena::blockSize"></span>blockSize;</div><p>
+
+
+</p>
+<p>The implementation maintains a pointer to the
+current block of memory, <tt>currentBlock</tt>, and the offset of the first
+free location in the block, <tt>currentPos</tt>.  <tt>currentAllocSize</tt>
+stores the total size of the <tt>currentBlock</tt> allocation; it generally
+has the value <tt>blockSize</tt> but is larger in certain cases (discussed
+in the following).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryArenaPrivateData-1"></span><div class="fragmentname">&lt;&lt;MemoryArena Private Data&gt;&gt;+=&nbsp;<a href="#fragment-MemoryArenaPrivateData-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-MemoryArenaPrivateData-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">size_t <span class="anchor" id="MemoryArena::currentBlockPos"></span>currentBlockPos = 0, <span class="anchor" id="MemoryArena::currentAllocSize"></span>currentAllocSize = 0;
+uint8_t *<span class="anchor" id="MemoryArena::currentBlock"></span>currentBlock = nullptr;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>To service an allocation request, the allocation routine first rounds the
+requested amount of memory up so that it meets the computer&rsquo;s word
+alignment requirements.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Some systems (such as those based on Intel&reg;
+processors) can handle non-word-aligned memory accesses, but this is
+usually substantially slower than word-aligned memory reads or
+writes.  Other architectures do not support this at all and will generate a
+bus error if a nonaligned access is performed.">
+      <sup>&dagger;</sup>
+    </button>
+		  The routine then checks to
+see if the current block has enough space to handle the request, allocating
+a new block if necessary.  Finally, it returns the pointer and updates the
+current block offset.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryArenaPublicMethods-1"></span><div class="fragmentname">&lt;&lt;MemoryArena Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-MemoryArenaPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-MemoryArenaPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void *<span class="anchor" id="MemoryArena::Alloc"></span>Alloc(size_t nBytes) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-RoundupmononBytestominimummachinealignment-0">Round up <tt>nBytes</tt> to minimum machine alignment</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1882" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1882"><i></i></a><div id="fragbit-1882" class="collapse"><div class="fragmentcode">       nBytes = ((nBytes + 15) &amp; (~15));</div></div>
+    if (<a href="#MemoryArena::currentBlockPos" class="code">currentBlockPos</a> + nBytes &gt; <a href="#MemoryArena::currentAllocSize" class="code">currentAllocSize</a>) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-AddcurrentblocktomonousedBlockslist-0">Add current block to <tt>usedBlocks</tt> list</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1883" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1883"><i></i></a><div id="fragbit-1883" class="collapse"><div class="fragmentcode">           if (<a href="#MemoryArena::currentBlock" class="code">currentBlock</a>) {
+               <a href="#MemoryArena::usedBlocks" class="code">usedBlocks</a>.push_back(std::make_pair(currentAllocSize, <a href="#MemoryArena::currentBlock" class="code">currentBlock</a>));
+               <a href="#MemoryArena::currentBlock" class="code">currentBlock</a> = nullptr;
+           }</div></div>
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-GetnewblockofmemoryformonoMemoryArena-0">Get new block of memory for <tt>MemoryArena</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1884" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1884"><i></i></a><div id="fragbit-1884" class="collapse"><div class="fragmentcode">           &lt;&lt;<span class="fragmentname"><a href="#fragment-TrytogetmemoryblockfrommonoavailableBlocks-0">Try to get memory block from <tt>availableBlocks</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1885" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1885"><i></i></a><div id="fragbit-1885" class="collapse"><div class="fragmentcode">              for (auto iter = availableBlocks.begin(); iter != availableBlocks.end();
+                   ++iter) {
+                  if (iter-&gt;first &gt;= nBytes) {
+                      currentAllocSize = iter-&gt;first;
+                      currentBlock = iter-&gt;second;
+                      availableBlocks.erase(iter);
+                      break;
+                  }
+              }</div></div>
+           if (!<a href="#MemoryArena::currentBlock" class="code">currentBlock</a>) {
+               <a href="#MemoryArena::currentAllocSize" class="code">currentAllocSize</a> = std::max(nBytes, <a href="#MemoryArena::blockSize" class="code">blockSize</a>);
+               <a href="#MemoryArena::currentBlock" class="code">currentBlock</a> = <a href="#AllocAligned" class="code">AllocAligned</a>&lt;uint8_t&gt;(<a href="#MemoryArena::currentAllocSize" class="code">currentAllocSize</a>);
+           }
+           currentBlockPos = 0;</div></div>
+    }
+    void *ret = <a href="#MemoryArena::currentBlock" class="code">currentBlock</a> + <a href="#MemoryArena::currentBlockPos" class="code">currentBlockPos</a>;
+    <a href="#MemoryArena::currentBlockPos" class="code">currentBlockPos</a> += nBytes;
+    return ret;
+}</div><p>
+
+
+</p>
+<p>Most modern computer architectures impose alignment requirements on the
+positioning of objects in memory.  For example, it is frequently a
+requirement that <tt>float</tt> values be stored at memory locations that are
+word aligned.  To be safe, the implementation always hands out
+16-byte-aligned pointers (i.e., their address is a multiple of 16).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RoundupmononBytestominimummachinealignment-0"></span><div class="fragmentname">&lt;&lt;Round up <tt>nBytes</tt> to minimum machine alignment&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">nBytes = ((nBytes + 15) &amp; (~15));</div><p>
+
+
+</p>
+<p>If a new block of memory must be dynamically allocated to service an
+allocation request, the
+<a href="#MemoryArena"><tt>MemoryArena</tt></a> stores the pointer to the current block of memory in the
+<tt>usedBlocks</tt> list so that it is not lost. Later, when
+<a href="#MemoryArena::Reset"><tt>MemoryArena::Reset()</tt></a> is called, it will be able to reuse the block
+for the next series of allocations.  
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AddcurrentblocktomonousedBlockslist-0"></span><div class="fragmentname">&lt;&lt;Add current block to <tt>usedBlocks</tt> list&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="#MemoryArena::currentBlock" class="code">currentBlock</a>) {
+    <a href="#MemoryArena::usedBlocks" class="code">usedBlocks</a>.push_back(std::make_pair(currentAllocSize, <a href="#MemoryArena::currentBlock" class="code">currentBlock</a>));
+    <a href="#MemoryArena::currentBlock" class="code">currentBlock</a> = nullptr;
+}</div><p>
+
+
+</p>
+<p><a href="#MemoryArena"><tt>MemoryArena</tt></a> uses two linked lists to hold pointers to blocks
+of memory that have been fully used as well as available blocks that were
+previously allocated but aren&rsquo;t currently in use.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryArenaPrivateData-2"></span><div class="fragmentname">&lt;&lt;MemoryArena Private Data&gt;&gt;+=&nbsp;<a href="#fragment-MemoryArenaPrivateData-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">std::list&lt;std::pair&lt;size_t, uint8_t *&gt;&gt; <span class="anchor" id="MemoryArena::usedBlocks"></span>usedBlocks, <span class="anchor" id="MemoryArena::availableBlocks"></span>availableBlocks;</div><p>
+
+
+</p>
+<p>If a block of memory of suitable size isn&rsquo;t available from
+<tt>availableBlocks</tt>, a new one is allocated.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GetnewblockofmemoryformonoMemoryArena-0"></span><div class="fragmentname">&lt;&lt;Get new block of memory for <tt>MemoryArena</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">&lt;&lt;<span class="fragmentname"><a href="#fragment-TrytogetmemoryblockfrommonoavailableBlocks-0">Try to get memory block from <tt>availableBlocks</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1886" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1886"><i></i></a><div id="fragbit-1886" class="collapse"><div class="fragmentcode">   for (auto iter = availableBlocks.begin(); iter != availableBlocks.end();
+        ++iter) {
+       if (iter-&gt;first &gt;= nBytes) {
+           currentAllocSize = iter-&gt;first;
+           currentBlock = iter-&gt;second;
+           availableBlocks.erase(iter);
+           break;
+       }
+   }</div></div>
+if (!<a href="#MemoryArena::currentBlock" class="code">currentBlock</a>) {
+    <a href="#MemoryArena::currentAllocSize" class="code">currentAllocSize</a> = std::max(nBytes, <a href="#MemoryArena::blockSize" class="code">blockSize</a>);
+    <a href="#MemoryArena::currentBlock" class="code">currentBlock</a> = <a href="#AllocAligned" class="code">AllocAligned</a>&lt;uint8_t&gt;(<a href="#MemoryArena::currentAllocSize" class="code">currentAllocSize</a>);
+}
+currentBlockPos = 0;</div><p>
+
+
+</p>
+<p>The allocation routine first checks to see if there are any already
+allocated free blocks in <tt>availableBlocks</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TrytogetmemoryblockfrommonoavailableBlocks-0"></span><div class="fragmentname">&lt;&lt;Try to get memory block from <tt>availableBlocks</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">for (auto iter = availableBlocks.begin(); iter != availableBlocks.end();
+     ++iter) {
+    if (iter-&gt;first &gt;= nBytes) {
+        currentAllocSize = iter-&gt;first;
+        currentBlock = iter-&gt;second;
+        availableBlocks.erase(iter);
+        break;
+    }
+}</div><p>
+
+
+</p>
+<p>The <tt>MemoryArena</tt> also provides a convenience template method to
+allocate an array of objects of the given type.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryArenaPublicMethods-2"></span><div class="fragmentname">&lt;&lt;MemoryArena Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-MemoryArenaPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-MemoryArenaPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template&lt;typename T&gt; T *Alloc(size_t n = 1, bool runConstructor = true) {
+    T *ret = (T *)Alloc(n * sizeof(T));
+    if (runConstructor)
+        for (size_t i = 0; i &lt; n; ++i)
+            new (&amp;ret[i]) T();
+    return ret;
+}</div><p>
+
+
+</p>
+<p>When the user is done with all of the memory, the arena resets its
+offset in the current block and moves all of the memory from the
+<tt>usedBlocks</tt> list onto the <tt>availableBlocks</tt> list.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryArenaPublicMethods-3"></span><div class="fragmentname">&lt;&lt;MemoryArena Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-MemoryArenaPublicMethods-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="MemoryArena::Reset"></span>Reset() {
+    <a href="#MemoryArena::currentBlockPos" class="code">currentBlockPos</a> = 0;
+    availableBlocks.splice(availableBlocks.begin(), usedBlocks);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Blocked2DArrays"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:blocked-array"></span><span id="Blocked2DArrays"></span><h3>A.4.4  Blocked 2D Arrays</h3><p>
+
+
+
+</p>
+<p>In C++, 2D arrays are arranged in memory so that entire rows of values are
+contiguous in memory, as shown in Figure&nbsp;<a href="#fig:texel-mem-layout">A.2</a>(a).
+This is not always an optimal layout, however; for such an array indexed by
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg>, nearby <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> array positions will often map to distant memory
+locations.  For all but the smallest arrays, the adjacent values in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.128ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 485.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+</g>
+</svg>
+direction will be on different cache lines; thus, if the cost of a cache
+miss is incurred to reference a value at a particular location <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg>,
+there is no chance that handling that miss will also load into memory the
+data for values <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.303ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4005.6 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v plus 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="2114" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="3115" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3616" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.303ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4005.6 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v minus 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2114" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="3115" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3616" y="0"></use>
+</g>
+</svg>, and so on.  Thus, spatially coherent
+array indices in <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> do not necessarily lead to the spatially coherent
+memory access patterns that modern memory caches depend on.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:texel-mem-layout"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Standard%20array%20layout.svg" title=""><img src="Standard%20array%20layout.svg" width=422 height=259 style="max-width: 100%;"></a>
+</div>
+<p>
+
+</p>
+<div class="figure-row">
+  <a href="Blocked%20array%20layout.svg" title=""><img src="Blocked%20array%20layout.svg" width=696 height=289 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure A.2: <span class="legend"> (a) In C++, the natural layout for a 2D
+array of size <tt>width*height</tt> is a block of <tt>width*height</tt> entries,
+where the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> array element is at the <tt>u+v*width</tt> offset. 
+(b)&nbsp;A blocked array has
+been split into smaller square blocks, each of which is laid out linearly.
+Although it is slightly more complex to find the memory location associated
+with a given <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> array position in the blocked scheme, the improvement
+in cache performance
+due to more coherent memory access patterns often more than makes up for
+this in overall faster performance.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>To address this problem, the <a href="#BlockedArray"><tt>BlockedArray</tt></a> template implements a
+generic 2D array of values, with the items ordered in memory using a
+<em>blocked</em> memory layout, as shown in
+Figure&nbsp;<a href="#fig:texel-mem-layout">A.2</a>(b).  The array is subdivided into square
+blocks of a small fixed size that is a power of&nbsp;2.  Each block is laid
+out row by row, as if it were a separate 2D C++ array.  This organization
+substantially improves the memory coherence of 2D array references in
+practice and requires only a small amount of additional computation to
+determine the memory address for a particular position (<a href="Further_Reading.html#cite:Lam91">Lam et&nbsp;al. 1991</a>).
+
+</p>
+<p>To ensure that the block size is a power of&nbsp;2, the caller specifies its
+logarithm (base 2), which is given by the template parameter
+<tt>logBlockSize</tt>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MemoryDeclarations-4"></span><div class="fragmentname">&lt;&lt;Memory Declarations&gt;&gt;+=&nbsp;<a href="#fragment-MemoryDeclarations-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">template &lt;typename T, int <span class="anchor" id="BlockedArray::logBlockSize"></span>logBlockSize&gt; class <span class="anchor" id="BlockedArray"></span>BlockedArray {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BlockedArrayPublicMethods-0">BlockedArray Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1887" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1887"><i></i></a><div id="fragbit-1887" class="collapse"><div class="fragmentcode">       BlockedArray(int <a href="#BlockedArray::uRes" class="code">uRes</a>, int <a href="#BlockedArray::vRes" class="code">vRes</a>, const T *d = nullptr)
+           : <a href="#BlockedArray::uRes" class="code">uRes</a>(<a href="#BlockedArray::uRes" class="code">uRes</a>), <a href="#BlockedArray::vRes" class="code">vRes</a>(<a href="#BlockedArray::vRes" class="code">vRes</a>), <a href="#BlockedArray::uBlocks" class="code">uBlocks</a>(<a href="#BlockedArray::RoundUp" class="code">RoundUp</a>(<a href="#BlockedArray::uRes" class="code">uRes</a>) &gt;&gt; <a href="#BlockedArray::logBlockSize" class="code">logBlockSize</a>) {
+           int nAlloc = <a href="#BlockedArray::RoundUp" class="code">RoundUp</a>(<a href="#BlockedArray::uRes" class="code">uRes</a>) * <a href="#BlockedArray::RoundUp" class="code">RoundUp</a>(<a href="#BlockedArray::vRes" class="code">vRes</a>);
+           <a href="#BlockedArray::data" class="code">data</a> = <a href="#AllocAligned" class="code">AllocAligned</a>&lt;T&gt;(nAlloc);
+           for (int i = 0; i &lt; nAlloc; ++i)
+               new (&amp;<a href="#BlockedArray::data" class="code">data</a>[i]) T();
+           if (d)
+               for (int v = 0; v &lt; <a href="#BlockedArray::vRes" class="code">vRes</a>; ++v)
+                   for (int u = 0; u &lt; <a href="#BlockedArray::uRes" class="code">uRes</a>; ++u)
+                       (*this)(u, v) = d[v * <a href="#BlockedArray::uRes" class="code">uRes</a> + u];
+       }
+       constexpr int <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() const { return 1 &lt;&lt; <a href="#BlockedArray::logBlockSize" class="code">logBlockSize</a>; }
+       int <a href="#BlockedArray::RoundUp" class="code">RoundUp</a>(int x) const { 
+           return (x + <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() - 1) &amp; ~(<a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() - 1); 
+       }
+       int uSize() const { return <a href="#BlockedArray::uRes" class="code">uRes</a>; }
+       int vSize() const { return <a href="#BlockedArray::vRes" class="code">vRes</a>; }
+       ~BlockedArray() {
+           for (int i = 0; i &lt; <a href="#BlockedArray::uRes" class="code">uRes</a> * <a href="#BlockedArray::vRes" class="code">vRes</a>; ++i)
+               <a href="#BlockedArray::data" class="code">data</a>[i].~T();
+           FreeAligned(<a href="#BlockedArray::data" class="code">data</a>);
+       }
+       int <a href="#BlockedArray::Block" class="code">Block</a>(int a) const { return a &gt;&gt; <a href="#BlockedArray::logBlockSize" class="code">logBlockSize</a>; }
+       int Offset(int a) const { return (a &amp; (<a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() - 1)); }
+       T &amp;operator()(int u, int v) {
+           int bu = <a href="#BlockedArray::Block" class="code">Block</a>(u), bv = <a href="#BlockedArray::Block" class="code">Block</a>(v);
+           int ou = Offset(u), ov = Offset(v);
+           int offset = <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() * <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() * (<a href="#BlockedArray::uBlocks" class="code">uBlocks</a> * bv + bu);
+           offset += <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() * ov + ou;
+           return <a href="#BlockedArray::data" class="code">data</a>[offset];
+       }
+       const T &amp;operator()(int u, int v) const {
+           int bu = <a href="#BlockedArray::Block" class="code">Block</a>(u), bv = <a href="#BlockedArray::Block" class="code">Block</a>(v);
+           int ou = Offset(u), ov = Offset(v);
+           int offset = <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() * <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() * (<a href="#BlockedArray::uBlocks" class="code">uBlocks</a> * bv + bu);
+           offset += <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() * ov + ou;
+           return <a href="#BlockedArray::data" class="code">data</a>[offset];
+       }
+       void GetLinearArray(T *a) const {
+           for (int v = 0; v &lt; <a href="#BlockedArray::vRes" class="code">vRes</a>; ++v)
+               for (int u = 0; u &lt; <a href="#BlockedArray::uRes" class="code">uRes</a>; ++u)
+                   *a++ = (*this)(u, v);
+       }</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BlockedArrayPrivateData-0">BlockedArray Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1888" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1888"><i></i></a><div id="fragbit-1888" class="collapse"><div class="fragmentcode">       T *data;
+       const int uRes, vRes, uBlocks;</div></div>
+};</div><p>
+
+
+</p>
+<p>The constructor allocates space for the array and optionally initializes
+its values from a pointer to a standard C++ array.  Because the array size
+may not be an exact multiple of the block size, it may be necessary to
+round up the size in one or both directions to find the total amount of
+memory needed for the blocked array.  The <a href="#BlockedArray::RoundUp"><tt>BlockedArray::RoundUp()</tt></a>
+method rounds both dimensions up to be a multiple of the
+block size.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlockedArrayPublicMethods-0"></span><div class="fragmentname">&lt;&lt;BlockedArray Public Methods&gt;&gt;=&nbsp;<a href="#fragment-BlockedArrayPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">BlockedArray(int uRes, int vRes, const T *d = nullptr)
+    : uRes(uRes), vRes(vRes), uBlocks(<a href="#BlockedArray::RoundUp" class="code">RoundUp</a>(uRes) &gt;&gt; logBlockSize) {
+    int nAlloc = <a href="#BlockedArray::RoundUp" class="code">RoundUp</a>(uRes) * <a href="#BlockedArray::RoundUp" class="code">RoundUp</a>(vRes);
+    data = <a href="#AllocAligned" class="code">AllocAligned</a>&lt;T&gt;(nAlloc);
+    for (int i = 0; i &lt; nAlloc; ++i)
+        new (&amp;data[i]) T();
+    if (d)
+        for (int v = 0; v &lt; vRes; ++v)
+            for (int u = 0; u &lt; uRes; ++u)
+                (*this)(u, v) = d[v * uRes + u];
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlockedArrayPrivateData-0"></span><div class="fragmentname">&lt;&lt;BlockedArray Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">T *<span class="anchor" id="BlockedArray::data"></span>data;
+const int <span class="anchor" id="BlockedArray::uRes"></span>uRes, <span class="anchor" id="BlockedArray::vRes"></span>vRes, <span class="anchor" id="BlockedArray::uBlocks"></span>uBlocks;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlockedArrayPublicMethods-1"></span><div class="fragmentname">&lt;&lt;BlockedArray Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-BlockedArrayPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BlockedArrayPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">constexpr int <span class="anchor" id="BlockedArray::BlockSize"></span>BlockSize() const { return 1 &lt;&lt; <a href="#BlockedArray::logBlockSize" class="code">logBlockSize</a>; }
+int <span class="anchor" id="BlockedArray::RoundUp"></span>RoundUp(int x) const { 
+    return (x + BlockSize() - 1) &amp; ~(BlockSize() - 1); 
+}</div><p>
+
+
+</p>
+<p>For convenience, the <tt>BlockedArray</tt> can also report its size in each
+dimension:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlockedArrayPublicMethods-2"></span><div class="fragmentname">&lt;&lt;BlockedArray Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-BlockedArrayPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BlockedArrayPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">int <span class="anchor" id="BlockedArray::uSize"></span>uSize() const { return <a href="#BlockedArray::uRes" class="code">uRes</a>; }
+int <span class="anchor" id="BlockedArray::vSize"></span>vSize() const { return <a href="#BlockedArray::vRes" class="code">vRes</a>; }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Looking up a value from a particular <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> position in the array requires
+some indexing work to find the memory location for that value.  There are
+two steps to this process: finding which block the value is in and finding
+its offset within that block.  Because the block sizes are always powers
+of&nbsp;2, the <tt>logBlockSize</tt> low-order bits in each of the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.128ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 485.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+</g>
+</svg>
+array positions give the offset within the block, and the high-order bits
+give the block number (Figure&nbsp;<a href="#fig:texel-block-address">A.3</a>).
+
+</p>
+<p></p>
+<span class="anchor" id="fig:texel-block-address"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Block%20number%20offset.svg" title=""><img src="Block%20number%20offset.svg" width=247 height=120 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure A.3: <span class="legend"> Given a binary array coordinate, the
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> block number that it is in can be found by shifting off the
+<tt>logBlockSize</tt> low-order bits for both <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.128ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 485.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+</g>
+</svg>.  For example, with a
+<tt>logBlockSize</tt> of 2 and thus a block size of 4, we can see that this
+correctly maps 1D array positions from 0 to 3 to block 0, 4 to 7 to block
+1, and so on.  To find the offset within the particular block, it is just
+necessary to mask off
+the high-order bits, leaving the <tt>logBlockSize</tt> low-order bits.  Because
+the block size is a power of two, these computations can all be done with
+efficient bit operations.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlockedArrayPublicMethods-3"></span><div class="fragmentname">&lt;&lt;BlockedArray Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-BlockedArrayPublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BlockedArrayPublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">int <span class="anchor" id="BlockedArray::Block"></span>Block(int a) const { return a &gt;&gt; <a href="#BlockedArray::logBlockSize" class="code">logBlockSize</a>; }
+int <span class="anchor" id="BlockedArray::Offset"></span>Offset(int a) const { return (a &amp; (<a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() - 1)); }</div><p>
+
+
+</p>
+<p>Then, given the block number <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.04ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3031.3 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis b Subscript u Baseline comma b Subscript v Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44F" d="M415 282c0 -144 -123 -293 -241 -293c-74 0 -127 62 -127 157c0 35 4 51 16 101l82 326c5 21 14 55 14 62c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-74 -301c30 31 71 60 117 60c80 0 133 -69 133 -160zM343 326 c0 64 -27 94 -63 94c-26 0 -71 -15 -120 -80c-9 -11 -9 -13 -15 -35l-22 -92c-16 -63 -16 -82 -16 -101c0 -74 33 -101 67 -101c39 0 85 36 118 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D462" x="607" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1323" y="0"></use>
+<g transform="translate(1768,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D463" x="607" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2641" y="0"></use>
+</g>
+</svg> and the offset within the block
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3143.3 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis o Subscript u Baseline comma o Subscript v Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45C" d="M469 273c0 -146 -135 -284 -268 -284c-93 0 -160 70 -160 169c0 142 134 284 268 284c90 0 160 -65 160 -169zM396 312c0 60 -30 108 -88 108c-28 0 -85 -15 -135 -92c-32 -51 -58 -159 -58 -208c0 -78 44 -109 87 -109c46 0 101 34 136 92c38 65 58 170 58 209Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45C" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D462" x="686" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1379" y="0"></use>
+<g transform="translate(1824,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45C" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D463" x="686" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2753" y="0"></use>
+</g>
+</svg>, it is necessary to compute what memory location this maps to in the
+blocked array layout.  First consider the task of finding the starting address
+of the block; since the blocks are laid out row by row, this corresponds to the
+block number <tt>bu + bv * uBlocks</tt>, where <tt>uBlocks</tt> is the number of
+blocks in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="0" y="0"></use>
+</g>
+</svg> direction.  Because each block has
+<tt>BlockSize()*BlockSize()</tt> values in it, the product of the block number
+and this value gives us the offset to the start of the block.  We then just need to
+account for the additional offset from the start of the block, which is
+<tt>ou + ov * BlockSize()</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlockedArrayPublicMethods-4"></span><div class="fragmentname">&lt;&lt;BlockedArray Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-BlockedArrayPublicMethods-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">T &amp;<span class="anchor" id="BlockedArray::operator"></span>operator()(int u, int v) {
+    int bu = <a href="#BlockedArray::Block" class="code">Block</a>(u), bv = <a href="#BlockedArray::Block" class="code">Block</a>(v);
+    int ou = Offset(u), ov = Offset(v);
+    int offset = <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() * <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() * (<a href="#BlockedArray::uBlocks" class="code">uBlocks</a> * bv + bu);
+    offset += <a href="#BlockedArray::BlockSize" class="code">BlockSize</a>() * ov + ou;
+    return <a href="#BlockedArray::data" class="code">data</a>[offset];
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Scott Pilet and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Mathematical_Routines.html">Utilities / Mathematical Routines</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,983 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Media</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Volume_Scattering.html">Volume Scattering</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Media</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Volume_Scattering/Phase_Functions.html">(Previous: Phase Functions)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:media"></span><h2>11.3 Media</h2><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p>Implementations of the <tt>Medium</tt> base class provide various
+representations of volumetric scattering properties in a region of space.
+In a complex scene, there may be multiple <tt>Medium</tt> instances, each
+representing a different scattering effect.  For example, an outdoor lake
+scene might have one <tt>Medium</tt> to model atmospheric scattering, another
+to model mist rising from the lake, and a third to model particles
+suspended in the water of the lake.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MediumDeclarations-0"></span><div class="fragmentname">&lt;&lt;Medium Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="Medium"></span>Medium {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MediumInterface-0">Medium Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1114" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1114"><i></i></a><div id="fragbit-1114" class="collapse"><div class="fragmentcode">       virtual ~<a href="#Medium" class="code">Medium</a>() { }
+       virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Tr(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler) const = 0;
+       virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Sample(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler,
+           <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, <a href="#MediumInteraction" class="code">MediumInteraction</a> *mi) const = 0;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A key operation that <tt>Medium</tt> implementations must perform is to compute
+the beam transmittance, Equation&nbsp;(<a href="../Volume_Scattering/Volume_Scattering_Processes.html#eq:beam-transmittance">11.1</a>), along a given
+ray passed to its <tt>Tr()</tt> method. Specifically, the method should return
+an estimate of the transmittance on the interval between the ray origin and
+the point at a distance of <a href="../Geometry_and_Transformations/Rays.html#Ray::tMax"><tt>Ray::tMax</tt></a> from the origin.
+
+</p>
+<p>Medium-aware <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a>s using this interface 
+are responsible for accounting for interactions with
+surfaces in the scene as well as the spatial extent of the <tt>Medium</tt>; hence
+we will assume that the ray passed to the <tt>Tr()</tt> method is both
+unoccluded and fully
+contained within the current <tt>Medium</tt>. Some implementations of this method
+use Monte Carlo integration to compute the transmittance; a <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> is
+provided for this case.  (See Section&nbsp;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#sec:sampling-media">15.2</a>.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MediumInterface-0"></span><div class="fragmentname">&lt;&lt;Medium Interface&gt;&gt;=&nbsp;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#fragment-MediumInterface-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="Medium::Tr"></span>Tr(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler) const = 0;</div><p>
+
+
+</p>
+<p>The spatial distribution and extent of media in a scene is defined by
+associating <tt>Medium</tt> instances with the camera, lights, and primitives in
+the scene.  For example, <a href="../Camera_Models/Camera_Model.html#Camera"><tt>Camera</tt></a>s store a <tt>Medium</tt> pointer that gives
+the medium for rays leaving the camera and similarly for <a href="../Light_Sources/Light_Interface.html#Light"><tt>Light</tt></a>s.
+
+</p>
+<p>In <tt>pbrt</tt>, the boundary between two different types of scattering media is
+always represented by the surface of a <tt>GeometricPrimitive</tt>.  Rather
+than storing a single <tt>Medium</tt> pointer like lights and cameras,
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive"><tt>GeometricPrimitive</tt></a>s hold a <tt>MediumInterface</tt>, which in turn
+holds pointers to one <tt>Medium</tt> for the interior of the primitive and one
+for the exterior.  For all of these cases, a <tt>nullptr</tt> can be used to
+indicate a vacuum (where no volumetric scattering occurs.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MediumInterfaceDeclarations-0"></span><div class="fragmentname">&lt;&lt;MediumInterface Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct <span class="anchor" id="MediumInterface"></span>MediumInterface {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MediumInterfacePublicMethods-0">MediumInterface Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1115" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1115"><i></i></a><div id="fragbit-1115" class="collapse"><div class="fragmentcode">       MediumInterface(const <a href="#Medium" class="code">Medium</a> *medium)
+           : inside(medium), outside(medium) { }
+       MediumInterface(const <a href="#Medium" class="code">Medium</a> *inside, const <a href="#Medium" class="code">Medium</a> *outside)
+           : inside(inside), outside(outside) { }
+       bool IsMediumTransition() const { return inside != outside; }</div></div>
+    const <a href="#Medium" class="code">Medium</a> *<span class="anchor" id="MediumInterface::inside"></span>inside, *<span class="anchor" id="MediumInterface::outside"></span>outside;
+};</div><p>
+
+
+</p>
+<p>This approach to specifying the extent of participating media does allow
+the user to specify impossible or inconsistent configurations.  For
+example, a primitive could be specified as having one medium outside of it, and
+the camera could be specified as being in a different medium without a
+<tt>MediumInterface</tt> between the camera and the surface of the primitive.  In
+this case, a ray leaving the primitive toward the camera would be treated as
+being in a different medium from a ray leaving the camera toward the primitive.
+In turn, light transport algorithms would be unable to compute consistent
+results.  For <tt>pbrt</tt>&rsquo;s purposes, we think it&rsquo;s reasonable to expect that the
+user will be able to specify a consistent configuration of media in the
+scene and that the added complexity of code to check this isn&rsquo;t worthwhile.
+
+</p>
+<p>A <tt>MediumInterface</tt> can be initialized with either one or two
+<tt>Medium</tt> pointers.  If only one is provided, then it represents an
+interface with the same medium on both sides.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MediumInterfacePublicMethods-0"></span><div class="fragmentname">&lt;&lt;MediumInterface Public Methods&gt;&gt;=&nbsp;<a href="#fragment-MediumInterfacePublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">MediumInterface(const <a href="#Medium" class="code">Medium</a> *medium)
+    : inside(medium), outside(medium) { }
+MediumInterface(const <a href="#Medium" class="code">Medium</a> *inside, const <a href="#Medium" class="code">Medium</a> *outside)
+    : inside(inside), outside(outside) { }</div><p>
+
+
+</p>
+<p>The function <tt>MediumInterface::IsMediumTransition()</tt> checks whether a
+particular <tt>MediumInterface</tt> instance marks a transition between two
+distinct media.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MediumInterfacePublicMethods-1"></span><div class="fragmentname">&lt;&lt;MediumInterface Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-MediumInterfacePublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="MediumInterface::IsMediumTransition"></span>IsMediumTransition() const { return inside != outside; }</div><p>
+
+
+</p>
+<p>We can now provide a missing piece in the implementation of the
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive::Intersect"><tt>GeometricPrimitive::Intersect()</tt></a> method.  The code in this fragment is
+executed whenever an intersection with a geometric primitive has been found;
+its job is to set the medium interface at the intersection point. 
+
+</p>
+<p>Instead of simply copying the value of the
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive::mediumInterface"><tt>GeometricPrimitive::mediumInterface</tt></a> field, we will follow a slightly
+different approach and only use this information when this
+<a href="#MediumInterface"><tt>MediumInterface</tt></a> specifies a proper transition between participating
+media. Otherwise, the <tt>Ray::medium</tt> field takes precedence.
+
+</p>
+<p>Setting the <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a>&rsquo;s <tt>mediumInterface</tt> field in this way
+greatly simplifies the specification of scenes containing media: in particular,
+it is not necessary to tag every scene surface that is in contact with a
+medium. Instead, only non-opaque surfaces that have different media on each
+side require an explicit medium reference in their
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive::mediumInterface"><tt>GeometricPrimitive::mediumInterface</tt></a> field. In the simplest
+case where a scene containing opaque objects is filled with a participating
+medium (e.g., haze), it is enough to tag the camera and light sources.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InitializemonoSurfaceInteraction::mediumInterfaceaftermonoShapeintersection-0"></span><div class="fragmentname">&lt;&lt;Initialize <tt>SurfaceInteraction::mediumInterface</tt> after <tt>Shape</tt> intersection&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>.<a href="#MediumInterface::IsMediumTransition" class="code">IsMediumTransition</a>())
+    isect-&gt;<a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a> = <a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>;
+else
+    isect-&gt;<a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a> = <a href="#MediumInterface" class="code">MediumInterface</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>);</div><p>
+
+
+</p>
+<p><tt>Primitive</tt>s associated with shapes that represent medium
+boundaries generally have a <a href="../Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a> associated with them.  For
+example, the surface of a lake might use an instance of
+<a href="../Materials/Material_Interface_and_Implementations.html#GlassMaterial"><tt>GlassMaterial</tt></a> to describe scattering at the lake surface, which also
+acts as the boundary between the rising mist&rsquo;s <tt>Medium</tt> and the lake
+water&rsquo;s <tt>Medium</tt>.  However, sometimes we only need the shape for the
+boundary surface it provides to delimit a participating medium boundary
+and we don&rsquo;t want to see the surface itself.  For example, the medium
+representing a cloud might be bounded by a box made of triangles where the
+triangles are only there to delimit the cloud&rsquo;s extent and shouldn&rsquo;t
+otherwise affect light passing through them.
+
+</p>
+<p>While such a surface that disappears and doesn&rsquo;t affect ray paths could be
+perfectly accurately described by a BTDF that represented perfect specular
+transmission with the same index of refraction on both sides, dealing with
+such surfaces places extra burden on the <tt>Integrator</tt>s (not all of
+which handle this type of specular light transport well).  Therefore,
+<tt>pbrt</tt> allows such surfaces to have a <tt>Material *</tt> that is <tt>nullptr</tt>,
+indicating that they do not affect light passing through them; in turn,
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf"><tt>SurfaceInteraction::bsdf</tt></a> will also be <tt>nullptr</tt>, and the light
+transport routines don&rsquo;t worry about light scattering from such surfaces
+and only account for changes in the current medium at
+them. Figure&nbsp;<a href="#fig:media-boundary-and-no">11.14</a> has two instances of the
+dragon model filled with scattering media; one has a scattering surface at
+the boundary and the other does not. 
+
+</p>
+<p></p>
+<span class="anchor" id="fig:media-boundary-and-no"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 59.917%; position:relative;">
+<div id="dragon-media.png48" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('dragon-media.png48'), { image: 'dragon-media.png' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 11.14: Scattering Media inside the Dragon. <span class="legend">
+Both dragon models have the same homogeneous scattering media inside of
+them. On the left, the dragon&rsquo;s surface has a glass material. On the right,
+the dragon&rsquo;s <tt>Material *</tt> is <tt>nullptr</tt>, which indicates that the
+surface should be ignored by rays and is only used to delineate a
+participating medium&rsquo;s extent. 
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Given these conventions for how <tt>Medium</tt> implementations are
+associated with rays passing through regions of space, we will implement a
+<tt>Scene::IntersectTr()</tt> method, which is a generalization of
+<a href="../Introduction/pbrt_System_Overview.html#Scene::Intersect"><tt>Scene::Intersect()</tt></a> that returns the first intersection with a
+light-scattering surface along the given ray as well as the beam
+transmittance up to that point.  (If no intersection is found, this method
+returns <tt>false</tt> and doesn&rsquo;t initialize the provided
+<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a>.)
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SceneMethodDefinitions-2"></span><div class="fragmentname">&lt;&lt;Scene Method Definitions&gt;&gt;+=&nbsp;<a href="../Introduction/pbrt_System_Overview.html#fragment-SceneMethodDefinitions-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="Scene::IntersectTr"></span><a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a>::IntersectTr(<a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ray, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler,
+        <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *isect, <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> *Tr) const {
+    *Tr = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(1.f);
+    while (true) {
+        bool hitSurface = <a href="../Introduction/pbrt_System_Overview.html#Scene::Intersect" class="code">Intersect</a>(ray, isect);
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Accumulatebeamtransmittanceforraysegment-0">Accumulate beam transmittance for ray segment</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1116" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1116"><i></i></a><div id="fragbit-1116" class="collapse"><div class="fragmentcode">           if (ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>)
+               *<a href="#Medium::Tr" class="code">Tr</a> *= ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>-&gt;<a href="#Medium::Tr" class="code">Tr</a>(ray, sampler);</div></div>
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializenextraysegmentorterminatetransmittancecomputation-0">Initialize next ray segment or terminate transmittance computation</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1117" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1117"><i></i></a><div id="fragbit-1117" class="collapse"><div class="fragmentcode">           if (!hitSurface)
+               return false;
+           if (isect-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::primitive" class="code">primitive</a>-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive::GetMaterial" class="code">GetMaterial</a>() != nullptr)
+               return true;
+           ray = isect-&gt;<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(ray.d);</div></div>
+    }
+}</div><p>
+
+
+</p>
+<p>Each time through the loop, the transmittance along the ray
+is accumulated into the overall beam transmittance <tt>*Tr</tt>.
+Recall that <a href="../Introduction/pbrt_System_Overview.html#Scene::Intersect"><tt>Scene::Intersect()</tt></a> will have updated the ray&rsquo;s <tt>tMax</tt>
+member variable to the intersection point if it did intersect a
+surface. The <tt>Tr()</tt> implementation will use this value to find the
+segment over which to compute transmittance.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Accumulatebeamtransmittanceforraysegment-0"></span><div class="fragmentname">&lt;&lt;Accumulate beam transmittance for ray segment&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>)
+    *<a href="#Medium::Tr" class="code">Tr</a> *= ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>-&gt;<a href="#Medium::Tr" class="code">Tr</a>(ray, sampler);</div><p>
+
+
+</p>
+<p>The loop ends when no intersection is found or when a scattering surface is
+intersected.  If an optically inactive surface with its <tt>bsdf</tt> equal to
+<tt>nullptr</tt> is intersected, a new ray is spawned in the same direction from
+the intersection point, though potentially in a different medium, based on the
+intersection&rsquo;s <a href="#MediumInterface"><tt>MediumInterface</tt></a> field.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="If the current medium does change, it should have the
+same index of refraction as the previous one; otherwise, there should be a
+<tt>Material</tt> with a BTDF that describes the effect of refraction on the
+ray&rsquo;s direction. The implementation here doesn&rsquo;t verify that the two indices of
+refraction match, however.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Initializenextraysegmentorterminatetransmittancecomputation-0"></span><div class="fragmentname">&lt;&lt;Initialize next ray segment or terminate transmittance computation&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (!hitSurface)
+    return false;
+if (isect-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::primitive" class="code">primitive</a>-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive::GetMaterial" class="code">GetMaterial</a>() != nullptr)
+    return true;
+ray = isect-&gt;<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(ray.d);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#MediumInteractions"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:medium-interactions"></span><span id="MediumInteractions"></span><h3>11.3.1  Medium Interactions</h3><p>
+
+
+
+</p>
+<p>Section&nbsp;<a href="../Geometry_and_Transformations/Interactions.html#sec:interactions">2.10</a> introduced the general <a href="../Geometry_and_Transformations/Interactions.html#Interaction"><tt>Interaction</tt></a>
+class as well as the <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> specialization to represent
+interactions at surfaces.  Now that we have some machinery for describing
+scattering in volumes, it&rsquo;s worth generalizing these representations.
+First, we&rsquo;ll add two more <tt>Interaction</tt> constructors for interactions
+at points in scattering media.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMethods-4"></span><div class="fragmentname">&lt;&lt;Interaction Public Methods&gt;&gt;+=&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#fragment-InteractionPublicMethods-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-InteractionPublicMethods-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;<a href="../Geometry_and_Transformations/Interactions.html#Interaction::p" class="code">p</a>, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;<a href="../Geometry_and_Transformations/Interactions.html#Interaction::wo" class="code">wo</a>, Float <a href="../Geometry_and_Transformations/Interactions.html#Interaction::time" class="code">time</a>,
+            const MediumInterface &amp;<a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>)
+    : <a href="../Geometry_and_Transformations/Interactions.html#Interaction::p" class="code">p</a>(<a href="../Geometry_and_Transformations/Interactions.html#Interaction::p" class="code">p</a>), <a href="../Geometry_and_Transformations/Interactions.html#Interaction::time" class="code">time</a>(<a href="../Geometry_and_Transformations/Interactions.html#Interaction::time" class="code">time</a>), <a href="../Geometry_and_Transformations/Interactions.html#Interaction::wo" class="code">wo</a>(<a href="../Geometry_and_Transformations/Interactions.html#Interaction::wo" class="code">wo</a>), <a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>(<a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMethods-5"></span><div class="fragmentname">&lt;&lt;Interaction Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMethods-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-InteractionPublicMethods-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;<a href="../Geometry_and_Transformations/Interactions.html#Interaction::p" class="code">p</a>, Float <a href="../Geometry_and_Transformations/Interactions.html#Interaction::time" class="code">time</a>,
+            const MediumInterface &amp;<a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>)
+    : <a href="../Geometry_and_Transformations/Interactions.html#Interaction::p" class="code">p</a>(<a href="../Geometry_and_Transformations/Interactions.html#Interaction::p" class="code">p</a>), <a href="../Geometry_and_Transformations/Interactions.html#Interaction::time" class="code">time</a>(<a href="../Geometry_and_Transformations/Interactions.html#Interaction::time" class="code">time</a>), <a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>(<a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMethods-6"></span><div class="fragmentname">&lt;&lt;Interaction Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMethods-5"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-InteractionPublicMethods-7"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="Interaction::IsMediumInteraction"></span>IsMediumInteraction() const { return !<a href="../Geometry_and_Transformations/Interactions.html#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>(); }</div><p>
+
+
+</p>
+<p>For surface interactions where <a href="../Geometry_and_Transformations/Interactions.html#Interaction::n"><tt>Interaction::n</tt></a> has been set, the
+<tt>Medium *</tt> for a ray leaving the surface in the direction <tt>w</tt> is
+returned by the <tt>GetMedium()</tt> method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMethods-7"></span><div class="fragmentname">&lt;&lt;Interaction Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMethods-6"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-InteractionPublicMethods-8"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">const <a href="#Medium" class="code">Medium</a> *<span class="anchor" id="Interaction::GetMedium"></span>GetMedium(const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;w) const {
+    return <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(w, n) &gt; 0 ? <a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>.<a href="#MediumInterface::outside" class="code">outside</a> :
+                           <a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>.<a href="#MediumInterface::inside" class="code">inside</a>;
+}</div><p>
+
+
+</p>
+<p>For interactions that are known to be inside participating media, another
+variant of <tt>GetMedium()</tt> that doesn&rsquo;t take the unnecessary outgoing
+direction vector returns the <tt>Medium *</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMethods-8"></span><div class="fragmentname">&lt;&lt;Interaction Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMethods-7"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">const <a href="#Medium" class="code">Medium</a> *GetMedium() const {
+    Assert(<a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>.<a href="#MediumInterface::inside" class="code">inside</a> == <a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>.<a href="#MediumInterface::outside" class="code">outside</a>);
+    return <a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a>.<a href="#MediumInterface::inside" class="code">inside</a>;
+}</div><p>
+
+
+</p>
+<p>Just as the <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> class represents an interaction obtained
+by intersecting a ray against the scene geometry, <tt>MediumInteraction</tt>
+represents an interaction at a point in a scattering medium that is obtained
+using a similar kind of operation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionDeclarations-1"></span><div class="fragmentname">&lt;&lt;Interaction Declarations&gt;&gt;+=&nbsp;<a href="../Geometry_and_Transformations/Interactions.html#fragment-InteractionDeclarations-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="MediumInteraction"></span>MediumInteraction : public <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MediumInteractionPublicMethods-0">MediumInteraction Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1118" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1118"><i></i></a><div id="fragbit-1118" class="collapse"><div class="fragmentcode">       <a href="#MediumInteraction" class="code">MediumInteraction</a>(const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;p, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;wo, Float time,
+                         const <a href="#Medium" class="code">Medium</a> *medium, const PhaseFunction *<a href="#MediumInteraction::phase" class="code">phase</a>)
+           : <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(p, wo, time, medium), <a href="#MediumInteraction::phase" class="code">phase</a>(<a href="#MediumInteraction::phase" class="code">phase</a>) { }
+       bool IsValid() const { return <a href="#MediumInteraction::phase" class="code">phase</a> != nullptr; }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MediumInteractionPublicData-0">MediumInteraction Public Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1119" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1119"><i></i></a><div id="fragbit-1119" class="collapse"><div class="fragmentcode">       const PhaseFunction *phase;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MediumInteractionPublicMethods-0"></span><div class="fragmentname">&lt;&lt;MediumInteraction Public Methods&gt;&gt;=&nbsp;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#fragment-MediumInteractionPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><span class="anchor" id="MediumInteraction::MediumInteraction"></span><a href="#MediumInteraction" class="code">MediumInteraction</a>(const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;p, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;wo, Float time,
+                  const <a href="#Medium" class="code">Medium</a> *medium, const PhaseFunction *phase)
+    : <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(p, wo, time, medium), phase(phase) { }</div><p>
+
+
+</p>
+<p><tt>MediumInteraction</tt> adds a new <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction"><tt>PhaseFunction</tt></a> member variable to
+store the phase function associated with its position.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MediumInteractionPublicData-0"></span><div class="fragmentname">&lt;&lt;MediumInteraction Public Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const PhaseFunction *<span class="anchor" id="MediumInteraction::phase"></span>phase;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#HomogeneousMedium"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="HomogeneousMedium"></span><h3>11.3.2  Homogeneous Medium</h3><p>
+
+
+</p>
+<p>The <tt>HomogeneousMedium</tt> is the simplest possible medium; it represents
+a region of space with constant <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.382ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1025.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript normal a</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-61" d="M483 89c0 -81 -61 -95 -82 -95c-47 0 -74 42 -78 82c-19 -47 -65 -87 -131 -87c-63 0 -160 25 -160 106c0 44 25 96 100 130c63 30 133 33 184 36v37c0 89 -57 128 -106 128c-32 0 -81 -11 -108 -46c46 -1 51 -34 51 -46c0 -26 -18 -46 -46 -46c-26 0 -46 17 -46 47 c0 66 69 113 151 113c48 0 98 -16 137 -55c36 -37 36 -76 36 -118v-200c0 -5 4 -50 37 -50c11 0 36 6 36 64v56h25v-56zM316 140v100c-165 -6 -207 -89 -207 -144c0 -50 41 -85 90 -85c45 0 117 34 117 129Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-61" x="808" y="-213"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.208ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 950.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript normal s</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-73" x="808" y="-213"></use>
+</g>
+</svg>
+values throughout its extent.  It uses the Henyey&ndash;Greenstein phase
+function to represent scattering in the medium, also with a constant <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.109ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 477.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">g</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D454" d="M474 395c0 -7 -2 -12 -3 -18l-111 -444c-15 -60 -87 -138 -212 -138c-96 0 -133 20 -133 61c0 40 32 58 54 58c27 0 38 -19 38 -35c0 -17 -11 -43 -41 -52c28 -9 61 -10 80 -10c106 0 140 99 144 108l33 132l-1 1c-10 -11 -57 -58 -116 -58c-72 0 -133 59 -133 158 c0 144 124 284 238 284c40 0 75 -26 93 -63c4 36 31 43 41 43c17 0 29 -10 29 -27zM392 334c0 5 -14 86 -80 86c-42 0 -85 -40 -112 -89c-27 -51 -56 -169 -56 -217c0 -40 15 -92 65 -92c29 0 60 18 81 36c22 19 45 44 51 70l48 191c1 4 3 10 3 15Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D454" x="0" y="0"></use>
+</g>
+</svg>
+value. This medium was used for the images in
+Figure&nbsp;<a href="../Volume_Scattering/Phase_Functions.html#fig:hg-renderings">11.13</a> and&nbsp;<a href="#fig:media-boundary-and-no">11.14</a>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-HomogeneousMediumDeclarations-0"></span><div class="fragmentname">&lt;&lt;HomogeneousMedium Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="HomogeneousMedium"></span>HomogeneousMedium : public <a href="#Medium" class="code">Medium</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-HomogeneousMediumPublicMethods-0">HomogeneousMedium Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1120" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1120"><i></i></a><div id="fragbit-1120" class="collapse"><div class="fragmentcode">       HomogeneousMedium(const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;sigma_a, const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;sigma_s,
+               Float g)
+           : sigma_a(sigma_a), sigma_s(sigma_s), sigma_t(sigma_s + sigma_a),
+             g(g) { }
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Tr(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler) const;
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Sample(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, <a href="#MediumInteraction" class="code">MediumInteraction</a> *mi) const;</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-HomogeneousMediumPrivateData-0">HomogeneousMedium Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1121" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1121"><i></i></a><div id="fragbit-1121" class="collapse"><div class="fragmentcode">       const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> sigma_a, sigma_s, sigma_t;
+       const Float g;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-HomogeneousMediumPublicMethods-0"></span><div class="fragmentname">&lt;&lt;HomogeneousMedium Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">HomogeneousMedium(const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;sigma_a, const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;sigma_s,
+        Float g)
+    : sigma_a(sigma_a), sigma_s(sigma_s), sigma_t(sigma_s + sigma_a),
+      g(g) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-HomogeneousMediumPrivateData-0"></span><div class="fragmentname">&lt;&lt;HomogeneousMedium Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="HomogeneousMedium::sigma_a"></span>sigma_a, <span class="anchor" id="HomogeneousMedium::sigma_s"></span>sigma_s, <span class="anchor" id="HomogeneousMedium::sigma_t"></span>sigma_t;
+const Float <span class="anchor" id="HomogeneousMedium::g"></span>g;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Because <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.199ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 946.9 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript normal t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-74" d="M332 124c0 -64 -28 -135 -99 -135c-36 0 -129 12 -129 135v276h-85v22c98 4 128 111 129 193h25v-184h143v-31h-143v-278c0 -17 0 -108 67 -108c37 0 67 38 67 112v55h25v-57Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="808" y="-213"></use>
+</g>
+</svg> is constant throughout the medium, Beer&rsquo;s law,
+Equation&nbsp;(<a href="../Volume_Scattering/Volume_Scattering_Processes.html#eq:beer">11.3</a>), can be used to compute transmittance along the ray.
+However, implementation of the <tt>Tr()</tt> method is complicated by some
+subtleties of floating-point arithmetic.  As discussed in
+Section&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#sec:ieee-fp">3.9.1</a>, IEEE floating point provides a representation for
+infinity; in <tt>pbrt</tt>, this value, <a href="../Shapes/Managing_Rounding_Error.html#Infinity"><tt>Infinity</tt></a>, is used to initialize
+<a href="../Geometry_and_Transformations/Rays.html#Ray::tMax"><tt>Ray::tMax</tt></a> for rays leaving cameras and lights, which is useful for
+ray&ndash;intersection tests in that it ensures that any actual intersection, even
+if far along the ray, is detected as an intersection for a ray that hasn&rsquo;t
+intersected anything yet.
+
+</p>
+<p>However, the use of <a href="../Shapes/Managing_Rounding_Error.html#Infinity"><tt>Infinity</tt></a> for <a href="../Geometry_and_Transformations/Rays.html#Ray::tMax"><tt>Ray::tMax</tt></a> creates a small
+problem when applying Beer&rsquo;s law.  In principle, we just need to compute
+the parametric <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> range that the ray spans, multiply by the ray
+direction&rsquo;s length, and then multiply by <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.199ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 946.9 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript normal t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-74" d="M332 124c0 -64 -28 -135 -99 -135c-36 0 -129 12 -129 135v276h-85v22c98 4 128 111 129 193h25v-184h143v-31h-143v-278c0 -17 0 -108 67 -108c37 0 67 38 67 112v55h25v-57Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="808" y="-213"></use>
+</g>
+</svg>:
+</p>
+<div class="fragmentcode">    Float d = ray.tMax * ray.Length();
+    Spectrum tau = sigma_t * d;
+    return Exp(-tau);</div><p>
+
+
+</p>
+<p>The problem is that multiplying <tt>Infinity</tt> by zero results in the
+floating-point &ldquo;not a number&rdquo; (NaN) value, which propagates throughout
+all computations that use it.  For a ray that passes infinitely far through
+a medium with zero absorption for a given spectral channel, the above code
+would attempt to perform the multiplication <tt>0 * Infinity</tt> and would
+produce a NaN value rather than the expected transmittance of zero. The
+implementation here resolves this issue by clamping the ray segment length
+to the largest representable non-infinite floating-point value.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-HomogeneousMediumMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;HomogeneousMedium Method Definitions&gt;&gt;=&nbsp;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#fragment-HomogeneousMediumMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="HomogeneousMedium::Tr"></span>HomogeneousMedium::Tr(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler) const {
+    return <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::Exp" class="code">Exp</a>(-<a href="#HomogeneousMedium::sigma_t" class="code">sigma_t</a> * std::min(ray.tMax * ray.d.Length(), <a href="../Shapes/Managing_Rounding_Error.html#MaxFloat" class="code">MaxFloat</a>));
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x3DGrids"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x3DGrids"></span><h3>11.3.3  3D Grids</h3><p>
+
+
+</p>
+<p>The <a href="#GridDensityMedium"><tt>GridDensityMedium</tt></a> class stores medium densities at a regular 3D
+grid of positions, similar to the way that the <a href="../Texture/Image_Texture.html#ImageTexture"><tt>ImageTexture</tt></a>
+represents images with a 2D grid of samples.  These samples are
+interpolated to compute the density at positions between the sample points.
+The implementation of the <a href="#GridDensityMedium"><tt>GridDensityMedium</tt></a> is
+in <a href="https://github.com/mmp/pbrt-v3/tree/master/src/media/grid.h"><tt>media/grid.h</tt></a><span class="anchor" id="mediagrid.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/media/grid.cpp"><tt>media/grid.cpp</tt></a><span class="anchor" id="mediagrid.cpp"></span>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GridDensityMediumDeclarations-0"></span><div class="fragmentname">&lt;&lt;GridDensityMedium Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="GridDensityMedium"></span>GridDensityMedium : public <a href="#Medium" class="code">Medium</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-GridDensityMediumPublicMethods-0">GridDensityMedium Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1122" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1122"><i></i></a><div id="fragbit-1122" class="collapse"><div class="fragmentcode">       GridDensityMedium(const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;sigma_a, const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;sigma_s,
+               Float g, int <a href="#GridDensityMedium::nx" class="code">nx</a>, int <a href="#GridDensityMedium::ny" class="code">ny</a>, int nz, const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;mediumToWorld,
+               const Float *d)
+           : sigma_a(sigma_a), sigma_s(sigma_s), g(g), <a href="#GridDensityMedium::nx" class="code">nx</a>(<a href="#GridDensityMedium::nx" class="code">nx</a>), <a href="#GridDensityMedium::ny" class="code">ny</a>(<a href="#GridDensityMedium::ny" class="code">ny</a>), nz(nz),
+             WorldToMedium(<a href="../Utilities/Mathematical_Routines.html#Inverse" class="code">Inverse</a>(mediumToWorld)),
+             density(new Float[<a href="#GridDensityMedium::nx" class="code">nx</a> * <a href="#GridDensityMedium::ny" class="code">ny</a> * nz]) {
+           memcpy((Float *)density.get(), d, sizeof(Float) * <a href="#GridDensityMedium::nx" class="code">nx</a> * <a href="#GridDensityMedium::ny" class="code">ny</a> * nz);
+           &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#fragment-PrecomputevaluesforMonteCarlosamplingofmonoGridDensityMedium-0">Precompute values for Monte Carlo sampling of <tt>GridDensityMedium</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1123" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1123"><i></i></a><div id="fragbit-1123" class="collapse"><div class="fragmentcode">              <a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#GridDensityMedium::sigma_t" class="code">sigma_t</a> = (sigma_a + sigma_s)[0];
+              Float maxDensity = 0;
+              for (int i = 0; i &lt; nx * ny * nz; ++i)
+                  maxDensity = std::max(maxDensity, density[i]);
+              <a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#GridDensityMedium::invMaxDensity" class="code">invMaxDensity</a> = 1 / maxDensity;</div></div>
+       }
+       Float Density(const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;p) const;
+       Float D(const Point3i &amp;p) const {
+           Bounds3i sampleBounds(Point3i(0, 0, 0), Point3i(<a href="#GridDensityMedium::nx" class="code">nx</a>, <a href="#GridDensityMedium::ny" class="code">ny</a>, nz));
+           if (!<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::InsideExclusive" class="code">InsideExclusive</a>(p, sampleBounds))
+               return 0;
+           return density[(p.z * <a href="#GridDensityMedium::ny" class="code">ny</a> + p.y) * <a href="#GridDensityMedium::nx" class="code">nx</a> + p.x];
+       }
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Sample(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena,
+                       <a href="#MediumInteraction" class="code">MediumInteraction</a> *mi) const;
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Tr(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler) const;</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-GridDensityMediumPrivateData-0">GridDensityMedium Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1124" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1124"><i></i></a><div id="fragbit-1124" class="collapse"><div class="fragmentcode">       const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> sigma_a, sigma_s;
+       const Float g;
+       const int nx, ny, nz;
+       const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> WorldToMedium;
+       std::unique_ptr&lt;Float[]&gt; density;
+       Float sigma_t;
+       Float invMaxDensity;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The constructor takes a 3D array of user-supplied density values, thus
+allowing a variety of sources of data (physical simulation, CT scan, etc.).
+The smoke data set rendered in Figures&nbsp;<a href="../Volume_Scattering/Volume_Scattering_Processes.html#fig:smoke-absorption">11.2</a>,
+<a href="../Volume_Scattering/Volume_Scattering_Processes.html#fig:smoke-emission">11.5</a>, and&nbsp;<a href="../Volume_Scattering/Volume_Scattering_Processes.html#fig:smoke-inscattering">11.10</a> is represented
+with a <a href="#GridDensityMedium"><tt>GridDensityMedium</tt></a>. The caller also supplies baseline values of
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.382ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1025.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript normal a</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-61" d="M483 89c0 -81 -61 -95 -82 -95c-47 0 -74 42 -78 82c-19 -47 -65 -87 -131 -87c-63 0 -160 25 -160 106c0 44 25 96 100 130c63 30 133 33 184 36v37c0 89 -57 128 -106 128c-32 0 -81 -11 -108 -46c46 -1 51 -34 51 -46c0 -26 -18 -46 -46 -46c-26 0 -46 17 -46 47 c0 66 69 113 151 113c48 0 98 -16 137 -55c36 -37 36 -76 36 -118v-200c0 -5 4 -50 37 -50c11 0 36 6 36 64v56h25v-56zM316 140v100c-165 -6 -207 -89 -207 -144c0 -50 41 -85 90 -85c45 0 117 34 117 129Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-61" x="808" y="-213"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.208ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 950.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript normal s</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-73" x="808" y="-213"></use>
+</g>
+</svg>, and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.109ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 477.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">g</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D454" d="M474 395c0 -7 -2 -12 -3 -18l-111 -444c-15 -60 -87 -138 -212 -138c-96 0 -133 20 -133 61c0 40 32 58 54 58c27 0 38 -19 38 -35c0 -17 -11 -43 -41 -52c28 -9 61 -10 80 -10c106 0 140 99 144 108l33 132l-1 1c-10 -11 -57 -58 -116 -58c-72 0 -133 59 -133 158 c0 144 124 284 238 284c40 0 75 -26 93 -63c4 36 31 43 41 43c17 0 29 -10 29 -27zM392 334c0 5 -14 86 -80 86c-42 0 -85 -40 -112 -89c-27 -51 -56 -169 -56 -217c0 -40 15 -92 65 -92c29 0 60 18 81 36c22 19 45 44 51 70l48 191c1 4 3 10 3 15Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D454" x="0" y="0"></use>
+</g>
+</svg> to the constructor,
+which does the usual initialization of the basic scattering
+properties and makes a local copy of the density values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GridDensityMediumPublicMethods-0"></span><div class="fragmentname">&lt;&lt;GridDensityMedium Public Methods&gt;&gt;=&nbsp;<a href="#fragment-GridDensityMediumPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><span class="anchor" id="GridDensityMedium::GridDensityMedium"></span>GridDensityMedium(const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;sigma_a, const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;sigma_s,
+        Float g, int nx, int ny, int nz, const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;mediumToWorld,
+        const Float *d)
+    : sigma_a(sigma_a), sigma_s(sigma_s), g(g), nx(nx), ny(ny), nz(nz),
+      WorldToMedium(<a href="../Utilities/Mathematical_Routines.html#Inverse" class="code">Inverse</a>(mediumToWorld)),
+      density(new Float[nx * ny * nz]) {
+    memcpy((Float *)density.get(), d, sizeof(Float) * nx * ny * nz);
+    &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#fragment-PrecomputevaluesforMonteCarlosamplingofmonoGridDensityMedium-0">Precompute values for Monte Carlo sampling of <tt>GridDensityMedium</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1125" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1125"><i></i></a><div id="fragbit-1125" class="collapse"><div class="fragmentcode">       <a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#GridDensityMedium::sigma_t" class="code">sigma_t</a> = (sigma_a + sigma_s)[0];
+       Float maxDensity = 0;
+       for (int i = 0; i &lt; nx * ny * nz; ++i)
+           maxDensity = std::max(maxDensity, density[i]);
+       <a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#GridDensityMedium::invMaxDensity" class="code">invMaxDensity</a> = 1 / maxDensity;</div></div>
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GridDensityMediumPrivateData-0"></span><div class="fragmentname">&lt;&lt;GridDensityMedium Private Data&gt;&gt;=&nbsp;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#fragment-GridDensityMediumPrivateData-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="GridDensityMedium::sigma_a"></span>sigma_a, <span class="anchor" id="GridDensityMedium::sigma_s"></span>sigma_s;
+const Float <span class="anchor" id="GridDensityMedium::g"></span>g;
+const int <span class="anchor" id="GridDensityMedium::nx"></span>nx, <span class="anchor" id="GridDensityMedium::ny"></span>ny, <span class="anchor" id="GridDensityMedium::nz"></span>nz;
+const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> <span class="anchor" id="GridDensityMedium::WorldToMedium"></span>WorldToMedium;
+std::unique_ptr&lt;Float[]&gt; <span class="anchor" id="HeterogeousMedium::density"></span>density;</div><p>
+
+
+</p>
+<p>The <tt>Density()</tt> method of <a href="#GridDensityMedium"><tt>GridDensityMedium</tt></a> is called by
+<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#GridDensityMedium::Tr"><tt>GridDensityMedium::Tr()</tt></a>; it uses the provided samples to reconstruct
+the volume density function at the given point, which will
+already have been transformed into local coordinates using <tt>WorldToMedium</tt>.
+In turn, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.382ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1025.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript normal a</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-61" d="M483 89c0 -81 -61 -95 -82 -95c-47 0 -74 42 -78 82c-19 -47 -65 -87 -131 -87c-63 0 -160 25 -160 106c0 44 25 96 100 130c63 30 133 33 184 36v37c0 89 -57 128 -106 128c-32 0 -81 -11 -108 -46c46 -1 51 -34 51 -46c0 -26 -18 -46 -46 -46c-26 0 -46 17 -46 47 c0 66 69 113 151 113c48 0 98 -16 137 -55c36 -37 36 -76 36 -118v-200c0 -5 4 -50 37 -50c11 0 36 6 36 64v56h25v-56zM316 140v100c-165 -6 -207 -89 -207 -144c0 -50 41 -85 90 -85c45 0 117 34 117 129Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-61" x="808" y="-213"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.208ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 950.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript normal s</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-73" x="808" y="-213"></use>
+</g>
+</svg> will be scaled by the
+interpolated density at the point.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GridDensityMediumMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;GridDensityMedium Method Definitions&gt;&gt;=&nbsp;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#fragment-GridDensityMediumMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float GridDensityMedium::<span class="anchor" id="GridDensityMedium::Density"></span>Density(const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;p) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Computevoxelcoordinatesandoffsetsformonop-0">Compute voxel coordinates and offsets for <tt>p</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1126" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1126"><i></i></a><div id="fragbit-1126" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pSamples(p.x * <a href="#GridDensityMedium::nx" class="code">nx</a> - .5f, p.y * <a href="#GridDensityMedium::ny" class="code">ny</a> - .5f, p.z * <a href="#GridDensityMedium::nz" class="code">nz</a> - .5f);
+       Point3i pi = (Point3i)<a href="../Geometry_and_Transformations/Points.html#Point3::Floor" class="code">Floor</a>(pSamples);
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> d = pSamples - (<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>)pi;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Trilinearlyinterpolatedensityvaluestocomputelocaldensity-0">Trilinearly interpolate density values to compute local density</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1127" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1127"><i></i></a><div id="fragbit-1127" class="collapse"><div class="fragmentcode">       Float d00 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.x, <a href="#GridDensityMedium::D" class="code">D</a>(pi),                 <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(1,0,0)));
+       Float d10 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.x, <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(0,1,0)), <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(1,1,0)));
+       Float d01 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.x, <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(0,0,1)), <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(1,0,1)));
+       Float d11 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.x, <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(0,1,1)), <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(1,1,1)));
+       Float d0 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.y, d00, d10);
+       Float d1 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.y, d01, d11);
+       return <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.z, d0, d1);</div></div>
+}</div><p>
+
+
+</p>
+<p>The grid samples are assumed to be over a canonical <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.707ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2457.1 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-bracket cubed</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+<g transform="translate(1724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-33" x="393" y="513"></use>
+</g>
+</g>
+</svg> domain.  (The
+<tt>WorldToMedium</tt> transformation should be used to place the
+<tt>GridDensityMedium</tt> in the scene.)  To interpolate the samples around
+a point, the <tt>Density()</tt> method first computes the coordinates of the
+point with respect to the sample coordinates and the distances from the
+point to the samples below it (along the lines of what was
+done in the <a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film"><tt>Film</tt></a> and <a href="../Texture/Image_Texture.html#MIPMap"><tt>MIPMap</tt></a>&mdash;see also
+Section&nbsp;<a href="../Sampling_and_Reconstruction/Sampling_Theory.html#sec:pixel-concepts">7.1.7</a>).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computevoxelcoordinatesandoffsetsformonop-0"></span><div class="fragmentname">&lt;&lt;Compute voxel coordinates and offsets for <tt>p</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pSamples(p.x * <a href="#GridDensityMedium::nx" class="code">nx</a> - .5f, p.y * <a href="#GridDensityMedium::ny" class="code">ny</a> - .5f, p.z * <a href="#GridDensityMedium::nz" class="code">nz</a> - .5f);
+Point3i pi = (Point3i)<a href="../Geometry_and_Transformations/Points.html#Point3::Floor" class="code">Floor</a>(pSamples);
+<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> d = pSamples - (<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>)pi;</div><p>
+
+
+</p>
+<p>The distances <tt>d</tt> can be used directly in a series of invocations of
+<a href="../Utilities/Mathematical_Routines.html#Lerp"><tt>Lerp()</tt></a> to trilinearly interpolate the density at the sample point:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Trilinearlyinterpolatedensityvaluestocomputelocaldensity-0"></span><div class="fragmentname">&lt;&lt;Trilinearly interpolate density values to compute local density&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float d00 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.x, <a href="#GridDensityMedium::D" class="code">D</a>(pi),                 <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(1,0,0)));
+Float d10 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.x, <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(0,1,0)), <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(1,1,0)));
+Float d01 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.x, <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(0,0,1)), <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(1,0,1)));
+Float d11 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.x, <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(0,1,1)), <a href="#GridDensityMedium::D" class="code">D</a>(pi+Vector3i(1,1,1)));
+Float d0 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.y, d00, d10);
+Float d1 = <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.y, d01, d11);
+return <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(d.z, d0, d1);</div><p>
+
+
+</p>
+<p>The <tt>D()</tt> utility method returns the density at the given integer
+sample position.  Its only tasks are to handle out-of-bounds sample
+positions and to compute the appropriate array offset for the given sample.
+Unlike <a href="../Texture/Image_Texture.html#MIPMap"><tt>MIPMap</tt></a>s, where a variety of behavior is useful in the case of
+out-of-bounds coordinates, here it&rsquo;s reasonable to always return a zero
+density for them: the density is defined over a
+particular domain, and it&rsquo;s reasonable that points outside of it should
+have zero density.
+
+</p>
+<p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GridDensityMediumPublicMethods-1"></span><div class="fragmentname">&lt;&lt;GridDensityMedium Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-GridDensityMediumPublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="GridDensityMedium::D"></span>D(const Point3i &amp;p) const {
+    Bounds3i sampleBounds(Point3i(0, 0, 0), Point3i(<a href="#GridDensityMedium::nx" class="code">nx</a>, <a href="#GridDensityMedium::ny" class="code">ny</a>, nz));
+    if (!<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::InsideExclusive" class="code">InsideExclusive</a>(p, sampleBounds))
+        return 0;
+    return density[(p.z * <a href="#GridDensityMedium::ny" class="code">ny</a> + p.y) * <a href="#GridDensityMedium::nx" class="code">nx</a> + p.x];
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Volume_Scattering/The_BSSRDF.html">Volume Scattering / The BSSRDF</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,253 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="/3ed-2018/pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Scene Description Interface</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="/3ed-2018/contents.html"><img src="/3ed-2018/pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="contents.html">Physically Based Rendering: </a></li>
+    <li class="nav-item"><a class="nav-link" href="#">Scene Description Interface</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="/3ed-2018/Utilities/Exercises.html">(Previous: Exercises)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="chap:API"></span><h1>B Scene Description Interface</h1><p>
+
+
+
+</p>
+<p>This appendix describes the application programming interface (API) that is
+used to describe the scene to be rendered to <tt>pbrt</tt>.  Users of the renderer
+typically don&rsquo;t call the functions in this interface directly but instead
+describe their scenes using the text file format described in documentation
+on the <tt>pbrt</tt> Web site (<a href="http://pbrt.org">pbrt.org</a>).  The statements in these text files
+have a direct correspondence to the API functions described here.
+
+</p>
+<p>The need for such an interface to the renderer is clear: there must be a
+convenient way in which all of the properties of the scene to be rendered can
+be communicated to the renderer.  The interface should be well defined and
+general purpose, so that future extensions to the system fit into its structure
+cleanly.  It shouldn&rsquo;t be too complicated, so that it&rsquo;s easy to describe
+scenes, but it should be expressive enough that it doesn&rsquo;t leave any of the
+renderer&rsquo;s capabilities hidden.
+
+</p>
+<p>A key decision to make when designing a rendering API is whether to expose the
+system&rsquo;s internal algorithms and structures or offer a high-level abstraction
+for describing the scene.  These have historically been the two main approaches to scene
+description in graphics: the interface may specify <em>how</em> to render the
+scene, configuring a rendering pipeline at a low level using deep knowledge of
+the renderer&rsquo;s internal algorithms, or it may specify <em>what</em> the scene&rsquo;s
+objects, lights, and material properties are and leave it to the renderer to
+decide how to transform that description into the best possible image.
+
+</p>
+<p>The first approach has been successfully used for interactive graphics.  In
+APIs such as OpenGL&reg; or Direct3D&reg;, it is not
+possible to just mark an object as a
+mirror and have reflections appear automatically; rather, the user must choose
+an algorithm for rendering reflections, render the scene multiple times
+(e.g.,
+to generate an environment map), store those images in a texture, and then
+configure the graphics pipeline to use the environment map when rendering the
+reflective object.  The advantage of this approach is that the full flexibility
+of the rendering pipeline is exposed to the user, making it possible to
+carefully control the actual computation being done and to use the pipeline
+very efficiently.  Furthermore, because APIs like these impose a very thin
+abstraction layer between the user and the renderer, the user can be confident
+that unexpected inefficiencies won&rsquo;t be introduced by the API.
+
+</p>
+<p>The second approach to scene description, based on describing the geometry,
+materials, and lights at a higher level of abstraction, has been most
+successful for applications like high-quality offline rendering.  There,
+users are generally willing to cede control of the low-level rendering
+details to the renderer in exchange for the ability to specify the scene&rsquo;s
+properties at a high level.  An important advantage of the high-level
+approach is that the implementations of these renderers have greater
+freedom to make major changes to the internal algorithms of the system,
+since the API exposes less of them.
+
+</p>
+<p>For <tt>pbrt</tt>, we will use an interface based on the descriptive approach.  Because
+<tt>pbrt</tt> is fundamentally physically based, the API is necessarily less flexible in
+some ways than APIs for many nonphysically based rendering packages.  For
+example, it is not possible to have some lights illuminate only some objects
+in the scene.
+
+</p>
+<p>Another key decision to make in graphics API design is whether to use an
+immediate mode or a retained mode style.  In an immediate mode API, the user
+specifies the scene via a stream of commands that the renderer processes as
+they arrive.  In general, the user cannot make changes to the scene
+description data already specified (e.g., &ldquo;change the material of that sphere I
+described previously from plastic to glass&rdquo;); once it has been given to the
+renderer, the information is no longer accessible to the user.  Retained mode
+APIs give the user some degree of access to the data structures that the
+renderer has built to represent the scene.  The user can then modify the scene description in a
+variety of ways before finally instructing the renderer to render the scene.
+
+</p>
+<p>Immediate mode has been very successful for interactive graphics APIs since
+it allows graphics hardware to draw the objects in the scene as they are
+supplied by the user.  Since they do not need to build data structures to
+store the scene and since they can apply techniques like immediately
+culling objects that are outside of the viewing frustum without worrying
+that the user will change the camera position before rendering, these APIs
+have been key to high-performance interactive graphics.
+
+</p>
+<p>For ray-tracing-based renderers like <tt>pbrt</tt>, where the entire scene must be
+described and stored in memory before rendering can begin, some of these
+advantages of an immediate mode interface aren&rsquo;t applicable.  Nonetheless, we
+will use immediate mode semantics in our API, since it leads to a clean and
+straightforward scene description language.  This choice makes it more
+difficult to use <tt>pbrt</tt> for applications like quickly rerendering a scene after
+making a small change to it (e.g., by moving a light source) and may make
+rendering animations less straightforward, since the entire scene needs to be
+redescribed for each frame of an animation.  Adding a retained mode interface
+to <tt>pbrt</tt> would be a challenging but useful project.
+
+</p>
+<p><tt>pbrt</tt>&rsquo;s rendering API consists of just over 40 carefully chosen functions,
+all of which are declared in the <a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/api.h"><tt>core/api.h</tt></a> header file.  The
+implementation of these functions is in <a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/api.cpp"><tt>core/api.cpp</tt></a>.  This appendix
+will focus on the general process of turning the API function calls into
+instances of the classes that represent scenes.
+<span class="anchor" id="coreapi.h"></span>
+<span class="anchor" id="coreapi.cpp"></span>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="Scene_Description_Interface/Parameter_Sets.html">Scene Description Interface / Parameter Sets</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

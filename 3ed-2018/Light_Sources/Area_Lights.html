@@ -1,0 +1,406 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Area Lights</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources.html">Light Sources</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Area Lights</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources/Distant_Lights.html">(Previous: Distant Lights)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:area-lights"></span><h2>12.5 Area Lights</h2><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p>Area lights are light sources defined by one or more <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a>s that emit
+light from their surface, with some directional distribution of radiance at
+each point on the surface.  In general, computing radiometric quantities
+related to area lights requires computing integrals over the surface of the
+light that often can&rsquo;t be computed in closed form.  This issue is addressed
+with the Monte Carlo integration techniques in
+Section&nbsp;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#sec:sampling-lights">14.2</a>.  The reward for this complexity (and
+computational expense) is soft shadows and more realistic lighting effects,
+rather than the hard shadows and stark lighting that come from point
+lights. (See Figure&nbsp;<a href="#fig:light-arealight-scene-back">12.16</a>.)
+
+</p>
+<p></p>
+<span class="anchor" id="fig:light-arealight-scene-back"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+<div class="figure-row">
+<img src="area-scene-wide.png" style="max-width: 100%; height: auto;" width=900 height=900>
+</div>
+<p>
+
+</p>
+<figcaption class="caption">Figure 12.16: Wider View of the Lighting
+Example Scene. <span class="legend"> The dragon is illuminated by a disk area light source
+directly above it.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Figure&nbsp;<a href="#fig:light-arealight-scene">12.17</a> shows the effect of varying the size
+of an area light source used to illuminate the dragon; compare its soft look to
+illumination from a point light in Figure&nbsp;<a href="../Light_Sources/Point_Lights.html#fig:light-pointlight">12.6</a>.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:light-arealight-scene"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 102.667%;  position:relative;">
+<div id="Small_disk51" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('Small_disk51'), {
+  title: 'Small_disk51', children: [
+ { title: 'Small disk', image: 'dragon-area-small.png' },  { title: 'Large disk', image: 'dragon-area-large.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 12.17: Dragon Model Illuminated by Disk
+Area Lights. <span class="legend"> (1)&nbsp;The disk&rsquo;s radius is relatively small; the
+shadow has soft penumbrae, but otherwise the image looks similar to the one
+with a point light. (2)&nbsp;The effect of using a much
+larger disk: not only have the penumbrae become much larger, to the point
+of nearly eliminating the fully in-shadow areas, but notice how areas like
+the neck of the dragon and its jaw have noticeably different appearances
+when illuminated from a wider range of directions.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>The <a href="#AreaLight"><tt>AreaLight</tt></a> class is an abstract base class that inherits from
+<a href="../Light_Sources/Light_Interface.html#Light"><tt>Light</tt></a>.  Implementations of area lights should inherit from it.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightDeclarations-2"></span><div class="fragmentname">&lt;&lt;Light Declarations&gt;&gt;+=&nbsp;<a href="Light_Interface.html#fragment-LightDeclarations-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="AreaLight"></span>AreaLight : public <a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AreaLightInterface-0">AreaLight Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1178" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1178"><i></i></a><div id="fragbit-1178" class="collapse"><div class="fragmentcode">       <a href="#AreaLight" class="code">AreaLight</a>(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;LightToWorld, const MediumInterface &amp;medium, int nSamples)
+           : <a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>((int)<a href="../Light_Sources/Light_Interface.html#LightFlags" class="code">LightFlags</a>::Area, LightToWorld, medium, nSamples) { }
+       virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> L(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;intr, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;w) const = 0;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><a href="#AreaLight"><tt>AreaLight</tt></a> adds a single new method to the general <a href="../Light_Sources/Light_Interface.html#Light"><tt>Light</tt></a> interface,
+<tt>AreaLight::L()</tt>.  Implementations are given a point on the surface of
+the light represented by an <a href="../Geometry_and_Transformations/Interactions.html#Interaction"><tt>Interaction</tt></a> and should evaluate the area
+light&rsquo;s emitted radiance,&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.583ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 681.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript Superscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+</g>
+</svg>, in the given outgoing direction.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AreaLightInterface-0"></span><div class="fragmentname">&lt;&lt;AreaLight Interface&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="AreaLight::L"></span>L(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;intr, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;w) const = 0;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>For convenience, there is a method in the <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> class that
+makes it easy to compute the emitted radiance at a surface point
+intersected by a ray.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SurfaceInteractionMethodDefinitions-4"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Method Definitions&gt;&gt;+=&nbsp;<a href="../Texture/Sampling_and_Antialiasing.html#fragment-SurfaceInteractionMethodDefinitions-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a>::<span class="anchor" id="SurfaceInteraction::Le"></span>Le(const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;w) const {
+    const <a href="#AreaLight" class="code">AreaLight</a> *area = primitive-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive::GetAreaLight" class="code">GetAreaLight</a>();
+    return area ? area-&gt;<a href="#AreaLight::L" class="code">L</a>(*this, w) : <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.f);
+}</div><p>
+
+
+</p>
+<p><a href="#DiffuseAreaLight"><tt>DiffuseAreaLight</tt></a> implements a basic area light source with a uniform
+spatial and directional radiance distribution.  The surface it emits from
+is defined by a <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a>.  It only emits light on the side of the
+surface with outward-facing surface normal; there is no emission from the
+other side.  (The <a href="../Shapes/Basic_Shape_Interface.html#Shape::reverseOrientation"><tt>Shape::reverseOrientation</tt></a> value can be set to
+<tt>true</tt> to cause the light to be emitted from the other side of the
+surface instead.)  <a href="#DiffuseAreaLight"><tt>DiffuseAreaLight</tt></a> is defined in the files
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/lights/diffuse.h"><tt>lights/diffuse.h</tt></a><span class="anchor" id="lightsdiffuse.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/lights/diffuse.cpp"><tt>lights/diffuse.cpp</tt></a><span class="anchor" id="lightsdiffuse.cpp"></span>.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fragment-DiffuseAreaLightDeclarations-0"></span><div class="fragmentname">&lt;&lt;DiffuseAreaLight Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="DiffuseAreaLight"></span>DiffuseAreaLight : public <a href="#AreaLight" class="code">AreaLight</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-DiffuseAreaLightPublicMethods-0">DiffuseAreaLight Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1179" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1179"><i></i></a><div id="fragbit-1179" class="collapse"><div class="fragmentcode">       DiffuseAreaLight(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;LightToWorld, const MediumInterface &amp;mediumInterface,
+           const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;Le, int nSamples,
+           const std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt; &amp;shape);
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> L(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;intr, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;w) const {
+           return <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(intr.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::n" class="code">n</a>, w) &gt; 0.f ? <a href="#DiffuseAreaLight::Lemit" class="code">Lemit</a> : <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.f);
+       }
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Power() const;
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Sample_Li(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;ref, const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;u, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *wo,
+           Float *pdf, <a href="../Light_Sources/Light_Interface.html#VisibilityTester" class="code">VisibilityTester</a> *vis) const;
+       Float Pdf_Li(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;) const;
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Sample_Le(const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;u1, const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;u2,
+                         Float time, <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> *ray, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> *nLight, Float *pdfPos, Float *pdfDir) const;
+       void Pdf_Le(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;, const <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> &amp;, Float *pdfPos, Float *pdfDir) const;</div></div>
+protected:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-DiffuseAreaLightProtectedData-0">DiffuseAreaLight Protected Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1180" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1180"><i></i></a><div id="fragbit-1180" class="collapse"><div class="fragmentcode">       const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Lemit;
+       std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt; shape;
+       const Float area;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DiffuseAreaLightMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;DiffuseAreaLight Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-DiffuseAreaLightMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">DiffuseAreaLight::DiffuseAreaLight(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;LightToWorld,
+        const MediumInterface &amp;mediumInterface, const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;<a href="#DiffuseAreaLight::Lemit" class="code">Lemit</a>,
+        int nSamples, const std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt; &amp;<a href="#DiffuseAreaLight::shape" class="code">shape</a>)
+    : <a href="#AreaLight" class="code">AreaLight</a>(LightToWorld, mediumInterface, nSamples), <a href="#DiffuseAreaLight::Lemit" class="code">Lemit</a>(<a href="#DiffuseAreaLight::Lemit" class="code">Lemit</a>),
+      <a href="#DiffuseAreaLight::shape" class="code">shape</a>(<a href="#DiffuseAreaLight::shape" class="code">shape</a>), <a href="#DiffuseAreaLight::area" class="code">area</a>(<a href="#DiffuseAreaLight::shape" class="code">shape</a>-&gt;<a href="../Shapes/Basic_Shape_Interface.html#Shape::Area" class="code">Area</a>()) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DiffuseAreaLightProtectedData-0"></span><div class="fragmentname">&lt;&lt;DiffuseAreaLight Protected Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="DiffuseAreaLight::Lemit"></span>Lemit;
+std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt; <span class="anchor" id="DiffuseAreaLight::shape"></span>shape;
+const Float <span class="anchor" id="DiffuseAreaLight::area"></span>area;</div><p>
+
+
+</p>
+<p>Because this area light implementation emits light from only one side of
+the shape&rsquo;s surface, its <tt>L()</tt> method just makes sure that the
+outgoing direction lies in the same hemisphere as the normal.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DiffuseAreaLightPublicMethods-0"></span><div class="fragmentname">&lt;&lt;DiffuseAreaLight Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="DiffuseAreaLight::L"></span>L(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;intr, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;w) const {
+    return <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(intr.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::n" class="code">n</a>, w) &gt; 0.f ? <a href="#DiffuseAreaLight::Lemit" class="code">Lemit</a> : <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.f);
+}</div><p>
+
+
+</p>
+<p>The <a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#DiffuseAreaLight::Sample_Li"><tt>DiffuseAreaLight::Sample_Li()</tt></a> method isn&rsquo;t as straightforward as it has
+been for the other light sources described so far.  Specifically, at each point
+in the scene, radiance from area lights can be incident from many
+directions, not just a single direction as was the case for the other
+lights (Figure&nbsp;<a href="#fig:arealight-many-directions">12.18</a>).  This leads to the
+question of which direction should be chosen for this method.  We will defer
+answering this question and providing an implementation of this method
+until Section&nbsp;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#sec:sampling-lights">14.2</a>, after Monte Carlo integration has
+been introduced.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:arealight-many-directions"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="AreaLight%20multiple%20directions.svg" title=""><img src="AreaLight%20multiple%20directions.svg" width=438 height=327 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 12.18: <span class="legend"> An area light casts incident
+illumination along many directions, rather than from a single direction.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Emitted power from an area light with uniform emitted radiance over the
+surface can be directly computed in closed form:
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DiffuseAreaLightMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;DiffuseAreaLight Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-DiffuseAreaLightMethodDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#fragment-DiffuseAreaLightMethodDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="DiffuseAreaLight::Power"></span>DiffuseAreaLight::Power() const {
+    return <a href="#DiffuseAreaLight::Lemit" class="code">Lemit</a> * <a href="#DiffuseAreaLight::area" class="code">area</a> * <a href="../Utilities/Main_Include_File.html#Pi" class="code">Pi</a>;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Light_Sources/Infinite_Area_Lights.html">Light Sources / Infinite Area Lights</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

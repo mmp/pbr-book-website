@@ -1,0 +1,984 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Material Interface and Implementations</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Materials.html">Materials</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Material Interface and Implementations</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Materials/BSDFs.html">(Previous: BSDFs)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:material-interface"></span><h2>9.2 Material Interface and Implementations</h2><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>The abstract <a href="#Material"><tt>Material</tt></a> class defines the interface that material
+implementations must provide.  The <a href="#Material"><tt>Material</tt></a> class is defined in the
+files <a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/material.h"><tt>core/material.h</tt></a> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/material.cpp"><tt>core/material.cpp</tt></a>.<span class="anchor" id="corematerial.h"></span><span class="anchor" id="corematerial.cpp"></span> 
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MaterialDeclarations-0"></span><div class="fragmentname">&lt;&lt;Material Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="Material"></span>Material {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MaterialInterface-0">Material Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-966" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-966"><i></i></a><div id="fragbit-966" class="collapse"><div class="fragmentcode">       virtual void ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si,
+           <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, TransportMode mode,
+           bool allowMultipleLobes) const = 0;
+       virtual ~<a href="#Material" class="code">Material</a>();
+       static void Bump(const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;d, <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si);</div></div>
+};</div><p>
+
+
+</p>
+<p>A single method must be implemented by <tt>Material</tt>s:
+<tt>ComputeScatteringFunctions()</tt>.  This method is given a
+<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> object that contains geometric properties at an
+intersection point on the surface of a shape. The method&rsquo;s implementation
+is responsible
+for determining the reflective properties at the point and initializing the
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf"><tt>SurfaceInteraction::bsdf</tt></a> member variable with a corresponding
+<a href="../Materials/BSDFs.html#BSDF"><tt>BSDF</tt></a> class instance.  If the material includes subsurface scattering,
+then the <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bssrdf"><tt>SurfaceInteraction::bssrdf</tt></a> member should be initialized as
+well.  (It should otherwise be left unchanged from its default
+<tt>nullptr</tt> value.) The <a href="../Volume_Scattering/The_BSSRDF.html#BSSRDF"><tt>BSSRDF</tt></a> class that represents subsurface
+scattering functions is defined later, in Section&nbsp;<a href="../Volume_Scattering/The_BSSRDF.html#sec:bssrdf-class">11.4</a>,
+after the foundations of volumetric scattering have been introduced.
+
+</p>
+<p>Three additional parameters are passed to this method:
+</p>
+<ul>
+<li>  A <a href="../Utilities/Memory_Management.html#MemoryArena"><tt>MemoryArena</tt></a>, which should be used to allocate memory for
+<tt>BSDF</tt>s and <tt>BSSRDF</tt>s.
+
+<li> The <a href="../Light_Transport_III_Bidirectional_Methods/The_Path-Space_Measurement_Equation.html#TransportMode"><tt>TransportMode</tt></a> parameter, which indicates whether the surface
+intersection was found along a path starting from the camera or one
+starting from a light source; this detail has implications for how BSDFs
+and BSSRDFs are evaluated&mdash;see Section&nbsp;<a href="../Light_Transport_III_Bidirectional_Methods/The_Path-Space_Measurement_Equation.html#sec:adjoint-transport">16.1</a>.
+
+<li> Finally, the <tt>allowMultipleLobes</tt> parameter indicates whether
+the material should use <a href="../Reflection_Models/Basic_Interface.html#BxDF"><tt>BxDF</tt></a>s that aggregate multiple types of
+scattering into a single <tt>BxDF</tt> when such <tt>BxDF</tt>s are available.
+(An example of such a <tt>BxDF</tt> is <a href="../Reflection_Models/Specular_Reflection_and_Transmission.html#FresnelSpecular"><tt>FresnelSpecular</tt></a>, which
+includes both specular reflection and transmission.)  These <a href="../Reflection_Models/Basic_Interface.html#BxDF"><tt>BxDF</tt></a>s can
+improve the quality of final results when used with Monte Carlo light
+transport algorithms but can introduce noise in images when used with the
+<a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#DirectLightingIntegrator"><tt>DirectLightingIntegrator</tt></a> and <a href="../Introduction/pbrt_System_Overview.html#WhittedIntegrator"><tt>WhittedIntegrator</tt></a>.  Therefore, the
+<a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a> is allowed to control whether such <tt>BxDF</tt>s are used
+via this parameter.
+</ul><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MaterialInterface-0"></span><div class="fragmentname">&lt;&lt;Material Interface&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">virtual void <span class="anchor" id="Material::ComputeScatteringFunctions"></span>ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si,
+    <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, TransportMode mode,
+    bool allowMultipleLobes) const = 0;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>Since the usual interface to the intersection point used by
+<a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a>s is through an instance of the <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a>
+class, we will add a convenience method <tt>ComputeScatteringFunctions()</tt>
+to that class.  Its implementation first calls the
+<tt>SurfaceInteraction</tt>&rsquo;s <tt>ComputeDifferentials()</tt> method to compute
+information about the projected size of the surface area around the
+intersection on the image plane for use in texture antialiasing. Next, it
+forwards the request to the <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a>, which in turn will call the
+corresponding <tt>ComputeScatteringFunctions()</tt> method of its
+<a href="#Material"><tt>Material</tt></a>.  (See, for example, the
+<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive::ComputeScatteringFunctions"><tt>GeometricPrimitive::ComputeScatteringFunctions()</tt></a> implementation.)
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fragment-SurfaceInteractionMethodDefinitions-2"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Method Definitions&gt;&gt;+=&nbsp;<a href="../Geometry_and_Transformations/Interactions.html#fragment-SurfaceInteractionMethodDefinitions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Texture/Sampling_and_Antialiasing.html#fragment-SurfaceInteractionMethodDefinitions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a>::<span class="anchor" id="SurfaceInteraction::ComputeScatteringFunctions"></span><a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive::ComputeScatteringFunctions" class="code">ComputeScatteringFunctions</a>(
+        const RayDifferential &amp;ray, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena,
+        bool allowMultipleLobes, TransportMode mode) {
+    <a href="../Texture/Sampling_and_Antialiasing.html#SurfaceInteraction::ComputeDifferentials" class="code">ComputeDifferentials</a>(ray);
+    primitive-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive::ComputeScatteringFunctions" class="code">ComputeScatteringFunctions</a>(this, arena, mode,
+        allowMultipleLobes);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#MatteMaterial"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="MatteMaterial"></span><h3>9.2.1  Matte Material</h3><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="#MatteMaterial"><tt>MatteMaterial</tt></a> material is defined in <a href="https://github.com/mmp/pbrt-v3/tree/master/src/materials/matte.h"><tt>materials/matte.h</tt></a>
+<span class="anchor" id="materialsmatte.h"></span> and
+<span class="anchor" id="materials.matte.cpp"></span><a href="https://github.com/mmp/pbrt-v3/tree/master/src/materials/matte.cpp"><tt>materials/matte.cpp</tt></a>. It is the
+simplest material in <tt>pbrt</tt> and describes a purely diffuse surface.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MatteMaterialDeclarations-0"></span><div class="fragmentname">&lt;&lt;MatteMaterial Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="MatteMaterial"></span>MatteMaterial : public <a href="#Material" class="code">Material</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MatteMaterialPublicMethods-0">MatteMaterial Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-967" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-967"><i></i></a><div id="fragbit-967" class="collapse"><div class="fragmentcode">       MatteMaterial(const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; &amp;<a href="#MatteMaterial::Kd" class="code">Kd</a>,
+                     const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#MatteMaterial::sigma" class="code">sigma</a>,
+                     const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>)
+           : <a href="#MatteMaterial::Kd" class="code">Kd</a>(<a href="#MatteMaterial::Kd" class="code">Kd</a>), <a href="#MatteMaterial::sigma" class="code">sigma</a>(<a href="#MatteMaterial::sigma" class="code">sigma</a>), <a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>(<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>) { }
+       void ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena,
+           TransportMode mode, bool allowMultipleLobes) const;</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MatteMaterialPrivateData-0">MatteMaterial Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-968" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-968"><i></i></a><div id="fragbit-968" class="collapse"><div class="fragmentcode">       std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; Kd;
+       std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; sigma, bumpMap;</div></div>
+};</div><p>
+
+
+</p>
+<p>This
+material is parameterized by a spectral diffuse reflection value,
+<tt>Kd</tt>, and a scalar roughness value, <tt>sigma</tt>.  If <tt>sigma</tt> has
+the value zero at the point on a surface, <a href="#MatteMaterial"><tt>MatteMaterial</tt></a> creates a
+<a href="../Reflection_Models/Lambertian_Reflection.html#LambertianReflection"><tt>LambertianReflection</tt></a> BRDF; otherwise, the <a href="../Reflection_Models/Microfacet_Models.html#OrenNayar"><tt>OrenNayar</tt></a> model is
+used.  Like all of the other <a href="#Material"><tt>Material</tt></a> implementations in this
+chapter, it also takes an optional scalar texture that defines an offset
+function over the surface.  If its value is not <tt>nullptr</tt>, this
+texture is used to compute a shading normal at each point based on the
+function it defines.  (Section&nbsp;<a href="../Materials/Bump_Mapping.html#sec:bump-mapping">9.3</a> discusses the
+implementation of this computation.)  Figure&nbsp;<a href="../Reflection_Models/Microfacet_Models.html#fig:dragon-lambert-on">8.14</a>
+in the previous chapter shows the <a href="#MatteMaterial"><tt>MatteMaterial</tt></a> material with the
+dragon model.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MatteMaterialPublicMethods-0"></span><div class="fragmentname">&lt;&lt;MatteMaterial Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">MatteMaterial(const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; &amp;<a href="#MatteMaterial::Kd" class="code">Kd</a>,
+              const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#MatteMaterial::sigma" class="code">sigma</a>,
+              const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>)
+    : <a href="#MatteMaterial::Kd" class="code">Kd</a>(<a href="#MatteMaterial::Kd" class="code">Kd</a>), <a href="#MatteMaterial::sigma" class="code">sigma</a>(<a href="#MatteMaterial::sigma" class="code">sigma</a>), <a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>(<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MatteMaterialPrivateData-0"></span><div class="fragmentname">&lt;&lt;MatteMaterial Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; <span class="anchor" id="MatteMaterial::Kd"></span>Kd;
+std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; <span class="anchor" id="MatteMaterial::sigma"></span>sigma, <span class="anchor" id="MatteMaterial::bumpMap"></span>bumpMap;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>ComputeScatteringFunctions()</tt> method puts the pieces together, determining the
+bump map&rsquo;s effect on the shading geometry, evaluating the textures, and
+allocating and returning the appropriate <a href="../Materials/BSDFs.html#BSDF"><tt>BSDF</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MatteMaterialMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;MatteMaterial Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="MatteMaterial::ComputeScatteringFunctions"></span>MatteMaterial::ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si,
+        <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, TransportMode mode,
+        bool allowMultipleLobes) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PerformbumpmappingwithmonobumpMapifpresent-0">Perform bump mapping with <tt>bumpMap</tt>, if present</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-969" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-969"><i></i></a><div id="fragbit-969" class="collapse"><div class="fragmentcode">       if (<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>)
+           <a href="../Materials/Bump_Mapping.html#Material::Bump" class="code">Bump</a>(<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>, si);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-EvaluatetexturesformonoMatteMaterialmaterialandallocateBRDF-0">Evaluate textures for <tt>MatteMaterial</tt> material and allocate BRDF</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-970" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-970"><i></i></a><div id="fragbit-970" class="collapse"><div class="fragmentcode">       si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a> = <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, <a href="../Materials/BSDFs.html#BSDF" class="code">BSDF</a>)(*si);
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> r = <a href="#MatteMaterial::Kd" class="code">Kd</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+       Float sig = <a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>(<a href="#MatteMaterial::sigma" class="code">sigma</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si), 0, 90);
+       if (!r.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+           if (sig == 0)
+               si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::Add" class="code">Add</a>(<a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, LambertianReflection)(r));
+           else
+               si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::Add" class="code">Add</a>(<a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, OrenNayar)(r, sig));
+       }</div></div>
+}</div><p>
+
+
+</p>
+<p>If a bump map was provided to the <a href="#MatteMaterial"><tt>MatteMaterial</tt></a> constructor, the
+<a href="../Materials/Bump_Mapping.html#Material::Bump"><tt>Material::Bump()</tt></a> method is called to calculate the shading normal at the
+point.  This method will be defined in the next section.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PerformbumpmappingwithmonobumpMapifpresent-0"></span><div class="fragmentname">&lt;&lt;Perform bump mapping with <tt>bumpMap</tt>, if present&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>)
+    <a href="../Materials/Bump_Mapping.html#Material::Bump" class="code">Bump</a>(<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>, si);</div><p>
+
+
+</p>
+<p>Next, the <a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture"><tt>Texture</tt></a>s that give the values of the diffuse reflection
+spectrum and the roughness are evaluated; texture implementations may
+return constant values, look up values from image maps, or do complex
+procedural shading calculations to compute these values (the texture
+evaluation process is the subject of Chapter&nbsp;<a href="../Texture.html#chap:texture">10</a>).  Given
+these values, all that needs to be done is to allocate a <a href="../Materials/BSDFs.html#BSDF"><tt>BSDF</tt></a> and
+then allocate the appropriate type of Lambertian BRDF and provide it to the
+<tt>BSDF</tt>.  Because <a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture"><tt>Texture</tt></a>s may return negative values or values
+otherwise outside of the expected range, these values are clamped to valid
+ranges before they are passed to the BRDF constructor.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-EvaluatetexturesformonoMatteMaterialmaterialandallocateBRDF-0"></span><div class="fragmentname">&lt;&lt;Evaluate textures for <tt>MatteMaterial</tt> material and allocate BRDF&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a> = <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, <a href="../Materials/BSDFs.html#BSDF" class="code">BSDF</a>)(*si);
+<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> r = <a href="#MatteMaterial::Kd" class="code">Kd</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+Float sig = <a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>(<a href="#MatteMaterial::sigma" class="code">sigma</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si), 0, 90);
+if (!r.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+    if (sig == 0)
+        si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::Add" class="code">Add</a>(<a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, LambertianReflection)(r));
+    else
+        si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::Add" class="code">Add</a>(<a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, OrenNayar)(r, sig));
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#PlasticMaterial"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="PlasticMaterial"></span><h3>9.2.2  Plastic Material</h3><p>
+
+
+</p>
+<p>Plastic can be modeled as a mixture of a diffuse and glossy scattering
+function with parameters controlling the particular colors and specular
+highlight size.  The parameters to <a href="#PlasticMaterial"><tt>PlasticMaterial</tt></a> are two
+reflectivities, <tt>Kd</tt> and <tt>Ks</tt>, which respectively control the
+amounts of diffuse reflection and glossy specular reflection.
+
+</p>
+<p>Next is a roughness parameter that determines the size of the specular
+highlight. It can be specified in two ways. First, if the
+<tt>remapRoughness</tt> parameter is <tt>true</tt>, then the given roughness
+should vary from zero to one, where the higher the roughness value, the
+larger the highlight. (This variant is intended to be fairly
+user-friendly.)  Alternatively, if the parameter is <tt>false</tt>, then the
+roughness is used to directly initialize the microfacet distribution&rsquo;s
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.488ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 640.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">alpha</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D6FC" d="M602 383c0 0 -21 -117 -115 -235c-10 -12 -10 -14 -10 -35c0 -24 0 -102 31 -102c0 0 38 0 56 49c3 7 6 10 13 10c6 0 12 -3 12 -10c0 -16 -31 -71 -84 -71c-45 0 -78 31 -91 84c-76 -61 -148 -84 -211 -84c-102 0 -162 76 -162 169c0 141 132 284 269 284 c74 0 167 -49 167 -206v-62c47 59 80 135 98 198c5 18 5 21 15 21c11 0 12 -10 12 -10zM410 99c-2 17 -2 75 -2 112c0 78 0 209 -99 209c-35 0 -89 -19 -136 -92c-32 -51 -58 -159 -58 -208c0 -64 30 -109 90 -109c40 0 117 11 205 88Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D6FC" x="0" y="0"></use>
+</g>
+</svg> parameter (recall
+Section&nbsp;<a href="../Reflection_Models/Microfacet_Models.html#sec:microfacet-distribution-functions">8.4.2</a>).
+
+</p>
+<p>Figure&nbsp;<a href="#fig:dragon-plastic">9.3</a> shows a plastic
+dragon.  <a href="#PlasticMaterial"><tt>PlasticMaterial</tt></a> is defined in
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/materials/plastic.h"><tt>materials/plastic.h</tt></a><span class="anchor" id="materialsplastic.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/materials/plastic.cpp"><tt>materials/plastic.cpp</tt></a><span class="anchor" id="materialsplastic.cpp"></span>.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:dragon-plastic"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 100.000%; position:relative;">
+<div id="dragon-plastic.png34" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('dragon-plastic.png34'), { image: 'dragon-plastic.png' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 9.3: Dragon Rendered with a Plastic
+Material. <span class="legend">  Note the combination of diffuse and glossy specular reflection.
+<em>(Model courtesy of Christian Sch&uuml;ller.)</em></span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PlasticMaterialDeclarations-0"></span><div class="fragmentname">&lt;&lt;PlasticMaterial Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="PlasticMaterial"></span>PlasticMaterial : public <a href="#Material" class="code">Material</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PlasticMaterialPublicMethods-0">PlasticMaterial Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-971" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-971"><i></i></a><div id="fragbit-971" class="collapse"><div class="fragmentcode">       PlasticMaterial(const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; &amp;<a href="#PlasticMaterial::Kd" class="code">Kd</a>,
+                       const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; &amp;<a href="#PlasticMaterial::Ks" class="code">Ks</a>,
+                       const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#PlasticMaterial::roughness" class="code">roughness</a>,
+                       const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#PlasticMaterial::bumpMap" class="code">bumpMap</a>,
+                       bool <a href="#PlasticMaterial::remapRoughness" class="code">remapRoughness</a>)
+           : <a href="#PlasticMaterial::Kd" class="code">Kd</a>(<a href="#PlasticMaterial::Kd" class="code">Kd</a>), <a href="#PlasticMaterial::Ks" class="code">Ks</a>(<a href="#PlasticMaterial::Ks" class="code">Ks</a>), <a href="#PlasticMaterial::roughness" class="code">roughness</a>(<a href="#PlasticMaterial::roughness" class="code">roughness</a>), <a href="#PlasticMaterial::bumpMap" class="code">bumpMap</a>(<a href="#PlasticMaterial::bumpMap" class="code">bumpMap</a>),
+             <a href="#PlasticMaterial::remapRoughness" class="code">remapRoughness</a>(<a href="#PlasticMaterial::remapRoughness" class="code">remapRoughness</a>) { }
+       void ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena,
+           TransportMode mode, bool allowMultipleLobes) const;</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PlasticMaterialPrivateData-0">PlasticMaterial Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-972" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-972"><i></i></a><div id="fragbit-972" class="collapse"><div class="fragmentcode">       std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; Kd, Ks;
+       std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; roughness, bumpMap;
+       const bool remapRoughness;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PlasticMaterialPublicMethods-0"></span><div class="fragmentname">&lt;&lt;PlasticMaterial Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">PlasticMaterial(const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; &amp;<a href="#PlasticMaterial::Kd" class="code">Kd</a>,
+                const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; &amp;<a href="#PlasticMaterial::Ks" class="code">Ks</a>,
+                const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#PlasticMaterial::roughness" class="code">roughness</a>,
+                const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;<a href="#PlasticMaterial::bumpMap" class="code">bumpMap</a>,
+                bool <a href="#PlasticMaterial::remapRoughness" class="code">remapRoughness</a>)
+    : <a href="#PlasticMaterial::Kd" class="code">Kd</a>(<a href="#PlasticMaterial::Kd" class="code">Kd</a>), <a href="#PlasticMaterial::Ks" class="code">Ks</a>(<a href="#PlasticMaterial::Ks" class="code">Ks</a>), <a href="#PlasticMaterial::roughness" class="code">roughness</a>(<a href="#PlasticMaterial::roughness" class="code">roughness</a>), <a href="#PlasticMaterial::bumpMap" class="code">bumpMap</a>(<a href="#PlasticMaterial::bumpMap" class="code">bumpMap</a>),
+      <a href="#PlasticMaterial::remapRoughness" class="code">remapRoughness</a>(<a href="#PlasticMaterial::remapRoughness" class="code">remapRoughness</a>) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PlasticMaterialPrivateData-0"></span><div class="fragmentname">&lt;&lt;PlasticMaterial Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; <span class="anchor" id="PlasticMaterial::Kd"></span>Kd, <span class="anchor" id="PlasticMaterial::Ks"></span>Ks;
+std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; <span class="anchor" id="PlasticMaterial::roughness"></span>roughness, <span class="anchor" id="PlasticMaterial::bumpMap"></span>bumpMap;
+const bool <span class="anchor" id="PlasticMaterial::remapRoughness"></span>remapRoughness;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="#PlasticMaterial::ComputeScatteringFunctions"><tt>PlasticMaterial::ComputeScatteringFunctions()</tt></a> method follows the
+same basic structure as <a href="#MatteMaterial::ComputeScatteringFunctions"><tt>MatteMaterial::ComputeScatteringFunctions()</tt></a>:
+it calls the bump-mapping function, evaluates textures, and then allocates
+<a href="../Reflection_Models/Basic_Interface.html#BxDF"><tt>BxDF</tt></a>s to use to initialize the <a href="../Materials/BSDFs.html#BSDF"><tt>BSDF</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PlasticMaterialMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;PlasticMaterial Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="PlasticMaterial::ComputeScatteringFunctions"></span>PlasticMaterial::ComputeScatteringFunctions(
+        <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, TransportMode mode,
+        bool allowMultipleLobes) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PerformbumpmappingwithmonobumpMapifpresent-0">Perform bump mapping with <tt>bumpMap</tt>, if present</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-973" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-973"><i></i></a><div id="fragbit-973" class="collapse"><div class="fragmentcode">       if (<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>)
+           <a href="../Materials/Bump_Mapping.html#Material::Bump" class="code">Bump</a>(<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>, si);</div></div>
+    si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a> = <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, <a href="../Materials/BSDFs.html#BSDF" class="code">BSDF</a>)(*si);
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializediffusecomponentofplasticmaterial-0">Initialize diffuse component of plastic material</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-974" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-974"><i></i></a><div id="fragbit-974" class="collapse"><div class="fragmentcode">       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> kd = <a href="#PlasticMaterial::Kd" class="code">Kd</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+       if (!kd.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>())
+           si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::Add" class="code">Add</a>(<a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, LambertianReflection)(kd));</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializespecularcomponentofplasticmaterial-0">Initialize specular component of plastic material</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-975" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-975"><i></i></a><div id="fragbit-975" class="collapse"><div class="fragmentcode">       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> ks = <a href="#PlasticMaterial::Ks" class="code">Ks</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+       if (!ks.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+           Fresnel *fresnel = <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, FresnelDielectric)(1.f, 1.5f);
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Createmicrofacetdistributionmonodistribforplasticmaterial-0">Create microfacet distribution <tt>distrib</tt> for plastic material</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-976" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-976"><i></i></a><div id="fragbit-976" class="collapse"><div class="fragmentcode">              Float rough = <a href="#PlasticMaterial::roughness" class="code">roughness</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si);
+              if (<a href="#PlasticMaterial::remapRoughness" class="code">remapRoughness</a>)
+                  rough = <a href="../Reflection_Models/Microfacet_Models.html#TrowbridgeReitzDistribution::RoughnessToAlpha" class="code">TrowbridgeReitzDistribution</a>::RoughnessToAlpha(rough);
+              <a href="../Reflection_Models/Microfacet_Models.html#MicrofacetDistribution" class="code">MicrofacetDistribution</a> *distrib =
+                  ARENA_ALLOC(arena, <a href="../Reflection_Models/Microfacet_Models.html#TrowbridgeReitzDistribution::RoughnessToAlpha" class="code">TrowbridgeReitzDistribution</a>)(rough, rough);</div></div>
+           <a href="../Reflection_Models/Basic_Interface.html#BxDF" class="code">BxDF</a> *spec =
+               <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, MicrofacetReflection)(ks, distrib, fresnel);
+           si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::Add" class="code">Add</a>(spec);
+       }</div></div>
+}</div><p>
+
+
+</p>
+<p>In <a href="#Material"><tt>Material</tt></a> implementations, it&rsquo;s worthwhile to skip creation of
+<a href="../Reflection_Models/Basic_Interface.html#BxDF"><tt>BxDF</tt></a> components that do not contribute to the scattering at a point.
+Doing so saves the renderer unnecessary work later when it&rsquo;s computing
+reflected radiance at the point.  Therefore, the Lambertian component is
+only created if <tt>kd</tt> is non-zero.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Initializediffusecomponentofplasticmaterial-0"></span><div class="fragmentname">&lt;&lt;Initialize diffuse component of plastic material&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> kd = <a href="#PlasticMaterial::Kd" class="code">Kd</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+if (!kd.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>())
+    si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::Add" class="code">Add</a>(<a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, LambertianReflection)(kd));</div><p>
+
+
+</p>
+<p>As with the diffuse component, the glossy specular component is skipped if
+it&rsquo;s not going to make a contribution to the overall BSDF.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Initializespecularcomponentofplasticmaterial-0"></span><div class="fragmentname">&lt;&lt;Initialize specular component of plastic material&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> ks = <a href="#PlasticMaterial::Ks" class="code">Ks</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+if (!ks.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+    Fresnel *fresnel = <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, FresnelDielectric)(1.f, 1.5f);
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Createmicrofacetdistributionmonodistribforplasticmaterial-0">Create microfacet distribution <tt>distrib</tt> for plastic material</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-977" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-977"><i></i></a><div id="fragbit-977" class="collapse"><div class="fragmentcode">       Float rough = <a href="#PlasticMaterial::roughness" class="code">roughness</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si);
+       if (<a href="#PlasticMaterial::remapRoughness" class="code">remapRoughness</a>)
+           rough = <a href="../Reflection_Models/Microfacet_Models.html#TrowbridgeReitzDistribution::RoughnessToAlpha" class="code">TrowbridgeReitzDistribution</a>::RoughnessToAlpha(rough);
+       <a href="../Reflection_Models/Microfacet_Models.html#MicrofacetDistribution" class="code">MicrofacetDistribution</a> *distrib =
+           ARENA_ALLOC(arena, <a href="../Reflection_Models/Microfacet_Models.html#TrowbridgeReitzDistribution::RoughnessToAlpha" class="code">TrowbridgeReitzDistribution</a>)(rough, rough);</div></div>
+    <a href="../Reflection_Models/Basic_Interface.html#BxDF" class="code">BxDF</a> *spec =
+        <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, MicrofacetReflection)(ks, distrib, fresnel);
+    si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::Add" class="code">Add</a>(spec);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Createmicrofacetdistributionmonodistribforplasticmaterial-0"></span><div class="fragmentname">&lt;&lt;Create microfacet distribution <tt>distrib</tt> for plastic material&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float rough = <a href="#PlasticMaterial::roughness" class="code">roughness</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si);
+if (<a href="#PlasticMaterial::remapRoughness" class="code">remapRoughness</a>)
+    rough = <a href="../Reflection_Models/Microfacet_Models.html#TrowbridgeReitzDistribution::RoughnessToAlpha" class="code">TrowbridgeReitzDistribution</a>::RoughnessToAlpha(rough);
+<a href="../Reflection_Models/Microfacet_Models.html#MicrofacetDistribution" class="code">MicrofacetDistribution</a> *distrib =
+    ARENA_ALLOC(arena, <a href="../Reflection_Models/Microfacet_Models.html#TrowbridgeReitzDistribution::RoughnessToAlpha" class="code">TrowbridgeReitzDistribution</a>)(rough, rough);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#MixMaterial"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:mix-material"></span><span id="MixMaterial"></span><h3>9.2.3  Mix Material</h3><p>
+
+
+
+</p>
+<p>It&rsquo;s useful to be able to combine two <a href="#Material"><tt>Material</tt></a>s with varying
+weights.  The <a href="#MixMaterial"><tt>MixMaterial</tt></a> takes two other <a href="#Material"><tt>Material</tt></a>s and a
+<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum"><tt>Spectrum</tt></a>-valued texture and uses the <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum"><tt>Spectrum</tt></a> returned by the
+texture to blend between the two materials at the point being shaded.  It
+is defined in the files
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/materials/mixmat.h"><tt>materials/mixmat.h</tt></a><span class="anchor" id="materialsmixmat.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/materials/mixmat.cpp"><tt>materials/mixmat.cpp</tt></a><span class="anchor" id="materialsmixmat.cpp"></span>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MixMaterialDeclarations-0"></span><div class="fragmentname">&lt;&lt;MixMaterial Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="MixMaterial"></span>MixMaterial : public <a href="#Material" class="code">Material</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MixMaterialPublicMethods-0">MixMaterial Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-978" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-978"><i></i></a><div id="fragbit-978" class="collapse"><div class="fragmentcode">       MixMaterial(const std::shared_ptr&lt;<a href="#Material" class="code">Material</a>&gt; &amp;m1,
+                   const std::shared_ptr&lt;<a href="#Material" class="code">Material</a>&gt; &amp;m2,
+                   const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; &amp;scale)
+           : m1(m1), m2(m2), scale(scale) { }
+       void ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena,
+           TransportMode mode, bool allowMultipleLobes) const;</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MixMaterialPrivateData-0">MixMaterial Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-979" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-979"><i></i></a><div id="fragbit-979" class="collapse"><div class="fragmentcode">       std::shared_ptr&lt;<a href="#Material" class="code">Material</a>&gt; m1, m2;
+       std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; scale;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MixMaterialPublicMethods-0"></span><div class="fragmentname">&lt;&lt;MixMaterial Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">MixMaterial(const std::shared_ptr&lt;<a href="#Material" class="code">Material</a>&gt; &amp;m1,
+            const std::shared_ptr&lt;<a href="#Material" class="code">Material</a>&gt; &amp;m2,
+            const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; &amp;scale)
+    : m1(m1), m2(m2), scale(scale) { }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MixMaterialPrivateData-0"></span><div class="fragmentname">&lt;&lt;MixMaterial Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="#Material" class="code">Material</a>&gt; <span class="anchor" id="MixMaterial::m1"></span>m1, <span class="anchor" id="MixMaterial::m2"></span>m2;
+std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt; <span class="anchor" id="MixMaterial::scale"></span>scale;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MixMaterialMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;MixMaterial Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="MixMaterial::ComputeScatteringFunctions"></span>MixMaterial::ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si,
+        <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, TransportMode mode,
+        bool allowMultipleLobes) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputeweightsandoriginalmonoBxDFsformixmaterial-0">Compute weights and original <tt>BxDF</tt>s for mix material</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-980" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-980"><i></i></a><div id="fragbit-980" class="collapse"><div class="fragmentcode">       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> s1 = <a href="#MixMaterial::scale" class="code">scale</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> s2 = (<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(1.f) - s1).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+       <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> si2 = *si;
+       <a href="#MixMaterial::m1" class="code">m1</a>-&gt;<a href="#Material::ComputeScatteringFunctions" class="code">ComputeScatteringFunctions</a>(si, arena, mode, allowMultipleLobes);
+       <a href="#MixMaterial::m2" class="code">m2</a>-&gt;<a href="#Material::ComputeScatteringFunctions" class="code">ComputeScatteringFunctions</a>(&amp;si2, arena, mode, allowMultipleLobes);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializemonosi-gtbsdfwithweightedmixtureofmonoBxDFs-0">Initialize <tt>si-&gt;bsdf</tt> with weighted mixture of <tt>BxDF</tt>s</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-981" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-981"><i></i></a><div id="fragbit-981" class="collapse"><div class="fragmentcode">       int n1 = si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::NumComponents" class="code">NumComponents</a>(), n2 = si2.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::NumComponents" class="code">NumComponents</a>();
+       for (int i = 0; i &lt; n1; ++i)
+           si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::bxdfs" class="code">bxdfs</a>[i] =
+               <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, ScaledBxDF)(si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::bxdfs" class="code">bxdfs</a>[i], s1);
+       for (int i = 0; i &lt; n2; ++i)
+           si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;Add(<a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, ScaledBxDF)(si2.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::bxdfs" class="code">bxdfs</a>[i], s2));</div></div>
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>MixMaterial::ComputeScatteringFunctions()</tt> starts with its two
+constituent <tt>Material</tt>s initializing their respective <tt>BSDF</tt>s.  
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputeweightsandoriginalmonoBxDFsformixmaterial-0"></span><div class="fragmentname">&lt;&lt;Compute weights and original <tt>BxDF</tt>s for mix material&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> s1 = <a href="#MixMaterial::scale" class="code">scale</a>-&gt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture::Evaluate" class="code">Evaluate</a>(*si).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> s2 = (<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(1.f) - s1).<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>();
+<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> si2 = *si;
+<a href="#MixMaterial::m1" class="code">m1</a>-&gt;<a href="#Material::ComputeScatteringFunctions" class="code">ComputeScatteringFunctions</a>(si, arena, mode, allowMultipleLobes);
+<a href="#MixMaterial::m2" class="code">m2</a>-&gt;<a href="#Material::ComputeScatteringFunctions" class="code">ComputeScatteringFunctions</a>(&amp;si2, arena, mode, allowMultipleLobes);</div><p>
+
+
+</p>
+<p>It then scales <a href="../Reflection_Models/Basic_Interface.html#BxDF"><tt>BxDF</tt></a>s in the <a href="../Materials/BSDFs.html#BSDF"><tt>BSDF</tt></a> from the first material,
+<tt>m1</tt>, using the <a href="../Reflection_Models/Basic_Interface.html#ScaledBxDF"><tt>ScaledBxDF</tt></a> adapter class, and then scales the
+<tt>BxDF</tt>s from the second <tt>BSDF</tt>, adding all of these <tt>BxDF</tt>
+components to <tt>si-&gt;bsdf</tt>.
+
+</p>
+<p>It may appear that there&rsquo;s a lurking memory
+leak in this code, in that the <tt>BxDF *</tt>s in <tt>si-&gt;bxdfs</tt> are
+clobbered by newly allocated <tt>ScaledBxDF</tt>s.  However, recall that
+those <tt>BxDF</tt>s, like the new ones here, were allocated through a
+<a href="../Utilities/Memory_Management.html#MemoryArena"><tt>MemoryArena</tt></a> and thus their memory will be freed when the
+<tt>MemoryArena</tt> frees its entire block of memory.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Initializemonosi-gtbsdfwithweightedmixtureofmonoBxDFs-0"></span><div class="fragmentname">&lt;&lt;Initialize <tt>si-&gt;bsdf</tt> with weighted mixture of <tt>BxDF</tt>s&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int n1 = si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::NumComponents" class="code">NumComponents</a>(), n2 = si2.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::NumComponents" class="code">NumComponents</a>();
+for (int i = 0; i &lt; n1; ++i)
+    si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::bxdfs" class="code">bxdfs</a>[i] =
+        <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, ScaledBxDF)(si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::bxdfs" class="code">bxdfs</a>[i], s1);
+for (int i = 0; i &lt; n2; ++i)
+    si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;Add(<a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, ScaledBxDF)(si2.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::bxdfs" class="code">bxdfs</a>[i], s2));</div><p>
+
+
+</p>
+<p>The implementation of <tt>MixMaterial::ComputeScatteringFunctions()</tt>
+needs direct access to the <tt>bxdfs</tt> member variables of the <a href="../Materials/BSDFs.html#BSDF"><tt>BSDF</tt></a>
+class.  Because this is the only class that needs this access, we&rsquo;ve just
+made <a href="#MixMaterial"><tt>MixMaterial</tt></a> a friend of <a href="../Materials/BSDFs.html#BSDF"><tt>BSDF</tt></a> rather than adding a number
+of accessor and setting methods.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BSDFPrivateData-2"></span><div class="fragmentname">&lt;&lt;BSDF Private Data&gt;&gt;+=&nbsp;<a href="BSDFs.html#fragment-BSDFPrivateData-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">friend class MixMaterial;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#FourierMaterial"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="FourierMaterial"></span><h3>9.2.4  Fourier Material</h3><p>
+
+
+</p>
+<p>The <tt>FourierMaterial</tt> class supports measured or synthetic BSDF data
+that has been tabulated into the directional basis that was introduced in
+Section&nbsp;<a href="../Reflection_Models/Fourier_Basis_BSDFs.html#sec:fourier-bsdf">8.6</a>. It is defined in the files
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/materials/fourier.h"><tt>materials/fourier.h</tt></a><span class="anchor" id="materialsfourier.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/materials/fourier.cpp"><tt>materials/fourier.cpp</tt></a><span class="anchor" id="materialsfourier.cpp"></span>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-FourierMaterialDeclarations-0"></span><div class="fragmentname">&lt;&lt;FourierMaterial Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="FourierMaterial"></span>FourierMaterial : public <a href="#Material" class="code">Material</a> {
+public:
+    &lt;&lt;<span class="fragmentname">FourierMaterial Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-982" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-982"><i></i></a><div id="fragbit-982" class="collapse"><div class="fragmentcode">       FourierMaterial(const std::string &amp;filename, const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;bump);
+       void ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena,
+           TransportMode mode, bool allowMultipleLobes) const;</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-FourierMaterialPrivateData-0">FourierMaterial Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-983" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-983"><i></i></a><div id="fragbit-983" class="collapse"><div class="fragmentcode">       FourierBSDFTable bsdfTable;
+       std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; bumpMap;</div></div>
+};</div><p>
+
+
+</p>
+<p>The constructor is responsible for reading the BSDF from a file and
+initializing the <a href="../Reflection_Models/Fourier_Basis_BSDFs.html#FourierBSDFTable"><tt>FourierBSDFTable</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-FourierMaterialMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;FourierMaterial Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-FourierMaterialMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">FourierMaterial::FourierMaterial(const std::string &amp;filename,
+        const std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; &amp;bumpMap)
+    : bumpMap(bumpMap) {
+    <a href="../Reflection_Models/Fourier_Basis_BSDFs.html#FourierBSDFTable::Read" class="code">FourierBSDFTable</a>::Read(filename, &amp;bsdfTable);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-FourierMaterialPrivateData-0"></span><div class="fragmentname">&lt;&lt;FourierMaterial Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">FourierBSDFTable <span class="anchor" id="FourierMaterial::bsdfTable"></span>bsdfTable;
+std::shared_ptr&lt;<a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture" class="code">Texture</a>&lt;Float&gt;&gt; <span class="anchor" id="FourierMaterial::bumpMap"></span>bumpMap;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Once the data is in memory, the <tt>ComputeScatteringFunctions()</tt>
+method&rsquo;s task is straightforward.  After the usual bump-mapping
+computation, it just has to allocate a <a href="../Reflection_Models/Fourier_Basis_BSDFs.html#FourierBSDF"><tt>FourierBSDF</tt></a> and provide it
+access to the data in the table.
+ 
+</p>
+<span class="anchor" id="fragment-FourierMaterialMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;FourierMaterial Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-FourierMaterialMethodDefinitions-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="FourierMaterial::ComputeScatteringFunctions"></span>FourierMaterial::ComputeScatteringFunctions(<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> *si,
+        <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, TransportMode mode,
+        bool allowMultipleLobes) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PerformbumpmappingwithmonobumpMapifpresent-0">Perform bump mapping with <tt>bumpMap</tt>, if present</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-984" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-984"><i></i></a><div id="fragbit-984" class="collapse"><div class="fragmentcode">       if (<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>)
+           <a href="../Materials/Bump_Mapping.html#Material::Bump" class="code">Bump</a>(<a href="#MatteMaterial::bumpMap" class="code">bumpMap</a>, si);</div></div>
+    si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a> = <a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, <a href="../Materials/BSDFs.html#BSDF" class="code">BSDF</a>)(*si);
+    si-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;Add(<a href="../Materials/BSDFs.html#ARENA_ALLOC" class="code">ARENA_ALLOC</a>(arena, FourierBSDF)(<a href="#FourierMaterial::bsdfTable" class="code">bsdfTable</a>, mode));
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#AdditionalMaterials"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="AdditionalMaterials"></span><h3>9.2.5  Additional Materials</h3><p>
+
+
+</p>
+<p>Beyond these materials, there are eight more <a href="#Material"><tt>Material</tt></a>
+implementations available in <tt>pbrt</tt>, all in the <tt>materials/</tt> directory.  We
+will not show all of their implementations here, since they are all just
+variations on the basic themes introduced in the material implementations
+above. All take <a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture"><tt>Texture</tt></a>s that define scattering parameters, these
+textures are evaluated in the materials&rsquo; respective
+<tt>ComputeScatteringFunctions()</tt> methods, and appropriate
+<a href="../Reflection_Models/Basic_Interface.html#BxDF"><tt>BxDF</tt></a>s are created and returned in a <a href="../Materials/BSDFs.html#BSDF"><tt>BSDF</tt></a>.  See the
+documentation on <tt>pbrt</tt>&rsquo;s file format for a summary of the parameters that these
+materials take.
+
+</p>
+<p>These materials include:
+</p>
+<ul>
+<li> <tt>GlassMaterial</tt><span class="anchor" id="GlassMaterial"></span>: Perfect or glossy specular reflection and
+  transmission, weighted by Fresnel terms for accurate angular-dependent
+  variation.
+
+<li> <tt>MetalMaterial</tt><span class="anchor" id="MetalMaterial"></span>: Metal, based on the
+  Fresnel equations for conductors and the Torrance&ndash;Sparrow model.
+  Unlike plastic, metal includes no diffuse component.  See the files in
+  the directory <tt>scenes/spds/metals/</tt> for measured spectral data for
+  the indices of refraction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.155ex" height="2.176ex" style="vertical-align: -0.838ex;" viewBox="0 -576.1 497.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">eta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D702" d="M496 335c0 -27 -3 -40 -8 -58l-114 -453c-3 -11 -10 -40 -41 -40c-17 0 -28 12 -28 27c0 0 0 4 3 16l114 460c10 40 10 58 10 63c0 36 -11 70 -54 70s-74 -19 -96 -35c-34 -27 -65 -83 -68 -92c-1 -6 -9 -39 -11 -45c-5 -23 -11 -45 -17 -67l-22 -90 c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c45 0 87 -30 92 -87 c24 35 76 87 155 87c75 0 115 -42 115 -107Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D702" x="0" y="0"></use>
+</g>
+</svg> and absorption coefficients <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.211ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 521.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">k</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D458" d="M508 379c0 -39 -29 -61 -55 -61c-27 0 -38 19 -38 35c0 12 9 51 57 54c-2 2 -2 3 -4 4c-8 6 -9 6 -21 8c-2 1 -3 1 -9 1c-49 0 -95 -43 -143 -96c-23 -24 -55 -56 -86 -74c85 -11 148 -40 148 -105c0 -10 0 -14 -4 -31c-4 -16 -8 -39 -8 -56c0 -36 13 -47 32 -47 c44 0 67 51 87 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -11 -57 -36 -101c-22 -37 -49 -53 -79 -53c-52 0 -92 40 -92 99c0 11 2 23 4 35c3 10 3 14 3 21c0 66 -82 82 -116 85c-6 -25 -51 -210 -56 -219c-6 -12 -21 -21 -34 -21c-9 0 -29 5 -29 28c0 6 0 8 4 22l145 576 l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-104 -422c38 15 77 55 111 93c72 80 118 88 146 88c45 0 68 -33 68 -63Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D458" x="0" y="0"></use>
+</g>
+</svg> for a
+  variety of metals.
+
+<li> <tt>MirrorMaterial</tt><span class="anchor" id="MirrorMaterial"></span>: A simple mirror,
+modeled with perfect specular reflection.
+
+<li> <tt>SubstrateMaterial</tt><span class="anchor" id="SubstrateMaterial"></span>: A layered model that varies between glossy
+  specular and diffuse reflection depending on the viewing angle (based on
+  the <tt>FresnelBlend</tt> BRDF).
+
+<li> <tt>SubsurfaceMaterial</tt> and <tt>KdSubsurfaceMaterial</tt>: Materials
+  that return <tt>BSSRDF</tt>s that describe materials that exhibit
+  subsurface scattering.
+
+<li> <tt>TranslucentMaterial</tt><span class="anchor" id="TranslucentMaterial"></span>: A material that describes diffuse and
+  glossy specular reflection and transmission through the surface.
+
+
+
+<li> <tt>UberMaterial</tt><span class="anchor" id="UberMaterial"></span>: A &ldquo;kitchen sink&rdquo; material representing the
+  union of many of the preceding materials.  This is a highly parameterized
+  material that is particularly useful when converting scenes from other
+  file formats into <tt>pbrt</tt>&rsquo;s.
+</ul><p>
+
+
+</p>
+<p>Figure&nbsp;<a href="../Reflection_Models/Specular_Reflection_and_Transmission.html#fig:dragon-glass">8.10</a> in the previous chapter shows the dragon
+model rendered with <a href="#GlassMaterial"><tt>GlassMaterial</tt></a>, and
+Figure&nbsp;<a href="#fig:dragon-metal">9.4</a> shows it with the <a href="#MetalMaterial"><tt>MetalMaterial</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:dragon-metal"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 100.000%; position:relative;">
+<div id="dragon-metal.png35" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('dragon-metal.png35'), { image: 'dragon-metal.png' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 9.4: <span class="legend"> Dragon rendered with the
+<tt>MetalMaterial</tt>, based on realistic measured gold scattering
+data. <em>(Model courtesy of Christian Sch&uuml;ller.)</em></span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Figure&nbsp;<a href="#fig:dragon-subsurface">9.5</a> demonstrates the
+<tt>KdSubsurfaceMaterial</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:dragon-subsurface"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 61.833%; position:relative;">
+<div id="head-subsurface.png36" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('head-subsurface.png36'), { image: 'head-subsurface.png' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 9.5: <span class="legend"> Head model rendered with the <tt>KdSubsurfaceMaterial</tt>,
+  which models subsurface scattering (in conjunction with the subsurface
+  scattering light transport techniques from Section&nbsp;<a href="../Light_Transport_II_Volume_Rendering/Subsurface_Scattering_Using_the_Diffusion_Equation.html#sec:subsurface">15.5</a>).
+ <em>(Model courtesy of Infinite Realities, Inc.)</em></span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Enrico  and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Materials/Bump_Mapping.html">Materials / Bump Mapping</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

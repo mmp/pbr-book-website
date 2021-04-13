@@ -1,0 +1,633 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Light Interface</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources.html">Light Sources</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Light Interface</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources/Light_Emission.html">(Previous: Light Emission)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:light"></span><h2>12.2 Light Interface</h2><p>
+
+
+
+</p>
+<p>The core lighting routines and interfaces are in <a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/light.h"><tt>core/light.h</tt></a> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/light.cpp"><tt>core/light.cpp</tt></a>.  Implementations of particular lights are in
+individual source files in the <tt>lights/</tt> directory.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightDeclarations-0"></span><div class="fragmentname">&lt;&lt;Light Declarations&gt;&gt;=&nbsp;<a href="#fragment-LightDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="Light"></span>Light {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-LightInterface-0">Light Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1151" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1151"><i></i></a><div id="fragbit-1151" class="collapse"><div class="fragmentcode">       virtual ~<a href="#Light" class="code">Light</a>();
+       <a href="#Light" class="code">Light</a>(int <a href="#Light::flags" class="code">flags</a>, const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;<a href="#Light::LightToWorld" class="code">LightToWorld</a>,
+             const MediumInterface &amp;<a href="#Light::mediumInterface" class="code">mediumInterface</a>, int <a href="#Light::nSamples" class="code">nSamples</a> = 1)
+           : <a href="#Light::flags" class="code">flags</a>(<a href="#Light::flags" class="code">flags</a>), <a href="#Light::nSamples" class="code">nSamples</a>(std::max(1, <a href="#Light::nSamples" class="code">nSamples</a>)),
+             <a href="#Light::mediumInterface" class="code">mediumInterface</a>(<a href="#Light::mediumInterface" class="code">mediumInterface</a>), <a href="#Light::LightToWorld" class="code">LightToWorld</a>(<a href="#Light::LightToWorld" class="code">LightToWorld</a>),
+             <a href="#Light::WorldToLight" class="code">WorldToLight</a>(<a href="../Utilities/Mathematical_Routines.html#Inverse" class="code">Inverse</a>(<a href="#Light::LightToWorld" class="code">LightToWorld</a>))  { 
+           &lt;&lt;<span class="fragmentname">Warn if light has transformation with non-uniform scale</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1152" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1152"><i></i></a><div id="fragbit-1152" class="collapse"><div class="fragmentcode">              if (WorldToLight.HasScale())
+                  Warning("Scaling detected in world to light transformation!\n"
+                          "The system has numerous assumptions, implicit and explicit,\n"
+                          "that this transform will have no scale factors in it.\n"
+                          "Proceed at your own risk; your image may have errors or\n"
+                          "the system may crash as a result of this.");</div></div>
+       }
+       virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Sample_Li(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;ref, const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;u, 
+                     <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *wi, Float *pdf, <a href="#VisibilityTester" class="code">VisibilityTester</a> *vis) const = 0;
+       virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Power() const = 0;
+       virtual void Preprocess(const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene) { }
+       virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Le(const RayDifferential &amp;r) const;
+       virtual Float Pdf_Li(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;ref,
+                            const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;wi) const = 0;
+       virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Sample_Le(const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;u1, const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;u2,
+                                  Float time, <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> *ray, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> *nLight,
+                                  Float *pdfPos, Float *pdfDir) const = 0;
+       virtual void Pdf_Le(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, const <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> &amp;nLight,
+                           Float *pdfPos, Float *pdfDir) const = 0;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-LightPublicData-0">Light Public Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1153" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1153"><i></i></a><div id="fragbit-1153" class="collapse"><div class="fragmentcode">       const int flags;
+       const int nSamples;
+       const MediumInterface mediumInterface;</div></div>
+protected:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-LightProtectedData-0">Light Protected Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1154" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1154"><i></i></a><div id="fragbit-1154" class="collapse"><div class="fragmentcode">       const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> LightToWorld, WorldToLight;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>All lights share four common parameters:
+</p>
+<ol>
+<li> The <tt>flags</tt> parameter indicates the fundamental light source
+type&mdash;for instance, whether or not the light is described by a delta
+distribution.  (Examples of such lights include point lights, which emit
+illumination from a single point, and directional lights, where all light
+arrives from the same direction.)  The Monte Carlo algorithms that sample
+illumination from light sources need to be aware of which lights are
+described by delta distributions, since this affects some of their
+computations.
+
+<li> A transformation that defines the light&rsquo;s coordinate system with
+respect to world space.  As with shapes, it&rsquo;s often handy to be able to
+implement a light assuming a particular coordinate system (e.g., that a
+spotlight is always located at the origin of its light space, shining down
+the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.894ex" height="2.176ex" style="vertical-align: -0.505ex;" viewBox="0 -719.6 1246 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">plus z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="778" y="0"></use>
+</g>
+</svg> axis).  The light-to-world transformation makes it possible to
+place such lights at arbitrary positions and orientations in the scene.
+
+<li> A <a href="../Volume_Scattering/Media.html#MediumInterface"><tt>MediumInterface</tt></a> that describes the participating medium on
+the inside and the outside of the light source.  For lights that don&rsquo;t
+have &ldquo;inside&rdquo; and &ldquo;outside&rdquo; per se (e.g., a point light), the same
+<a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> is on both
+sides. (A value of <tt>nullptr</tt> for both <tt>Medium</tt> pointers represents a vacuum.)
+
+<li> The <tt>nSamples</tt> parameter is used for area light sources where it
+may be desirable to trace multiple shadow rays to the light to compute soft
+shadows; it allows the user to have finer-grained control of the number of
+samples taken on a per-light basis.  The default number of light source
+samples taken is&nbsp;1; thus, only the light implementations for which taking
+multiple samples is sensible need to pass an explicit value to the
+<tt>Light</tt> constructor. Not all <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a>s pay attention to this
+value.
+</ol><p>
+
+
+</p>
+<p>The only other job for the constructor is to warn if the light-to-world
+transformation has a scale factor; many of the <a href="#Light"><tt>Light</tt></a> methods will
+return incorrect results in this case.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="For example, the surface
+area reported by area lights is computed from the untransformed geometry,
+so a scale factor in the transformation means that the reported area and
+the actual area of the light in the scene would be inconsistent.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightInterface-0"></span><div class="fragmentname">&lt;&lt;Light Interface&gt;&gt;=&nbsp;<a href="#fragment-LightInterface-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#Light" class="code">Light</a>(int <a href="#Light::flags" class="code">flags</a>, const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;<a href="#Light::LightToWorld" class="code">LightToWorld</a>,
+      const MediumInterface &amp;<a href="#Light::mediumInterface" class="code">mediumInterface</a>, int <a href="#Light::nSamples" class="code">nSamples</a> = 1)
+    : <a href="#Light::flags" class="code">flags</a>(<a href="#Light::flags" class="code">flags</a>), <a href="#Light::nSamples" class="code">nSamples</a>(std::max(1, <a href="#Light::nSamples" class="code">nSamples</a>)),
+      <a href="#Light::mediumInterface" class="code">mediumInterface</a>(<a href="#Light::mediumInterface" class="code">mediumInterface</a>), <a href="#Light::LightToWorld" class="code">LightToWorld</a>(<a href="#Light::LightToWorld" class="code">LightToWorld</a>),
+      <a href="#Light::WorldToLight" class="code">WorldToLight</a>(<a href="../Utilities/Mathematical_Routines.html#Inverse" class="code">Inverse</a>(<a href="#Light::LightToWorld" class="code">LightToWorld</a>))  { 
+    &lt;&lt;<span class="fragmentname">Warn if light has transformation with non-uniform scale</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1155" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1155"><i></i></a><div id="fragbit-1155" class="collapse"><div class="fragmentcode">       if (WorldToLight.HasScale())
+           Warning("Scaling detected in world to light transformation!\n"
+                   "The system has numerous assumptions, implicit and explicit,\n"
+                   "that this transform will have no scale factors in it.\n"
+                   "Proceed at your own risk; your image may have errors or\n"
+                   "the system may crash as a result of this.");</div></div>
+}</div><p>
+
+
+</p>
+<p>The <tt>flags</tt>, <tt>nSamples</tt>, and <tt>mediumInterface</tt> member variables are
+widely used outside of <tt>Light</tt> implementations so it&rsquo;s worth
+making them available as public members.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightPublicData-0"></span><div class="fragmentname">&lt;&lt;Light Public Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const int <span class="anchor" id="Light::flags"></span>flags;
+const int <span class="anchor" id="Light::nSamples"></span>nSamples;
+const MediumInterface <span class="anchor" id="Light::mediumInterface"></span>mediumInterface;</div><p>
+
+
+</p>
+<p>The <tt>LightFlags</tt> enumeration represents flags for the <tt>flags</tt>
+mask field characterizing various kinds of light sources; we&rsquo;ll see
+examples of all of these in the remainder of the chapter.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightFlagsDeclarations-0"></span><div class="fragmentname">&lt;&lt;LightFlags Declarations&gt;&gt;=&nbsp;<a href="#fragment-LightFlagsDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">enum class <span class="anchor" id="LightFlags"></span>LightFlags : int {
+    <span class="anchor" id="LightFlags::DeltaPosition"></span>DeltaPosition = 1, <span class="anchor" id="LightFlags::DeltaDirection"></span>DeltaDirection = 2, <span class="anchor" id="LightFlags::Area"></span>Area = 4, <span class="anchor" id="LightFlags::Infinite"></span>Infinite = 8
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightFlagsDeclarations-1"></span><div class="fragmentname">&lt;&lt;LightFlags Declarations&gt;&gt;+=&nbsp;<a href="#fragment-LightFlagsDeclarations-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">inline bool <span class="anchor" id="IsDeltaLight"></span>IsDeltaLight(int flags) {
+    return flags &amp; (int)<a href="#LightFlags" class="code">LightFlags</a>::DeltaPosition ||
+           flags &amp; (int)<a href="#LightFlags" class="code">LightFlags</a>::DeltaDirection;
+}</div><p>
+
+
+</p>
+<p>Although storing both the light-to-world and the world-to-light
+transformations is redundant, having both available simplifies code
+elsewhere by eliminating the need for calls to <a href="../Utilities/Mathematical_Routines.html#Inverse"><tt>Inverse()</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightProtectedData-0"></span><div class="fragmentname">&lt;&lt;Light Protected Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> <span class="anchor" id="Light::LightToWorld"></span>LightToWorld, <span class="anchor" id="Light::WorldToLight"></span>WorldToLight;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A key method that lights must implement is <tt>Sample_Li()</tt>. The caller
+passes an <a href="../Geometry_and_Transformations/Interactions.html#Interaction"><tt>Interaction</tt></a> that provides the world space position of a
+reference point in the scene and a time associated with it, and the light
+returns the radiance arriving at that point at that time due to that light,
+
+assuming there are no occluding objects between them
+(Figure&nbsp;<a href="#fig:light-sample-l">12.5</a>).  <a href="#Light"><tt>Light</tt></a> implementations in <tt>pbrt</tt> do not currently support being animated&mdash;the lights themselves
+are at fixed positions in the scene.  (Addressing this limitation is left
+as an exercise.)  However, the time value from the <a href="../Geometry_and_Transformations/Interactions.html#Interaction"><tt>Interaction</tt></a> is
+needed to set the time parameter in the traced visibility ray so that light
+visibility in the presence of moving objects is resolved correctly.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:light-sample-l"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Light%20Sample%20Li.svg" title=""><img src="Light%20Sample%20Li.svg" width=435 height=295 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 12.5: <span class="legend"> The <a href="#Light::Sample_Li"><tt>Light::Sample_Li()</tt></a> method
+returns incident radiance from the light at a point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> and also returns
+the direction vector <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</svg> that gives the direction from which radiance is
+arriving.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightInterface-1"></span><div class="fragmentname">&lt;&lt;Light Interface&gt;&gt;+=&nbsp;<a href="#fragment-LightInterface-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-LightInterface-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="Light::Sample_Li"></span>Sample_Li(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;ref, const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;u, 
+              <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *wi, Float *pdf, <a href="#VisibilityTester" class="code">VisibilityTester</a> *vis) const = 0;</div><p>
+
+
+</p>
+<p>The <tt>Light</tt> implementation is also responsible for both initializing
+the incident direction to the light source <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</svg> and initializing the
+<a href="#VisibilityTester"><tt>VisibilityTester</tt></a> object, which holds information about the shadow ray
+that must be traced to verify that there are no occluding objects between
+the light and the reference point.  The <a href="#VisibilityTester"><tt>VisibilityTester</tt></a>, which will
+be described in Section&nbsp;<a href="#sec:visibility-testing">12.2.1</a>, need not be
+initialized if the returned radiance value is black&mdash;for example, due to
+the reference point being outside of the cone of illumination of a
+spotlight.  Visibility is irrelevant in this case.
+
+</p>
+<p>For some types of lights, light may arrive at the reference point from many
+directions, not just from a single direction as with a point light source,
+for example.  For these types of light sources, the <tt>Sample_Li()</tt>
+method samples a point on the light source&rsquo;s surface, so that
+Monte Carlo integration can be used to find the reflected light at the
+point due to illumination from the light.  (The implementations of
+<tt>Sample_Li()</tt> for such lights will be introduced later, in
+Section&nbsp;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#sec:sampling-lights">14.2</a>.)  The <tt>Point2f</tt> <tt>u</tt>
+parameter is used by these methods, and the <tt>pdf</tt> output parameter
+stores the probability density for the light sample that was taken.  For
+all of the implementations in this chapter, the sample value is ignored and
+the <tt>pdf</tt> is set to&nbsp;1.  The <tt>pdf</tt> value&rsquo;s role in the context
+of Monte Carlo sampling is discussed in
+Section&nbsp;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#sec:sampling-lights">14.2</a>.
+
+</p>
+<p>All lights must also be able to return their total emitted power; this
+quantity is useful for light transport algorithms that may want to devote
+additional computational resources to lights in the scene that make the
+largest contribution.  Because a precise value for emitted power isn&rsquo;t
+needed elsewhere in the system, a number of the implementations of this
+method later in this chapter will compute approximations to this value
+rather than expending computational effort to find a precise value.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightInterface-2"></span><div class="fragmentname">&lt;&lt;Light Interface&gt;&gt;+=&nbsp;<a href="#fragment-LightInterface-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-LightInterface-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">virtual <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="Light::Power"></span>Power() const = 0;</div><p>
+
+
+</p>
+<p>Finally, <tt>Light</tt> interface includes a method <tt>Preprocess()</tt> that
+is invoked prior to rendering. It includes the <tt>Scene</tt> as an argument
+so that the light source can determine characteristics of the scene before
+rendering starts.  The default implementation is empty, but some
+implementations (e.g., <a href="../Light_Sources/Distant_Lights.html#DistantLight"><tt>DistantLight</tt></a>) use it to record a bound of the
+scene extent.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightInterface-3"></span><div class="fragmentname">&lt;&lt;Light Interface&gt;&gt;+=&nbsp;<a href="#fragment-LightInterface-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#fragment-LightInterface-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">virtual void <span class="anchor" id="Light::Preprocess"></span>Preprocess(const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene) { }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#VisibilityTesting"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:visibility-testing"></span><span id="VisibilityTesting"></span><h3>12.2.1  Visibility Testing</h3><p>
+
+
+
+</p>
+<p>The <tt>VisibilityTester</tt> is a <em>closure</em>&mdash;an object that
+encapsulates a small amount of data and some computation that is yet to be
+done.  It allows lights to return a radiance value under the assumption
+that the reference point and the light source are mutually visible.
+The integrator can then decide if illumination from the incident direction
+is relevant before incurring the cost of tracing the shadow ray&mdash;for
+example, light incident on the back side of a surface that isn&rsquo;t
+translucent contributes nothing to reflection from the other side.  If the
+actual amount of arriving illumination is in fact needed, a call to one of
+the visibility tester&rsquo;s methods causes the necessary shadow ray to be
+traced.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightDeclarations-1"></span><div class="fragmentname">&lt;&lt;Light Declarations&gt;&gt;+=&nbsp;<a href="#fragment-LightDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Area_Lights.html#fragment-LightDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="VisibilityTester"></span>VisibilityTester {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-VisibilityTesterPublicMethods-0">VisibilityTester Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1156" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1156"><i></i></a><div id="fragbit-1156" class="collapse"><div class="fragmentcode">       <a href="#VisibilityTester" class="code">VisibilityTester</a>(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;<a href="#VisibilityTester::p0" class="code">p0</a>, const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;<a href="#VisibilityTester::p1" class="code">p1</a>)
+           : <a href="#VisibilityTester::p0" class="code">p0</a>(<a href="#VisibilityTester::p0" class="code">p0</a>), <a href="#VisibilityTester::p1" class="code">p1</a>(<a href="#VisibilityTester::p1" class="code">p1</a>) { }
+       const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;P0() const { return <a href="#VisibilityTester::p0" class="code">p0</a>; }
+       const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;P1() const { return <a href="#VisibilityTester::p1" class="code">p1</a>; }
+       bool Unoccluded(const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene) const;
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Tr(const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler) const;</div></div>
+private:
+    <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> <span class="anchor" id="VisibilityTester::p0"></span>p0, <span class="anchor" id="VisibilityTester::p1"></span>p1;
+};</div><p>
+
+
+</p>
+<p><tt>VisibilityTester</tt>s are created by providing two <a href="../Geometry_and_Transformations/Interactions.html#Interaction"><tt>Interaction</tt></a>
+objects, one for each end point of the shadow ray to be traced.  Because
+an <tt>Interaction</tt> is used here, no special cases are needed for computing
+visibility to reference points on surfaces versus reference points in
+participating media.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-VisibilityTesterPublicMethods-0"></span><div class="fragmentname">&lt;&lt;VisibilityTester Public Methods&gt;&gt;=&nbsp;<a href="#fragment-VisibilityTesterPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#VisibilityTester" class="code">VisibilityTester</a>(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;<a href="#VisibilityTester::p0" class="code">p0</a>, const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;<a href="#VisibilityTester::p1" class="code">p1</a>)
+    : <a href="#VisibilityTester::p0" class="code">p0</a>(<a href="#VisibilityTester::p0" class="code">p0</a>), <a href="#VisibilityTester::p1" class="code">p1</a>(<a href="#VisibilityTester::p1" class="code">p1</a>) { }</div><p>
+
+
+</p>
+<p>Some of the light transport routines find it useful to be able to retrieve
+the two end points from an initialized <tt>VisibilityTester</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-VisibilityTesterPublicMethods-1"></span><div class="fragmentname">&lt;&lt;VisibilityTester Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-VisibilityTesterPublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;<span class="anchor" id="VisibilityTester::P0"></span>P0() const { return <a href="#VisibilityTester::p0" class="code">p0</a>; }
+const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;<span class="anchor" id="VisibilityTester::P1"></span>P1() const { return <a href="#VisibilityTester::p1" class="code">p1</a>; }</div><p>
+
+
+</p>
+<p>There are two methods that determine the visibility between the two
+points. The first, <tt>Unoccluded()</tt>, traces a shadow
+ray between them and returns a Boolean result.  Some ray tracers include a
+facility for casting colored shadows from partially transparent objects and
+would return a spectrum from a method like this, but <tt>pbrt</tt> does not
+include this facility, since this feature generally requires a nonphysical
+hack.  Scenes where illumination passes through a transparent object should
+be rendered with an integrator that supports this kind of effect; any of
+the bidirectional integrators from Chapter&nbsp;<a href="../Light_Transport_III_Bidirectional_Methods.html#chap:bidir-methods">16</a> is a good choice. 
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;Light Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-LightMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <a href="#VisibilityTester" class="code">VisibilityTester</a>::<span class="anchor" id="VisibilityTester::Unoccluded"></span>Unoccluded(const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene) const {
+    return !scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::IntersectP" class="code">IntersectP</a>(<a href="#VisibilityTester::p0" class="code">p0</a>.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRayTo" class="code">SpawnRayTo</a>(<a href="#VisibilityTester::p1" class="code">p1</a>));
+}</div><p>
+
+
+</p>
+<p>Because it only returns a Boolean value, <tt>Unoccluded()</tt> also ignores
+the effects of any scattering medium that the ray passes through on the
+radiance that it carries.  When <tt>Integrator</tt>s need to account for that
+effect, they use the <tt>VisibilityTester</tt>&rsquo;s <tt>Tr()</tt> method instead.
+<tt>VisibilityTester::Tr()</tt> computes the beam transmittance,
+Equation&nbsp;(<a href="../Volume_Scattering/Volume_Scattering_Processes.html#eq:beam-transmittance">11.1</a>), the fraction of radiance
+transmitted along the segment between the two points.  It accounts for both
+attenuation in participating media as well as any surfaces that block the
+ray completely.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;Light Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-LightMethodDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Infinite_Area_Lights.html#fragment-LightMethodDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <a href="#VisibilityTester" class="code">VisibilityTester</a>::<span class="anchor" id="VisibilityTester::Tr"></span>Tr(const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene,
+                              <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler) const {
+    <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ray(<a href="#VisibilityTester::p0" class="code">p0</a>.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRayTo" class="code">SpawnRayTo</a>(<a href="#VisibilityTester::p1" class="code">p1</a>));
+    <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Tr(1.f);
+    while (true) {
+        <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> isect;
+        bool hitSurface = scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::Intersect" class="code">Intersect</a>(ray, &amp;isect);
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Handleopaquesurfacealongrayspath-0">Handle opaque surface along ray&rsquo;s path</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1157" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1157"><i></i></a><div id="fragbit-1157" class="collapse"><div class="fragmentcode">           if (hitSurface &amp;&amp; isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::primitive" class="code">primitive</a>-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive::GetMaterial" class="code">GetMaterial</a>() != nullptr)
+               return <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.0f);</div></div>
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatetransmittanceforcurrentraysegment-0">Update transmittance for current ray segment</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1158" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1158"><i></i></a><div id="fragbit-1158" class="collapse"><div class="fragmentcode">           if (ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>)
+               <a href="../Volume_Scattering/Media.html#Medium::Tr" class="code">Tr</a> *= ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>-&gt;<a href="../Volume_Scattering/Media.html#Medium::Tr" class="code">Tr</a>(ray, sampler);</div></div>
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Generatenextraysegmentorreturnfinaltransmittance-0">Generate next ray segment or return final transmittance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1159" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1159"><i></i></a><div id="fragbit-1159" class="collapse"><div class="fragmentcode">           if (!hitSurface)
+               break;
+           ray = isect.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRayTo" class="code">SpawnRayTo</a>(<a href="#VisibilityTester::p1" class="code">p1</a>);</div></div>
+    }
+    return Tr;
+}</div><p>
+
+
+</p>
+<p>If an intersection is found along the ray segment and the hit surface is
+opaque, then the ray is blocked and the transmittance is zero.  Our work
+here is done. (Recall from Section&nbsp;<a href="../Volume_Scattering/Media.html#sec:media">11.3</a> that surfaces with a
+<tt>nullptr</tt> material pointer should be ignored in ray visibility tests,
+as those surfaces are only used to bound the extent of participating media.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Handleopaquesurfacealongrayspath-0"></span><div class="fragmentname">&lt;&lt;Handle opaque surface along ray&rsquo;s path&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (hitSurface &amp;&amp; isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::primitive" class="code">primitive</a>-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive::GetMaterial" class="code">GetMaterial</a>() != nullptr)
+    return <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.0f);</div><p>
+
+
+</p>
+<p>Otherwise, the <tt>Tr()</tt> method accumulates the ray&rsquo;s transmittance, either
+to the surface intersection point or to the endpoint <tt>p1</tt>.  (If there
+was an intersection with a non-opaque surface, the <a href="../Geometry_and_Transformations/Rays.html#Ray::tMax"><tt>Ray::tMax</tt></a> value
+has been updated accordingly; otherwise it corresponds to&nbsp;<tt>p1</tt>.)  In
+either case, <a href="../Volume_Scattering/Media.html#Medium::Tr"><tt>Medium::Tr()</tt></a> computes the beam transmittance up to
+<a href="../Geometry_and_Transformations/Rays.html#Ray::tMax"><tt>Ray::tMax</tt></a>, using the multiplicative property of beam transmittance
+from Equation&nbsp;(<a href="../Volume_Scattering/Volume_Scattering_Processes.html#eq:beam-transmittance-mult">11.2</a>).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Updatetransmittanceforcurrentraysegment-0"></span><div class="fragmentname">&lt;&lt;Update transmittance for current ray segment&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>)
+    <a href="../Volume_Scattering/Media.html#Medium::Tr" class="code">Tr</a> *= ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>-&gt;<a href="../Volume_Scattering/Media.html#Medium::Tr" class="code">Tr</a>(ray, sampler);</div><p>
+
+
+</p>
+<p>If no intersection was found, the ray made it to <tt>p1</tt> and we&rsquo;ve
+accumulated the full transmittance.  Otherwise, the ray intersected an
+invisible surface and the loop runs again, tracing a ray from that intersection
+point onward toward <tt>p1</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Generatenextraysegmentorreturnfinaltransmittance-0"></span><div class="fragmentname">&lt;&lt;Generate next ray segment or return final transmittance&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (!hitSurface)
+    break;
+ray = isect.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRayTo" class="code">SpawnRayTo</a>(<a href="#VisibilityTester::p1" class="code">p1</a>);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Scott Pilet and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Light_Sources/Point_Lights.html">Light Sources / Point Lights</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

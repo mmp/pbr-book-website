@@ -1,0 +1,551 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Alternative Hardware Architectures</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Retrospective_and_The_Future.html">Retrospective and The Future</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Alternative Hardware Architectures</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Retrospective_and_The_Future/Design_Retrospective.html">(Previous: Design Retrospective)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>17.2 Alternative Hardware Architectures</h2><p>
+
+
+</p>
+<p>Our focus in this book has been on traditional multi-core CPUs as a target
+for the system.  Furthermore, we have ignored the potential of being able
+to perform up to eight floating-point operations per instruction by using CPU
+SIMD hardware.  While other computing architectures like GPUs or
+specialized ray-tracing hardware are appealing targets
+for a renderer, their characteristics tend
+to change rapidly, and their programming languages and models are less
+widely known than languages like C++ on CPUs. Though we haven&rsquo;t targeted
+these architectures with <tt>pbrt</tt>, it&rsquo;s useful to discuss their
+characteristics.
+
+</p>
+<p>The early days of ray tracing saw work in this area focused on
+multiprocessors (Cleary et al. <a href="Further_Reading.html#cite:Cleary:1983:DAA">1983</a>;
+<a href="Further_Reading.html#cite:Green:1989:ECF">Green and Paddon 1989</a>; <a href="Further_Reading.html#cite:Badouel:1989:AEP">Badouel and Priol 1989</a>) and clusters of computers
+(Parker et&nbsp;al. <a href="Further_Reading.html#cite:Parker:1999:IRT">1999</a>; Wald et al. <a href="Further_Reading.html#cite:Wald01a">2001a</a>, <a href="Further_Reading.html#cite:Wald02">2002</a>; <a href="Further_Reading.html#cite:Wald01b">Wald et&nbsp;al. 2001b</a>;
+<a href="Further_Reading.html#cite:Wald03">Wald et&nbsp;al. 2003</a>).  More recently, substantial capabilities have become
+available in single computer systems, which has led to a shift of focus to
+the capabilities of CPU SIMD units and GPUs.
+
+</p>
+<p>CPUs have long been designed to run a single thread of computation as
+efficiently as possible; these processors can be considered to be latency
+focused, in that the goal is to finish a single computation as quickly as
+possible.  (Only since 2005 or so has this focus started to slowly change
+in CPU design, as multicore CPUs have provided a small number of
+independent latency-focused processors on a single chip.)  Starting with
+the advent of programmable graphics processors around the year 2003,
+<em>throughput processors</em> (as exemplified by GPUs) have increasingly
+become the source of most of the computational capability available in
+many computer systems.  These processors focus not on
+single-thread performance but instead on efficiently running hundreds or
+thousands of computations in parallel with high aggregate computational
+throughput, without trying to minimize time for any of the individual
+computations.
+
+</p>
+<p>By not focusing on single-thread performance, throughput processors are
+able to devote much less space on the chip for caches, branch prediction
+hardware, out-of-order execution units, and other features that have been
+invented to improve single-thread performance on CPUs.  Thus, given a
+fixed amount of chip area, these processors are able to provide many more
+arithmetic logic units (ALUs) than a CPU.  For the types of computations
+that can provide a substantial amount of independent parallel work,
+throughput processors can keep these ALUs busy and very efficiently execute
+the computation.  As of the time of writing, GPUs offer
+approximately ten times as many peak FLOPS as high-end CPUs; this makes
+them highly attractive for many processing-intensive tasks (including ray
+tracing).<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="However, graphics processors typically consume more
+  power and are physically larger chips than CPUs; some of their improved
+  performance comes purely from using more power and more chip area.  A
+  fair comparison is to consider performance per watt or per square
+  millimeter of silicon, which puts GPUs at 3-5x more capable in
+  terms of peak performance.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p>Single instruction, multiple data (SIMD) processing, where processing units
+execute a single instruction across multiple data elements, is the key
+mechanism that throughput processors use to efficiently deliver
+computation; both today&rsquo;s CPUs and today&rsquo;s GPUs have SIMD
+vector units in their processing cores.  Modern CPUs generally have a
+handful of processing cores and support four
+or eight 32-bit floating point operations in their vector instruction sets
+(e.g., SSE, NEON, or AVX). GPUs currently have tens of processing cores,<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="The
+  definition of a &ldquo;core&rdquo; on a throughput processor is notoriously tricky,
+  with different hardware vendors promoting different definitions.  Here, we
+  are following the relatively vendor-neutral terminology proposed by
+  Fatahalian (2008).">
+      <sup>&dagger;</sup>
+    </button>
+		 each with SIMD vector units between 8 and 64
+elements wide.  (Intel&rsquo;s Xeon Phi architecture, which features over 50
+relatively simple CPU cores, each with a 16-wide 32-bit floating-point SIMD unit,
+lies somewhere between these two points.)
+It is likely that both the number of processing cores and
+the width of the vector units in all of
+these processor architectures will go up over time, as hardware designers make use of
+additional transistors made possible by Moore&rsquo;s law.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#GPURayTracing"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="GPURayTracing"></span><h3>17.2.1  GPU Ray Tracing</h3><p>
+
+
+</p>
+<p>Purcell et al. (<a href="Further_Reading.html#cite:Purcell:2002:RTO">2002</a>, <a href="Further_Reading.html#cite:Purcell:2003:PMO">2003</a>) and Carr, Hall, and Hart (<a href="Further_Reading.html#cite:Carr2002">2002</a>) were the first
+to map general-purpose ray tracers to throughput graphics processors.
+GPU-based construction of data structures tends to be challenging; see Zhou et&nbsp;al. (<a href="Further_Reading.html#cite:Zhou08">2008</a>), Lauterbach et&nbsp;al. (<a href="Further_Reading.html#cite:Lauterbach09">2009</a>), Pantaleoni and Luebke (<a href="Further_Reading.html#cite:Pantaleoni2010a">2010</a>),
+Garanzha et&nbsp;al. (<a href="Further_Reading.html#cite:Garanzha2011">2011</a>), and Karras and Aila (<a href="Further_Reading.html#cite:Karras2013">2013</a>) for techniques for
+building kd-trees and BVHs on GPUs.
+
+</p>
+<p>Aila and Laine (<a href="Further_Reading.html#cite:Aila09">2009</a>) carefully investigated the performance of SIMD ray
+tracing on a graphics processor, using their insights to develop a new
+SIMD-friendly traversal algorithm that was substantially more efficient
+than the previous best known approach.  Their insights are worth careful
+consideration by all implementors of high-performance rendering systems.
+
+</p>
+<p>A big challenge in using throughput processors for rendering systems can be
+finding coherent collections of computation that use
+the SIMD vector elements efficiently.  Consider a
+Monte Carlo path tracer tracing a collection of rays; after random sampling
+at the first bounce, each ray will in general intersect completely
+different objects, likely with completely different surface shaders.  At
+this point, running the surface shaders will likely make poor use of SIMD
+hardware as each ray needs to execute a different computation.
+This specific problem of efficient shading was investigated by
+Hoberock et&nbsp;al. (<a href="Further_Reading.html#cite:Hoberock09">2009</a>), who re-sorted a large number of intersection points
+to create coherent collections of work before executing their surface
+shaders.
+
+</p>
+<p>Another challenge is that relatively limited amount of local memory on GPUs
+makes it challenging to implement light transport algorithms that require
+more than a small amount of storage for each ray.  (For example, even
+storing all of the vertices of a pair of subpaths for a bidirectional path
+tracing algorithm is not straightforward.)  The paper by Davidovi<span>&#269;</span> et&nbsp;al. (<a href="Further_Reading.html#cite:xEntityList:Davidovicmd:v:c2014">2014</a>) gives a thorough overview of these issues and previous work
+and includes a discussion of implementations of a number of sophisticated
+light transport algorithms on the GPU.
+
+</p>
+<p>An interesting trade-off for renderer developers to consider is exhibited
+by Hachisuka&rsquo;s path tracer, which uses a rasterizer with parallel
+projection to trace rays, effectively computing visibility in the same
+direction for all of the points being shaded (Hachisuka&nbsp;<a href="Further_Reading.html#cite:Hachisuka05">2005</a>).  His insight
+was that although this approach doesn&rsquo;t give a particularly good sampling
+distribution for Monte Carlo path tracing, in that each point isn&rsquo;t able to
+perform importance sampling to select outgoing directions, the increased
+efficiency from computing visibility for a very coherent collection of rays
+paid off overall.  In other words, for a fixed amount of computation, so
+many more samples could be taken using rasterization versus using ray
+tracing that the much larger number of less well-distributed samples
+generated a better image than a smaller number of well-chosen samples.  We
+suspect that this general issue of trading off between computing exactly
+the locally desired result at a single point versus computing what can be
+computed very efficiently globally for many points will be an important one
+for developers to consider on the SIMD processors of the future.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#PacketTracing"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:packet-tracing"></span><span id="PacketTracing"></span><h3>17.2.2  Packet Tracing</h3><p>
+
+
+
+</p>
+<p>For narrow SIMD widths on CPUs (like four-element SSE), some performance
+gains can be attained by opportunistically using the SIMD unit.  For
+example, one might modify <tt>pbrt</tt> to use SSE instructions for the operations
+defined in the <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum"><tt>Spectrum</tt></a> class, thus generally being able to do three
+floating-point operations per instruction (for RGB spectra) rather than
+just one if the SIMD unit was not used.  This approach would achieve 75%
+utilization of an SSE unit for those instructions but doesn&rsquo;t help with
+performance in the rest of the system.  In some cases, optimizing compilers
+can identify multiple computations in scalar code that can be executed
+together using a single SIMD instruction.
+
+</p>
+<p>Achieving <em>excellent</em> utilization of SIMD vector units generally requires that the
+entire computation be expressed in a <em>data parallel</em> manner, where the
+same computation is performed on many data elements simultaneously.
+A natural way to extract data parallelism in a ray tracer is to have each
+processing core responsible for tracing <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> rays at a time, where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> is at
+least the size of the SIMD width, if not larger; as such, each SIMD
+vector &ldquo;lane&rdquo; is responsible for just a single ray, and each vector instruction
+performs only a single scalar computation for each of the rays it&rsquo;s
+responsible for. Thus, high SIMD utilization comes naturally, except for the
+cases where some rays require different computations than others.
+
+</p>
+<p>This approach has seen success with high-performance CPU ray tracers (where
+it is generally called &ldquo;packet tracing&rdquo;).  Wald et&nbsp;al. (<a href="Further_Reading.html#cite:Wald01a">2001a</a>) introduced
+this approach, which has since seen wide adoption.  In a packet tracer, the
+camera generates &ldquo;packets&rdquo; of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> rays that are then processed as a
+unit.  Acceleration structure traversal algorithms are modified so that
+they visit a node if <em>any</em> of the rays in the packet passes through it;
+primitives in the leaves are tested for intersection with all of the rays
+in the packet, and so forth.  Packet tracing has been shown to lead to
+substantial speedups, although it becomes increasingly less effective as the
+rays to be traced become less coherent; it works well for camera rays and
+shadow rays to localized light sources, since the packets of rays will pass
+through similar regions of the scene, but efficiency generally falls off
+with multi-bounce light transport algorithms.  Finding ways to retain good
+efficiency with packet tracing remains an active area of research.
+
+</p>
+<p>Packet tracing on CPUs is usually implemented with the SIMD vectorization
+made explicit: intersection functions are written to explicitly take some
+number of rays as a parameter rather than just a single ray, and so forth.
+In contrast, the vectorization in programs written for throughput
+processors like GPUs is generally implicit: code is written as if it just
+operates on a single ray at a time, but the underlying compiler and
+hardware actually execute one instance of the program in each SIMD lane.
+
+</p>
+<p>For processors that directly expose their SIMD nature in their instruction
+sets (like CPUs or Intel&rsquo;s Xeon Phi), the designer of the programming model
+is able to choose whether to provide an implicit or an explicit vector model to
+the user.  See Parker et&nbsp;al.&rsquo;s (<a href="Further_Reading.html#cite:Parker07">2007</a>) ray-tracing shading
+language for an example of compiling an implicitly data-parallel language
+to a SIMD instruction set on CPUs.  See also Georgiev and Slusallek&rsquo;s (<a href="Further_Reading.html#cite:Georgiev08">2008</a>) approach, where a generic programming approach is taken in C++ to
+allow implementing a high-performance ray tracer with details like packets
+well hidden.  <tt>ispc</tt>, described in a paper by Pharr and Mark (<a href="Further_Reading.html#cite:Pharr2012">2012</a>),
+provides a general-purpose &ldquo;single program multiple data&rdquo; (SPMD) language
+for CPU vector units that also provides this model.
+
+</p>
+<p>Reshetov et&nbsp;al. (<a href="Further_Reading.html#cite:mlrt05">2005</a>) generalized packet
+tracing, showing that gathering up many rays from a single origin into a
+frustum and then using the frustum for acceleration structure traversal
+could lead to very high-performance ray tracing; they refined the frusta
+into subfrusta and eventually the individual rays as they reached lower
+levels of the tree.  Reshetov (<a href="Further_Reading.html#cite:Reshetov07">2007</a>) later introduced a technique for efficiently
+intersecting a collection of rays against a collection of triangles in
+acceleration structure leaf nodes by generating a frustum around the rays
+and using it for first-pass culling.  See Benthin and Wald (<a href="Further_Reading.html#cite:Benthin09">2009</a>) for a technique to use ray frusta and packets for
+efficient shadow rays.
+
+</p>
+<p>
+
+</p>
+<p>While packet tracing is effective for coherent collections of rays that
+follow generally the same path through acceleration structures, it&rsquo;s much
+less effective for incoherent collections of rays, which are more common with
+global illumination algorithms.  To address this issue, Christensen et&nbsp;al. (<a href="Further_Reading.html#cite:Christensen2006">2006</a>),
+Ernst and Greiner (<a href="Further_Reading.html#cite:Ernst2008">2008</a>), Wald et&nbsp;al. (<a href="Further_Reading.html#cite:Wald2008">2008</a>), and Dammertz et&nbsp;al. (<a href="Further_Reading.html#cite:Dammertz2008">2008</a>) proposed only
+traversing a single ray through the acceleration structure at once
+but improving SIMD efficiency by simultaneously testing each ray against a number of
+bounding boxes at each step in the hierarchy. 
+
+</p>
+<p>Another approach to the ray incoherence problem is to reorder small batches
+of incoherent rays to improve SIMD efficiency; representative work in this
+area includes papers by Mansson et&nbsp;al. (<a href="Further_Reading.html#cite:Mansson07">2007</a>), Boulos et&nbsp;al. (<a href="Further_Reading.html#cite:Boulos08">2008</a>),
+Gribble and Ramani (<a href="Further_Reading.html#cite:Gribble08">2008</a>), and Tsakok (<a href="Further_Reading.html#cite:Tsakok09">2009</a>).  More recently, Barringer and Akenine-M&ouml;ller (<a href="Further_Reading.html#cite:Barringer2014">2014</a>) developed a SIMD ray traversal algorithm that
+delivered substantial performance improvements given large numbers of rays.
+
+</p>
+<p>The Embree system, described in a paper by Wald et&nbsp;al. (<a href="Further_Reading.html#cite:Wald2014">2014</a>), is a
+high-performance open source rendering system that supports both packet
+tracing and highly efficient traversal of single rays.  See also the paper
+by Benthin et&nbsp;al. (<a href="Further_Reading.html#cite:Benthin2011">2011</a>) on the topic of finding a balance between these
+two approaches.
+
+</p>
+<p><tt>pbrt</tt> is very much a &ldquo;one ray at a time&rdquo; ray tracer; if a rendering
+system can provide many rays for intersection tests at once, a variety of
+more efficient implementations are possible even beyond packet tracing.
+For example, Keller and W&auml;chter (<a href="Further_Reading.html#cite:Keller2011">2011</a>) and Mora (<a href="Further_Reading.html#cite:Mora2011">2011</a>) described
+algorithms for intersecting a large number of rays against the scene
+geometry where there is no acceleration structure at all. Instead,
+primitives and rays are both recursively partitioned until small
+collections of rays and small collections of primitives remain, at which
+point intersection tests are performed.  Improvements to this approach were
+described by &Aacute;fra (<a href="Further_Reading.html#cite:xEntityList:cmd::Afra2012">2012</a>) and Nabata et&nbsp;al. (<a href="Further_Reading.html#cite:Nabata2013">2013</a>).
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Ray-TracingHardware"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Ray-TracingHardware"></span><h3>17.2.3  Ray-Tracing Hardware</h3><p>
+
+
+</p>
+<p>Given the widespread success of specialized hardware for triangle
+rasterization and shading in modern PCs, there has long been interest in
+designing specialized hardware for ray tracing.  The ray-tracing algorithm
+presents a variety of stages of computation that must be addressed
+in a complete system, including camera ray generation, construction of the acceleration
+hierarchy, traversal of the hierarchy, ray&ndash;primitive intersections,
+shading, lighting, and integration calculations.
+
+</p>
+<p>Early published work in this area includes a paper by Woop et&nbsp;al. (<a href="Further_Reading.html#cite:Woop2005">2005</a>),
+who described the design of a &ldquo;ray processing unit&rdquo; (RPU).  More
+recently, Aila and Karras (<a href="Further_Reading.html#cite:Aila2010">2010</a>) described general architectural issues
+related to handling incoherent rays, as are common with global illumination
+algorithms.  Nah et&nbsp;al. (<a href="Further_Reading.html#cite:Nah2011">2011</a>) and Lee and collaborators (<a href="Further_Reading.html#cite:Lee2013">2013</a>, <a href="Further_Reading.html#cite:Lee2015">2015</a>) have
+written a series of papers on ray tracing on a mobile GPU architecture,
+addressing issues including hierarchy traversal, ray generation,
+intersection calculations, and ray reordering for better memory coherence.
+See also the paper by Doyle et&nbsp;al. (<a href="Further_Reading.html#cite:Doyle2013">2013</a>) on SAH BVH construction in
+specialized hardware.
+
+</p>
+<p>While there has been substantial research work in this area, unfortunately
+none of these architectures has made it out to the market in large
+numbers, though the Caustic ray-tracing architecture (McCombe&nbsp;<a href="Further_Reading.html#cite:McCombe2013">2013</a>) has
+been acquired by a mobile GPU vendor, Imagination Technologies.  Plans for
+products based on an integration of this architecture into a traditional
+GPU have been announced; we are hopeful that the time
+for efficient ray-tracing hardware may have arrived. 
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TheFuture"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="TheFuture"></span><h3>17.2.4  The Future</h3><p>
+
+
+</p>
+<p>Innovation in high-performance architectures for graphics seems likely to
+continue in coming years.  As CPUs are gradually increasing their SIMD
+width and adding more processing cores, becoming more similar to throughput
+processors, throughput processors are adding support for task parallelism
+and improving their performance on more irregular workloads than purely
+data-parallel ones.  Whether the computer system of the future is a
+heterogeneous collection of both types of processing cores or whether there
+is a middle ground with a single type of processor architecture that works
+well for a range of applications remains an open question.
+
+</p>
+<p>The role of specialized fixed-function graphics hardware in future systems
+is likely to become increasingly important; fixed-function hardware is
+generally substantially more power-efficient than programmable hardware.
+As the critical computational kernels of future graphics systems become
+clear, fixed-function implementations of them may become widespread.
+
+</p>
+<p>
+
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Jay Patel and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Retrospective_and_The_Future/Conclusion.html">Retrospective and The Future / Conclusion</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

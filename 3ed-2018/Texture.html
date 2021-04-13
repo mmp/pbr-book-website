@@ -1,0 +1,296 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="/3ed-2018/pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Texture</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="/3ed-2018/contents.html"><img src="/3ed-2018/pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="contents.html">Physically Based Rendering: </a></li>
+    <li class="nav-item"><a class="nav-link" href="#">Texture</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="/3ed-2018/Materials/Exercises.html">(Previous: Exercises)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="jumbotron jumbotron-fluid bg-cover-100 opener-image" style="background-image: url('openers/spheres-raydiffs.jpg'); background-position: center;">
+</div>
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="chap:texture"></span><h1>10 Texture</h1><p>
+
+
+
+</p>
+<p>We will now describe a set of interfaces and classes that allow us to
+incorporate texture into our material models.  Recall that the materials in
+Chapter&nbsp;<a href="Materials.html#chap:materials">9</a> are all based on various parameters that
+describe their characteristics (diffuse reflectance, glossiness, etc.).
+Because real-world material properties typically vary over surfaces, it is
+necessary to be able to represent this spatial variation. In <tt>pbrt</tt>, the
+texture abstractions serve this purpose. They are defined in a way that
+separates the pattern generation methods from the reflection model
+implementations, making it easy to combine them in arbitrary ways, thereby
+making it easier to create a wide variety of appearances.
+
+</p>
+<p>In <tt>pbrt</tt>, a <em>texture</em> is a fairly general concept: it is a function that
+maps points in some domain (e.g., a surface&rsquo;s <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> parametric space or
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.432ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3199.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis x comma y comma z right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1897" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="2342" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2810" y="0"></use>
+</g>
+</svg> object space) to values in some other domain (e.g., spectra or the
+real numbers).  A variety of implementations of texture
+classes are available in the system.  For example, <tt>pbrt</tt> has textures that
+represent zero-dimensional functions that return a
+constant in order to accommodate surfaces that have the same parameter value
+everywhere.  Image map textures are two-dimensional functions of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.773ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2055.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis s comma t right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="859" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="1304" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1665" y="0"></use>
+</g>
+</svg>
+parameter values that use a 2D array of pixel values to compute texture values at
+particular points (they are described in Section&nbsp;<a href="Texture/Image_Texture.html#sec:texture-mapping">10.4</a>).
+There are even texture functions that compute values based on the values
+computed by other texture functions.
+
+</p>
+<p>Textures may be a source of high-frequency variation in the final image.
+Figure&nbsp;<a href="#fig:texture-aliasing-example">10.1</a> shows an image with severe
+aliasing due to a texture. 
+Although the visual impact of this aliasing can be
+reduced with the nonuniform sampling techniques from
+Chapter&nbsp;<a href="Sampling_and_Reconstruction.html#chap:sampling-reconstruction">7</a>, a better solution to this problem
+is to implement texture functions that adjust their frequency
+content based on the rate at which they are being sampled.  For many texture
+functions, computing a reasonable approximation to the frequency content
+and antialiasing in this manner aren&rsquo;t too difficult and are
+substantially more efficient than reducing aliasing by increasing the image sampling
+rate.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:texture-aliasing-example"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 102.400%;  position:relative;">
+<div id="Aliased_texture39" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('Aliased_texture39'), {
+  title: 'Aliased_texture39', children: [
+ { title: 'Aliased texture', image: 'sphere-tex-aliased.png' },  { title: 'Anti-aliased texture', image: 'sphere-tex-antialiased.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 10.1: Texture Aliasing. <span class="legend"> 
+(1)&nbsp;An image of a grid texture on a sphere with one sample per pixel has
+severe aliasing artifacts. 
+(2)&nbsp;The texture function has taken into account the image sampling
+rate to prefilter its function and remove high-frequency
+detail, resulting in an antialiased image, even with a single sample
+per pixel.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>The first section of this chapter will discuss the problem of texture aliasing
+and general approaches to solving it.  We will then describe the basic texture
+interface and illustrate its use with a few simple texture functions.
+Throughout the remainder of the chapter, we will present a variety of more
+complex texture implementations, demonstrating the use of a number of
+different texture
+antialiasing techniques along the way.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Jay Patel and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="Texture/Sampling_and_Antialiasing.html">Texture / Sampling and Antialiasing</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,833 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Spectral Representation</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Color_and_Radiometry.html">Color and Radiometry</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Spectral Representation</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Color_and_Radiometry.html">(Previous: Color and Radiometry)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:spectrum"></span><h2>5.1 Spectral Representation</h2><p>
+
+
+
+</p>
+<p>The SPDs of real-world objects can be quite complicated; 
+Figure&nbsp;<a href="#fig:spds">5.1</a> shows graphs of the spectral distribution of emission
+from a fluorescent light and the spectral distribution of the reflectance
+of lemon skin.  A renderer doing computations with SPDs needs a compact,
+efficient, and accurate way to represent functions like these.  In
+practice, some trade-off needs to be made between these qualities.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:spds"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+</p>
+<div class="figure-row">
+  <a href="fluorescent-spd.svg" title=""><img src="fluorescent-spd.svg" width=360 height=255 style="max-width: 100%;"></a>
+  <a href="lemonskin-spd.svg" title=""><img src="lemonskin-spd.svg" width=360 height=251 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 5.1: <span class="legend"> (a) Spectral power distributions of a fluorescent
+light and (b)&nbsp;the reflectance of lemon skin.  Wavelengths
+around 400&nbsp;nm are bluish colors, greens and yellows are in the middle
+range of wavelengths, and reds have wavelengths around 700&nbsp;nm.  The
+fluorescent light&rsquo;s SPD is even spikier than shown here, where the SPDs
+have been binned into 10-nm ranges; it actually emits much of its
+illumination at single discrete frequencies.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>A general framework for investigating these issues can be developed based
+on the problem of finding good <em>basis functions</em> to represent SPDs.
+The idea behind basis functions is to map the infinite-dimensional space of
+possible SPD functions to a low-dimensional space of coefficients <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.653ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 2864.4 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">c Subscript i Baseline element-of bold upper R Superscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D450" d="M430 107c0 -12 -84 -118 -227 -118c-104 0 -162 79 -162 169c0 141 133 284 268 284c71 0 118 -37 118 -86c0 -40 -27 -64 -56 -64c-19 0 -37 11 -37 35c0 7 2 24 18 39c14 14 28 14 44 14c-14 27 -52 40 -86 40c-55 0 -110 -43 -141 -100c-34 -62 -54 -159 -54 -200 c0 -60 27 -109 90 -109c12 0 121 0 200 99c6 8 8 10 13 10c6 0 12 -7 12 -13Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2208" d="M587 -23c0 -11 -9 -20 -20 -20h-193c-162 0 -293 131 -293 293s131 293 293 293h193c11 0 20 -9 20 -20s-9 -20 -20 -20h-193c-133 0 -242 -103 -252 -233h445c27 0 27 -40 0 -40h-445c10 -130 119 -233 252 -233h193c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D411" d="M858 95c0 -16 -13 -106 -120 -106c-41 0 -103 4 -147 26c-70 34 -70 83 -70 149c0 73 0 92 -32 127c-31 34 -75 34 -89 34h-117v-278h108v-47c-36 3 -134 3 -176 3s-140 0 -176 -3v47h108v592h-108v47h380c188 0 298 -84 298 -185c0 -66 -51 -131 -167 -161 c43 -16 98 -47 112 -117c1 -5 9 -74 11 -85c5 -42 14 -113 74 -113c30 0 59 22 64 69c1 13 2 23 23 23c10 0 24 0 24 -22zM564 500c0 61 -2 139 -163 139h-118v-278h116c165 0 165 83 165 139Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D450" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="613" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2208" x="1055" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D411" x="2000" y="0"></use>
+</g>
+</svg>.  For example, a trivial basis function is the constant function
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.189ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3956.6 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper B left-parenthesis lamda right-parenthesis equals 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D435" d="M756 545c0 -95 -105 -169 -209 -188c97 -11 155 -69 155 -141c0 -98 -118 -216 -276 -216h-357c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 10 20 29 20h336 c120 0 186 -64 186 -138zM665 549c0 44 -21 103 -109 103h-129c-43 0 -45 -3 -54 -38l-62 -248h146c122 0 208 95 208 183zM609 227c0 43 -19 117 -115 117h-189l-69 -279c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h136c118 0 207 97 207 196Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D435" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="759" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="1149" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1732" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="2399" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="3456" y="0"></use>
+</g>
+</svg>.  An arbitrary SPD would be represented in this basis by a
+single coefficient <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.007ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 433.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">c</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D450" d="M430 107c0 -12 -84 -118 -227 -118c-104 0 -162 79 -162 169c0 141 133 284 268 284c71 0 118 -37 118 -86c0 -40 -27 -64 -56 -64c-19 0 -37 11 -37 35c0 7 2 24 18 39c14 14 28 14 44 14c-14 27 -52 40 -86 40c-55 0 -110 -43 -141 -100c-34 -62 -54 -159 -54 -200 c0 -60 27 -109 90 -109c12 0 121 0 200 99c6 8 8 10 13 10c6 0 12 -7 12 -13Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D450" x="0" y="0"></use>
+</g>
+</svg> equal to its average value, so that its
+approximation would be <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="10.041ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4323.1 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">c upper B left-parenthesis lamda right-parenthesis equals c</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D450" d="M430 107c0 -12 -84 -118 -227 -118c-104 0 -162 79 -162 169c0 141 133 284 268 284c71 0 118 -37 118 -86c0 -40 -27 -64 -56 -64c-19 0 -37 11 -37 35c0 7 2 24 18 39c14 14 28 14 44 14c-14 27 -52 40 -86 40c-55 0 -110 -43 -141 -100c-34 -62 -54 -159 -54 -200 c0 -60 27 -109 90 -109c12 0 121 0 200 99c6 8 8 10 13 10c6 0 12 -7 12 -13Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D435" d="M756 545c0 -95 -105 -169 -209 -188c97 -11 155 -69 155 -141c0 -98 -118 -216 -276 -216h-357c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 10 20 29 20h336 c120 0 186 -64 186 -138zM665 549c0 44 -21 103 -109 103h-129c-43 0 -45 -3 -54 -38l-62 -248h146c122 0 208 95 208 183zM609 227c0 43 -19 117 -115 117h-189l-69 -279c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h136c118 0 207 97 207 196Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D450" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D435" x="433" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1193" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="1582" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2166" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="2833" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D450" x="3889" y="0"></use>
+</g>
+</svg>.  This is obviously a poor
+approximation, since most SPDs are much more complex than this single basis
+function is capable of representing accurately.
+
+</p>
+<p>Many different basis functions have been investigated for spectral
+representation in computer graphics; the &ldquo;Further Reading&rdquo; section cites
+a number of papers and further resources on this topic.  Different sets of
+basis functions can offer substantially different trade-offs in the
+complexity of the key operations like converting an arbitrary SPD into a
+set of coefficients (projecting it into the basis), computing the
+coefficients for the SPD given by the product of two SPDs expressed in the
+basis, and so on.  In this chapter, we&rsquo;ll introduce two representations
+that can be used for spectra in <tt>pbrt</tt>: <tt>RGBSpectrum</tt>, which follows
+the typical computer graphics practice of representing SPDs with
+coefficients representing a mixture of red, green, and blue colors, and
+<tt>SampledSpectrum</tt>, which represents the SPD as a set of point
+samples over a range of wavelengths.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TheSpectrumType"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="TheSpectrumType"></span><h3>5.1.1  The Spectrum Type</h3><p>
+
+
+</p>
+<p>Throughout <tt>pbrt</tt>, we have been careful to implement all computations
+involving SPDs in terms of the <a href="#Spectrum"><tt>Spectrum</tt></a> type, using a specific
+set of built-in operators (addition, multiplication, etc.).  The
+<a href="#Spectrum"><tt>Spectrum</tt></a> type hides the details of the particular spectral
+representation used, so that changing this detail of the system only
+requires changing the <a href="#Spectrum"><tt>Spectrum</tt></a> implementation; other code can remain
+unchanged.  The implementations of the <a href="#Spectrum"><tt>Spectrum</tt></a> type are in the files
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/spectrum.h"><tt>core/spectrum.h</tt></a><span class="anchor" id="corespectrum.h"></span> and 
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/spectrum.cpp"><tt>core/spectrum.cpp</tt></a><span class="anchor" id="corespectrum.cpp"></span>.
+
+</p>
+<p>The selection of which spectrum representation is used for the
+<tt>Spectrum</tt> type in <tt>pbrt</tt> is done with a <tt>typedef</tt> in the file
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/pbrt.h"><tt>core/pbrt.h</tt></a>.  By default, <tt>pbrt</tt> uses the more efficient but less
+accurate RGB representation.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalForwardDeclarations-0"></span><div class="fragmentname">&lt;&lt;Global Forward Declarations&gt;&gt;=&nbsp;<a href="../Utilities/Main_Include_File.html#fragment-GlobalForwardDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">typedef RGBSpectrum <span class="anchor" id="Spectrum"></span>Spectrum;
+// typedef SampledSpectrum <a href="#Spectrum" class="code">Spectrum</a>;</div><p>
+
+
+</p>
+<p>We have not written the system such that the selection of which
+<a href="#Spectrum"><tt>Spectrum</tt></a> implementation to use could be resolved at run time; to
+switch to a different representation, the entire system must be recompiled.  One
+advantage to this design is that many of the various <a href="#Spectrum"><tt>Spectrum</tt></a> methods
+can be implemented as short functions that can be inlined by the compiler,
+rather than being left as stand-alone functions that have to be invoked
+through the relatively slow virtual method call mechanism.  Inlining frequently used
+short functions like these can give a substantial improvement in
+performance.  A second advantage is that structures in the system that hold
+instances of the <a href="#Spectrum"><tt>Spectrum</tt></a> type can hold them directly rather than
+needing to allocate them dynamically based on the spectral representation
+chosen at run&nbsp;time.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#CoefficientSpectrumImplementation"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="CoefficientSpectrumImplementation"></span><h3>5.1.2  CoefficientSpectrum Implementation</h3><p>
+
+
+</p>
+<p>Both of the representations implemented in this chapter are based on
+storing a fixed number of samples of the SPD.  Therefore, we&rsquo;ll start by
+defining the <a href="#CoefficientSpectrum"><tt>CoefficientSpectrum</tt></a> template class, which represents a
+spectrum as a particular number of samples given as the
+<tt>nSpectrumSamples</tt> template parameter.  Both <a href="../Color_and_Radiometry/RGBSpectrum_Implementation.html#RGBSpectrum"><tt>RGBSpectrum</tt></a> and
+<a href="../Color_and_Radiometry/The_SampledSpectrum_Class.html#SampledSpectrum"><tt>SampledSpectrum</tt></a> are partially implemented by inheriting from
+<tt>CoefficientSpectrum</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumDeclarations-0"></span><div class="fragmentname">&lt;&lt;Spectrum Declarations&gt;&gt;=&nbsp;<a href="The_SampledSpectrum_Class.html#fragment-SpectrumDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;int <span class="anchor" id="nSpectrumSamples"></span>nSpectrumSamples&gt; class <span class="anchor" id="CoefficientSpectrum"></span>CoefficientSpectrum {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CoefficientSpectrumPublicMethods-0">CoefficientSpectrum Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-679" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-679"><i></i></a><div id="fragbit-679" class="collapse"><div class="fragmentcode">       CoefficientSpectrum(Float v = 0.f) { 
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               <a href="#CoefficientSpectrum::c" class="code">c</a>[i] = v;
+       }
+       #ifdef DEBUG
+       CoefficientSpectrum(const CoefficientSpectrum &amp;s) {
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               <a href="#CoefficientSpectrum::c" class="code">c</a>[i] = s.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+       }
+       
+       CoefficientSpectrum &amp;operator=(const CoefficientSpectrum &amp;s) {
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               <a href="#CoefficientSpectrum::c" class="code">c</a>[i] = s.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+           return *this;
+       }
+       #endif // DEBUG
+       void Print(FILE *f) const {
+           fprintf(f, "[ ");
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i) {
+               fprintf(f, "%f", <a href="#CoefficientSpectrum::c" class="code">c</a>[i]);
+               if (i != <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>-1) fprintf(f, ", ");
+           }
+           fprintf(f, "]");
+       }
+       CoefficientSpectrum &amp;operator+=(const CoefficientSpectrum &amp;s2) {
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               <a href="#CoefficientSpectrum::c" class="code">c</a>[i] += s2.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+           return *this;
+       }
+       CoefficientSpectrum operator+(const CoefficientSpectrum &amp;s2) const {
+           CoefficientSpectrum ret = *this;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] += s2.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+           return ret;
+       }
+       CoefficientSpectrum operator-(const CoefficientSpectrum &amp;s2) const {
+           CoefficientSpectrum ret = *this;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] -= s2.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+           return ret;
+       }
+       CoefficientSpectrum operator/(const CoefficientSpectrum &amp;s2) const {
+           CoefficientSpectrum ret = *this;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] /= s2.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+           return ret;
+       }
+       CoefficientSpectrum operator*(const CoefficientSpectrum &amp;sp) const {
+           CoefficientSpectrum ret = *this;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] *= sp.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+           return ret;
+       }
+       CoefficientSpectrum &amp;operator*=(const CoefficientSpectrum &amp;sp) {
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               <a href="#CoefficientSpectrum::c" class="code">c</a>[i] *= sp.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+           return *this;
+       }
+       CoefficientSpectrum operator*(Float a) const { 
+           CoefficientSpectrum ret = *this;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] *= a;
+           return ret;
+       }
+       CoefficientSpectrum &amp;operator*=(Float a) { 
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               <a href="#CoefficientSpectrum::c" class="code">c</a>[i] *= a;
+           return *this; 
+       }
+       friend inline 
+       CoefficientSpectrum operator*(Float a, const CoefficientSpectrum &amp;s) {
+           return s * a;
+       }
+       CoefficientSpectrum operator/(Float a) const { 
+           CoefficientSpectrum ret = *this;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] /= a;
+           Assert(!ret.HasNaNs());
+           return ret;
+       }
+       CoefficientSpectrum &amp;operator/=(Float a) { 
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               <a href="#CoefficientSpectrum::c" class="code">c</a>[i] /= a;
+           return *this;
+       }
+       bool operator==(const CoefficientSpectrum &amp;sp) const {
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               if (<a href="#CoefficientSpectrum::c" class="code">c</a>[i] != sp.<a href="#CoefficientSpectrum::c" class="code">c</a>[i]) return false;
+           return true;
+       }
+       bool operator!=(const CoefficientSpectrum &amp;sp) const {
+           return !(*this == sp);
+       }
+       bool IsBlack() const {
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               if (<a href="#CoefficientSpectrum::c" class="code">c</a>[i] != 0.) return false;
+           return true;
+       }
+       friend CoefficientSpectrum Sqrt(const CoefficientSpectrum &amp;s) { 
+           CoefficientSpectrum ret;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] = std::sqrt(s.<a href="#CoefficientSpectrum::c" class="code">c</a>[i]);
+           return ret;
+       }
+       template &lt;int n&gt; friend inline CoefficientSpectrum&lt;n&gt; Pow(const CoefficientSpectrum&lt;n&gt; &amp;s, Float e);
+       CoefficientSpectrum operator-() const {
+           CoefficientSpectrum ret;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] = -<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+           return ret;
+       }
+       friend CoefficientSpectrum Exp(const CoefficientSpectrum &amp;s) {
+           CoefficientSpectrum ret;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] = std::exp(s.<a href="#CoefficientSpectrum::c" class="code">c</a>[i]);
+           return ret;
+       }
+       friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const CoefficientSpectrum &amp;s) {
+           os &lt;&lt; "[";
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i) {
+               os &lt;&lt; s.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+               if (i + 1 &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>)
+                   os &lt;&lt; ", ";
+           }
+           os &lt;&lt; "]";
+           return os;
+       }
+       CoefficientSpectrum <a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>(Float low = 0, Float high = <a href="../Shapes/Managing_Rounding_Error.html#Infinity" class="code">Infinity</a>) const {
+           CoefficientSpectrum ret;
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] = ::<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>(<a href="#CoefficientSpectrum::c" class="code">c</a>[i], low, high);
+           return ret;
+       }
+       bool HasNaNs() const {
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               if (std::isnan(<a href="#CoefficientSpectrum::c" class="code">c</a>[i])) return true;
+           return false;
+       }
+       bool Write(FILE *f) const {
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+               if (fprintf(f, "%f ", <a href="#CoefficientSpectrum::c" class="code">c</a>[i]) &lt; 0) return false;
+           return true;
+       }
+       bool Read(FILE *f) {
+           for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i) {
+               double v;
+               if (fscanf(f, "%lf ", &amp;v) != 1) return false;
+               <a href="#CoefficientSpectrum::c" class="code">c</a>[i] = v;
+           }
+           return true;
+       }
+       Float &amp;operator[](int i) {
+           return <a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+       }
+       Float operator[](int i) const {
+           return <a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CoefficientSpectrumPublicData-0">CoefficientSpectrum Public Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-680" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-680"><i></i></a><div id="fragbit-680" class="collapse"><div class="fragmentcode">       static const int nSamples = <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>;</div></div>
+protected:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CoefficientSpectrumProtectedData-0">CoefficientSpectrum Protected Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-681" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-681"><i></i></a><div id="fragbit-681" class="collapse"><div class="fragmentcode">       Float c[<a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>];</div></div>
+};</div><p>
+
+
+</p>
+<p>One <a href="#CoefficientSpectrum"><tt>CoefficientSpectrum</tt></a> constructor is provided; it initializes a
+spectrum with a constant value across all wavelengths.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumPublicMethods-0"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Public Methods&gt;&gt;=&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">CoefficientSpectrum(Float v = 0.f) { 
+    for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+        <a href="#CoefficientSpectrum::c" class="code">c</a>[i] = v;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumProtectedData-0"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Protected Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float <span class="anchor" id="CoefficientSpectrum::c"></span>c[<a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>];</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A variety of arithmetic operations on <a href="#Spectrum"><tt>Spectrum</tt></a> objects are needed;
+the implementations in <a href="#CoefficientSpectrum"><tt>CoefficientSpectrum</tt></a> are all straightforward.
+First, we define operations to add pairs of spectral distributions.  For the
+sampled representation, it&rsquo;s easy to show that each sample value for the
+sum of two SPDs is equal to the sum of the corresponding sample values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumPublicMethods-1"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">CoefficientSpectrum &amp;operator+=(const CoefficientSpectrum &amp;s2) {
+    for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+        <a href="#CoefficientSpectrum::c" class="code">c</a>[i] += s2.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+    return *this;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumPublicMethods-2"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">CoefficientSpectrum operator+(const CoefficientSpectrum &amp;s2) const {
+    CoefficientSpectrum ret = *this;
+    for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+        ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] += s2.<a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+    return ret;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Similarly, subtraction, multiplication, division, and unary negation are
+defined component-wise.  These methods are very similar to the ones already
+shown, so we won&rsquo;t include them here.  <tt>pbrt</tt> also provides equality and
+inequality tests, also not included here.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>It is often useful to know if a spectrum represents an SPD with value zero
+everywhere.  If, for example, a surface has zero reflectance, the light
+transport routines can avoid the computational cost of casting reflection
+rays that have contributions that would eventually be multiplied by zeros
+and thus do not need to be traced.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumPublicMethods-3"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="Spectrum::IsBlack"></span>IsBlack() const {
+    for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+        if (<a href="#CoefficientSpectrum::c" class="code">c</a>[i] != 0.) return false;
+    return true;
+}</div><p>
+
+
+</p>
+<p>The <a href="#Spectrum"><tt>Spectrum</tt></a> implementation (and thus the <tt>CoefficientSpectrum</tt>
+implementation) must also provide implementations of a number of slightly
+more esoteric methods, including those that take the square root of an
+SPD or raise the function it represents to a given power.
+These are needed for some of the computations performed by the
+<a href="../Reflection_Models/Specular_Reflection_and_Transmission.html#Fresnel"><tt>Fresnel</tt></a> classes in Chapter&nbsp;<a href="../Reflection_Models.html#chap:reflection-models">8</a>, for example.  The
+implementation of <tt>Sqrt()</tt> takes the square root of each component to
+give the square root of the SPD.
+The implementations of <tt>Pow()</tt><span class="anchor" id="Spectrum::Pow"></span> 
+and <tt>Exp()</tt><span class="anchor" id="Spectrum::Exp"></span>
+are analogous and won&rsquo;t
+be included here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumPublicMethods-4"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">friend CoefficientSpectrum <span class="anchor" id="Spectrum::Sqrt"></span>Sqrt(const CoefficientSpectrum &amp;s) { 
+    CoefficientSpectrum ret;
+    for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+        ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] = std::sqrt(s.<a href="#CoefficientSpectrum::c" class="code">c</a>[i]);
+    return ret;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>It&rsquo;s frequently useful to be able to linearly interpolate between two SPDs
+with a parameter&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumInlineFunctions-0"></span><div class="fragmentname">&lt;&lt;Spectrum Inline Functions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">inline <a href="#Spectrum" class="code">Spectrum</a> <span class="anchor" id="Spectrum::Lerp"></span><a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(Float t, const <a href="#Spectrum" class="code">Spectrum</a> &amp;s1, const <a href="#Spectrum" class="code">Spectrum</a> &amp;s2) {
+    return (1 - t) * s1 + t * s2;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>Some portions of the image processing pipeline will want to clamp a spectrum to
+ensure that the function it represents is within some allowable range.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumPublicMethods-5"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">CoefficientSpectrum <span class="anchor" id="Spectrum::Clamp"></span><a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>(Float low = 0, Float high = <a href="../Shapes/Managing_Rounding_Error.html#Infinity" class="code">Infinity</a>) const {
+    CoefficientSpectrum ret;
+    for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+        ret.<a href="#CoefficientSpectrum::c" class="code">c</a>[i] = ::<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>(<a href="#CoefficientSpectrum::c" class="code">c</a>[i], low, high);
+    return ret;
+}</div><p>
+
+
+</p>
+<p>Finally, we provide a debugging routine to check if any of the sample
+values of the SPD is the not-a-number (NaN floating-point value).  This
+situation can happen due to an accidental division by&nbsp;0; <a href="../Utilities/Communicating_with_the_User.html#Assert"><tt>Assert()</tt></a>s
+throughout the system use this method to catch this case close to where it
+happens.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumPublicMethods-6"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-5"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-7"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="Spectrum::HasNaNs"></span>HasNaNs() const {
+    for (int i = 0; i &lt; <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>; ++i)
+        if (std::isnan(<a href="#CoefficientSpectrum::c" class="code">c</a>[i])) return true;
+    return false;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Most of the spectral computations in <tt>pbrt</tt> can be implemented using the
+basic operations we have defined so far.  However, in some cases it&rsquo;s
+necessary to be able to iterate over a set of spectral samples that
+represent an SPD&mdash;for example to perform a spectral sample-based table
+lookup or to evaluate a piecewise function over wavelengths.  Classes that
+need this functionality in <tt>pbrt</tt> include the <a href="../Volume_Scattering/The_BSSRDF.html#TabulatedBSSRDF"><tt>TabulatedBSSRDF</tt></a> class,
+which is used for subsurface scattering, and the <a href="../Volume_Scattering/Media.html#HomogeneousMedium"><tt>HomogeneousMedium</tt></a>
+and <a href="../Volume_Scattering/Media.html#GridDensityMedium"><tt>GridDensityMedium</tt></a> classes.
+
+</p>
+<p>For these uses, <tt>CoefficientSpectrum</tt> provides a public constant,
+<tt>nSamples</tt>, that gives the number of samples used to represent the
+SPD and an <tt>operator[]</tt> method to access individual sample values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumPublicData-0"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Public Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">static const int <span class="anchor" id="CoefficientSpectrum::nSamples"></span>nSamples = <a href="#nSpectrumSamples" class="code">nSpectrumSamples</a>;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CoefficientSpectrumPublicMethods-7"></span><div class="fragmentname">&lt;&lt;CoefficientSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-CoefficientSpectrumPublicMethods-6"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float &amp;operator[](int i) {
+    return <a href="#CoefficientSpectrum::c" class="code">c</a>[i];
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Note that the presence of this sample accessor imposes the implicit
+assumption that the spectral representation is a set of coefficients that
+linearly scale a fixed set of basis functions.  If, for example, a
+<tt>Spectrum</tt> implementation instead represented SPDs as a sum of
+Gaussians where the coefficients <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.807ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 777.8 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">c Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D450" d="M430 107c0 -12 -84 -118 -227 -118c-104 0 -162 79 -162 169c0 141 133 284 268 284c71 0 118 -37 118 -86c0 -40 -27 -64 -56 -64c-19 0 -37 11 -37 35c0 7 2 24 18 39c14 14 28 14 44 14c-14 27 -52 40 -86 40c-55 0 -110 -43 -141 -100c-34 -62 -54 -159 -54 -200 c0 -60 27 -109 90 -109c12 0 121 0 200 99c6 8 8 10 13 10c6 0 12 -7 12 -13Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D450" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="613" y="-213"></use>
+</g>
+</svg> alternatingly scaled the Gaussians
+and set their width,
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="21.419ex" height="7.343ex" style="vertical-align: -3.005ex;" viewBox="0 -1867.7 9222.2 3161.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper S left-parenthesis lamda right-parenthesis equals sigma-summation Underscript i Overscript upper N Endscripts c Subscript 2 i Baseline normal e Superscript minus c Super Subscript 2 i plus 1 Superscript Baseline comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D446" d="M645 695l-54 -219c-4 -17 -5 -20 -15 -20c-12 0 -12 10 -12 10c0 6 4 24 4 56c0 112 -61 155 -144 155c-95 0 -175 -85 -175 -166c0 -53 34 -82 61 -91l67 -18c89 -23 104 -27 127 -50c15 -14 49 -48 49 -117c0 -124 -118 -257 -254 -257c-58 0 -126 14 -169 72l-49 -57 c-12 -14 -13 -15 -18 -15c-6 0 -11 4 -11 10c0 3 56 231 60 235c3 3 5 4 10 4s12 -1 12 -11c0 0 -1 -3 -2 -7c-1 -6 -6 -30 -6 -54c0 -124 111 -146 175 -146c98 0 180 94 180 184c0 82 -55 97 -92 106l-107 28c-51 15 -104 61 -104 142c0 121 120 236 247 236 c65 0 117 -25 143 -72l48 57c12 14 13 15 18 15c9 0 11 -7 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-2211" d="M1387 -130l-121 -320h-1182c-18 0 -27 0 -27 11c0 0 0 6 10 18l518 607l-529 724c0 11 0 30 1 33c3 6 4 7 27 7h1182l121 -281h-25c-34 81 -102 126 -127 142c-79 50 -166 67 -220 75c-9 2 -100 16 -234 16h-548l466 -637c7 -10 7 -15 7 -15c0 -5 -2 -8 -9 -16l-509 -597 h603c192 0 290 26 311 31c115 30 221 98 260 202h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D441" d="M881 672c0 -19 -12 -20 -17 -20c-80 -3 -98 -34 -108 -74l-140 -557c-5 -18 -5 -21 -16 -21c-9 0 -12 2 -19 19l-249 589c-5 10 -5 12 -9 18l-132 -528c-3 -11 -4 -16 -4 -23c0 -20 8 -42 66 -44c11 0 20 -1 20 -11c0 -20 -13 -20 -18 -20c-33 0 -69 3 -103 3 c-33 0 -68 -3 -100 -3c-8 0 -13 4 -13 11c0 19 11 20 17 20c81 3 98 35 108 75l134 537c0 9 -63 9 -68 9c-19 0 -28 0 -28 11c0 20 9 20 29 20h134c23 0 24 -1 32 -19l221 -522l112 445c1 3 3 18 3 21c0 22 -11 43 -68 44c-8 0 -18 0 -18 11c0 20 12 20 18 20 c33 0 68 -3 102 -3c33 0 68 3 101 3c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D450" d="M430 107c0 -12 -84 -118 -227 -118c-104 0 -162 79 -162 169c0 141 133 284 268 284c71 0 118 -37 118 -86c0 -40 -27 -64 -56 -64c-19 0 -37 11 -37 35c0 7 2 24 18 39c14 14 28 14 44 14c-14 27 -52 40 -86 40c-55 0 -110 -43 -141 -100c-34 -62 -54 -159 -54 -200 c0 -60 27 -109 90 -109c12 0 121 0 200 99c6 8 8 10 13 10c6 0 12 -7 12 -13Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D446" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="645" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="1035" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1618" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="2285" y="0"></use>
+<g transform="translate(3342,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="848" y="-1536"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D441" x="580" y="1627"></use>
+</g>
+<g transform="translate(4953,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D450" x="0" y="0"></use>
+<g transform="translate(433,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="500" y="0"></use>
+</g>
+</g>
+<g transform="translate(6251,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-65" x="0" y="0"></use>
+<g transform="translate(444,412)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2212" x="0" y="0"></use>
+<g transform="translate(550,0)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D450" x="0" y="0"></use>
+<g transform="translate(306,-140)">
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="500" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-2B" x="846" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-31" x="1624" y="0"></use>
+</g>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="8943" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+then the code that currently uses this accessor would need to be modified,
+perhaps to instead operate on a version of the SPD that had been converted
+to a set of linear coefficients.  While this crack in the <tt>Spectrum</tt>
+abstraction is not ideal, it simplifies other parts of the current system
+and isn&rsquo;t too hard to clean up if one adds spectral
+representations, where this assumption isn&rsquo;t correct.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Color_and_Radiometry/The_SampledSpectrum_Class.html">Color and Radiometry / The SampledSpectrum Class</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

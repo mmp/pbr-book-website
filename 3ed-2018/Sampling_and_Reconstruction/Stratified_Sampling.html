@@ -1,0 +1,1055 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Stratified Sampling</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Sampling_and_Reconstruction.html">Sampling and Reconstruction</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Stratified Sampling</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Sampling_and_Reconstruction/Sampling_Interface.html">(Previous: Sampling Interface)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:stratified-sampling"></span><h2>7.3 Stratified Sampling</h2><p>
+
+
+
+</p>
+<p>The first <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> implementation that we will introduce subdivides pixel areas
+into rectangular regions and generates a single sample inside each region.
+These regions are commonly called <em>strata</em>, and this sampler is called
+the <a href="#StratifiedSampler"><tt>StratifiedSampler</tt></a>.  The key idea behind stratification is that by
+subdividing the sampling domain into nonoverlapping regions and taking a
+single sample from each one, we are less likely to miss important features
+of the image entirely, since the samples are guaranteed not to all be close
+together.  Put another way, it does us no good if many samples are taken
+from nearby points in the sample space, since each new sample doesn&rsquo;t add
+much new information about the behavior of the image function.  From a
+signal processing viewpoint, we are implicitly defining an overall sampling
+rate such that the smaller the strata are, the more of them we have, and thus
+the higher the sampling rate.  
+
+</p>
+<p>The stratified sampler places each sample at a random point inside each
+stratum by <em>jittering</em> the center point of the stratum by a random
+amount up to half the stratum&rsquo;s width and height.  The nonuniformity that
+results from this jittering helps turn aliasing into noise, as discussed in
+Section&nbsp;<a href="../Sampling_and_Reconstruction/Sampling_Theory.html#sec:sampling-theory">7.1</a>.  The sampler also offers an
+unjittered mode, which gives uniform sampling in the strata; this mode is
+mostly useful for comparisons between different sampling techniques rather
+than for rendering high quality images.
+
+</p>
+<p>Direct application of stratification to high-dimensional sampling quickly
+leads to an intractable number of samples.  For example, if we divided the
+5D image, lens, and time sample space into four strata in
+each dimension, the total number of samples per pixel would be <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.965ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 4290.5 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">4 Superscript 5 Baseline equals 1024</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-35" x="707" y="572"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1232" y="0"></use>
+<g transform="translate(2288,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="1001" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="1501" y="0"></use>
+</g>
+</g>
+</svg>.  We could reduce this impact by taking fewer samples in some
+dimensions (or not stratifying some dimensions, effectively using a single
+stratum), but we would then lose the benefit of having well-stratified
+samples in those dimensions.  This problem with stratification is known as
+the <em>curse of dimensionality</em>.
+
+</p>
+<p>We can reap most of the benefits of stratification without paying the price
+in excessive total sampling by computing lower dimensional stratified
+patterns for subsets of the domain&rsquo;s dimensions and then randomly
+associating samples from each set of dimensions.  (This process is
+sometimes called <em>padding</em>.)
+Figure&nbsp;<a href="#fig:stratified-shuffle">7.16</a> shows the basic idea: we might want to take
+just four samples per pixel but still have the samples be stratified over
+all dimensions.  We independently generate four&nbsp;2D stratified image
+samples, four 1D stratified time samples, and four&nbsp;2D stratified lens
+samples.  Then we randomly associate a time and lens sample value with
+each image sample.  The result is that each pixel has
+samples that together have good coverage of the sample space.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:stratified-shuffle"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Sample%20padding.svg" title=""><img src="Sample%20padding.svg" width=731 height=333 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 7.16: <span class="legend"> We can generate a good sample
+pattern that reaps the benefits of stratification without
+requiring that all of the sampling dimensions be stratified
+simultaneously.  Here, we have split <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.312ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2287.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis x comma y right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1897" y="0"></use>
+</g>
+</svg> image position, time <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg>, and
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> lens position into independent strata with four regions each.  Each
+is sampled independently, then a time sample and a lens sample are
+randomly associated with each image sample.  We retain the benefits of
+stratification in each of the individual dimensions without having to
+exponentially increase the total number of samples.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Figure&nbsp;<a href="#fig:sample-uniform-stratified">7.17</a> shows the improvement in image
+quality from using stratified lens samples versus using unstratified random
+samples when rendering depth of field.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:sample-uniform-stratified"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 106.000%;  position:relative;">
+<div id="Reference19" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('Reference19'), {
+  title: 'Reference19', children: [
+ { title: 'Reference', image: 'dof-ref.exr' },  { title: 'Random sampling', image: 'dof-random.exr' },  { title: 'Stratified sampling', image: 'dof-stratified.exr' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 7.17: Effect of Sampling Patterns
+in Rendering a Purple Sphere with Depth of Field. <span class="legend">  
+(1)&nbsp;A high-quality reference image of a blurry sphere.
+(2)&nbsp;An image generated
+with random sampling in each pixel without stratification. (3)&nbsp;An
+image generated with the same number of samples, but with the
+<a href="#StratifiedSampler"><tt>StratifiedSampler</tt></a>, which stratified both the image and, more
+importantly for this image, the lens samples.  Stratification makes a
+substantial improvement for this situation.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Figure&nbsp;<a href="#fig:sampling-patterns">7.18</a> shows a comparison of a few sampling
+patterns.  The first is a completely random pattern: we generated
+a number of samples without using the strata at all.  The result
+is terrible; some regions have few samples and other
+areas have clumps of many samples.  The second is a uniform stratified
+pattern.  In the last, the uniform pattern has been jittered, with a random
+offset added to each sample&rsquo;s location, keeping it inside its cell.  This
+gives a better overall distribution than the purely random pattern while
+preserving the benefits of stratification, though there are still some
+clumps of samples and some regions that are undersampled.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:sampling-patterns"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+
+</p>
+<div class="figure-row">
+  <a href="random-point-samples.svg" title=""><img src="random-point-samples.svg" width=300 height=318 style="max-width: 100%;"></a>
+  <a href="uniform-point-samples.svg" title=""><img src="uniform-point-samples.svg" width=300 height=318 style="max-width: 100%;"></a>
+  <a href="jittered-point-samples.svg" title=""><img src="jittered-point-samples.svg" width=300 height=318 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 7.18: Three 2D Sampling Patterns. <span class="legend"> (a) The random
+pattern is an ineffective pattern, with many clumps of samples that
+leave large sections of the image poorly sampled.  (b)&nbsp;A
+uniform stratified pattern is better distributed but can exacerbate
+aliasing artifacts.  (c)&nbsp;A stratified jittered pattern turns
+aliasing from the uniform pattern into high-frequency noise while still
+maintaining the benefits of stratification.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Figure&nbsp;<a href="#fig:stratified-comparisons">7.19</a> shows images rendered using the
+<a href="#StratifiedSampler"><tt>StratifiedSampler</tt></a> and shows how jittered sample positions turn
+aliasing artifacts into less objectionable noise.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:stratified-comparisons"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+
+
+
+
+
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 35.720%;  position:relative;">
+<div id="Reference20" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('Reference20'), {
+  title: 'Reference20', children: [
+ { title: 'Reference', image: 'checkerboard-ref.png' },  { title: '1 uniform sample', image: 'checkerboard-unif-1spp.png' },  { title: '1 jittered sample', image: 'checkerboard-jitter-1spp.png' },  { title: '4 jittered samples', image: 'checkerboard-jitter-4spp.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 7.19: Comparison of Image Sampling
+Methods with a Checkerboard Texture. <span class="legend"> This is a difficult image to render
+well, since the checkerboard&rsquo;s frequency with respect to the pixel 
+spacing tends toward infinity as we approach the horizon. 
+(1)&nbsp;A reference image, rendered with 256 samples per pixel, showing
+something close to an ideal result.  
+(2)&nbsp;An image rendered with one sample per pixel, with no jittering. Note the
+jaggy artifacts at the edges of checks in the foreground.  Notice also the
+artifacts in the distance where the checker function goes through many
+cycles between samples; as expected from the signal processing theory
+presented earlier,
+that detail reappears incorrectly as lower frequency aliasing. 
+(3)&nbsp;The result of jittering the image samples, still with just
+one sample per pixel. The regular aliasing of the second image has been
+replaced by less objectionable noise artifacts.  
+(4)&nbsp;The result of four jittered samples per pixel is still
+inferior to the reference image but is substantially better than the
+previous result.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StratifiedSamplerDeclarations-0"></span><div class="fragmentname">&lt;&lt;StratifiedSampler Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="StratifiedSampler"></span>StratifiedSampler : public <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler" class="code">PixelSampler</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-StratifiedSamplerPublicMethods-0">StratifiedSampler Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-814" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-814"><i></i></a><div id="fragbit-814" class="collapse"><div class="fragmentcode">       StratifiedSampler(int <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a>, int <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>,
+               bool <a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>, int nSampledDimensions)
+           : PixelSampler(<a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a> * <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>, nSampledDimensions),
+             <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a>(<a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a>), <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>(<a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>),
+             <a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>(<a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>) { }
+       void StartPixel(const <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> &amp;);
+       std::unique_ptr&lt;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>&gt; Clone(int seed);</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-StratifiedSamplerPrivateData-0">StratifiedSampler Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-815" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-815"><i></i></a><div id="fragbit-815" class="collapse"><div class="fragmentcode">       const int xPixelSamples, yPixelSamples;
+       const bool jitterSamples;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StratifiedSamplerPublicMethods-0"></span><div class="fragmentname">&lt;&lt;StratifiedSampler Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">StratifiedSampler(int <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a>, int <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>,
+        bool <a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>, int nSampledDimensions)
+    : PixelSampler(<a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a> * <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>, nSampledDimensions),
+      <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a>(<a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a>), <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>(<a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>),
+      <a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>(<a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StratifiedSamplerPrivateData-0"></span><div class="fragmentname">&lt;&lt;StratifiedSampler Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const int <span class="anchor" id="StratifiedSampler::xPixelSamples"></span>xPixelSamples, <span class="anchor" id="StratifiedSampler::yPixelSamples"></span>yPixelSamples;
+const bool <span class="anchor" id="StratifiedSampler::jitterSamples"></span>jitterSamples;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>As a <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler"><tt>PixelSampler</tt></a> subclass, the implementation of <tt>StartPixel()</tt>
+must both generate 1D and 2D samples for the number of dimensions
+<tt>nSampledDimensions</tt> passed  to the <tt>PixelSampler</tt> constructor as
+well as samples for the requested arrays.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StratifiedSamplerMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;StratifiedSampler Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="StratifiedSampler::StartPixel"></span>StratifiedSampler::StartPixel(const <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> &amp;p) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Generatesinglestratifiedsamplesforthepixel-0">Generate single stratified samples for the pixel</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-816" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-816"><i></i></a><div id="fragbit-816" class="collapse"><div class="fragmentcode">       for (size_t i = 0; i &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples1D" class="code">samples1D</a>.size(); ++i) {
+           <a href="#StratifiedSample1D" class="code">StratifiedSample1D</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples1D" class="code">samples1D</a>[i][0], <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a> * <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>,
+                              rng, <a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>);
+           <a href="#Shuffle" class="code">Shuffle</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples1D" class="code">samples1D</a>[i][0], <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a> * <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>, 1, rng);
+       }
+       for (size_t i = 0; i &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples2D" class="code">samples2D</a>.size(); ++i) {
+           <a href="#StratifiedSample2D" class="code">StratifiedSample2D</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples2D" class="code">samples2D</a>[i][0], <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a>, <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>,
+                              rng, <a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>);
+           <a href="#Shuffle" class="code">Shuffle</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples2D" class="code">samples2D</a>[i][0], <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a> * <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>, 1, rng);
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Generatearraysofstratifiedsamplesforthepixel-0">Generate arrays of stratified samples for the pixel</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-817" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-817"><i></i></a><div id="fragbit-817" class="collapse"><div class="fragmentcode">       for (size_t i = 0; i &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samples1DArraySizes" class="code">samples1DArraySizes</a>.size(); ++i)
+           for (int64_t j = 0; j &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samplesPerPixel" class="code">samplesPerPixel</a>; ++j) {
+               int count = <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samples1DArraySizes" class="code">samples1DArraySizes</a>[i];
+               <a href="#StratifiedSample1D" class="code">StratifiedSample1D</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::sampleArray1D" class="code">sampleArray1D</a>[i][j * count], count, rng,
+                                  jitterSamples);
+               <a href="#Shuffle" class="code">Shuffle</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::sampleArray1D" class="code">sampleArray1D</a>[i][j * count], count, 1, rng);
+           }
+       for (size_t i = 0; i &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samples2DArraySizes" class="code">samples2DArraySizes</a>.size(); ++i)
+           for (int64_t j = 0; j &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samplesPerPixel" class="code">samplesPerPixel</a>; ++j) {
+               int count = <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samples2DArraySizes" class="code">samples2DArraySizes</a>[i];
+               <a href="#LatinHypercube" class="code">LatinHypercube</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::sampleArray2D" class="code">sampleArray2D</a>[i][j * count].x, count, 2, rng);
+           }</div></div>
+    <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::StartPixel" class="code">PixelSampler</a>::StartPixel(p);
+}</div><p>
+
+
+</p>
+<p>After the initial stratified samples are generated, they are randomly
+shuffled; this is the padding approach described at the start of the
+section.  If this shuffling wasn&rsquo;t done, then the sample dimensions&rsquo; values
+would be correlated in a way that would lead to errors in
+images&mdash;for example, both the first 2D sample used to choose the
+film location as well as the first 2D lens sample would always both be in
+the lower left stratum adjacent to the origin.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Generatesinglestratifiedsamplesforthepixel-0"></span><div class="fragmentname">&lt;&lt;Generate single stratified samples for the pixel&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">for (size_t i = 0; i &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples1D" class="code">samples1D</a>.size(); ++i) {
+    <a href="#StratifiedSample1D" class="code">StratifiedSample1D</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples1D" class="code">samples1D</a>[i][0], <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a> * <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>,
+                       rng, <a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>);
+    <a href="#Shuffle" class="code">Shuffle</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples1D" class="code">samples1D</a>[i][0], <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a> * <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>, 1, rng);
+}
+for (size_t i = 0; i &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples2D" class="code">samples2D</a>.size(); ++i) {
+    <a href="#StratifiedSample2D" class="code">StratifiedSample2D</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples2D" class="code">samples2D</a>[i][0], <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a>, <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>,
+                       rng, <a href="#StratifiedSampler::jitterSamples" class="code">jitterSamples</a>);
+    <a href="#Shuffle" class="code">Shuffle</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#PixelSampler::samples2D" class="code">samples2D</a>[i][0], <a href="#StratifiedSampler::xPixelSamples" class="code">xPixelSamples</a> * <a href="#StratifiedSampler::yPixelSamples" class="code">yPixelSamples</a>, 1, rng);
+}</div><p>
+
+
+</p>
+<p>The 1D and 2D stratified sampling routines are implemented as utility
+functions. Both loop over the given number of strata in the domain and
+place a sample point in each one.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SamplingFunctionDefinitions-0"></span><div class="fragmentname">&lt;&lt;Sampling Function Definitions&gt;&gt;=&nbsp;<a href="#fragment-SamplingFunctionDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="StratifiedSample1D"></span>StratifiedSample1D(Float *samp, int nSamples, <a href="../Utilities/Main_Include_File.html#RNG" class="code">RNG</a> &amp;<a href="../Utilities/Main_Include_File.html#RNG::UniformFloat" class="code">rng</a>,
+        bool jitter) {
+    Float invNSamples = (Float)1 / nSamples;
+    for (int i = 0; i &lt; nSamples; ++i) {
+        Float delta = jitter ? <a href="../Utilities/Main_Include_File.html#RNG::UniformFloat" class="code">rng</a>.UniformFloat() : 0.5f;
+        samp[i] = std::min((i + delta) * invNSamples, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#OneMinusEpsilon" class="code">OneMinusEpsilon</a>);
+    }
+}</div><p>
+
+
+</p>
+<p><a href="#StratifiedSample2D"><tt>StratifiedSample2D()</tt></a> similarly generates samples in the range <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.965ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2568.1 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-parenthesis squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+<g transform="translate(1724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="550" y="513"></use>
+</g>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SamplingFunctionDefinitions-1"></span><div class="fragmentname">&lt;&lt;Sampling Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-SamplingFunctionDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-SamplingFunctionDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="StratifiedSample2D"></span>StratifiedSample2D(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *samp, int nx, int ny, <a href="../Utilities/Main_Include_File.html#RNG" class="code">RNG</a> &amp;<a href="../Utilities/Main_Include_File.html#RNG::UniformFloat" class="code">rng</a>,
+        bool jitter) {
+    Float dx = (Float)1 / nx, dy = (Float)1 / ny;
+    for (int y = 0; y &lt; ny; ++y)
+        for (int x = 0; x &lt; nx; ++x) {
+            Float jx = jitter ? <a href="../Utilities/Main_Include_File.html#RNG::UniformFloat" class="code">rng</a>.UniformFloat() : 0.5f;
+            Float jy = jitter ? <a href="../Utilities/Main_Include_File.html#RNG::UniformFloat" class="code">rng</a>.UniformFloat() : 0.5f;
+            samp-&gt;x = std::min((x + jx) * dx, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#OneMinusEpsilon" class="code">OneMinusEpsilon</a>);
+            samp-&gt;y = std::min((y + jy) * dy, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#OneMinusEpsilon" class="code">OneMinusEpsilon</a>);
+            ++samp;
+        }
+}</div><p>
+
+
+</p>
+<p>The <a href="#Shuffle"><tt>Shuffle()</tt></a> function randomly permutes an array of
+<tt>count</tt> sample values, each of which has <tt>nDimensions</tt>
+dimensions.  (In other words, blocks of values of size <tt>nDimensions</tt>
+are permuted.) 
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SamplingInlineFunctions-0"></span><div class="fragmentname">&lt;&lt;Sampling Inline Functions&gt;&gt;=&nbsp;<a href="../Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations.html#fragment-SamplingInlineFunctions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+void <span class="anchor" id="Shuffle"></span>Shuffle(T *samp, int count, int nDimensions, <a href="../Utilities/Main_Include_File.html#RNG" class="code">RNG</a> &amp;<a href="../Utilities/Main_Include_File.html#RNG::UniformUInt32" class="code">rng</a>) {
+    for (int i = 0; i &lt; count; ++i) {
+        int other = i + <a href="../Utilities/Main_Include_File.html#RNG::UniformUInt32" class="code">rng</a>.UniformUInt32(count - i);
+        for (int j = 0; j &lt; nDimensions; ++j)
+            std::swap(samp[nDimensions * i + j],
+                      samp[nDimensions * other + j]);
+    }
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Arrays of samples present us with a quandary: for example, if an integrator
+asks for an array of 64 2D sample values in the sample vector
+for each sample in a pixel, the sampler has two different goals to try to
+fulfill:
+</p>
+<ol>
+<li> It&rsquo;s desirable that the samples in the array themselves
+be well distributed in 2D (e.g., by using an <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.165ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2223.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">8 times 8</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-38" d="M457 168c0 -107 -95 -190 -208 -190c-105 0 -207 67 -207 173c0 99 86 155 144 184c-25 17 -62 42 -73 54c-42 47 -44 92 -44 110c0 93 81 167 181 167c91 0 180 -57 180 -149c0 -66 -49 -118 -121 -155c64 -40 80 -50 99 -71c38 -42 49 -87 49 -123zM386 517 c0 72 -64 124 -137 124c-71 0 -136 -42 -136 -103c0 -17 4 -51 50 -81l124 -80c60 35 99 83 99 140zM407 132c0 61 -47 91 -75 110l-123 78c-85 -47 -117 -111 -117 -169c0 -83 72 -145 158 -145c82 0 157 52 157 126Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-38" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="722" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-38" x="1723" y="0"></use>
+</g>
+</svg> stratified grid).
+Stratification here will improve the quality of the computed results
+for each individual sample vector.
+
+<li> It&rsquo;s desirable to ensure that each of the samples in the array for one image
+sample isn&rsquo;t too similar to any of the sample values for
+samples nearby in the image.  Rather, we&rsquo;d like the points to be
+well distributed with respect to their neighbors, so that over the region
+around a single pixel, there is good coverage of the entire sample space.
+</ol><p>
+
+Rather than trying to solve both of these problems simultaneously here,
+the <a href="#StratifiedSampler"><tt>StratifiedSampler</tt></a>
+only addresses the first one.  The other samplers later in this chapter
+will revisit this issue with more sophisticated techniques and solve both
+of them simultaneously to various degrees.
+
+</p>
+<p>A second complication comes from the fact that the caller may have asked
+for an arbitrary number of samples per image sample, so stratification may
+not be easily applied.  (For example, how do we generate a stratified 2D
+pattern of seven samples?)  We could just generate an <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.398ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2323.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n times 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="822" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1823" y="0"></use>
+</g>
+</svg> or <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.398ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2323.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1 times n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="722" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="1723" y="0"></use>
+</g>
+</svg> stratified pattern, but this only gives us the benefit of
+stratification in one dimension and no guarantee of a good pattern in the
+other dimension.  A <tt>StratifiedSampler::RoundSize()</tt> method could
+round requests up to the next number that&rsquo;s the square of integers, but
+instead we will use an approach called <em>Latin hypercube sampling</em>
+(LHS), which can generate any number of samples in any number of dimensions
+with a reasonably good distribution.
+
+</p>
+<p>LHS uniformly divides each dimension&rsquo;s axis into <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> regions and generates
+a jittered sample in each of the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> regions along the diagonal, as shown
+on the left in Figure&nbsp;<a href="#fig:latin-hypercube">7.20</a>.  These samples are then
+randomly shuffled in each dimension, creating a pattern with good
+distribution.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:latin-hypercube"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="LHS%20shuffle.svg" title=""><img src="LHS%20shuffle.svg" width=718 height=296 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 7.20: <span class="legend"> Latin hypercube sampling (sometimes
+called <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg>-rooks sampling) chooses samples such that only a single sample is
+present in each row and each column of a grid.  This can be done by
+generating random samples in the cells along the diagonal and then
+randomly permuting their coordinates.  One advantage of LHS is that it can
+generate any number of samples with a good distribution, not
+just <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.276ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 2701.9 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">m times n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45A" d="M848 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 20 4 31 13 55c20 53 62 167 62 224c0 36 -11 70 -54 70c-109 0 -162 -120 -165 -133l-60 -241c-8 -32 -14 -57 -45 -57c-15 0 -29 9 -29 27c0 5 9 39 13 59c9 33 10 39 20 76l28 116c8 30 15 58 15 83 c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84c0 38 -15 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23 c0 0 -12 0 -12 10c0 3 13 62 31 97c9 18 28 57 74 57c45 0 87 -30 92 -87c17 23 66 87 156 87c25 0 57 -5 82 -26c28 -24 31 -58 32 -71c37 53 88 97 163 97s115 -42 115 -107c0 -57 -42 -168 -61 -220c-9 -22 -18 -46 -18 -71c0 -23 7 -33 24 -33c55 0 87 71 102 124 c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45A" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1100" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="2101" y="0"></use>
+</g>
+</svg> samples, as with stratified patterns.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>An advantage of LHS is that it minimizes clumping of the
+samples when they are projected onto any of the axes of the sampling
+dimensions.  This property is in contrast to stratified sampling, where
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.557ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1101 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="500" y="0"></use>
+</g>
+</svg> of the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.63ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 2423.9 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n times n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="822" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="1823" y="0"></use>
+</g>
+</svg> samples in a 2D pattern may project to essentially
+the same point on each of the axes.  Figure&nbsp;<a href="#fig:stratified-bad">7.21</a> shows
+this worst-case situation for a stratified sampling pattern.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:stratified-bad"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="stratified-bad-luck.svg" title=""><img src="stratified-bad-luck.svg" width=300 height=300 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 7.21: A Worst-Case Situation for Stratified
+Sampling. <span class="legend"> In an <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.63ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 2423.9 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n times n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="822" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="1823" y="0"></use>
+</g>
+</svg> 2D pattern, up to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.557ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1101 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="500" y="0"></use>
+</g>
+</svg> of the points may
+project to essentially the same point on one of the axes.  When
+&ldquo;unlucky&rdquo; patterns like this are generated, the quality of the results
+computed with them usually suffers. (Here, 8 of the samples have
+nearly the same <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> value.)</span>
+</figcaption><p>
+ 
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>In spite of addressing the clumping problem, LHS isn&rsquo;t necessarily an
+improvement to stratified sampling; it&rsquo;s easy to construct cases where the
+sample positions are essentially colinear and large areas of the sampling
+domain have no samples near them (e.g., when the permutation of the
+original samples is the identity, leaving them all where they started).  In
+particular, as <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> increases, Latin hypercube patterns are less and less
+effective compared to stratified patterns.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="We will revisit this
+issue in the following sections, where we will discuss sample patterns that
+are simultaneously stratified and distributed in a Latin hypercube
+pattern.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p>The general-purpose <a href="#LatinHypercube"><tt>LatinHypercube()</tt></a> function generates an arbitrary
+number of LHS samples in an arbitrary dimension.  The number of elements in
+the <tt>samples</tt> array should thus be <tt>nSamples*nDim</tt>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SamplingFunctionDefinitions-2"></span><div class="fragmentname">&lt;&lt;Sampling Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-SamplingFunctionDefinitions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Monte_Carlo_Integration/Sampling_Random_Variables.html#fragment-SamplingFunctionDefinitions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="LatinHypercube"></span>LatinHypercube(Float *samples, int nSamples, int nDim, <a href="../Utilities/Main_Include_File.html#RNG" class="code">RNG</a> &amp;rng) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-GenerateLHSsamplesalongdiagonal-0">Generate LHS samples along diagonal</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-818" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-818"><i></i></a><div id="fragbit-818" class="collapse"><div class="fragmentcode">       Float invNSamples = (Float)1 / nSamples;
+       for (int i = 0; i &lt; nSamples; ++i)
+           for (int j = 0; j &lt; nDim; ++j) {
+               Float sj = (i + (<a href="../Utilities/Main_Include_File.html#RNG::UniformFloat" class="code">rng</a>.UniformFloat())) * invNSamples;
+               samples[nDim * i + j] = std::min(sj, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#OneMinusEpsilon" class="code">OneMinusEpsilon</a>);
+           }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PermuteLHSsamplesineachdimension-0">Permute LHS samples in each dimension</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-819" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-819"><i></i></a><div id="fragbit-819" class="collapse"><div class="fragmentcode">       for (int i = 0; i &lt; nDim; ++i) {
+           for (int j = 0; j &lt; nSamples; ++j) {
+               int other = j + <a href="../Utilities/Main_Include_File.html#RNG::UniformUInt32" class="code">rng</a>.UniformUInt32(nSamples - j);
+               std::swap(samples[nDim * j + i], samples[nDim * other + i]);
+           }
+       }</div></div>
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GenerateLHSsamplesalongdiagonal-0"></span><div class="fragmentname">&lt;&lt;Generate LHS samples along diagonal&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float invNSamples = (Float)1 / nSamples;
+for (int i = 0; i &lt; nSamples; ++i)
+    for (int j = 0; j &lt; nDim; ++j) {
+        Float sj = (i + (<a href="../Utilities/Main_Include_File.html#RNG::UniformFloat" class="code">rng</a>.UniformFloat())) * invNSamples;
+        samples[nDim * i + j] = std::min(sj, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#OneMinusEpsilon" class="code">OneMinusEpsilon</a>);
+    }</div><p>
+
+
+</p>
+<p>To do the permutation, this function loops over the samples, randomly permuting the
+sample points in one dimension at a time.  Note that this is a different
+permutation than the earlier <a href="#Shuffle"><tt>Shuffle()</tt></a> routine: that routine does one
+permutation, keeping all <tt>nDim</tt> sample points in each sample together,
+while here <tt>nDim</tt> separate permutations of a single dimension at a
+time are done
+(Figure&nbsp;<a href="#fig:permute-variations">7.22</a>).<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="While it&rsquo;s not necessary to
+permute the first dimension of the LHS pattern, the implementation here
+does so anyway, since making the elements of the first dimension be
+randomly ordered means that LHS patterns can be used in conjunction with
+sampling patterns from other sources without danger of correlation
+between their sample points.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p></p>
+<span class="anchor" id="fig:permute-variations"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Shuffle%20permutations.svg" title=""><img src="Shuffle%20permutations.svg" width=579 height=356 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 7.22: <span class="legend"> (a) The permutation done by the
+<a href="#Shuffle"><tt>Shuffle()</tt></a> routine moves entire blocks of elements
+around.
+(b)&nbsp;The permutation for Latin hypercube sampling permutes each
+dimension&rsquo;s samples independently. Here, the shuffling of the
+second dimension&rsquo;s samples from a four-element pattern of three dimensions
+is shown.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PermuteLHSsamplesineachdimension-0"></span><div class="fragmentname">&lt;&lt;Permute LHS samples in each dimension&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">for (int i = 0; i &lt; nDim; ++i) {
+    for (int j = 0; j &lt; nSamples; ++j) {
+        int other = j + <a href="../Utilities/Main_Include_File.html#RNG::UniformUInt32" class="code">rng</a>.UniformUInt32(nSamples - j);
+        std::swap(samples[nDim * j + i], samples[nDim * other + i]);
+    }
+}</div><p>
+
+
+</p>
+<p>Given the <tt>LatinHypercube()</tt> function, we can now write the code to
+compute sample arrays for the current pixel.  1D samples are stratified and
+then randomly shuffled, while 2D samples are generated using Latin
+hypercube sampling.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Generatearraysofstratifiedsamplesforthepixel-0"></span><div class="fragmentname">&lt;&lt;Generate arrays of stratified samples for the pixel&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">for (size_t i = 0; i &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samples1DArraySizes" class="code">samples1DArraySizes</a>.size(); ++i)
+    for (int64_t j = 0; j &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samplesPerPixel" class="code">samplesPerPixel</a>; ++j) {
+        int count = <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samples1DArraySizes" class="code">samples1DArraySizes</a>[i];
+        <a href="#StratifiedSample1D" class="code">StratifiedSample1D</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::sampleArray1D" class="code">sampleArray1D</a>[i][j * count], count, rng,
+                           jitterSamples);
+        <a href="#Shuffle" class="code">Shuffle</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::sampleArray1D" class="code">sampleArray1D</a>[i][j * count], count, 1, rng);
+    }
+for (size_t i = 0; i &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samples2DArraySizes" class="code">samples2DArraySizes</a>.size(); ++i)
+    for (int64_t j = 0; j &lt; <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samplesPerPixel" class="code">samplesPerPixel</a>; ++j) {
+        int count = <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::samples2DArraySizes" class="code">samples2DArraySizes</a>[i];
+        <a href="#LatinHypercube" class="code">LatinHypercube</a>(&amp;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::sampleArray2D" class="code">sampleArray2D</a>[i][j * count].x, count, 2, rng);
+    }</div><p>
+
+
+</p>
+<p>We&rsquo;ll use the scene in Figure&nbsp;<a href="#fig:arealight-sample-scene">7.23</a> to
+demonstrate properties of some of the <tt>Sampler</tt> implementations.
+
+</p>
+<p>
+
+</p>
+<span class="anchor" id="fig:arealight-sample-scene"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+<div class="figure-row">
+<img src="area-light-example.png" style="max-width: 100%; height: auto;" width=450 height=450>
+</div>
+<p>
+
+</p>
+<figcaption class="caption">Figure 7.23: Area Light Sampling Example Scene.</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Figure&nbsp;<a href="#fig:arealight-sample-strat">7.24</a> shows the improvement from good
+samples for the <a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#DirectLightingIntegrator"><tt>DirectLightingIntegrator</tt></a>.  The first image was computed
+with 1 image sample per pixel, each with 16 shadow samples.  The second
+was computed with 16 image samples per pixel, each with 1 shadow
+sample.  Because the <a href="#StratifiedSampler"><tt>StratifiedSampler</tt></a> could generate a good LHS
+pattern for the first case, the quality of the shadow is much better, even
+with the same total number of shadow samples taken.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:arealight-sample-strat"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 27.831%;  position:relative;">
+<div id="One_image_sample_16_shadow_samples21" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('One_image_sample_16_shadow_samples21'), {
+  title: 'One_image_sample,_16_shadow_samples21', children: [
+ { title: 'One image sample, 16 shadow samples', image: 'shadow-1-16.png' },  { title: '16 image samples, 1 shadow sample', image: 'shadow-16-1.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 7.24: Sampling an Area Light with
+Samples from the Stratified Sampler. <span class="legend"> (1) shows the result of
+using 1 image sample per pixel and 16 shadow samples, and 
+(2)&nbsp;shows the result of 16 image samples, each with just 1 shadow
+sample.  The total number of shadow samples is the same in both cases, but
+because the version with 16 shadow samples per image sample is able to
+use an LHS pattern, all of the shadow samples in a pixel&rsquo;s area are
+well distributed, while in the second image the implementation here has no way to prevent
+them from being poorly distributed.  The difference is striking.</span>
+</figcaption><p>
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p> </p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Sampling_and_Reconstruction/The_Halton_Sampler.html">Sampling and Reconstruction / The Halton Sampler</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

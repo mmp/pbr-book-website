@@ -1,0 +1,437 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Using and Understanding the Code</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Introduction.html">Introduction</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Using and Understanding the Code</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Introduction/How_to_Proceed_through_This_Book.html">(Previous: How to Proceed through This Book)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>1.6 Using and Understanding the Code</h2><p>
+
+
+</p>
+<p> We wrote <tt>pbrt</tt> in C++ but focused on readability for non-C++ experts
+by limiting usage of esoteric features of the language. Staying close to the
+core language features also helps with the system&rsquo;s portability.  In
+particular, we avoid multiple inheritance, run-time exception handling, and
+excessive use of C++11 and C++14 features. We also use only a small subset of
+C++&rsquo;s extensive standard library.
+
+</p>
+<p>We will occasionally omit short sections of <tt>pbrt</tt>&rsquo;s source code from the
+book.  For example, when there are a number of cases to be handled, all
+with nearly identical code, we will present one case and note that the code
+for the remaining cases has been omitted from the text.  Of course, all the
+omitted code can be found in the <tt>pbrt</tt> source code distribution.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#PointerorReference"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="PointerorReference"></span><h3>1.6.1  Pointer or Reference?</h3><p>
+
+
+</p>
+<p> C++ provides two different mechanisms for passing the address of
+a data structure to a function or method: pointers and references.  If a
+function argument is not intended as an output variable, either can be used
+to save the expense of passing the entire structure on the stack.  By
+convention, <tt>pbrt</tt> uses pointers when the argument will be completely
+changed by the function or method, references when some of its internal
+state will be changed but it won&rsquo;t be fully re-initialized, and
+<tt>const</tt> references when it won&rsquo;t be changed at all.  One important
+exception to this rule is that we will always use a pointer when we want to
+be able to pass <tt>nullptr</tt> to indicate that a parameter is not
+available or should not be used.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#AbstractionversusEfficiency"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="AbstractionversusEfficiency"></span><h3>1.6.2  Abstraction versus Efficiency</h3><p>
+
+
+</p>
+<p>One of the primary tensions when designing interfaces for software systems
+is making a reasonable trade-off between abstraction and efficiency.  For
+example, many programmers religiously make all data in all classes
+<tt>private</tt> and provide methods to obtain or modify the values of the
+data items.  For simple classes (e.g., <a href="../Geometry_and_Transformations/Vectors.html#Vector3f"><tt>Vector3f</tt></a>), we believe that
+approach needlessly hides a basic property of the implementation&mdash;that the class
+holds three floating-point coordinates&mdash;that we can reasonably expect to
+never change.  Of course, using no information hiding and exposing all
+details of all classes&rsquo; internals leads to a code maintenance nightmare.
+Yet, we believe that there is nothing wrong with judiciously exposing basic
+design decisions throughout the system.  For example, the fact that a
+<a href="../Geometry_and_Transformations/Rays.html#Ray"><tt>Ray</tt></a> is represented with a point, a vector, and values that give its
+extent, time, and recursion depth is a decision that doesn&rsquo;t need to be hidden
+behind a layer of abstraction.  Code elsewhere is shorter and easier to
+understand when details like these are exposed.
+
+</p>
+<p>An important thing to keep in mind when writing a software system and
+making these sorts of trade-offs is the expected final size of the system.  The
+core of <tt>pbrt</tt> (excluding the implementations of specific shapes, lights,
+and so forth), where all of the basic interfaces, abstractions, and policy
+decisions are defined, is under 20,000 lines of code.  Adding
+additional functionality to the system will generally only increase the
+amount of code in the implementations of the various abstract base classes.
+<tt>pbrt</tt> is never going to grow to be a million lines of code; this fact can
+and should be reflected in the amount of information hiding used in the
+system.  It would be a waste of programmer time (and likely a source of
+run-time inefficiency) to design the interfaces to accommodate a system of
+that level of complexity.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#CodeOptimization"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="CodeOptimization"></span><h3>1.6.3  Code Optimization</h3><p>
+
+
+</p>
+<p> We tried to make <tt>pbrt</tt> efficient through the use of
+well-chosen algorithms rather than through local micro-optimizations, so
+that the system can be more easily understood.
+However, we applied some local optimizations to the parts of <tt>pbrt</tt> that account for the most execution time, as long as doing so didn&rsquo;t make
+the code too hard to understand.  There are two main local optimization
+principles used throughout the code:
+
+</p>
+<p></p>
+<ul>
+<li> On current CPU architectures, the slowest mathematical
+operations are divides, square roots, and trigonometric functions.  Addition,
+subtraction, and multiplication are generally 10 to 50 times faster than
+those operations.  Reducing the number of slow mathematical operations can help
+performance substantially; for example, instead of repeatedly dividing by some
+value <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.128ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 485.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+</g>
+</svg>, we will often precompute the reciprocal <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.453ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 1486.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1 slash v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1001" y="0"></use>
+</g>
+</svg> and multiply
+by that instead.
+ 
+<li> The speed of CPUs continues to grow more quickly than the speed at which
+data can be loaded from main memory into the CPU.  This means that waiting for
+values to be fetched from memory can be a major performance limitation.
+Organizing algorithms and data structures in ways that give good performance
+from memory caches can speed up program execution much more than reducing the
+total number of instructions executed.  Section&nbsp;<a href="../Utilities/Memory_Management.html#sec:memory-management">A.4</a>
+in Appendix&nbsp;A
+discusses general principles for memory-efficient programming; these ideas are
+mostly applied in the ray intersection acceleration structures of
+Chapter&nbsp;<a href="../Primitives_and_Intersection_Acceleration.html#chap:acceleration">4</a> and the image map representation in
+Section&nbsp;<a href="../Texture/Image_Texture.html#sec:mipmap">10.4.3</a>, although they influence many of the design decisions
+throughout the system.  
+</ul><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TheBookWebsite"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="TheBookWebsite"></span><h3>1.6.4  The Book Web site</h3><p>
+
+
+</p>
+<p> We created a companion Web site for this book, located at
+<a href="https://pbrt.org">pbrt.org</a>.  The Web site includes the system&rsquo;s source code,
+documentation, images rendered with <tt>pbrt</tt>, example scenes, errata, and
+links to a bug reporting system.  We encourage you to visit the Web site
+and subscribe to the <tt>pbrt</tt> mailing list.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ExtendingtheSystem"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ExtendingtheSystem"></span><h3>1.6.5  Extending the System</h3><p>
+
+
+</p>
+<p>One of our goals in writing this book and building the <tt>pbrt</tt> system was to
+make it easier for developers and researchers to experiment with new (or
+old!) ideas in rendering.  One of the great joys in computer graphics is
+writing new software that makes a new image; even small changes to the
+system can be fun to experiment with.  The exercises throughout the book
+suggest many changes to make to the system, ranging from small tweaks to
+major open-ended research projects.  Section&nbsp;<a href="../Scene_Description_Interface/Adding_New_Object_Implementations.html#sec:adding-plugins">A.4</a> in
+Appendix&nbsp;B has more information about the mechanics of adding new
+implementations of the abstract base classes listed in
+Table&nbsp;<a href="../Introduction/pbrt_System_Overview.html#fig:plug-in-types">1.1</a>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Bugs"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Bugs"></span><h3>1.6.6  Bugs</h3><p>
+
+
+</p>
+<p> Although we made every effort to make <tt>pbrt</tt> as correct as
+possible through extensive testing, it is inevitable that some bugs are
+still present.
+
+</p>
+<p>If you believe you have found a bug in the system, please do the following:
+
+</p>
+<p></p>
+<ol>
+<li> Reproduce the bug with an unmodified copy of the latest version of <tt>pbrt</tt>.
+
+<li> Check the online discussion forum and the bug-tracking system at
+<a href="https://pbrt.org">pbrt.org</a>.  Your issue may be a known bug, or it may be a
+commonly misunderstood feature.
+
+<li> Try to find the simplest possible test case that demonstrates the
+bug.  Many bugs can be demonstrated by scene description files that are
+just a few lines long, and debugging is much easier with a simple scene
+than a complex one.
+
+<li> Submit a detailed bug report using our online bug-tracking system.
+Make sure that you include the scene file that demonstrates the bug
+and a detailed description of why you think <tt>pbrt</tt> is not behaving
+correctly with the scene.  If you can provide a patch to the code that fixes
+the bug, all the better!
+</ol><p>
+
+
+</p>
+<p>We will periodically release updated versions of <tt>pbrt</tt> with bug fixes and
+minor enhancements.  (Be aware that we often let bug reports accumulate for
+a few months before going through them; don&rsquo;t take this as an indication
+that we don&rsquo;t value them!)  However, we will not make major changes to the
+<tt>pbrt</tt> source code so that it doesn&rsquo;t diverge from the system described
+here in the book.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to William Newhall and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Introduction/A_Brief_History_of_Physically_Based_Rendering.html">Introduction / A Brief History of Physically Based Rendering</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

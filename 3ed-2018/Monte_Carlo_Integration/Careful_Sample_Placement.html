@@ -1,0 +1,1649 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Careful Sample Placement</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Monte_Carlo_Integration.html">Monte Carlo Integration</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Careful Sample Placement</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Monte_Carlo_Integration/Russian_Roulette_and_Splitting.html">(Previous: Russian Roulette and Splitting)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:careful-sample-placement"></span><h2>13.8 Careful Sample Placement</h2><p>
+
+
+
+</p>
+<p>A classic and effective family of techniques for variance reduction is
+based on the careful placement of samples in order to better capture the
+features of the integrand (or, more accurately, to be less likely to miss
+important features).  These techniques are used extensively in <tt>pbrt</tt>.
+Indeed, one of the tasks of <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>s in
+Chapter&nbsp;<a href="../Sampling_and_Reconstruction.html#chap:sampling-reconstruction">7</a> was to generate well-distributed
+samples for use by the integrators for just this reason, although at the
+time we offered only an intuitive sense of why this was worthwhile.  Here
+we will justify that extra work in the context of Monte Carlo integration.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#StratifiedSampling"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:stratified-variance-reduction"></span><span id="StratifiedSampling"></span><h3>13.8.1  Stratified Sampling</h3><p>
+
+
+
+</p>
+<p>Stratified sampling was first introduced in
+Section&nbsp;<a href="../Sampling_and_Reconstruction/Stratified_Sampling.html#sec:stratified-sampling">7.3</a>, and we now have the tools to
+ motivate its use.  Stratified sampling works by subdividing the
+integration domain <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.613ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 694.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Lamda</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+</g>
+</svg> into <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> nonoverlapping regions
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="13.6ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 5855.6 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Lamda 1 comma normal upper Lamda 2 comma ellipsis comma normal upper Lamda Subscript n Baseline</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2026" d="M193 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53zM472 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53zM751 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="982" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1148" y="0"></use>
+<g transform="translate(1593,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="982" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2741" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2026" x="3187" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="4191" y="0"></use>
+<g transform="translate(4636,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="982" y="-213"></use>
+</g>
+</g>
+</svg>.  Each region is called a
+<em>stratum</em>, and they must completely cover the original domain:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="10.826ex" height="6.843ex" style="vertical-align: -3.005ex;" viewBox="0 -1652.5 4661.2 2946.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">union Underscript i equals 1 Overscript n Endscripts normal upper Lamda Subscript i Baseline equals normal upper Lamda period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-22C3" d="M1046 -40c0 -218 -218 -399 -490 -399s-490 181 -490 399v925c0 17 14 32 32 32s32 -15 32 -32v-925c0 -187 193 -335 426 -335s426 148 426 335v925c0 17 14 32 32 32s32 -15 32 -32v-925Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNSIZE1-22C3" x="18" y="11"></use>
+<g transform="translate(0,-1068)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-3D" x="345" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1124" y="0"></use>
+</g>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="511" y="1596"></use>
+<g transform="translate(1315,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="982" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="2631" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="3688" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="4382" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+
+</p>
+<p>To draw samples from <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.613ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 694.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Lamda</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+</g>
+</svg>, we will draw <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.194ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 944.8 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="849" y="-213"></use>
+</g>
+</svg> samples from each
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.413ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1038.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Lamda Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="982" y="-213"></use>
+</g>
+</svg>, according to densities <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.042ex" height="2.009ex" style="vertical-align: -0.671ex; margin-left: -0.073ex;" viewBox="-31.5 -576.1 879.3 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">p Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="712" y="-213"></use>
+</g>
+</svg> inside each stratum.  A simple
+example is supersampling a pixel.  With stratified sampling, the area
+around a pixel is divided into a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.263ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2265.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">k times k</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D458" d="M508 379c0 -39 -29 -61 -55 -61c-27 0 -38 19 -38 35c0 12 9 51 57 54c-2 2 -2 3 -4 4c-8 6 -9 6 -21 8c-2 1 -3 1 -9 1c-49 0 -95 -43 -143 -96c-23 -24 -55 -56 -86 -74c85 -11 148 -40 148 -105c0 -10 0 -14 -4 -31c-4 -16 -8 -39 -8 -56c0 -36 13 -47 32 -47 c44 0 67 51 87 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -11 -57 -36 -101c-22 -37 -49 -53 -79 -53c-52 0 -92 40 -92 99c0 11 2 23 4 35c3 10 3 14 3 21c0 66 -82 82 -116 85c-6 -25 -51 -210 -56 -219c-6 -12 -21 -21 -34 -21c-9 0 -29 5 -29 28c0 6 0 8 4 22l145 576 l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-104 -422c38 15 77 55 111 93c72 80 118 88 146 88c45 0 68 -33 68 -63Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D458" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="743" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D458" x="1744" y="0"></use>
+</g>
+</svg> grid, and a sample is drawn
+from each grid cell.  This is better than taking <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.265ex" height="2.509ex" style="vertical-align: -0.338ex;" viewBox="0 -934.9 975.4 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">k squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D458" d="M508 379c0 -39 -29 -61 -55 -61c-27 0 -38 19 -38 35c0 12 9 51 57 54c-2 2 -2 3 -4 4c-8 6 -9 6 -21 8c-2 1 -3 1 -9 1c-49 0 -95 -43 -143 -96c-23 -24 -55 -56 -86 -74c85 -11 148 -40 148 -105c0 -10 0 -14 -4 -31c-4 -16 -8 -39 -8 -56c0 -36 13 -47 32 -47 c44 0 67 51 87 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -11 -57 -36 -101c-22 -37 -49 -53 -79 -53c-52 0 -92 40 -92 99c0 11 2 23 4 35c3 10 3 14 3 21c0 66 -82 82 -116 85c-6 -25 -51 -210 -56 -219c-6 -12 -21 -21 -34 -21c-9 0 -29 5 -29 28c0 6 0 8 4 22l145 576 l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-104 -422c38 15 77 55 111 93c72 80 118 88 146 88c45 0 68 -33 68 -63Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D458" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="737" y="513"></use>
+</g>
+</svg> random samples,
+since the sample locations are less likely to clump together.  Here we will
+ show why this technique reduces variance.
+
+</p>
+<p>Within a single stratum <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.413ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1038.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Lamda Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="982" y="-213"></use>
+</g>
+</svg>, the Monte Carlo estimate is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="21.673ex" height="7.343ex" style="vertical-align: -3.338ex;" viewBox="0 -1724.2 9331.2 3161.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper F Subscript i Baseline equals StartFraction 1 Over n Subscript i Baseline EndFraction sigma-summation Underscript j equals 1 Overscript n Subscript i Baseline Endscripts StartFraction f left-parenthesis upper X Subscript i comma j Baseline right-parenthesis Over p Subscript i Baseline left-parenthesis upper X Subscript i comma j Baseline right-parenthesis EndFraction comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D439" d="M748 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12c0 3 0 5 2 18c3 27 3 31 3 54c0 77 -23 110 -146 110h-132c-44 0 -45 -4 -54 -39l-64 -254h91c85 0 108 18 129 96c4 16 5 21 15 21s12 -11 12 -11c0 -3 0 -5 -3 -16l-55 -217c-5 -18 -5 -21 -15 -21 c-6 0 -12 4 -12 12c0 0 1 6 3 11c7 30 7 42 7 49c0 29 -8 45 -83 45h-97l-62 -249c-4 -15 -4 -23 -4 -23c0 -13 3 -17 32 -20c25 -2 30 -2 52 -2c23 0 25 0 28 -1c0 0 6 -3 6 -11c0 -19 -12 -19 -21 -19l-149 3l-132 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47 l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h490c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-2211" d="M1387 -130l-121 -320h-1182c-18 0 -27 0 -27 11c0 0 0 6 10 18l518 607l-529 724c0 11 0 30 1 33c3 6 4 7 27 7h1182l121 -281h-25c-34 81 -102 126 -127 142c-79 50 -166 67 -220 75c-9 2 -100 16 -234 16h-548l466 -637c7 -10 7 -15 7 -15c0 -5 -2 -8 -9 -16l-509 -597 h603c192 0 290 26 311 31c115 30 221 98 260 202h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44B" d="M851 672c0 -19 -9 -19 -22 -20c-60 -3 -98 -27 -127 -51c-32 -28 -137 -147 -205 -217l129 -309c17 -40 19 -43 86 -44c8 0 18 0 18 -12c0 -19 -12 -19 -19 -19c-25 0 -86 3 -111 3l-126 -3c-4 0 -15 0 -15 12c0 17 9 18 20 19c39 4 58 21 58 29l-5 14l-101 239l-90 -98 l-102 -108c-12 -13 -27 -29 -27 -45c0 -28 31 -30 40 -31c0 0 12 -1 12 -11c0 -20 -12 -20 -18 -20c-36 0 -75 3 -112 3c-31 0 -64 -3 -94 -3c-13 0 -13 11 -13 11c0 19 9 19 22 20c51 3 98 19 147 72c6 5 7 6 13 11l211 227l-118 279c-9 22 -15 32 -75 32 c-13 0 -23 0 -23 11c0 20 12 20 18 20c25 0 87 -3 112 -3c42 0 85 3 126 3c3 0 15 0 15 -12c0 -17 -10 -18 -20 -19c-42 -4 -59 -23 -59 -29l5 -13l84 -199l162 174c8 9 19 22 19 36c0 28 -31 30 -40 31c-7 1 -12 4 -12 11c0 20 13 20 19 20c36 0 74 -3 111 -3 c31 0 64 3 94 3c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="910" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1265" y="0"></use>
+<g transform="translate(2044,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="1064" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="282" y="676"></use>
+<g transform="translate(59,-686)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="849" y="-213"></use>
+</g>
+</g>
+</g>
+<g transform="translate(3793,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="0" y="0"></use>
+<g transform="translate(124,-1090)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-3D" x="412" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1191" y="0"></use>
+</g>
+<g transform="translate(375,1205)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="739" y="-238"></use>
+</g>
+</g>
+<g transform="translate(5237,0)">
+<g transform="translate(286,0)">
+<rect stroke="none" width="3408" height="60" x="0" y="220"></rect>
+<g transform="translate(207,815)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="552" y="0"></use>
+<g transform="translate(942,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44B" x="0" y="0"></use>
+<g transform="translate(828,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2C" x="345" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="624" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2603" y="0"></use>
+</g>
+<g transform="translate(60,-769)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="712" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="847" y="0"></use>
+<g transform="translate(1237,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44B" x="0" y="0"></use>
+<g transform="translate(828,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2C" x="345" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="624" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2898" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="9052" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.859ex" height="2.843ex" style="vertical-align: -1.005ex;" viewBox="0 -791.3 1661.4 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper X Subscript i comma j</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44B" d="M851 672c0 -19 -9 -19 -22 -20c-60 -3 -98 -27 -127 -51c-32 -28 -137 -147 -205 -217l129 -309c17 -40 19 -43 86 -44c8 0 18 0 18 -12c0 -19 -12 -19 -19 -19c-25 0 -86 3 -111 3l-126 -3c-4 0 -15 0 -15 12c0 17 9 18 20 19c39 4 58 21 58 29l-5 14l-101 239l-90 -98 l-102 -108c-12 -13 -27 -29 -27 -45c0 -28 31 -30 40 -31c0 0 12 -1 12 -11c0 -20 -12 -20 -18 -20c-36 0 -75 3 -112 3c-31 0 -64 -3 -94 -3c-13 0 -13 11 -13 11c0 19 9 19 22 20c51 3 98 19 147 72c6 5 7 6 13 11l211 227l-118 279c-9 22 -15 32 -75 32 c-13 0 -23 0 -23 11c0 20 12 20 18 20c25 0 87 -3 112 -3c42 0 85 3 126 3c3 0 15 0 15 -12c0 -17 -10 -18 -20 -19c-42 -4 -59 -23 -59 -29l5 -13l84 -199l162 174c8 9 19 22 19 36c0 28 -31 30 -40 31c-7 1 -12 4 -12 11c0 20 13 20 19 20c36 0 74 -3 111 -3 c31 0 64 3 94 3c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44B" x="0" y="0"></use>
+<g transform="translate(828,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2C" x="345" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="624" y="0"></use>
+</g>
+</g>
+</svg> is the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.987ex" height="2.509ex" style="vertical-align: -0.671ex; margin-left: -0.029ex;" viewBox="-12.5 -791.3 425 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">j</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D457" x="0" y="0"></use>
+</g>
+</svg>th sample drawn from density <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.042ex" height="2.009ex" style="vertical-align: -0.671ex; margin-left: -0.073ex;" viewBox="-31.5 -576.1 879.3 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">p Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="712" y="-213"></use>
+</g>
+</svg>.  The
+overall estimate is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="14.8ex" height="3.176ex" style="vertical-align: -1.005ex;" viewBox="0 -934.9 6372 1367.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper F equals sigma-summation Underscript i equals 1 Overscript n Endscripts v Subscript i Baseline upper F Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D439" d="M748 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12c0 3 0 5 2 18c3 27 3 31 3 54c0 77 -23 110 -146 110h-132c-44 0 -45 -4 -54 -39l-64 -254h91c85 0 108 18 129 96c4 16 5 21 15 21s12 -11 12 -11c0 -3 0 -5 -3 -16l-55 -217c-5 -18 -5 -21 -15 -21 c-6 0 -12 4 -12 12c0 0 1 6 3 11c7 30 7 42 7 49c0 29 -8 45 -83 45h-97l-62 -249c-4 -15 -4 -23 -4 -23c0 -13 3 -17 32 -20c25 -2 30 -2 52 -2c23 0 25 0 28 -1c0 0 6 -3 6 -11c0 -19 -12 -19 -21 -19l-149 3l-132 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47 l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h490c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNOPERATORS-2211" d="M999 -1l-86 -249h-829c-18 0 -27 0 -27 11c0 4 1 6 9 16l355 439l-365 502c0 31 1 32 28 32h829l86 -234h-25c-70 187 -300 194 -414 194h-396l325 -446c6 -9 7 -10 7 -14s-2 -7 -9 -16l-347 -429h425c147 0 216 24 232 29c85 29 152 90 177 165h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1026" y="0"></use>
+<g transform="translate(2082,0)">
+ <use xlink:href="#E1-LATINMODERNOPERATORS-2211" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="1494" y="675"></use>
+<g transform="translate(1056,-287)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-3D" x="345" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1124" y="0"></use>
+</g>
+</g>
+<g transform="translate(4554,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+<g transform="translate(5384,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="910" y="-213"></use>
+</g>
+</g>
+</svg>, where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.927ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 829.8 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+</svg> is the
+fractional volume of stratum <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.802ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 345.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+</g>
+</svg> (<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.678ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4167 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v Subscript i Baseline element-of left-parenthesis 0 comma 1 right-bracket</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2208" d="M587 -23c0 -11 -9 -20 -20 -20h-193c-162 0 -293 131 -293 293s131 293 293 293h193c11 0 20 -9 20 -20s-9 -20 -20 -20h-193c-133 0 -242 -103 -252 -233h445c27 0 27 -40 0 -40h-445c10 -130 119 -233 252 -233h193c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2208" x="1107" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="2052" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="2442" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2942" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="3388" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="3888" y="0"></use>
+</g>
+</svg>).
+
+</p>
+<p>The true value of the integrand in stratum <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.802ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 345.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+</g>
+</svg> is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="33.752ex" height="6.009ex" style="vertical-align: -2.671ex;" viewBox="0 -1437.2 14531.9 2587.3" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">mu Subscript i Baseline equals upper E left-bracket f left-parenthesis upper X Subscript i comma j Baseline right-parenthesis right-bracket equals StartFraction 1 Over v Subscript i Baseline EndFraction integral Underscript normal upper Lamda Subscript i Baseline Endscripts f left-parenthesis x right-parenthesis normal d x comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D707" d="M572 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-44 0 -81 28 -90 73c-24 -28 -63 -73 -133 -73c-20 0 -65 4 -97 31c-38 -154 -51 -206 -55 -215c-2 -3 -14 -21 -35 -21c-17 0 -28 12 -28 27c0 0 0 4 3 16l144 579c9 35 37 36 40 36c17 0 29 -10 29 -27 c0 -5 -10 -43 -15 -64l-42 -168c-7 -28 -14 -56 -14 -85c0 -54 24 -87 74 -87c81 0 129 91 130 96l26 102l47 187c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104c0 -20 3 -46 30 -46 c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D438" d="M763 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12s1 12 1 18c4 27 4 29 4 53c0 82 -30 111 -152 111h-141c-44 0 -45 -4 -54 -39l-60 -241h94c92 0 110 23 131 99c3 12 5 18 14 18c7 0 12 -5 12 -11l-57 -234c-4 -15 -7 -20 -15 -20c-9 0 -13 6 -13 11 c0 3 1 6 3 11c7 30 7 42 7 49c0 25 0 46 -85 46h-99l-68 -273c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h146c171 0 208 67 273 215c2 6 4 12 13 12c12 0 12 -11 12 -11s-3 -9 -5 -14l-92 -216c-7 -16 -8 -17 -31 -17h-519c-19 0 -28 0 -28 12 c0 19 11 19 28 19c79 0 81 8 91 47l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h505c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44B" d="M851 672c0 -19 -9 -19 -22 -20c-60 -3 -98 -27 -127 -51c-32 -28 -137 -147 -205 -217l129 -309c17 -40 19 -43 86 -44c8 0 18 0 18 -12c0 -19 -12 -19 -19 -19c-25 0 -86 3 -111 3l-126 -3c-4 0 -15 0 -15 12c0 17 9 18 20 19c39 4 58 21 58 29l-5 14l-101 239l-90 -98 l-102 -108c-12 -13 -27 -29 -27 -45c0 -28 31 -30 40 -31c0 0 12 -1 12 -11c0 -20 -12 -20 -18 -20c-36 0 -75 3 -112 3c-31 0 -64 -3 -94 -3c-13 0 -13 11 -13 11c0 19 9 19 22 20c51 3 98 19 147 72c6 5 7 6 13 11l211 227l-118 279c-9 22 -15 32 -75 32 c-13 0 -23 0 -23 11c0 20 12 20 18 20c25 0 87 -3 112 -3c42 0 85 3 126 3c3 0 15 0 15 -12c0 -17 -10 -18 -20 -19c-42 -4 -59 -23 -59 -29l5 -13l84 -199l162 174c8 9 19 22 19 36c0 28 -31 30 -40 31c-7 1 -12 4 -12 11c0 20 13 20 19 20c36 0 74 -3 111 -3 c31 0 64 3 94 3c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D707" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="853" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1225" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="2281" y="0"></use>
+<g transform="translate(3212,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="278" y="0"></use>
+<g transform="translate(831,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44B" x="0" y="0"></use>
+<g transform="translate(828,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2C" x="345" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="624" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2050" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="3271" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="7039" y="0"></use>
+<g transform="translate(7818,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="949" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="224" y="676"></use>
+<g transform="translate(60,-686)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+</g>
+</g>
+<g transform="translate(9452,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="855" y="-238"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="11053" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="11606" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="11995" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="12568" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="13124" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="13680" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="14253" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+and the variance in this stratum is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="27.946ex" height="6.009ex" style="vertical-align: -2.671ex;" viewBox="0 -1437.2 12032.4 2587.3" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript i Superscript 2 Baseline equals StartFraction 1 Over v Subscript i Baseline EndFraction integral Underscript normal upper Lamda Subscript i Baseline Endscripts left-parenthesis f left-parenthesis x right-parenthesis minus mu Subscript i Baseline right-parenthesis squared normal d x period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D707" d="M572 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-44 0 -81 28 -90 73c-24 -28 -63 -73 -133 -73c-20 0 -65 4 -97 31c-38 -154 -51 -206 -55 -215c-2 -3 -14 -21 -35 -21c-17 0 -28 12 -28 27c0 0 0 4 3 16l144 579c9 35 37 36 40 36c17 0 29 -10 29 -27 c0 -5 -10 -43 -15 -64l-42 -168c-7 -28 -14 -56 -14 -85c0 -54 24 -87 74 -87c81 0 129 91 130 96l26 102l47 187c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104c0 -20 3 -46 30 -46 c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="808" y="488"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="808" y="-430"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1303" y="0"></use>
+<g transform="translate(2081,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="949" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="224" y="676"></use>
+<g transform="translate(60,-686)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+</g>
+</g>
+<g transform="translate(3715,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="855" y="-238"></use>
+</g>
+</g>
+<g transform="translate(5317,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="942" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="1331" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1904" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2515" y="0"></use>
+<g transform="translate(3516,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D707" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="853" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4464" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="6864" y="673"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="10624" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="11181" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="11753" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+Thus, with <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.194ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 944.8 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="849" y="-213"></use>
+</g>
+</svg> samples in the stratum, the variance of the per-stratum
+estimator is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.738ex" height="3.176ex" style="vertical-align: -1.005ex;" viewBox="0 -934.9 2470.7 1367.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma Subscript i Superscript 2 Baseline slash n Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="808" y="488"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="808" y="-430"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1025" y="0"></use>
+<g transform="translate(1525,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="849" y="-213"></use>
+</g>
+</g>
+</svg>.  This shows that the variance
+of the overall estimator is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="20.872ex" height="19.509ex" style="vertical-align: -9.171ex;" viewBox="0 -4451.1 8986.5 8399.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartLayout 1st Row 1st Column upper V left-bracket upper F right-bracket 2nd Column equals upper V left-bracket sigma-summation v Subscript i Baseline upper F Subscript i Baseline right-bracket 2nd Row 1st Column Blank 2nd Column equals sigma-summation upper V left-bracket v Subscript i Baseline upper F Subscript i Baseline right-bracket 3rd Row 1st Column Blank 2nd Column equals sigma-summation v Subscript i Superscript 2 Baseline upper V left-bracket upper F Subscript i Baseline right-bracket 4th Row 1st Column Blank 2nd Column equals sigma-summation StartFraction v Subscript i Superscript 2 Baseline sigma Subscript i Superscript 2 Baseline Over n Subscript i Baseline EndFraction period EndLayout</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D449" d="M769 671c0 0 -1 -18 -13 -19c-37 -2 -79 -5 -128 -83l-360 -573c-8 -13 -12 -18 -28 -18c-13 0 -17 3 -20 23l-79 617c-3 25 -4 34 -60 34c-16 0 -25 0 -25 12c0 19 12 19 19 19c17 0 36 -2 54 -2s37 -1 55 -1c41 0 84 3 124 3c6 0 14 -2 14 -11c0 -20 -11 -20 -25 -20 c-46 0 -69 -13 -69 -30l68 -529l307 488s15 23 15 38c0 21 -19 31 -46 33c-7 0 -16 1 -16 12c0 19 13 19 19 19c32 0 66 -3 99 -3c27 0 56 3 82 3c8 0 13 -4 13 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D439" d="M748 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12c0 3 0 5 2 18c3 27 3 31 3 54c0 77 -23 110 -146 110h-132c-44 0 -45 -4 -54 -39l-64 -254h91c85 0 108 18 129 96c4 16 5 21 15 21s12 -11 12 -11c0 -3 0 -5 -3 -16l-55 -217c-5 -18 -5 -21 -15 -21 c-6 0 -12 4 -12 12c0 0 1 6 3 11c7 30 7 42 7 49c0 29 -8 45 -83 45h-97l-62 -249c-4 -15 -4 -23 -4 -23c0 -13 3 -17 32 -20c25 -2 30 -2 52 -2c23 0 25 0 28 -1c0 0 6 -3 6 -11c0 -19 -12 -19 -21 -19l-149 3l-132 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47 l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h490c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-2211" d="M1387 -130l-121 -320h-1182c-18 0 -27 0 -27 11c0 0 0 6 10 18l518 607l-529 724c0 11 0 30 1 33c3 6 4 7 27 7h1182l121 -281h-25c-34 81 -102 126 -127 142c-79 50 -166 67 -220 75c-9 2 -100 16 -234 16h-548l466 -637c7 -10 7 -15 7 -15c0 -5 -2 -8 -9 -16l-509 -597 h603c192 0 290 26 311 31c115 30 221 98 260 202h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE3-5B" d="M414 -451c0 -13 -11 -24 -24 -24h-164v1450h164c13 0 24 -11 24 -24s-11 -24 -24 -24h-116v-1354h116c13 0 24 -11 24 -24Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE3-5D" d="M218 975v-1450h-164c-14 0 -24 11 -24 24s10 24 24 24h116v1354h-116c-14 0 -24 11 -24 24s10 24 24 24h164Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(167,0)">
+<g transform="translate(-11,0)">
+<g transform="translate(0,3398)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="769" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="1048" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="1796" y="0"></use>
+</g>
+</g>
+<g transform="translate(2342,0)">
+<g transform="translate(0,3398)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="1056" y="0"></use>
+<g transform="translate(1992,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE3-5B"></use>
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="444" y="0"></use>
+<g transform="translate(2055,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+<g transform="translate(2885,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="910" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNSIZE3-5D" x="3873" y="0"></use>
+</g>
+</g>
+<g transform="translate(0,1471)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="2667" y="0"></use>
+<g transform="translate(3603,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+<g transform="translate(278,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+<g transform="translate(1108,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="910" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="2096" y="0"></use>
+</g>
+</g>
+<g transform="translate(0,-431)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="1056" y="0"></use>
+<g transform="translate(2667,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="686" y="488"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-430"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="3606" y="0"></use>
+<g transform="translate(4543,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+<g transform="translate(278,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="910" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="1266" y="0"></use>
+</g>
+</g>
+<g transform="translate(0,-3030)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="1056" y="0"></use>
+<g transform="translate(2500,0)">
+<g transform="translate(286,0)">
+<rect stroke="none" width="2084" height="60" x="0" y="220"></rect>
+<g transform="translate(60,831)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="686" y="488"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-430"></use>
+<g transform="translate(939,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="808" y="488"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="808" y="-430"></use>
+</g>
+</g>
+<g transform="translate(570,-686)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="849" y="-213"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="4992" y="0"></use>
+</g>
+</g>
+</g>
+</g>
+</svg>
+</div>
+<p>
+
+
+</p>
+<p>If we make the reasonable assumption that the number of samples <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.194ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 944.8 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="849" y="-213"></use>
+</g>
+</svg> is
+proportional to the volume <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.927ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 829.8 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+</svg>, then we have <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.268ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 3990.2 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n Subscript i Baseline equals v Subscript i Baseline upper N</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D441" d="M881 672c0 -19 -12 -20 -17 -20c-80 -3 -98 -34 -108 -74l-140 -557c-5 -18 -5 -21 -16 -21c-9 0 -12 2 -19 19l-249 589c-5 10 -5 12 -9 18l-132 -528c-3 -11 -4 -16 -4 -23c0 -20 8 -42 66 -44c11 0 20 -1 20 -11c0 -20 -13 -20 -18 -20c-33 0 -69 3 -103 3 c-33 0 -68 -3 -100 -3c-8 0 -13 4 -13 11c0 19 11 20 17 20c81 3 98 35 108 75l134 537c0 9 -63 9 -68 9c-19 0 -28 0 -28 11c0 20 9 20 29 20h134c23 0 24 -1 32 -19l221 -522l112 445c1 3 3 18 3 21c0 22 -11 43 -68 44c-8 0 -18 0 -18 11c0 20 12 20 18 20 c33 0 68 -3 102 -3c33 0 68 3 101 3c13 0 13 -11 13 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="849" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1222" y="0"></use>
+<g transform="translate(2278,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D441" x="3108" y="0"></use>
+</g>
+</svg>, and the
+variance of the overall estimator&nbsp;is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="21.709ex" height="5.176ex" style="vertical-align: -1.838ex;" viewBox="0 -1437.2 9347.1 2228.5" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper V left-bracket upper F Subscript upper N Baseline right-bracket equals StartFraction 1 Over upper N EndFraction sigma-summation v Subscript i Baseline sigma Subscript i Superscript 2 Baseline period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D449" d="M769 671c0 0 -1 -18 -13 -19c-37 -2 -79 -5 -128 -83l-360 -573c-8 -13 -12 -18 -28 -18c-13 0 -17 3 -20 23l-79 617c-3 25 -4 34 -60 34c-16 0 -25 0 -25 12c0 19 12 19 19 19c17 0 36 -2 54 -2s37 -1 55 -1c41 0 84 3 124 3c6 0 14 -2 14 -11c0 -20 -11 -20 -25 -20 c-46 0 -69 -13 -69 -30l68 -529l307 488s15 23 15 38c0 21 -19 31 -46 33c-7 0 -16 1 -16 12c0 19 13 19 19 19c32 0 66 -3 99 -3c27 0 56 3 82 3c8 0 13 -4 13 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D439" d="M748 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12c0 3 0 5 2 18c3 27 3 31 3 54c0 77 -23 110 -146 110h-132c-44 0 -45 -4 -54 -39l-64 -254h91c85 0 108 18 129 96c4 16 5 21 15 21s12 -11 12 -11c0 -3 0 -5 -3 -16l-55 -217c-5 -18 -5 -21 -15 -21 c-6 0 -12 4 -12 12c0 0 1 6 3 11c7 30 7 42 7 49c0 29 -8 45 -83 45h-97l-62 -249c-4 -15 -4 -23 -4 -23c0 -13 3 -17 32 -20c25 -2 30 -2 52 -2c23 0 25 0 28 -1c0 0 6 -3 6 -11c0 -19 -12 -19 -21 -19l-149 3l-132 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47 l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h490c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D441" d="M881 672c0 -19 -12 -20 -17 -20c-80 -3 -98 -34 -108 -74l-140 -557c-5 -18 -5 -21 -16 -21c-9 0 -12 2 -19 19l-249 589c-5 10 -5 12 -9 18l-132 -528c-3 -11 -4 -16 -4 -23c0 -20 8 -42 66 -44c11 0 20 -1 20 -11c0 -20 -13 -20 -18 -20c-33 0 -69 3 -103 3 c-33 0 -68 -3 -100 -3c-8 0 -13 4 -13 11c0 19 11 20 17 20c81 3 98 35 108 75l134 537c0 9 -63 9 -68 9c-19 0 -28 0 -28 11c0 20 9 20 29 20h134c23 0 24 -1 32 -19l221 -522l112 445c1 3 3 18 3 21c0 22 -11 43 -68 44c-8 0 -18 0 -18 11c0 20 12 20 18 20 c33 0 68 -3 102 -3c33 0 68 3 101 3c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-2211" d="M1387 -130l-121 -320h-1182c-18 0 -27 0 -27 11c0 0 0 6 10 18l518 607l-529 724c0 11 0 30 1 33c3 6 4 7 27 7h1182l121 -281h-25c-34 81 -102 126 -127 142c-79 50 -166 67 -220 75c-9 2 -100 16 -234 16h-548l466 -637c7 -10 7 -15 7 -15c0 -5 -2 -8 -9 -16l-509 -597 h603c192 0 290 26 311 31c115 30 221 98 260 202h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="0" y="0"></use>
+<g transform="translate(936,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+<g transform="translate(278,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D441" x="910" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="1645" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="3137" y="0"></use>
+<g transform="translate(3916,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="1001" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="250" y="676"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D441" x="60" y="-704"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="5602" y="0"></use>
+<g transform="translate(7213,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+<g transform="translate(8043,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="808" y="488"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="808" y="-430"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="9068" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+
+</p>
+<p>To compare this result to the variance without stratification, we note that
+choosing an unstratified sample is equivalent to choosing a random stratum <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.155ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 497.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper I</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43C" d="M497 671c0 -19 -8 -19 -32 -19c-79 0 -82 -10 -91 -46l-134 -533c-2 -7 -4 -15 -4 -23c0 -11 4 -15 25 -17c20 -2 25 -2 43 -2c22 0 30 0 30 -12c0 -19 -12 -19 -20 -19l-134 3l-131 -3c-3 0 -15 0 -15 11c0 20 9 20 32 20c79 0 82 10 91 47l135 539c2 9 2 11 2 16 c0 19 -27 19 -69 19c-19 0 -28 0 -28 11c0 20 13 20 20 20l133 -3l132 3c4 0 15 0 15 -12Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="0" y="0"></use>
+</g>
+</svg>
+according to the discrete probability distribution defined by the volumes
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.927ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 829.8 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+</svg> and then choosing a random sample <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.978ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 851.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper X</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44B" d="M851 672c0 -19 -9 -19 -22 -20c-60 -3 -98 -27 -127 -51c-32 -28 -137 -147 -205 -217l129 -309c17 -40 19 -43 86 -44c8 0 18 0 18 -12c0 -19 -12 -19 -19 -19c-25 0 -86 3 -111 3l-126 -3c-4 0 -15 0 -15 12c0 17 9 18 20 19c39 4 58 21 58 29l-5 14l-101 239l-90 -98 l-102 -108c-12 -13 -27 -29 -27 -45c0 -28 31 -30 40 -31c0 0 12 -1 12 -11c0 -20 -12 -20 -18 -20c-36 0 -75 3 -112 3c-31 0 -64 -3 -94 -3c-13 0 -13 11 -13 11c0 19 9 19 22 20c51 3 98 19 147 72c6 5 7 6 13 11l211 227l-118 279c-9 22 -15 32 -75 32 c-13 0 -23 0 -23 11c0 20 12 20 18 20c25 0 87 -3 112 -3c42 0 85 3 126 3c3 0 15 0 15 -12c0 -17 -10 -18 -20 -19c-42 -4 -59 -23 -59 -29l5 -13l84 -199l162 174c8 9 19 22 19 36c0 28 -31 30 -40 31c-7 1 -12 4 -12 11c0 20 13 20 19 20c36 0 74 -3 111 -3 c31 0 64 3 94 3c13 0 13 -11 13 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44B" x="0" y="0"></use>
+</g>
+</svg> in <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.662ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1146.3 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Lamda Subscript upper I</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43C" d="M497 671c0 -19 -8 -19 -32 -19c-79 0 -82 -10 -91 -46l-134 -533c-2 -7 -4 -15 -4 -23c0 -11 4 -15 25 -17c20 -2 25 -2 43 -2c22 0 30 0 30 -12c0 -19 -12 -19 -20 -19l-134 3l-131 -3c-3 0 -15 0 -15 11c0 20 9 20 32 20c79 0 82 10 91 47l135 539c2 9 2 11 2 16 c0 19 -27 19 -69 19c-19 0 -28 0 -28 11c0 20 13 20 20 20l133 -3l132 3c4 0 15 0 15 -12Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="982" y="-213"></use>
+</g>
+</svg>.  In this sense,
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.978ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 851.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper X</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44B" d="M851 672c0 -19 -9 -19 -22 -20c-60 -3 -98 -27 -127 -51c-32 -28 -137 -147 -205 -217l129 -309c17 -40 19 -43 86 -44c8 0 18 0 18 -12c0 -19 -12 -19 -19 -19c-25 0 -86 3 -111 3l-126 -3c-4 0 -15 0 -15 12c0 17 9 18 20 19c39 4 58 21 58 29l-5 14l-101 239l-90 -98 l-102 -108c-12 -13 -27 -29 -27 -45c0 -28 31 -30 40 -31c0 0 12 -1 12 -11c0 -20 -12 -20 -18 -20c-36 0 -75 3 -112 3c-31 0 -64 -3 -94 -3c-13 0 -13 11 -13 11c0 19 9 19 22 20c51 3 98 19 147 72c6 5 7 6 13 11l211 227l-118 279c-9 22 -15 32 -75 32 c-13 0 -23 0 -23 11c0 20 12 20 18 20c25 0 87 -3 112 -3c42 0 85 3 126 3c3 0 15 0 15 -12c0 -17 -10 -18 -20 -19c-42 -4 -59 -23 -59 -29l5 -13l84 -199l162 174c8 9 19 22 19 36c0 28 -31 30 -40 31c-7 1 -12 4 -12 11c0 20 13 20 19 20c36 0 74 -3 111 -3 c31 0 64 3 94 3c13 0 13 -11 13 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44B" x="0" y="0"></use>
+</g>
+</svg> is chosen <em>conditionally</em> on <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.155ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 497.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper I</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43C" d="M497 671c0 -19 -8 -19 -32 -19c-79 0 -82 -10 -91 -46l-134 -533c-2 -7 -4 -15 -4 -23c0 -11 4 -15 25 -17c20 -2 25 -2 43 -2c22 0 30 0 30 -12c0 -19 -12 -19 -20 -19l-134 3l-131 -3c-3 0 -15 0 -15 11c0 20 9 20 32 20c79 0 82 10 91 47l135 539c2 9 2 11 2 16 c0 19 -27 19 -69 19c-19 0 -28 0 -28 11c0 20 13 20 20 20l133 -3l132 3c4 0 15 0 15 -12Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="0" y="0"></use>
+</g>
+</svg>,&nbsp;so it can be shown using
+conditional probability that
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="40.289ex" height="8.843ex" style="vertical-align: -3.838ex;" viewBox="0 -2154.8 17346.5 3807.2" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartLayout 1st Row 1st Column upper V left-bracket upper F right-bracket 2nd Column equals upper E Subscript x Baseline upper V Subscript i Baseline upper F plus upper V Subscript x Baseline upper E Subscript i Baseline upper F 2nd Row 1st Column Blank 2nd Column equals StartFraction 1 Over upper N EndFraction left-bracket sigma-summation v Subscript i Baseline sigma Subscript i Superscript 2 Baseline plus sigma-summation v Subscript i Baseline left-parenthesis mu Subscript i Baseline minus upper Q right-parenthesis right-bracket comma EndLayout</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D449" d="M769 671c0 0 -1 -18 -13 -19c-37 -2 -79 -5 -128 -83l-360 -573c-8 -13 -12 -18 -28 -18c-13 0 -17 3 -20 23l-79 617c-3 25 -4 34 -60 34c-16 0 -25 0 -25 12c0 19 12 19 19 19c17 0 36 -2 54 -2s37 -1 55 -1c41 0 84 3 124 3c6 0 14 -2 14 -11c0 -20 -11 -20 -25 -20 c-46 0 -69 -13 -69 -30l68 -529l307 488s15 23 15 38c0 21 -19 31 -46 33c-7 0 -16 1 -16 12c0 19 13 19 19 19c32 0 66 -3 99 -3c27 0 56 3 82 3c8 0 13 -4 13 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D439" d="M748 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12c0 3 0 5 2 18c3 27 3 31 3 54c0 77 -23 110 -146 110h-132c-44 0 -45 -4 -54 -39l-64 -254h91c85 0 108 18 129 96c4 16 5 21 15 21s12 -11 12 -11c0 -3 0 -5 -3 -16l-55 -217c-5 -18 -5 -21 -15 -21 c-6 0 -12 4 -12 12c0 0 1 6 3 11c7 30 7 42 7 49c0 29 -8 45 -83 45h-97l-62 -249c-4 -15 -4 -23 -4 -23c0 -13 3 -17 32 -20c25 -2 30 -2 52 -2c23 0 25 0 28 -1c0 0 6 -3 6 -11c0 -19 -12 -19 -21 -19l-149 3l-132 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47 l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h490c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D438" d="M763 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12s1 12 1 18c4 27 4 29 4 53c0 82 -30 111 -152 111h-141c-44 0 -45 -4 -54 -39l-60 -241h94c92 0 110 23 131 99c3 12 5 18 14 18c7 0 12 -5 12 -11l-57 -234c-4 -15 -7 -20 -15 -20c-9 0 -13 6 -13 11 c0 3 1 6 3 11c7 30 7 42 7 49c0 25 0 46 -85 46h-99l-68 -273c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h146c171 0 208 67 273 215c2 6 4 12 13 12c12 0 12 -11 12 -11s-3 -9 -5 -14l-92 -216c-7 -16 -8 -17 -31 -17h-519c-19 0 -28 0 -28 12 c0 19 11 19 28 19c79 0 81 8 91 47l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h505c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D441" d="M881 672c0 -19 -12 -20 -17 -20c-80 -3 -98 -34 -108 -74l-140 -557c-5 -18 -5 -21 -16 -21c-9 0 -12 2 -19 19l-249 589c-5 10 -5 12 -9 18l-132 -528c-3 -11 -4 -16 -4 -23c0 -20 8 -42 66 -44c11 0 20 -1 20 -11c0 -20 -13 -20 -18 -20c-33 0 -69 3 -103 3 c-33 0 -68 -3 -100 -3c-8 0 -13 4 -13 11c0 19 11 20 17 20c81 3 98 35 108 75l134 537c0 9 -63 9 -68 9c-19 0 -28 0 -28 11c0 20 9 20 29 20h134c23 0 24 -1 32 -19l221 -522l112 445c1 3 3 18 3 21c0 22 -11 43 -68 44c-8 0 -18 0 -18 11c0 20 12 20 18 20 c33 0 68 -3 102 -3c33 0 68 3 101 3c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-2211" d="M1387 -130l-121 -320h-1182c-18 0 -27 0 -27 11c0 0 0 6 10 18l518 607l-529 724c0 11 0 30 1 33c3 6 4 7 27 7h1182l121 -281h-25c-34 81 -102 126 -127 142c-79 50 -166 67 -220 75c-9 2 -100 16 -234 16h-548l466 -637c7 -10 7 -15 7 -15c0 -5 -2 -8 -9 -16l-509 -597 h603c192 0 290 26 311 31c115 30 221 98 260 202h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70E" d="M567 407c0 -34 -36 -34 -49 -34h-110c31 -44 31 -92 31 -109c0 -154 -133 -275 -251 -275c-91 0 -150 70 -150 158c0 119 111 284 262 284h228c18 0 39 0 39 -24zM375 276c0 31 -8 97 -92 97c-34 0 -94 -14 -136 -83c-35 -59 -47 -141 -47 -171c0 -72 40 -108 89 -108 c39 0 93 26 132 85c34 51 54 133 54 180Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D707" d="M572 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-44 0 -81 28 -90 73c-24 -28 -63 -73 -133 -73c-20 0 -65 4 -97 31c-38 -154 -51 -206 -55 -215c-2 -3 -14 -21 -35 -21c-17 0 -28 12 -28 27c0 0 0 4 3 16l144 579c9 35 37 36 40 36c17 0 29 -10 29 -27 c0 -5 -10 -43 -15 -64l-42 -168c-7 -28 -14 -56 -14 -85c0 -54 24 -87 74 -87c81 0 129 91 130 96l26 102l47 187c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104c0 -20 3 -46 30 -46 c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D444" d="M740 436c0 -193 -147 -371 -302 -430c10 -76 25 -103 71 -103c35 0 93 25 117 96c2 6 4 11 12 11c4 0 11 -3 11 -10c0 -11 -48 -194 -167 -194c-83 0 -83 78 -83 110c0 13 0 15 4 77c-39 -11 -73 -15 -98 -15c-144 0 -256 101 -256 267c0 233 220 460 436 460 c149 0 255 -108 255 -269zM652 468c0 134 -73 212 -173 212c-73 0 -167 -46 -240 -148c-76 -108 -102 -250 -102 -319c0 -90 34 -168 112 -199c0 0 -6 12 -6 32c0 52 49 102 102 102c73 0 83 -73 88 -108c168 94 219 328 219 428zM406 41c0 61 -19 85 -61 85 s-80 -40 -80 -80c0 -43 32 -43 46 -43c28 0 58 7 84 18c10 4 11 5 11 20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE3-5B" d="M414 -451c0 -13 -11 -24 -24 -24h-164v1450h164c13 0 24 -11 24 -24s-11 -24 -24 -24h-116v-1354h116c13 0 24 -11 24 -24Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE3-5D" d="M218 975v-1450h-164c-14 0 -24 11 -24 24s10 24 24 24h116v1354h-116c-14 0 -24 11 -24 24s10 24 24 24h164Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(167,0)">
+<g transform="translate(-11,0)">
+<g transform="translate(0,1249)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="769" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="1048" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="1796" y="0"></use>
+</g>
+</g>
+<g transform="translate(2342,0)">
+<g transform="translate(0,1249)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+<g transform="translate(1056,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="1044" y="-213"></use>
+</g>
+<g transform="translate(2299,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="825" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="3227" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="4198" y="0"></use>
+<g transform="translate(5198,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="825" y="-213"></use>
+</g>
+<g transform="translate(6287,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="1044" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="7369" y="0"></use>
+</g>
+<g transform="translate(0,-846)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+<g transform="translate(778,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="1001" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="250" y="676"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D441" x="60" y="-704"></use>
+</g>
+</g>
+<g transform="translate(2297,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE3-5B"></use>
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="444" y="0"></use>
+<g transform="translate(2055,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+<g transform="translate(2885,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70E" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="808" y="488"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="808" y="-430"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="4133" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="5133" y="0"></use>
+<g transform="translate(6744,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+<g transform="translate(7741,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D707" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="853" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="1559" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D444" x="2560" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3351" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNSIZE3-5D" x="11482" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="14391" y="0"></use>
+</g>
+</g>
+</g>
+</g>
+</svg>
+</div>
+<p>
+
+where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.838ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 791.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper Q</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D444" d="M740 436c0 -193 -147 -371 -302 -430c10 -76 25 -103 71 -103c35 0 93 25 117 96c2 6 4 11 12 11c4 0 11 -3 11 -10c0 -11 -48 -194 -167 -194c-83 0 -83 78 -83 110c0 13 0 15 4 77c-39 -11 -73 -15 -98 -15c-144 0 -256 101 -256 267c0 233 220 460 436 460 c149 0 255 -108 255 -269zM652 468c0 134 -73 212 -173 212c-73 0 -167 -46 -240 -148c-76 -108 -102 -250 -102 -319c0 -90 34 -168 112 -199c0 0 -6 12 -6 32c0 52 49 102 102 102c73 0 83 -73 88 -108c168 94 219 328 219 428zM406 41c0 61 -19 85 -61 85 s-80 -40 -80 -80c0 -43 32 -43 46 -43c28 0 58 7 84 18c10 4 11 5 11 20Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D444" x="0" y="0"></use>
+</g>
+</svg> is the mean of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.283ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 552.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+</svg> over the whole domain <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.613ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 694.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Lamda</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+</g>
+</svg>. See Veach (<a href="Further_Reading.html#cite:VeachThesis">1997</a>) for a derivation of this result. 
+
+</p>
+<p>There are two things to notice about this expression.  First, we know that the
+right-hand sum must be nonnegative, since variance is always nonnegative.
+Second, it demonstrates that stratified sampling can never increase variance.  In
+fact, stratification always reduces variance unless the right-hand sum is 
+exactly&nbsp;0.  It can only be&nbsp;0 when the function&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.283ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 552.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+</svg> has the same
+mean over each stratum&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.413ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1038.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Lamda Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-39B" d="M661 0l-123 3c-38 0 -109 0 -144 -3v31c26 0 85 0 85 30c0 0 0 4 -5 18l-158 492l-150 -466c-5 -14 -5 -17 -5 -22c0 -24 23 -51 77 -52v-31l-113 3l-93 -3v31c70 0 90 39 100 69l192 595c5 17 7 21 23 21c11 0 17 -2 23 -21l200 -621c12 -37 15 -43 91 -43v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-39B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="982" y="-213"></use>
+</g>
+</svg>.  In fact, for stratified sampling to work
+best, we would like to maximize the right-hand sum, so it is best to
+make the strata have means that are as unequal as possible.
+This explains why <em>compact</em> strata are desirable if one does not know
+anything about the function <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.283ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 552.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+</svg>.  If the strata are wide, they will contain
+more variation and will have&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.201ex" height="2.176ex" style="vertical-align: -0.838ex;" viewBox="0 -576.1 947.8 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">mu Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D707" d="M572 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-44 0 -81 28 -90 73c-24 -28 -63 -73 -133 -73c-20 0 -65 4 -97 31c-38 -154 -51 -206 -55 -215c-2 -3 -14 -21 -35 -21c-17 0 -28 12 -28 27c0 0 0 4 3 16l144 579c9 35 37 36 40 36c17 0 29 -10 29 -27 c0 -5 -10 -43 -15 -64l-42 -168c-7 -28 -14 -56 -14 -85c0 -54 24 -87 74 -87c81 0 129 91 130 96l26 102l47 187c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104c0 -20 3 -46 30 -46 c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D707" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="853" y="-213"></use>
+</g>
+</svg> closer to the true mean&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.838ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 791.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper Q</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D444" d="M740 436c0 -193 -147 -371 -302 -430c10 -76 25 -103 71 -103c35 0 93 25 117 96c2 6 4 11 12 11c4 0 11 -3 11 -10c0 -11 -48 -194 -167 -194c-83 0 -83 78 -83 110c0 13 0 15 4 77c-39 -11 -73 -15 -98 -15c-144 0 -256 101 -256 267c0 233 220 460 436 460 c149 0 255 -108 255 -269zM652 468c0 134 -73 212 -173 212c-73 0 -167 -46 -240 -148c-76 -108 -102 -250 -102 -319c0 -90 34 -168 112 -199c0 0 -6 12 -6 32c0 52 49 102 102 102c73 0 83 -73 88 -108c168 94 219 328 219 428zM406 41c0 61 -19 85 -61 85 s-80 -40 -80 -80c0 -43 32 -43 46 -43c28 0 58 7 84 18c10 4 11 5 11 20Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D444" x="0" y="0"></use>
+</g>
+</svg>.  
+
+</p>
+<p>Figure&nbsp;<a href="#fig:mc-strat-images">13.17</a> shows the effect of using stratified
+sampling versus a uniform random distribution for sampling ray directions
+for glossy reflection.  There is a reasonable reduction in variance at
+essentially no cost in running time.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:mc-strat-images"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 89.333%;  position:relative;">
+<div id="Random_sampling54" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('Random_sampling54'), {
+  title: 'Random_sampling54', children: [
+ { title: 'Random sampling', image: 'foot-random.png' },  { title: 'Stratified sampling', image: 'foot-stratified.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 13.17: <span class="legend"> Variance is higher and the image noisier (1)&nbsp;when random sampling is used to
+compute the effect of glossy reflection 
+than (2)&nbsp;when a stratified distribution of sample directions is used
+instead. (Compare the edges of the highlights on the ground, for example.)</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>The main downside of stratified sampling is that it suffers from the same &ldquo;curse
+of dimensionality&rdquo; as standard numerical quadrature.  Full stratification in&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.924ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 828.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper D</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D437" d="M804 430c0 -219 -197 -430 -405 -430h-331c-19 0 -28 0 -28 12c0 19 11 19 28 19c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 11 -6 14 -22 16c-12 1 -30 2 -43 2c-20 0 -29 0 -29 12c0 19 11 19 30 19h336c150 0 235 -112 235 -253zM717 467c0 132 -83 185 -181 185 h-107c-43 0 -45 -3 -54 -38l-137 -549c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h113c123 0 202 76 231 113c85 110 105 274 105 323Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D437" x="0" y="0"></use>
+</g>
+</svg>
+dimensions with&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.499ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 645.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper S</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D446" d="M645 695l-54 -219c-4 -17 -5 -20 -15 -20c-12 0 -12 10 -12 10c0 6 4 24 4 56c0 112 -61 155 -144 155c-95 0 -175 -85 -175 -166c0 -53 34 -82 61 -91l67 -18c89 -23 104 -27 127 -50c15 -14 49 -48 49 -117c0 -124 -118 -257 -254 -257c-58 0 -126 14 -169 72l-49 -57 c-12 -14 -13 -15 -18 -15c-6 0 -11 4 -11 10c0 3 56 231 60 235c3 3 5 4 10 4s12 -1 12 -11c0 0 -1 -3 -2 -7c-1 -6 -6 -30 -6 -54c0 -124 111 -146 175 -146c98 0 180 94 180 184c0 82 -55 97 -92 106l-107 28c-51 15 -104 61 -104 142c0 121 120 236 247 236 c65 0 117 -25 143 -72l48 57c12 14 13 15 18 15c9 0 11 -7 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D446" x="0" y="0"></use>
+</g>
+</svg> strata per dimension requires&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.115ex" height="2.509ex" style="vertical-align: -0.338ex;" viewBox="0 -934.9 1341 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper S Superscript upper D</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D446" d="M645 695l-54 -219c-4 -17 -5 -20 -15 -20c-12 0 -12 10 -12 10c0 6 4 24 4 56c0 112 -61 155 -144 155c-95 0 -175 -85 -175 -166c0 -53 34 -82 61 -91l67 -18c89 -23 104 -27 127 -50c15 -14 49 -48 49 -117c0 -124 -118 -257 -254 -257c-58 0 -126 14 -169 72l-49 -57 c-12 -14 -13 -15 -18 -15c-6 0 -11 4 -11 10c0 3 56 231 60 235c3 3 5 4 10 4s12 -1 12 -11c0 0 -1 -3 -2 -7c-1 -6 -6 -30 -6 -54c0 -124 111 -146 175 -146c98 0 180 94 180 184c0 82 -55 97 -92 106l-107 28c-51 15 -104 61 -104 142c0 121 120 236 247 236 c65 0 117 -25 143 -72l48 57c12 14 13 15 18 15c9 0 11 -7 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D437" d="M804 430c0 -219 -197 -430 -405 -430h-331c-19 0 -28 0 -28 12c0 19 11 19 28 19c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 11 -6 14 -22 16c-12 1 -30 2 -43 2c-20 0 -29 0 -29 12c0 19 11 19 30 19h336c150 0 235 -112 235 -253zM717 467c0 132 -83 185 -181 185 h-107c-43 0 -45 -3 -54 -38l-137 -549c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h113c123 0 202 76 231 113c85 110 105 274 105 323Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D446" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D437" x="926" y="513"></use>
+</g>
+</svg> samples, which quickly
+becomes prohibitive.  Fortunately, it is often possible to stratify some of the
+dimensions independently and then randomly associate samples from different
+dimensions, as was done in Section&nbsp;<a href="../Sampling_and_Reconstruction/Stratified_Sampling.html#sec:stratified-sampling">7.3</a>.  Choosing
+which dimensions are stratified should be done in a way that stratifies
+dimensions that tend to be most highly correlated in their effect on the
+value of the integrand (<a href="Further_Reading.html#cite:owen98latin">Owen 1998</a>).  For example, for the direct
+lighting example in Section&nbsp;<a href="../Monte_Carlo_Integration/Russian_Roulette_and_Splitting.html#sec:mc-splitting">13.7.1</a>, it is far more
+effective to stratify the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.312ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2287.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis x comma y right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1897" y="0"></use>
+</g>
+</svg> pixel positions and to stratify the
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.319ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2290.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis theta comma phi right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D719" d="M573 262c0 -134 -145 -269 -306 -274l-38 -149c-3 -14 -9 -38 -11 -40c-3 -3 -5 -4 -10 -4s-12 1 -12 11c0 3 10 41 22 88l23 94c-122 7 -192 86 -192 181c0 136 147 269 306 274l58 231c4 17 5 20 15 20c12 0 12 -10 12 -10l-3 -14l-56 -227c139 -10 192 -102 192 -181z M349 421c-149 -13 -235 -153 -235 -273c0 -100 72 -135 132 -138zM508 283c0 88 -57 134 -133 138l-103 -411c150 12 236 155 236 273Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="859" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D719" x="1304" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1900" y="0"></use>
+</g>
+</svg> ray direction&mdash;stratifying <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.263ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2266.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis x comma theta right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1876" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.368ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2311.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis y comma phi right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D719" d="M573 262c0 -134 -145 -269 -306 -274l-38 -149c-3 -14 -9 -38 -11 -40c-3 -3 -5 -4 -10 -4s-12 1 -12 11c0 3 10 41 22 88l23 94c-122 7 -192 86 -192 181c0 136 147 269 306 274l58 231c4 17 5 20 15 20c12 0 12 -10 12 -10l-3 -14l-56 -227c139 -10 192 -102 192 -181z M349 421c-149 -13 -235 -153 -235 -273c0 -100 72 -135 132 -138zM508 283c0 88 -57 134 -133 138l-103 -411c150 12 236 155 236 273Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="880" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D719" x="1325" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1921" y="0"></use>
+</g>
+</svg>
+would almost certainly be ineffective.
+
+</p>
+<p>Another solution to the curse of dimensionality that has many of the same
+advantages of stratification is to use Latin hypercube sampling (also
+introduced in Section&nbsp;<a href="../Sampling_and_Reconstruction/Stratified_Sampling.html#sec:stratified-sampling">7.3</a>), which can generate
+any number of samples independent of the number of dimensions.
+Unfortunately, Latin hypercube sampling isn&rsquo;t as effective as stratified
+sampling at reducing variance, especially as the number of samples taken
+becomes large.  Nevertheless, Latin hypercube sampling is provably no worse
+than uniform random sampling and is often much better.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#QuasiMonteCarlo"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="QuasiMonteCarlo"></span><h3>13.8.2  Quasi Monte Carlo</h3><p>
+
+
+</p>
+<p>The low-discrepancy sampling techniques introduced in
+Chapter&nbsp;<a href="../Sampling_and_Reconstruction.html#chap:sampling-reconstruction">7</a> are the foundation of a branch of Monte Carlo
+called <em>quasi Monte Carlo</em>.  The key component of quasi&ndash;Monte Carlo
+techniques is that they replace the pseudo-random numbers used in standard Monte Carlo
+with low-discrepancy point sets generated by carefully designed deterministic
+algorithms.
+
+</p>
+<p>The advantage of this approach is that for many integration problems,
+quasi&ndash;Monte Carlo techniques have asymptotically faster rates of
+convergence than methods based on standard Monte Carlo.  Many of the
+techniques used in regular Monte Carlo algorithms can be shown to work
+equally well with quasi&ndash;random sample points, including importance
+sampling.  Some others (e.g., rejection sampling) cannot.  While the
+asymptotic convergence rates are not generally applicable to the
+discontinuous integrands in graphics because they depend on smoothness
+properties in the integrand, quasi Monte Carlo nevertheless generally
+performs better than regular Monte Carlo for these integrals in practice.
+The &ldquo;Further Reading&rdquo; section at the end of this chapter has more
+information about this topic.
+
+</p>
+<p>In <tt>pbrt</tt>, we have generally glossed over the differences between these two
+approaches and have localized them in the <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>s in
+Chapter&nbsp;<a href="../Sampling_and_Reconstruction.html#chap:sampling-reconstruction">7</a>.  This introduces the possibility of
+subtle errors if a <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> generates quasi&ndash;random sample points that an
+<a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a> then improperly uses as part of an implementation of an
+algorithm that is not suitable for quasi Monte Carlo.  As long as
+<a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a>s only use these sample points for importance sampling or other
+techniques that are applicable in both approaches, this isn&rsquo;t a problem.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#WarpingSamplesandDistortion"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:warping-distortion"></span><span id="WarpingSamplesandDistortion"></span><h3>13.8.3  Warping Samples and Distortion</h3><p>
+
+
+
+</p>
+<p>When applying stratified sampling or low-discrepancy sampling to problems
+like choosing points on light sources for integration for area lighting,
+<tt>pbrt</tt> generates a set of samples <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.611ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3277 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u 1 comma u 2 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="809" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1415" y="0"></use>
+<g transform="translate(1861,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="809" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2887" y="0"></use>
+</g>
+</svg> over the domain <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.965ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2568.1 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-parenthesis squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+<g transform="translate(1724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="550" y="513"></use>
+</g>
+</g>
+</svg> and then uses
+algorithms based on the transformation methods introduced in
+Sections&nbsp;<a href="../Monte_Carlo_Integration/Transforming_between_Distributions.html#sec:mc-transforming">13.5</a>
+and&nbsp;<a href="../Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations.html#sec:mc-multidimensional-sampling">13.6</a> to map these samples  to points on the light source.  Implicit in this process is the
+expectation that the transformation to points on the light source will
+generally preserve the stratification properties of the samples from
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.965ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2568.1 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-parenthesis squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+<g transform="translate(1724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="550" y="513"></use>
+</g>
+</g>
+</svg>&mdash;in other words, nearby samples should map to nearby positions
+on the surface of the light, and faraway samples should map to far-apart
+positions on the light.  If the mapping does not preserve this
+property, then the benefits of stratification are lost.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:mc-strat-02-warp"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="longquad-jittered.svg" title=""><img src="longquad-jittered.svg" width=540 height=138 style="max-width: 100%;"></a>
+  <a href="longquad-02.svg" title=""><img src="longquad-02.svg" width=540 height=141 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 13.18: <span class="legend"> (a) Transforming a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.165ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2223.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">4 times 4</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="722" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="1723" y="0"></use>
+</g>
+</svg> stratified
+sampling pattern to points on a long and thin quadrilateral light source 
+effectively gives less than 16 well-distributed samples; stratification in the
+vertical direction is not helpful. (b)&nbsp;Samples from a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 2 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg>-sequence
+remain well distributed even after this transformation.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Shirley&rsquo;s square-to-circle mapping (Figure&nbsp;<a href="../Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations.html#fig:wedgemap">13.13</a>) preserves
+stratification more effectively than the straightforward mapping
+(Figure&nbsp;<a href="../Monte_Carlo_Integration/2D_Sampling_with_Multidimensional_Transformations.html#fig:square-to-sphere">13.12</a>), which has less compact strata away
+from the center.  This issue also explains why low-discrepancy sequences
+are generally more effective than stratified patterns in practice: they are
+more robust with respect to preserving their good distribution properties
+after being transformed to other domains.
+Figure&nbsp;<a href="#fig:mc-strat-02-warp">13.18</a> shows what happens when a set of 16
+well-distributed sample points are transformed to be points on a skinny
+quadrilateral by scaling them to cover its surface;
+samples from a
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 2 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg>-sequence remain well distributed, but samples from a stratified
+pattern fare much less well.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Scott Pilet and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Monte_Carlo_Integration/Bias.html">Monte Carlo Integration / Bias</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

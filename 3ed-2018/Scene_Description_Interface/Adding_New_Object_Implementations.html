@@ -1,0 +1,241 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Adding New Object Implementations</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface.html">Scene Description Interface</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Adding New Object Implementations</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface/Scene_Definition.html">(Previous: Scene Definition)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:adding-plugins"></span><h2>B.4 Adding New Object Implementations</h2><p>
+
+
+
+</p>
+<p>We will briefly review the overall process that <tt>pbrt</tt> uses to create
+instances of implementations of the various abstract interface
+classes like <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a>s, <a href="../Camera_Models/Camera_Model.html#Camera"><tt>Camera</tt></a>s, <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a>s, etc.,
+at run time.  We will focus on the details for the <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> class, since
+the other types are handled similarly.
+
+</p>
+<p>When the API needs to create a shape, it has the string name of the shape
+and the <a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet"><tt>ParamSet</tt></a> that represents the corresponding information in the
+input file.  These need to be used together to create a specific instance
+of the named shape.  <a href="../Scene_Description_Interface/Scene_Definition.html#MakeShapes"><tt>MakeShapes()</tt></a> has a series of <tt>if</tt> tests to
+determine which shape creation function to call; the one
+for <a href="../Shapes/Spheres.html#Sphere"><tt>Sphere</tt></a>s, <a href="#CreateSphereShape"><tt>CreateSphereShape()</tt></a>, is shown here:
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SphereMethodDefinitions-7"></span><div class="fragmentname">&lt;&lt;Sphere Method Definitions&gt;&gt;+=&nbsp;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#fragment-SphereMethodDefinitions-6"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">std::shared_ptr&lt;<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>&gt; <span class="anchor" id="CreateSphereShape"></span>CreateSphereShape(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *o2w,
+        const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *w2o, bool reverseOrientation,
+        const ParamSet &amp;params) {
+    Float radius = params.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneFloat" class="code">FindOneFloat</a>("radius", 1.f);
+    Float zmin = params.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneFloat" class="code">FindOneFloat</a>("zmin", -radius);
+    Float zmax = params.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneFloat" class="code">FindOneFloat</a>("zmax", radius);
+    Float phimax = params.<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet::FindOneFloat" class="code">FindOneFloat</a>("phimax", 360.f);
+    return std::make_shared&lt;Sphere&gt;(o2w, w2o, reverseOrientation, radius,
+                                    zmin, zmax, phimax);
+}</div><p>
+
+
+</p>
+<p>The appropriate named parameter values are extracted from the parameter
+list, sensible defaults are used for ones not present, and the
+appropriate values are passed to the <a href="../Shapes/Spheres.html#Sphere"><tt>Sphere</tt></a> constructor.  As another
+alternative, we could have written the <a href="../Shapes/Spheres.html#Sphere"><tt>Sphere</tt></a> constructor to just
+take a <a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet"><tt>ParamSet</tt></a> as a parameter and extracted the parameters there.
+We followed this approach instead in order to make it easier to create
+spheres for other uses without having to create a full <a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet"><tt>ParamSet</tt></a> to
+specify the parameters to it.
+
+</p>
+<p>Thus, adding a new implementation to <tt>pbrt</tt> requires adding the new
+source files to the build process so they are compiled and linked 
+to the executable, modifying the appropriate creation function
+(<a href="../Scene_Description_Interface/Scene_Definition.html#MakeShapes"><tt>MakeShapes()</tt></a>, <tt>MakeLight()</tt><span class="anchor" id="MakeLight"></span>,
+etc.) in <a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/api.cpp"><tt>core/api.cpp</tt></a> to
+look for the new type&rsquo;s name and call its creation function, 
+in addition to implementing the creation function (like <a href="#CreateSphereShape"><tt>CreateSphereShape()</tt></a>) that
+extracts parameters and calls the object&rsquo;s constructor, returning a new
+instance of the object.
+ 
+
+
+</p>
+<p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Denis A. Gladkiy and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Scene_Description_Interface/Further_Reading.html">Scene Description Interface / Further Reading</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2000 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Photorealistic Rendering and the Ray-Tracing Algorithm</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Introduction.html">Introduction</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Photorealistic Rendering and the Ray-Tracing Algorithm</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Introduction/Literate_Programming.html">(Previous: Literate Programming)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>1.2 Photorealistic Rendering and the Ray-Tracing Algorithm</h2><p>
+
+
+</p>
+<p> The goal of photorealistic rendering is to create an image of a
+3D scene that is indistinguishable from a photograph of the same scene.
+Before we describe the rendering process, it is important to understand
+that in this context the word <em>indistinguishable</em> is imprecise because it
+involves a human observer, and different observers may perceive the same
+image differently.  Although we will cover a few perceptual issues in this
+book, accounting for the precise characteristics of a given observer is a
+very difficult and largely unsolved problem.  For the most part, we will be
+satisfied with an accurate simulation of the physics of light and its
+interaction with matter, relying on our understanding of display technology
+to present the best possible image to the viewer.
+
+</p>
+<p>Almost all photorealistic rendering systems are based on the ray-tracing
+algorithm.  Ray tracing is actually a very simple algorithm; it is based on
+following the path of a ray of light through a scene as it interacts with
+and bounces off objects in an environment.  Although there are many ways to
+write a ray tracer, all such systems simulate at least the following
+objects and phenomena:
+
+</p>
+<p></p>
+<ul>
+<li> <em>Cameras:</em> A camera model determines how and from where the scene is
+being viewed, including how an image of the scene is recorded on a
+sensor. Many rendering systems generate viewing rays starting at the camera
+that are then traced into the scene.
+<li> <em>Ray&ndash;object intersections:</em> We must be able to tell precisely where
+a given ray intersects a given geometric object.  In addition, we need
+to determine certain properties of the object at the
+intersection point, such as a surface normal or its material.  
+Most ray tracers also have
+some facility for testing the intersection of a ray with multiple objects,
+typically returning the closest intersection along the ray.
+<li> <em>Light sources:</em> Without lighting, there would be 
+little point in rendering a scene.  A ray tracer must model the distribution
+of light throughout the scene, including not only the locations of
+the lights themselves but also the way in which they distribute 
+their energy throughout space.  
+<li> <em>Visibility:</em> In order to know whether a given light deposits energy
+at a point on a surface, we must know whether there is an uninterrupted path
+from the point to the light source.  Fortunately, this question is easy to
+answer in a ray tracer, since we can just construct the ray from the surface to
+the light, find the closest ray&ndash;object intersection, and compare the
+intersection distance to the light distance. 
+<li> <em>Surface scattering:</em>  Each object must provide a description of its
+appearance, including information about how light interacts with the object&rsquo;s
+surface, as well as the nature of the reradiated (or <em>scattered</em>) light.
+Models for surface scattering are typically
+parameterized so that they can simulate a variety of appearances.
+<li> <em>Indirect light transport:</em> Because light can arrive at a surface
+after bouncing off or passing through other surfaces, it is usually
+necessary to
+trace additional rays originating at the surface to fully capture this
+effect.
+<li> <em>Ray propagation:</em>  We need to know what happens to the light
+traveling along a ray as it passes through space.  If we are rendering a scene
+in a vacuum, light energy remains constant along a ray.  Although true
+vacuums are unusual on Earth, they are a reasonable approximation for many
+environments. More sophisticated models are available for
+tracing rays through fog, smoke, the Earth&rsquo;s atmosphere, and so on.
+</ul><p>
+
+
+</p>
+<p>We will briefly discuss each of these simulation tasks in this section.  In
+the next section, we will show <tt>pbrt</tt>&rsquo;s high-level interface to the
+underlying simulation components and follow the progress of a single ray
+through the main rendering loop.  We will also present the implementation
+of a surface scattering model based on Turner Whitted&rsquo;s original
+ray-tracing algorithm.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Cameras"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Cameras"></span><h3>1.2.1  Cameras</h3><p>
+
+
+</p>
+<p> Nearly everyone has used a camera and is familiar with its basic
+functionality: you indicate your desire to record an image of the world
+(usually by pressing a button or tapping a screen), and the image is
+recorded onto a piece of film or an electronic sensor.  One of the simplest
+devices for taking photographs is called the
+<em>pinhole camera</em>.  Pinhole cameras consist of a light-tight box with a
+tiny hole at one end (Figure&nbsp;<a href="#fig:pinhole-camera">1.1</a>).  When the hole is
+uncovered, light enters this hole and falls on a piece of photographic
+paper that is affixed to the other end of the box.  Despite its simplicity,
+this kind of camera is still used today, frequently for artistic purposes.
+Very long exposure times are necessary to get enough light on the film to
+form an image.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:pinhole-camera"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Pinhole%20Camera.svg" title=""><img src="Pinhole%20Camera.svg" width=719 height=221 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 1.1: A Pinhole Camera.</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Although most cameras are substantially more complex than the pinhole camera,
+it is a convenient starting point for simulation.  The most important function
+of the camera is to define the portion of the scene that will be recorded
+onto the film.  In Figure&nbsp;<a href="#fig:pinhole-camera">1.1</a>, we can see how
+connecting the pinhole to the edges of the film creates a double pyramid that
+extends into the scene.  Objects that are not inside this pyramid cannot be
+imaged onto the film.  Because actual cameras image a more complex shape than a
+pyramid, we will refer to the region of space that can potentially be
+imaged onto the film as the <em>viewing volume</em>.
+
+</p>
+<p>
+Another way to think about the pinhole camera is to place the film plane in
+<em>front</em> of the pinhole but at the same distance
+(Figure&nbsp;<a href="#fig:pinhole-camera-simulation">1.2</a>).  Note that connecting the hole to the
+film defines exactly the same viewing volume as before.  Of course, this is not
+a practical way to build a real camera, but for simulation purposes it is a
+convenient abstraction.  When the film (or image) plane is in front of the
+pinhole, the pinhole is frequently referred to as the <em>eye</em>.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:pinhole-camera-simulation"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Film%20in%20front.svg" title=""><img src="Film%20in%20front.svg" width=330 height=165 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 1.2: <span class="legend"> When we simulate a pinhole camera,
+we place the film in front of the hole at the near plane, and the hole is
+renamed the <em>eye</em>.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Now we come to the crucial issue in rendering: at each point in the image, what
+color value does the camera record?  If we recall the original pinhole camera, it is
+clear that only light rays that travel along the vector between the pinhole
+and a point on the film can contribute to that film location.  In our
+simulated camera with the film plane in front of the eye, we are interested in
+the amount of light traveling from the image point to the&nbsp;eye.
+
+</p>
+<p>Therefore, an important task of the camera simulator is to take a point on
+the image and generate <em>rays</em> along which incident light will
+contribute to that image location.  Because a ray consists of an origin
+point and a direction vector, this task is particularly simple for the
+pinhole camera model of Figure&nbsp;<a href="#fig:pinhole-camera-simulation">1.2</a>: it uses
+the pinhole for the origin and the vector from the pinhole to the near
+plane as the ray&rsquo;s direction.  For more complex camera models involving
+multiple lenses, the calculation of the ray that corresponds to a given
+point on the image may be more involved.
+(Section&nbsp;<a href="../Camera_Models/Realistic_Cameras.html#sec:realistic-cameras">6.4</a> describes the implementation of such a
+model.)
+
+</p>
+<p>With the process of converting image locations to rays completely
+encapsulated in the camera module, the rest of the rendering system can
+focus on evaluating the lighting along those rays, and a variety of camera
+models can be supported.  <tt>pbrt</tt>&rsquo;s camera abstraction is described in detail
+in Chapter&nbsp;<a href="../Camera_Models.html#chap:camera">6</a>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#RayndashObjectIntersections"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="RayndashObjectIntersections"></span><h3>1.2.2  Ray&ndash;Object Intersections</h3><p>
+
+
+</p>
+<p> Each time the camera generates a ray, the first task of the renderer is to determine which
+object, if any, that ray intersects first and where the intersection occurs.
+This intersection point is the visible point along the ray, and we will want to
+simulate the interaction of light with the object at this point.  To find the
+intersection, we must test the ray for intersection against all objects in the
+scene and select the one that the ray intersects first.  Given a ray
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.912ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 392.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-72" x="0" y="0"></use>
+</g>
+</svg>, we first start by writing it in <em>parametric form</em>: 
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="13.634ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 5870 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal r left-parenthesis t right-parenthesis equals normal o plus t bold d comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D41D" d="M601 0l-183 -6v49c-31 -25 -79 -49 -140 -49c-148 0 -240 95 -240 227c0 141 105 229 251 229c33 0 85 -6 135 -45v195c0 39 -7 39 -69 39v47l177 8v-608c0 -39 7 -39 69 -39v-47zM418 103v250c-22 29 -62 61 -119 61c-31 0 -78 -10 -107 -52c-26 -39 -26 -93 -26 -141 c0 -70 0 -191 122 -191c76 0 117 55 130 73Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-72" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="392" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="782" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1143" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1810" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="2867" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="3589" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="4590" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D41D" x="4952" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="5591" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+ 
+where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.162ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 500.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal o</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="0" y="0"></use>
+</g>
+</svg> is the ray&rsquo;s origin, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.485ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 639.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold d</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D41D" d="M601 0l-183 -6v49c-31 -25 -79 -49 -140 -49c-148 0 -240 95 -240 227c0 141 105 229 251 229c33 0 85 -6 135 -45v195c0 39 -7 39 -69 39v47l177 8v-608c0 -39 7 -39 69 -39v-47zM418 103v250c-22 29 -62 61 -119 61c-31 0 -78 -10 -107 -52c-26 -39 -26 -93 -26 -141 c0 -70 0 -191 122 -191c76 0 117 55 130 73Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D41D" x="0" y="0"></use>
+</g>
+</svg> is its direction
+vector, and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> is a parameter whose legal range is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.329ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2725.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma normal infinity right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-221E" d="M943 216c0 -118 -76 -227 -192 -227c-79 0 -138 42 -170 69c-22 19 -23 20 -90 101c-13 -22 -102 -170 -246 -170c-119 0 -189 115 -189 226c0 118 76 227 192 227c79 0 138 -42 170 -69c22 -19 23 -20 90 -101c13 22 102 170 246 170c119 0 189 -115 189 -226zM921 216 c0 90 -54 194 -160 194c-113 0 -189 -105 -227 -173c28 -34 73 -97 101 -128c45 -49 86 -72 132 -72c84 0 154 79 154 179zM465 194c-28 34 -73 97 -101 128c-45 49 -86 72 -132 72c-84 0 -154 -79 -154 -179c0 -90 54 -194 160 -194c113 0 189 105 227 173Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-221E" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2335" y="0"></use>
+</g>
+</svg>.  We can
+obtain a point along the ray by specifying its parametric <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> value and
+evaluating the above equation.  
+
+</p>
+<p>It is often easy to find the intersection between the ray <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.912ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 392.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-72" x="0" y="0"></use>
+</g>
+</svg> and a surface
+defined by an implicit function <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="13.431ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 5782.9 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper F left-parenthesis x comma y comma z right-parenthesis equals 0</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D439" d="M748 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12c0 3 0 5 2 18c3 27 3 31 3 54c0 77 -23 110 -146 110h-132c-44 0 -45 -4 -54 -39l-64 -254h91c85 0 108 18 129 96c4 16 5 21 15 21s12 -11 12 -11c0 -3 0 -5 -3 -16l-55 -217c-5 -18 -5 -21 -15 -21 c-6 0 -12 4 -12 12c0 0 1 6 3 11c7 30 7 42 7 49c0 29 -8 45 -83 45h-97l-62 -249c-4 -15 -4 -23 -4 -23c0 -13 3 -17 32 -20c25 -2 30 -2 52 -2c23 0 25 0 28 -1c0 0 6 -3 6 -11c0 -19 -12 -19 -21 -19l-149 3l-132 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47 l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h490c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="748" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="1138" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1710" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="2155" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2646" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="3091" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3558" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="4226" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="5282" y="0"></use>
+</g>
+</svg>.  We first substitute the ray
+equation into the implicit equation, producing a new function whose only
+parameter is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg>.  We then solve this function for <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> and substitute the
+smallest positive root into the ray equation to find the desired point.
+For example, the implicit equation of a sphere centered at the origin 
+with radius&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.049ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 451.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+</g>
+</svg>&nbsp;is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="22.251ex" height="3.009ex" style="vertical-align: -0.671ex;" viewBox="0 -1006.6 9580.2 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x squared plus y squared plus z squared minus r squared equals 0 period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="809" y="583"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="1248" y="0"></use>
+<g transform="translate(2249,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="693" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="3415" y="0"></use>
+<g transform="translate(4416,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="662" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="5560" y="0"></use>
+<g transform="translate(6561,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="638" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="7744" y="0"></use>
+<g transform="translate(8801,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-30"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="500" y="0"></use>
+</g>
+</g>
+</svg>
+</div>
+<p>
+
+Substituting the ray equation, we have
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="49.526ex" height="3.509ex" style="vertical-align: -1.005ex;" viewBox="0 -1078.4 21323.8 1510.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis normal o Subscript x Baseline plus t bold d Subscript x Baseline right-parenthesis squared plus left-parenthesis normal o Subscript y Baseline plus t bold d Subscript y Baseline right-parenthesis squared plus left-parenthesis normal o Subscript z Baseline plus t bold d Subscript z Baseline right-parenthesis squared minus r squared equals 0 period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D41D" d="M601 0l-183 -6v49c-31 -25 -79 -49 -140 -49c-148 0 -240 95 -240 227c0 141 105 229 251 229c33 0 85 -6 135 -45v195c0 39 -7 39 -69 39v47l177 8v-608c0 -39 7 -39 69 -39v-47zM418 103v250c-22 29 -62 61 -119 61c-31 0 -78 -10 -107 -52c-26 -39 -26 -93 -26 -141 c0 -70 0 -191 122 -191c76 0 117 55 130 73Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="707" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="1617" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="2617" y="0"></use>
+<g transform="translate(2979,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D41D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="904" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4123" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="6382" y="673"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="5189" y="0"></use>
+<g transform="translate(6189,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="707" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="1559" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="2559" y="0"></use>
+<g transform="translate(2921,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D41D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="904" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4007" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="6218" y="673"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="11263" y="0"></use>
+<g transform="translate(12263,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="707" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="1542" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="2543" y="0"></use>
+<g transform="translate(2905,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D41D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="904" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3975" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="6172" y="673"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="17304" y="0"></use>
+<g transform="translate(18305,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="638" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="19488" y="0"></use>
+<g transform="translate(20544,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-30"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="500" y="0"></use>
+</g>
+</g>
+</svg>
+</div>
+<p>
+
+All of the values besides <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> are known, giving us an easily solved
+quadratic equation in <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg>. If there are no real roots, the ray misses the
+sphere; if there are roots, the smallest positive one gives the intersection
+point.
+
+</p>
+<p>The intersection point alone is not enough information for the rest of the
+ray tracer; it needs to know certain properties of the surface at the
+point.  First, a representation of the material at the point must be
+determined and passed along to later stages of the ray-tracing algorithm.
+Second, additional geometric information about the intersection point will also
+be required in order to shade the point.  For example, the surface normal
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.485ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 639.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold n Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="0" y="0"></use>
+</g>
+</svg> is always required.  Although many ray tracers operate with only
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.485ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 639.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold n Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="0" y="0"></use>
+</g>
+</svg>, more sophisticated rendering systems like <tt>pbrt</tt> require even more
+information, such as various partial derivatives of position and surface
+normal with respect to the local parameterization of the surface.
+
+</p>
+<p>Of course, most scenes are made up of multiple objects.  The brute-force
+approach would be to test the ray against each object in turn, choosing the
+minimum positive <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> value of all intersections to find the closest
+intersection.  This approach, while correct, is very slow, even for scenes
+of modest complexity.  A better approach is to incorporate an
+<em>acceleration structure</em> that quickly rejects whole groups of objects
+during the ray intersection process.  This ability to quickly cull
+irrelevant geometry means that ray tracing frequently runs in <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="10.531ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4534.3 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper O left-parenthesis upper I log upper N right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D442" d="M740 436c0 -239 -223 -458 -435 -458c-144 0 -256 101 -256 267c0 233 220 460 436 460c149 0 255 -108 255 -269zM651 475c0 149 -90 205 -172 205c-79 0 -177 -52 -246 -156c-77 -117 -91 -263 -91 -307c0 -132 70 -213 169 -213c84 0 166 59 214 120 c99 123 126 279 126 351Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43C" d="M497 671c0 -19 -8 -19 -32 -19c-79 0 -82 -10 -91 -46l-134 -533c-2 -7 -4 -15 -4 -23c0 -11 4 -15 25 -17c20 -2 25 -2 43 -2c22 0 30 0 30 -12c0 -19 -12 -19 -20 -19l-134 3l-131 -3c-3 0 -15 0 -15 11c0 20 9 20 32 20c79 0 82 10 91 47l135 539c2 9 2 11 2 16 c0 19 -27 19 -69 19c-19 0 -28 0 -28 11c0 20 13 20 20 20l133 -3l132 3c4 0 15 0 15 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6C" d="M255 0l-111 3l-111 -3v31c67 0 78 0 78 45v520c0 49 -8 56 -78 56v31l144 11v-618c0 -45 11 -45 78 -45v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-67" d="M485 404c0 -23 -19 -30 -29 -30c-16 0 -29 12 -29 29c0 12 5 23 16 27c-3 1 -10 1 -10 1c-18 0 -54 -5 -90 -39c25 -23 41 -60 41 -97c0 -77 -69 -146 -162 -146c-19 0 -60 3 -99 31c-17 -20 -17 -43 -17 -47c0 -32 21 -63 53 -67c7 -1 50 -1 75 -1c61 0 119 0 172 -28 c51 -28 65 -79 65 -114c0 -78 -104 -129 -222 -129c-122 0 -221 55 -221 127c0 40 32 83 92 100c-31 20 -44 58 -44 89c0 35 18 68 31 83c-25 21 -47 59 -47 103c0 77 69 146 162 146c22 0 64 -3 106 -36c42 41 86 47 106 47c39 0 51 -32 51 -49zM309 296 c0 23 0 123 -87 123c-40 0 -63 -28 -71 -40c-15 -25 -16 -57 -16 -84c0 -23 0 -123 87 -123c40 0 63 28 71 40c15 25 16 57 16 84zM419 -79c0 86 -112 86 -198 86h-59c-44 -3 -82 -40 -82 -86c0 -53 69 -104 170 -104c98 0 169 50 169 104Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D441" d="M881 672c0 -19 -12 -20 -17 -20c-80 -3 -98 -34 -108 -74l-140 -557c-5 -18 -5 -21 -16 -21c-9 0 -12 2 -19 19l-249 589c-5 10 -5 12 -9 18l-132 -528c-3 -11 -4 -16 -4 -23c0 -20 8 -42 66 -44c11 0 20 -1 20 -11c0 -20 -13 -20 -18 -20c-33 0 -69 3 -103 3 c-33 0 -68 -3 -100 -3c-8 0 -13 4 -13 11c0 19 11 20 17 20c81 3 98 35 108 75l134 537c0 9 -63 9 -68 9c-19 0 -28 0 -28 11c0 20 9 20 29 20h134c23 0 24 -1 32 -19l221 -522l112 445c1 3 3 18 3 21c0 22 -11 43 -68 44c-8 0 -18 0 -18 11c0 20 12 20 18 20 c33 0 68 -3 102 -3c33 0 68 3 101 3c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D442" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="763" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="1153" y="0"></use>
+<g transform="translate(1817,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-6C"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-67" x="779" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D441" x="3263" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4144" y="0"></use>
+</g>
+</svg>
+time, where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.155ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 497.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper I</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43C" d="M497 671c0 -19 -8 -19 -32 -19c-79 0 -82 -10 -91 -46l-134 -533c-2 -7 -4 -15 -4 -23c0 -11 4 -15 25 -17c20 -2 25 -2 43 -2c22 0 30 0 30 -12c0 -19 -12 -19 -20 -19l-134 3l-131 -3c-3 0 -15 0 -15 11c0 20 9 20 32 20c79 0 82 10 91 47l135 539c2 9 2 11 2 16 c0 19 -27 19 -69 19c-19 0 -28 0 -28 11c0 20 13 20 20 20l133 -3l132 3c4 0 15 0 15 -12Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="0" y="0"></use>
+</g>
+</svg> is the number of pixels in the image and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.047ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 881.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper N</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D441" d="M881 672c0 -19 -12 -20 -17 -20c-80 -3 -98 -34 -108 -74l-140 -557c-5 -18 -5 -21 -16 -21c-9 0 -12 2 -19 19l-249 589c-5 10 -5 12 -9 18l-132 -528c-3 -11 -4 -16 -4 -23c0 -20 8 -42 66 -44c11 0 20 -1 20 -11c0 -20 -13 -20 -18 -20c-33 0 -69 3 -103 3 c-33 0 -68 -3 -100 -3c-8 0 -13 4 -13 11c0 19 11 20 17 20c81 3 98 35 108 75l134 537c0 9 -63 9 -68 9c-19 0 -28 0 -28 11c0 20 9 20 29 20h134c23 0 24 -1 32 -19l221 -522l112 445c1 3 3 18 3 21c0 22 -11 43 -68 44c-8 0 -18 0 -18 11c0 20 12 20 18 20 c33 0 68 -3 102 -3c33 0 68 3 101 3c13 0 13 -11 13 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D441" x="0" y="0"></use>
+</g>
+</svg> is the number
+of objects in the scene.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Although ray tracing&rsquo;s logarithmic
+complexity is often heralded as one of its key strengths, this complexity
+is typically only true on average.  A number of ray-tracing algorithms that
+have guaranteed logarithmic running time have been published in the
+computational geometry literature, but these algorithms only work for
+certain types of scenes and have very expensive preprocessing and storage
+requirements.  Szirmay-Kalos and M&aacute;rton provide pointers to the relevant
+literature (Szirmay-Kalos and M&aacute;rton 1998).  One consolation is that
+scenes representing realistic environments generally don&rsquo;t exhibit this
+worst-case behavior.  In practice, the ray intersection algorithms
+presented in this book are sublinear, but without expensive preprocessing
+and huge memory usage it is always possible to construct worst-case scenes
+where ray tracing runs in O(IN) time.">
+      <sup>&dagger;</sup>
+    </button>
+		 (Building the acceleration
+structure itself is necessarily at least <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.63ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2424 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper O left-parenthesis upper N right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D442" d="M740 436c0 -239 -223 -458 -435 -458c-144 0 -256 101 -256 267c0 233 220 460 436 460c149 0 255 -108 255 -269zM651 475c0 149 -90 205 -172 205c-79 0 -177 -52 -246 -156c-77 -117 -91 -263 -91 -307c0 -132 70 -213 169 -213c84 0 166 59 214 120 c99 123 126 279 126 351Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D441" d="M881 672c0 -19 -12 -20 -17 -20c-80 -3 -98 -34 -108 -74l-140 -557c-5 -18 -5 -21 -16 -21c-9 0 -12 2 -19 19l-249 589c-5 10 -5 12 -9 18l-132 -528c-3 -11 -4 -16 -4 -23c0 -20 8 -42 66 -44c11 0 20 -1 20 -11c0 -20 -13 -20 -18 -20c-33 0 -69 3 -103 3 c-33 0 -68 -3 -100 -3c-8 0 -13 4 -13 11c0 19 11 20 17 20c81 3 98 35 108 75l134 537c0 9 -63 9 -68 9c-19 0 -28 0 -28 11c0 20 9 20 29 20h134c23 0 24 -1 32 -19l221 -522l112 445c1 3 3 18 3 21c0 22 -11 43 -68 44c-8 0 -18 0 -18 11c0 20 12 20 18 20 c33 0 68 -3 102 -3c33 0 68 3 101 3c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D442" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="763" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D441" x="1153" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2034" y="0"></use>
+</g>
+</svg> time, however.)
+
+</p>
+<p><tt>pbrt</tt>&rsquo;s geometric interface and implementations of it for a variety of
+shapes is described in Chapter&nbsp;<a href="../Shapes.html#chap:shapes">3</a>, and the acceleration
+interface and implementations are shown in Chapter&nbsp;<a href="../Primitives_and_Intersection_Acceleration.html#chap:acceleration">4</a>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#LightDistribution"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="LightDistribution"></span><h3>1.2.3  Light Distribution</h3><p>
+
+
+</p>
+<p> The ray&ndash;object intersection stage gives us a point to
+be shaded and some information about the local geometry at that point.  Recall
+that our eventual goal is to find the amount of light leaving this point in
+the direction of the camera.  In order to do this, we need to know how much
+light is <em>arriving</em> at this point.  This involves both the
+<em>geometric</em> and <em>radiometric</em> distribution of light in the scene.
+For very simple light sources (e.g., point lights), the geometric
+distribution of lighting is a simple matter of knowing the position of the
+lights.  However, point lights do not exist in the real world, and so
+physically based lighting is often based on <em>area</em> light sources.
+This means that the light source is associated with a geometric object that
+emits illumination from its surface.  However, we will use point lights in
+this section to illustrate the components of light distribution; rigorous
+discussion of light measurement and distribution is the topic of
+Chapters&nbsp;<a href="../Color_and_Radiometry.html#chap:color-radiometry">5</a> and&nbsp;<a href="../Light_Sources.html#chap:lights">12</a>.
+
+</p>
+<p>We frequently would like to know the amount of light power being deposited
+on the differential area surrounding the intersection point
+(Figure&nbsp;<a href="#fig:point-light-irradiance">1.3</a>).  We will assume that the point
+light source has some power <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.678ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 722.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Phi</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3A6" d="M665 341c0 -101 -111 -194 -266 -206v-56c0 -35 0 -48 95 -48h33v-31c-36 3 -129 3 -170 3s-133 0 -169 -3v31h33c95 0 95 14 95 48v56c-149 15 -260 104 -260 207c0 99 107 191 260 206v56c0 35 0 48 -95 48h-33v31c36 -3 129 -3 170 -3s133 0 169 3v-31h-33 c-95 0 -95 -14 -95 -48v-56c152 -12 266 -103 266 -207zM316 158v367c-150 -20 -160 -132 -160 -184c0 -62 18 -164 160 -183zM565 342c0 76 -28 168 -166 184v-369c151 18 166 125 166 185Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-3A6" x="0" y="0"></use>
+</g>
+</svg> associated with it and that it radiates
+light equally in all directions.  This means that the power per area on a
+unit sphere surrounding the light is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.137ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3073 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Phi slash left-parenthesis 4 pi right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3A6" d="M665 341c0 -101 -111 -194 -266 -206v-56c0 -35 0 -48 95 -48h33v-31c-36 3 -129 3 -170 3s-133 0 -169 -3v31h33c95 0 95 14 95 48v56c-149 15 -260 104 -260 207c0 99 107 191 260 206v56c0 35 0 48 -95 48h-33v31c36 -3 129 -3 170 -3s133 0 169 3v-31h-33 c-95 0 -95 -14 -95 -48v-56c152 -12 266 -103 266 -207zM316 158v367c-150 -20 -160 -132 -160 -184c0 -62 18 -164 160 -183zM565 342c0 76 -28 168 -166 184v-369c151 18 166 125 166 185Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-3A6" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="722" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1223" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="1612" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="2113" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2683" y="0"></use>
+</g>
+</svg>. (These measurements will be
+explained and formalized in Section&nbsp;<a href="../Color_and_Radiometry/Radiometry.html#sec:radiometry">5.4</a>.)
+
+</p>
+<p></p>
+<span class="anchor" id="fig:point-light-irradiance"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Basic%20reflection%20setting.svg" title=""><img src="Basic%20reflection%20setting.svg" width=435 height=280 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 1.3: <span class="legend"> Geometric construction for
+determining the power per area arriving at a point due to a point light source. The
+distance from the point to the light source is denoted by <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.049ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 451.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+</g>
+</svg>.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>If we consider
+two such spheres (Figure&nbsp;<a href="#fig:point-light-two-spheres">1.4</a>), it is clear
+that the power per area at a point on the larger sphere must be less than
+the power at a point on the smaller sphere because the same total power is
+distributed over a larger area.  Specifically, the power per area arriving
+at a point on a sphere of radius <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.049ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 451.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+</g>
+</svg> is proportional to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.428ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 1906.4 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1 slash r squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="500" y="0"></use>
+<g transform="translate(1001,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="638" y="513"></use>
+</g>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:point-light-two-spheres"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Light%20spheres%20equal%20power.svg" title=""><img src="Light%20spheres%20equal%20power.svg" width=242 height=242 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 1.4: <span class="legend"> Since the point light radiates
+light equally in all directions, the same total power is deposited on
+all spheres centered at the light.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Furthermore, it can be shown that if the tiny surface patch d<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.743ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 750.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper A</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D434" d="M721 20c0 -20 -12 -20 -18 -20c-25 0 -88 3 -113 3c-41 0 -84 -3 -125 -3c0 0 -14 0 -14 11c0 20 10 20 24 20c20 0 72 3 72 33c0 10 -14 146 -16 167h-251c-68 -116 -69 -116 -76 -128c-8 -14 -14 -25 -14 -37c0 -25 24 -33 47 -35c7 0 16 -1 16 -12 c0 -19 -13 -19 -19 -19c-32 0 -67 3 -100 3c-28 0 -59 -3 -86 -3c-8 0 -13 5 -13 11c0 19 9 19 21 20c44 3 83 17 123 84l348 584c6 10 10 17 26 17c17 0 17 -4 19 -24l61 -625c3 -29 3 -36 65 -36c13 0 23 0 23 -11zM528 262l-32 330l-197 -330h229Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D434" x="0" y="0"></use>
+</g>
+</svg> is tilted
+by an angle <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 469.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+</g>
+</svg> away from the vector from the surface point to the
+light, the amount of power deposited on d<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.743ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 750.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper A</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D434" d="M721 20c0 -20 -12 -20 -18 -20c-25 0 -88 3 -113 3c-41 0 -84 -3 -125 -3c0 0 -14 0 -14 11c0 20 10 20 24 20c20 0 72 3 72 33c0 10 -14 146 -16 167h-251c-68 -116 -69 -116 -76 -128c-8 -14 -14 -25 -14 -37c0 -25 24 -33 47 -35c7 0 16 -1 16 -12 c0 -19 -13 -19 -19 -19c-32 0 -67 3 -100 3c-28 0 -59 -3 -86 -3c-8 0 -13 5 -13 11c0 19 9 19 21 20c44 3 83 17 123 84l348 584c6 10 10 17 26 17c17 0 17 -4 19 -24l61 -625c3 -29 3 -36 65 -36c13 0 23 0 23 -11zM528 262l-32 330l-197 -330h229Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D434" x="0" y="0"></use>
+</g>
+</svg> is proportional to
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.589ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1975.7 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">cosine theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="1506" y="0"></use>
+</g>
+</svg>.  Putting this all together, the differential power per area
+d<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.773ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 763.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper E</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D438" d="M763 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12s1 12 1 18c4 27 4 29 4 53c0 82 -30 111 -152 111h-141c-44 0 -45 -4 -54 -39l-60 -241h94c92 0 110 23 131 99c3 12 5 18 14 18c7 0 12 -5 12 -11l-57 -234c-4 -15 -7 -20 -15 -20c-9 0 -13 6 -13 11 c0 3 1 6 3 11c7 30 7 42 7 49c0 25 0 46 -85 46h-99l-68 -273c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h146c171 0 208 67 273 215c2 6 4 12 13 12c12 0 12 -11 12 -11s-3 -9 -5 -14l-92 -216c-7 -16 -8 -17 -31 -17h-519c-19 0 -28 0 -28 12 c0 19 11 19 28 19c79 0 81 8 91 47l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h505c25 0 30 0 27 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="0" y="0"></use>
+</g>
+</svg> (the <em>differential irradiance</em>) is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="14.301ex" height="5.676ex" style="vertical-align: -2.171ex;" viewBox="0 -1508.9 6157.4 2443.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal d upper E equals StartFraction normal upper Phi cosine theta Over 4 pi r squared EndFraction period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D438" d="M763 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12s1 12 1 18c4 27 4 29 4 53c0 82 -30 111 -152 111h-141c-44 0 -45 -4 -54 -39l-60 -241h94c92 0 110 23 131 99c3 12 5 18 14 18c7 0 12 -5 12 -11l-57 -234c-4 -15 -7 -20 -15 -20c-9 0 -13 6 -13 11 c0 3 1 6 3 11c7 30 7 42 7 49c0 25 0 46 -85 46h-99l-68 -273c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h146c171 0 208 67 273 215c2 6 4 12 13 12c12 0 12 -11 12 -11s-3 -9 -5 -14l-92 -216c-7 -16 -8 -17 -31 -17h-519c-19 0 -28 0 -28 12 c0 19 11 19 28 19c79 0 81 8 91 47l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h505c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3A6" d="M665 341c0 -101 -111 -194 -266 -206v-56c0 -35 0 -48 95 -48h33v-31c-36 3 -129 3 -170 3s-133 0 -169 -3v31h33c95 0 95 14 95 48v56c-149 15 -260 104 -260 207c0 99 107 191 260 206v56c0 35 0 48 -95 48h-33v31c36 -3 129 -3 170 -3s133 0 169 3v-31h-33 c-95 0 -95 -14 -95 -48v-56c152 -12 266 -103 266 -207zM316 158v367c-150 -20 -160 -132 -160 -184c0 -62 18 -164 160 -183zM565 342c0 76 -28 168 -166 184v-369c151 18 166 125 166 185Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="556" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1597" y="0"></use>
+<g transform="translate(2376,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="2984" height="60" x="0" y="220"></rect>
+<g transform="translate(60,676)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3A6" x="0" y="0"></use>
+<g transform="translate(889,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="2395" y="0"></use>
+</g>
+<g transform="translate(504,-780)">
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="500" y="0"></use>
+<g transform="translate(1071,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="638" y="408"></use>
+</g>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="5878" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+Readers already familiar with basic lighting in computer graphics will notice
+two familiar laws encoded in this equation: the cosine falloff of light for
+tilted surfaces mentioned above, and the one-over-<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.049ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 451.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+</g>
+</svg>-squared falloff of light
+with distance.
+
+</p>
+<p>Scenes with multiple lights are easily handled because illumination
+is <em>linear:</em> the contribution of each light can be computed 
+separately and summed to obtain the overall contribution.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Visibility"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Visibility"></span><h3>1.2.4  Visibility</h3><p>
+
+
+</p>
+<p> The lighting distribution described in the previous section ignores one
+very important component: <em>shadows</em>.  Each light contributes 
+illumination to the point being shaded only if the path from the point to the
+light&rsquo;s position is unobstructed (Figure&nbsp;<a href="#fig:point-light-shadows">1.5</a>).
+
+</p>
+<p></p>
+<span class="anchor" id="fig:point-light-shadows"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Two%20lights%20one%20blocker.svg" title=""><img src="Two%20lights%20one%20blocker.svg" width=435 height=325 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 1.5: <span class="legend"> A light source only deposits
+energy on a surface if the source is not obscured as seen from the
+receiving point.  The light source
+on the left illuminates the point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg>, but the light source
+on the right does not.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Fortunately, in a ray tracer it is easy to determine if the light is
+visible from the point being shaded.  We simply construct a new ray whose
+origin is at the surface point and whose direction points toward the light.
+These special rays are called <em>shadow rays</em>.  If we trace this ray
+through the environment, we can check to see whether any intersections are
+found between the ray&rsquo;s origin and the light source by comparing the
+parametric <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> value of any intersections found to the parametric <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg>
+value along the ray of the light source position.  If there is no blocking
+object between the light and the surface, the light&rsquo;s contribution is
+included.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SurfaceScattering"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="SurfaceScattering"></span><h3>1.2.5  Surface Scattering</h3><p>
+
+
+</p>
+<p> We now are able to compute two pieces of information that are
+vital for proper shading of a point: its location and the incident
+lighting.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Readers already familiar with rendering might object
+that the discussion in this section considers only direct lighting.  Rest
+assured that <tt>pbrt</tt> does support global illumination.">
+      <sup>&dagger;</sup>
+    </button>
+		  Now we need to
+determine how the incident lighting is <em>scattered</em> at the surface.
+Specifically, we are interested in the amount of light energy scattered
+back along the ray that we originally traced to find the intersection
+point, since that ray leads to the camera
+(Figure&nbsp;<a href="#fig:intro-surface-scattering">1.6</a>).
+
+</p>
+<p></p>
+<span class="anchor" id="fig:intro-surface-scattering"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Surface%20scattering%20geometry.svg" title=""><img src="Surface%20scattering%20geometry.svg" width=435 height=280 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 1.6: The Geometry of Surface
+Scattering. <span class="legend"> Incident light arriving along
+direction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</svg> interacts with the surface
+at point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> and is scattered back toward the camera along direction
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.5ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1076.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal o</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+</svg>.  The amount of light scattered toward the camera is given by the
+product of the incident light energy and the BRDF.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Each object in the scene provides a <em>material</em>, which is a description
+of its appearance properties at each point on the surface.  This
+description is given by the <em>bidirectional reflectance distribution
+function</em> (BRDF).  This function tells us how much energy is reflected
+from an incoming direction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</svg> to an outgoing direction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.5ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1076.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal o</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+</svg>.
+We will write the BRDF at <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> as <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="11.821ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 5089.7 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f Subscript normal r Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline comma omega Subscript normal i Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="693" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="868" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1257" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1814" y="0"></use>
+<g transform="translate(2259,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3335" y="0"></use>
+<g transform="translate(3780,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4700" y="0"></use>
+</g>
+</svg>.  Now, computing the
+amount of light <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.583ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 681.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+</g>
+</svg> scattered back toward the camera is straightforward:
+
+</p>
+<p></p>
+<div class="fragmentcode">for each light:
+    if light is not blocked:
+        incident_light = light.L(point)
+        amount_reflected = 
+            surface.BRDF(hit_point, camera_vector, light_vector)
+        L += amount_reflected * incident_light</div><p>
+
+
+</p>
+<p> Here we are using the symbol <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.583ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 681.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+</g>
+</svg> to represent the light; this
+represents a slightly different unit for light measurement than d<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.773ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 763.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper E</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D438" d="M763 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12s1 12 1 18c4 27 4 29 4 53c0 82 -30 111 -152 111h-141c-44 0 -45 -4 -54 -39l-60 -241h94c92 0 110 23 131 99c3 12 5 18 14 18c7 0 12 -5 12 -11l-57 -234c-4 -15 -7 -20 -15 -20c-9 0 -13 6 -13 11 c0 3 1 6 3 11c7 30 7 42 7 49c0 25 0 46 -85 46h-99l-68 -273c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h146c171 0 208 67 273 215c2 6 4 12 13 12c12 0 12 -11 12 -11s-3 -9 -5 -14l-92 -216c-7 -16 -8 -17 -31 -17h-519c-19 0 -28 0 -28 12 c0 19 11 19 28 19c79 0 81 8 91 47l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h505c25 0 30 0 27 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="0" y="0"></use>
+</g>
+</svg>, which
+was used before.  <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.583ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 681.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+</g>
+</svg> represents <em>radiance</em>, a unit for measuring
+light that we will see much of in the following.
+
+</p>
+<p>It is easy to generalize the notion of a BRDF to transmitted light
+(obtaining a BTDF) or to general scattering of light arriving from either
+side of the surface.  A function that describes general scattering is
+called a <em>bidirectional scattering distribution function</em> (BSDF).
+<tt>pbrt</tt> supports a variety of BSDF models; they are described in
+Chapter&nbsp;<a href="../Reflection_Models.html#chap:reflection-models">8</a>.  More complex yet is the
+<em>bidirectional scattering surface reflectance distribution
+function</em> (BSSRDF), which models light that exits a surface at a different
+point than it enters.  The BSSRDF is described in
+Sections&nbsp;<a href="../Color_and_Radiometry/Surface_Reflection.html#sec:bssrdf">5.6.2</a>, <a href="../Volume_Scattering/The_BSSRDF.html#sec:bssrdf-class">11.4</a>, and&nbsp;<a href="../Light_Transport_II_Volume_Rendering/Subsurface_Scattering_Using_the_Diffusion_Equation.html#sec:subsurface">15.5</a>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#IndirectLightTransport"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="IndirectLightTransport"></span><h3>1.2.6  Indirect Light Transport</h3><p>
+
+
+</p>
+<p> Turner Whitted&rsquo;s original paper on ray tracing (<a href="Further_Reading.html#cite:Whitted80">1980</a>) emphasized its
+<em>recursive</em> nature, which was the key that made it possible to include
+indirect specular reflection and transmission in rendered images.
+For example, if a ray from the camera hits a shiny
+object like a mirror, we can reflect the ray about the surface
+normal at the intersection point and recursively invoke the ray-tracing
+routine to find the light arriving at the point on the mirror, adding its
+contribution to the original camera ray.  This same technique can be used
+to trace transmitted rays that intersect transparent objects.  For a long
+time, most early ray-tracing examples showcased mirrors and glass balls
+(Figure&nbsp;<a href="#fig:intro-raytracing-example">1.7</a>) because these types of effects
+were difficult to capture with other rendering techniques.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:intro-raytracing-example"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 76.667%;  position:relative;">
+<div id="Whitted_ray_tracing0" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('Whitted_ray_tracing0'), {
+  title: 'Whitted_ray_tracing0', children: [
+ { title: 'Whitted ray tracing', image: 'spheres-whitted.png' },  { title: 'Stochastic progressive photon mapping', image: 'spheres-sppm.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 1.7: A Prototypical Early Ray Tracing Scene. <span class="legend">
+Note the use of mirrored and glass objects, which 
+emphasizes the algorithm&rsquo;s ability to handle these kinds of surfaces.
+(1)&nbsp;Rendered using Whitted ray tracing, and (2)&nbsp;rendered using
+<em>stochastic progressive photon mapping</em> (SPPM), an advanced light transport
+algorithm that will be introduced in Section&nbsp;<a href="../Light_Transport_III_Bidirectional_Methods/Stochastic_Progressive_Photon_Mapping.html#sec:photon-mapping">16.2</a>.
+SPPM is able to accurately simulate the focusing of light that passes
+through the spheres.
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>In general, the amount of light that reaches the camera from a point on an object
+is given by the sum of light emitted by the object (if it is itself a light
+source) and the amount of reflected light.  This idea is
+formalized by the <em>light transport equation</em> (also often known as the
+<em>rendering equation</em>), which says that the outgoing
+radiance <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.273ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3992.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal o Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1135" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1524" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2081" y="0"></use>
+<g transform="translate(2526,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3602" y="0"></use>
+</g>
+</svg>
+ from a point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> in direction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.5ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1076.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal o</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+</svg> is the 
+emitted radiance at that point in that direction, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.181ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3952.9 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal e Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-65" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1095" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1485" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2041" y="0"></use>
+<g transform="translate(2486,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3563" y="0"></use>
+</g>
+</svg>,
+ plus the
+incident radiance from all directions on the sphere <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.347ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 1010.4 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">script upper S squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-53" d="M499 186c0 -110 -80 -208 -197 -208c-89 0 -153 36 -184 70c-33 -53 -36 -57 -36 -57c-7 -11 -8 -13 -15 -13c-11 0 -11 7 -11 24v200c0 18 0 25 13 25c3 0 11 0 12 -10c1 -36 4 -100 62 -154c53 -49 129 -54 158 -54c84 0 134 72 134 143c0 33 -10 66 -31 92 c-28 37 -58 44 -85 51c-70 17 -121 29 -132 33c-78 27 -131 100 -131 183c0 106 84 194 195 194c89 0 130 -41 160 -70l35 57c7 12 8 13 15 13c11 0 11 -7 11 -24v-201c0 -19 0 -24 -13 -24c-11 0 -11 6 -12 12c-6 45 -28 209 -195 209c-78 0 -132 -61 -132 -131 c0 -58 39 -112 101 -127l128 -31c84 -20 150 -102 150 -202Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-53" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="787" y="612"></use>
+</g>
+</svg> 
+around <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> scaled
+by the BSDF <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="11.564ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4978.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f Subscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline comma omega Subscript normal i Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="757" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1146" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1703" y="0"></use>
+<g transform="translate(2148,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3224" y="0"></use>
+<g transform="translate(3669,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4589" y="0"></use>
+</g>
+</svg> and a cosine term:  
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="eq:rendering-equation"></span><div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="60.007ex" height="5.676ex" style="vertical-align: -2.338ex;" viewBox="0 -1437.2 25836.5 2443.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal o Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline right-parenthesis equals upper L Subscript normal e Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline right-parenthesis plus integral Underscript script upper S squared Endscripts f Subscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline comma omega Subscript normal i Baseline right-parenthesis upper L Subscript normal i Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal i Baseline right-parenthesis StartAbsoluteValue cosine theta Subscript normal i Baseline EndAbsoluteValue normal d omega Subscript normal i Baseline period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-53" d="M499 186c0 -110 -80 -208 -197 -208c-89 0 -153 36 -184 70c-33 -53 -36 -57 -36 -57c-7 -11 -8 -13 -15 -13c-11 0 -11 7 -11 24v200c0 18 0 25 13 25c3 0 11 0 12 -10c1 -36 4 -100 62 -154c53 -49 129 -54 158 -54c84 0 134 72 134 143c0 33 -10 66 -31 92 c-28 37 -58 44 -85 51c-70 17 -121 29 -132 33c-78 27 -131 100 -131 183c0 106 84 194 195 194c89 0 130 -41 160 -70l35 57c7 12 8 13 15 13c11 0 11 -7 11 -24v-201c0 -19 0 -24 -13 -24c-11 0 -11 6 -12 12c-6 45 -28 209 -195 209c-78 0 -132 -61 -132 -131 c0 -58 39 -112 101 -127l128 -31c84 -20 150 -102 150 -202Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1135" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1524" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2081" y="0"></use>
+<g transform="translate(2526,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3602" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="4270" y="0"></use>
+<g transform="translate(5326,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-65" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1095" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1485" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2041" y="0"></use>
+<g transform="translate(2486,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3563" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="9501" y="0"></use>
+<g transform="translate(10502,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-53" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="685" y="483"></use>
+</g>
+</g>
+<g transform="translate(12095,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="12852" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="13241" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="13798" y="0"></use>
+<g transform="translate(14243,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="15319" y="0"></use>
+<g transform="translate(15764,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="16684" y="0"></use>
+<g transform="translate(17240,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="978" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1367" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1924" y="0"></use>
+<g transform="translate(2369,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3289" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="21085" y="0"></use>
+<g transform="translate(21364,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(22870,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="663" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="23636" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="24082" y="0"></use>
+<g transform="translate(24638,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="25557" y="0"></use>
+</g>
+</svg>
+</div>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+<div class="eqno">(<a href="#eq:rendering-equation">1.1</a>)</div>
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<p>
+
+We will show a more complete derivation of this equation in
+Sections&nbsp;<a href="../Color_and_Radiometry/Surface_Reflection.html#sec:brdf">5.6.1</a> and&nbsp;<a href="../Light_Transport_I_Surface_Reflection/The_Light_Transport_Equation.html#sec:light-transport-equation">14.4</a>.  Solving
+this integral analytically is not possible except for the simplest of
+scenes, so we must either make simplifying assumptions or use numerical
+integration techniques.
+
+</p>
+<p>Whitted&rsquo;s algorithm simplifies this integral by ignoring
+incoming light from most directions and only evaluating <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="8.544ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3678.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal i Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal i Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="978" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1367" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1924" y="0"></use>
+<g transform="translate(2369,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3289" y="0"></use>
+</g>
+</svg> for
+directions to light sources and for the directions of perfect reflection and
+refraction.  In other words, it turns the integral into a sum over a small
+number of directions.
+
+</p>
+<p>
+Whitted&rsquo;s method can be extended to capture more effects than
+just perfect mirrors and glass.  For example, by tracing many recursive rays
+near the mirror-reflection direction and averaging their contributions, we
+obtain an approximation of glossy reflection.  In fact, we can <em>always</em>
+recursively trace a ray whenever we hit an object.
+For example, we can
+randomly choose a reflection direction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</svg> and weight the contribution of
+this newly spawned ray by evaluating the BRDF <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="11.821ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 5089.7 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f Subscript normal r Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline comma omega Subscript normal i Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="693" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="868" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1257" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1814" y="0"></use>
+<g transform="translate(2259,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3335" y="0"></use>
+<g transform="translate(3780,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4700" y="0"></use>
+</g>
+</svg>.  This simple
+but powerful idea can lead to very realistic images because it captures all of
+the interreflection of light between objects.  Of course, we need to know when
+to terminate the recursion, and choosing directions completely at random may
+make the rendering algorithm slow to converge to a reasonable
+result.  These problems can be addressed, however; these issues are the
+topics of Chapters&nbsp;<a href="../Monte_Carlo_Integration.html#chap:mc">13</a> through <a href="../Light_Transport_III_Bidirectional_Methods.html#chap:bidir-methods">16</a>.
+
+</p>
+<p>When we trace rays recursively in this manner, we are really associating a
+<em>tree</em> of rays with each image location
+(Figure&nbsp;<a href="#fig:intro-ray-tree">1.8</a>), with the ray from the camera at
+the root of this tree.  Each ray in this tree can have a
+<em>weight</em> associated with it; this allows us to model, for example,
+shiny surfaces that do not reflect 100% of the incoming light.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:intro-ray-tree"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Ray%20Tree.svg" title=""><img src="Ray%20Tree.svg" width=299 height=247 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 1.8: <span class="legend"> Recursive ray tracing associates
+an entire tree of rays with each image location.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#RayPropagation"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="RayPropagation"></span><h3>1.2.7  Ray Propagation</h3><p>
+
+
+</p>
+<p>The discussion so far has assumed that rays are traveling through a vacuum.
+For example, when describing the distribution of light from a point source,
+we assumed that the light&rsquo;s power was distributed equally on the surface of
+a sphere centered at the light without decreasing along the way.  The
+presence of <em>participating media</em> such as smoke, fog, or dust can
+invalidate this assumption.  These effects are important to simulate: even
+if we are not making a rendering of a smoke-filled room, almost all outdoor
+scenes are affected substantially by participating media.  For example,
+Earth&rsquo;s atmosphere causes objects that are farther away to appear less
+saturated (Figure&nbsp;<a href="#fig:intro-atmospheric">1.9</a>).
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:intro-atmospheric"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 64.280%;  position:relative;">
+<div id="No_atmospheric_scattering1" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('No_atmospheric_scattering1'), {
+  title: 'No_atmospheric_scattering1', children: [
+ { title: 'No atmospheric scattering', image: 'ecosys-nofog.png' },  { title: 'With atmospheric scattering', image: 'ecosys-fog.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 1.9: Earth&rsquo;s Atmosphere Decreases
+Saturation with Distance. <span class="legend"> (1)&nbsp;The scene is rendered without
+simulating this phenomenon, while (2)&nbsp;includes an
+atmospheric model.  This sort of atmospheric attenuation is
+an important depth cue when viewing real scenes and adds a sense of
+scale to the second rendering.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>There are two ways in which a participating medium can affect the light
+propagating along a ray.  First, the medium can <em>extinguish</em> (or
+<em>attenuate</em>) light, either by absorbing it or by scattering it in a
+different direction.  We can capture this effect by computing the
+<em>transmittance</em>&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.636ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 704.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper T</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D447" d="M704 666c0 -3 -1 -13 -2 -17l-27 -174c-2 -15 -4 -23 -15 -23c-9 0 -12 7 -12 13c0 3 2 15 3 19c4 26 8 65 8 80c0 78 -45 82 -146 82c-21 0 -54 0 -63 -2c-12 -3 -16 -9 -23 -37l-133 -531c-4 -15 -4 -21 -4 -21c0 -16 8 -19 37 -22c26 -2 39 -2 64 -2c26 0 34 0 34 -11 c0 -20 -12 -20 -22 -20c-28 0 -58 2 -87 2l-83 1l-85 -1c-27 0 -55 -2 -82 -2c-6 0 -17 0 -17 12c0 19 6 19 42 19c107 0 110 11 119 48l134 534c1 3 4 15 4 21c0 8 0 12 -28 12h-39c-148 0 -174 -18 -228 -173c-6 -16 -7 -21 -17 -21c-7 0 -12 5 -12 11c0 0 5 16 6 18 l60 176c7 19 8 20 32 20h555c17 0 27 0 27 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D447" x="0" y="0"></use>
+</g>
+</svg> between the ray origin and the intersection point.
+The transmittance tells us how much of the light scattered at the intersection
+point makes it back to the ray&nbsp;origin.
+
+</p>
+<p>A participating medium can also add to the light along a ray.  This can happen
+either if the medium emits light (as with a flame) or if the medium scatters
+light from other directions back along the ray
+(Figure&nbsp;<a href="#fig:intro-volume-scattering">1.10</a>). 
+ We can find this quantity by
+numerically evaluating the <em>volume light transport equation</em>, in the same way we
+evaluated the light transport equation to find the amount of light reflected from a
+surface.  We will leave the description of participating media and volume
+rendering until Chapters&nbsp;<a href="../Volume_Scattering.html#chap:volume-scattering">11</a>
+and&nbsp;<a href="../Light_Transport_II_Volume_Rendering.html#chap:volume-integration">15</a>.  For now, it will suffice to say that we can
+compute the effect of participating media and incorporate its effect into the amount of light carried by the ray.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:intro-volume-scattering"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+<div class="figure-row">
+<img src="spotfog.png" style="max-width: 100%; height: auto;" width=1369 height=1026>
+</div>
+<p>
+
+</p>
+<figcaption class="caption">Figure 1.10: A Spotlight Shining on
+a Sphere through Fog. <span class="legend">  Notice that the shape of the spotlight&rsquo;s lighting
+distribution and the sphere&rsquo;s shadow are clearly visible due to the additional
+scattering in the participating medium.</span>
+</figcaption><p>
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Scott Pilet and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Introduction/pbrt_System_Overview.html">Introduction / pbrt: System Overview</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

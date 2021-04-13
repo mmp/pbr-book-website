@@ -1,0 +1,1778 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Direct Lighting</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Light_Transport_I_Surface_Reflection.html">Light Transport I: Surface Reflection</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Direct Lighting</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html">(Previous: Sampling Light Sources)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:direct-lighting"></span><h2>14.3 Direct Lighting</h2><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p>Before we introduce the light transport equation in its full generality, we
+will implement the <tt>DirectLightingIntegrator</tt> which, unsurprisingly,
+only accounts for direct lighting&mdash;light that has traveled directly
+from a light source to the point being shaded&mdash;and ignores indirect
+illumination from objects that are not themselves emissive, except for
+basic specular reflection and transmission effects.  Starting out with this
+integrator allows us to focus on some of the important details of direct
+lighting without worrying about the full light transport equation.
+Furthermore, some of the routines developed here will be used again in
+subsequent integrators that solve the complete light transport equation.
+Figure&nbsp;<a href="#fig:house-direct-lighting">14.12</a> shows the San Miguel scene rendered
+with direct lighting only.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DirectLightingIntegratorDeclarations-0"></span><div class="fragmentname">&lt;&lt;DirectLightingIntegrator Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="DirectLightingIntegrator"></span>DirectLightingIntegrator : public <a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator" class="code">SamplerIntegrator</a> {
+public:
+    &lt;&lt;<span class="fragmentname">DirectLightingIntegrator Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1334" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1334"><i></i></a><div id="fragbit-1334" class="collapse"><div class="fragmentcode">       DirectLightingIntegrator(LightStrategy strategy, int maxDepth,
+               std::shared_ptr&lt;const <a href="../Camera_Models/Camera_Model.html#Camera" class="code">Camera</a>&gt; camera,
+               std::shared_ptr&lt;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>&gt; sampler)
+           : <a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator" class="code">SamplerIntegrator</a>(camera, sampler), strategy(strategy),
+             maxDepth(maxDepth) { }
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Li(const RayDifferential &amp;ray, const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene,
+                   <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, int depth) const;
+       void Preprocess(const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler);</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-DirectLightingIntegratorPrivateData-0">DirectLightingIntegrator Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1335" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1335"><i></i></a><div id="fragbit-1335" class="collapse"><div class="fragmentcode">       const LightStrategy strategy;
+       const int maxDepth;
+       std::vector&lt;int&gt; nLightSamples;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fig:house-direct-lighting"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 62.392%; position:relative;">
+<div id="sm-direct.png59" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('sm-direct.png59'), { image: 'sm-direct.png' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 14.12: Scene Rendered with Direct Lighting Only. <span class="legend">
+Because only direct lighting is considered, some portions of the image are
+completely black because they are only lit by indirect illumination.
+<em>(Model courtesy of Guillermo M. Leal Llaguno.)</em></span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+ 
+The implementation provides two different strategies for computing
+direct lighting. Each computes an unbiased estimate of exitant
+radiance at a point in a given direction.  The <tt>LightStrategy</tt>
+enumeration records which approach has been selected.  The first strategy,
+<tt>UniformSampleAll</tt>, loops over all of the lights and takes a number of
+samples based on <a href="../Light_Sources/Light_Interface.html#Light::nSamples"><tt>Light::nSamples</tt></a> from each of them, summing the
+result.  (Recall the discussion of splitting in
+Section&nbsp;<a href="../Monte_Carlo_Integration/Russian_Roulette_and_Splitting.html#sec:mc-splitting">13.7.1</a>&mdash;the <tt>UniformSampleAll</tt> strategy is
+applying this technique.)  The second, <tt>UniformSampleOne</tt>, takes a
+single sample from just one of the lights, chosen at random.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LightStrategyDeclarations-0"></span><div class="fragmentname">&lt;&lt;LightStrategy Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">enum class <span class="anchor" id="LightStrategy"></span>LightStrategy { <span class="anchor" id="LightStrategy::UniformSampleAll"></span>UniformSampleAll, <span class="anchor" id="LightStrategy::UniformSampleOne"></span>UniformSampleOne };</div><p>
+
+
+</p>
+<p>Depending on the scene being rendered, either of these approaches may be
+more appropriate.  For example, if many image samples are being taken for
+each pixel (e.g., to resolve depth of field without excessive noise), then
+a single light sample per image sample may be more appropriate: in the
+aggregate all of the image samples in a pixel will sample the direct
+lighting well enough to give a high-quality image.  Alternatively, if few
+samples per pixel are being taken, sampling all lights may be preferable to
+ensure a noise-free result.
+
+</p>
+<p>The <tt>DirectLightingIntegrator</tt> constructor, which we won&rsquo;t include
+here, just passes a <a href="../Camera_Models/Camera_Model.html#Camera"><tt>Camera</tt></a> and <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> to the
+<a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator"><tt>SamplerIntegrator</tt></a> base class constructor and initializes two member
+variables.
+In addition to the direct lighting strategy, the
+<tt>DirectLightingIntegrator</tt> stores a maximum recursion depth for
+rays that are traced to account for specular reflection or specular transmission.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DirectLightingIntegratorPrivateData-0"></span><div class="fragmentname">&lt;&lt;DirectLightingIntegrator Private Data&gt;&gt;=&nbsp;<a href="#fragment-DirectLightingIntegratorPrivateData-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">const LightStrategy <span class="anchor" id="DirectLightingIntegrator::strategy"></span>strategy;
+const int <span class="anchor" id="DirectLightingIntegrator::maxDepth"></span>maxDepth;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>The numbers and types of samples needed by this integrator depend on the
+sampling strategy used: if a single sample is taken from a single light,
+then two two-dimensional samples obtained via <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D"><tt>Sampler::Get2D()</tt></a>
+suffice&mdash;one for selecting a position on a light source and one for
+sampling a scattered direction from the <a href="../Materials/BSDFs.html#BSDF"><tt>BSDF</tt></a>.
+
+</p>
+<p>
+
+</p>
+<p>When multiple samples are taken per light, the integrator requests 
+sample arrays from the sampler before the main rendering process
+begins. Using sample arrays is preferable to performing many separate calls
+to <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D"><tt>Sampler::Get2D()</tt></a> because it gives the sampler an opportunity to
+use improved sample placement techniques, optimizing the distribution of
+samples over the entire array and thus, over all of the light source
+samples for the current point being shaded.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DirectLightingIntegratorMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;DirectLightingIntegrator Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="DirectLightingIntegrator::Preprocess"></span>DirectLightingIntegrator::Preprocess(const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene,
+        <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler) {
+    if (<a href="#DirectLightingIntegrator::strategy" class="code">strategy</a> == <a href="#LightStrategy::UniformSampleAll" class="code">LightStrategy</a>::UniformSampleAll) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Computenumberofsamplestouseforeachlight-0">Compute number of samples to use for each light</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1336" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1336"><i></i></a><div id="fragbit-1336" class="collapse"><div class="fragmentcode">           for (const auto &amp;light : scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>)
+               <a href="#DirectLightingIntegrator::nLightSamples" class="code">nLightSamples</a>.push_back(sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::RoundCount" class="code">RoundCount</a>(light-&gt;<a href="../Light_Sources/Light_Interface.html#Light::nSamples" class="code">nSamples</a>));</div></div>
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Requestsamplesforsamplingalllights-0">Request samples for sampling all lights</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1337" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1337"><i></i></a><div id="fragbit-1337" class="collapse"><div class="fragmentcode">           for (int i = 0; i &lt; <a href="#DirectLightingIntegrator::maxDepth" class="code">maxDepth</a>; ++i) {
+               for (size_t j = 0; j &lt; scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>.size(); ++j) {
+                   sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Request2DArray" class="code">Request2DArray</a>(nLightSamples[j]);
+                   sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Request2DArray" class="code">Request2DArray</a>(nLightSamples[j]);
+               }
+           }</div></div>
+    }
+}</div><p>
+
+
+</p>
+<p>For the <tt>LightStrategy::UniformSampleAll</tt> strategy, each light stores
+a desired number of samples in its <a href="../Light_Sources/Light_Interface.html#Light::nSamples"><tt>Light::nSamples</tt></a> member variable.
+However, the integrator here only uses that value as a starting point: the
+<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::RoundCount"><tt>Sampler::RoundCount()</tt></a> method is given an opportunity to change that
+value to a more appropriate one based on its particular sample generation
+technique.  (For example, many samplers only generate collections of
+samples with power-of-two sizes.)  The final number of samples for each
+light is recorded in the <tt>nLightSamples</tt> member variable.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computenumberofsamplestouseforeachlight-0"></span><div class="fragmentname">&lt;&lt;Compute number of samples to use for each light&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">for (const auto &amp;light : scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>)
+    <a href="#DirectLightingIntegrator::nLightSamples" class="code">nLightSamples</a>.push_back(sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::RoundCount" class="code">RoundCount</a>(light-&gt;<a href="../Light_Sources/Light_Interface.html#Light::nSamples" class="code">nSamples</a>));</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DirectLightingIntegratorPrivateData-1"></span><div class="fragmentname">&lt;&lt;DirectLightingIntegrator Private Data&gt;&gt;+=&nbsp;<a href="#fragment-DirectLightingIntegratorPrivateData-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">std::vector&lt;int&gt; <span class="anchor" id="DirectLightingIntegrator::nLightSamples"></span>nLightSamples;</div><p>
+
+
+</p>
+<p>Now the sample arrays can be requested. There are two important details in
+this fragment: first, although a separate sample request is made for all of
+the possible ray depths up to the maximum, this doesn&rsquo;t mean that all
+intersections will have sample arrays available. Rather, once a sample
+array is retrieved by a call to <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2DArray"><tt>Sampler::Get2DArray()</tt></a>, that array
+won&rsquo;t be returned again. If both specular reflection and transmission are
+present, then there may be up to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="15.01ex" height="2.843ex" style="vertical-align: -0.505ex;" viewBox="0 -1006.6 6462.6 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript normal m normal a normal x normal upper D normal e normal p normal t normal h plus 1 Baseline minus 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6D" d="M813 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31 c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c45 0 119 -11 133 -98c17 38 61 98 145 98c58 0 91 -20 105 -37c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-61" d="M483 89c0 -81 -61 -95 -82 -95c-47 0 -74 42 -78 82c-19 -47 -65 -87 -131 -87c-63 0 -160 25 -160 106c0 44 25 96 100 130c63 30 133 33 184 36v37c0 89 -57 128 -106 128c-32 0 -81 -11 -108 -46c46 -1 51 -34 51 -46c0 -26 -18 -46 -46 -46c-26 0 -46 17 -46 47 c0 66 69 113 151 113c48 0 98 -16 137 -55c36 -37 36 -76 36 -118v-200c0 -5 4 -50 37 -50c11 0 36 6 36 64v56h25v-56zM316 140v100c-165 -6 -207 -89 -207 -144c0 -50 41 -85 90 -85c45 0 117 34 117 129Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-78" d="M516 0c-30 2 -69 3 -96 3l-108 -3v31c27 1 36 16 36 25c0 6 -13 22 -21 33l-76 100c-61 -72 -90 -105 -90 -127c0 -15 7 -28 29 -31v-31l-95 3c-26 0 -57 -1 -83 -3v31c21 0 80 2 128 60c47 57 47 59 94 119l-99 129c-47 60 -48 61 -118 61v31c27 -2 74 -3 95 -3l108 3 v-31c-20 -1 -35 -10 -35 -25c0 -6 0 -8 9 -18l78 -101l62 78c5 6 15 19 15 35s-8 29 -29 31v31c13 -1 66 -3 96 -3c26 0 56 1 82 3v-31c-47 -1 -88 -16 -119 -52c-24 -26 -62 -75 -92 -113l134 -173c23 -29 41 -31 95 -31v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-44" d="M707 336c0 -188 -138 -336 -306 -336h-366v31h24c77 0 79 11 79 47v527c0 36 -2 47 -79 47h-24v31h366c171 0 306 -157 306 -347zM607 336c0 78 -9 164 -52 223c-51 71 -120 93 -182 93h-100c-47 0 -49 -7 -49 -40v-541c0 -33 2 -40 49 -40h101c101 0 158 58 178 85 c36 49 55 109 55 220Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-74" d="M332 124c0 -64 -28 -135 -99 -135c-36 0 -129 12 -129 135v276h-85v22c98 4 128 111 129 193h25v-184h143v-31h-143v-278c0 -17 0 -108 67 -108c37 0 67 38 67 112v55h25v-57Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-68" d="M535 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v520c0 49 -8 56 -78 56v31l144 11v-348h1c16 36 60 96 144 96c58 0 91 -20 105 -37 c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-61" x="833" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-78" x="1334" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-44" x="1862" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-65" x="2626" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-70" x="3071" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="3627" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-68" x="4017" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2B" x="4574" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="5352" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="4961" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="5962" y="0"></use>
+</g>
+</svg> intersection points
+for each camera ray intersection. If the sample arrays are exhausted,
+the integrator switches to taking a single sample from each light.
+
+</p>
+<p>Second, note that the arrays are requested in the order they will be
+consumed by the integrator:
+at each intersection point, two arrays are used for each light source, in
+the same order as the <tt>lights</tt> array.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fragment-Requestsamplesforsamplingalllights-0"></span><div class="fragmentname">&lt;&lt;Request samples for sampling all lights&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">for (int i = 0; i &lt; <a href="#DirectLightingIntegrator::maxDepth" class="code">maxDepth</a>; ++i) {
+    for (size_t j = 0; j &lt; scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>.size(); ++j) {
+        sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Request2DArray" class="code">Request2DArray</a>(nLightSamples[j]);
+        sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Request2DArray" class="code">Request2DArray</a>(nLightSamples[j]);
+    }
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>As a <a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator"><tt>SamplerIntegrator</tt></a>, the main method that the
+<a href="#DirectLightingIntegrator"><tt>DirectLightingIntegrator</tt></a> must implement is
+<tt>Li()</tt><span class="anchor" id="DirectLightingIntegrator::Li"></span>.  The general form
+of its implementation here is similar to that of
+<a href="../Introduction/pbrt_System_Overview.html#WhittedIntegrator::Li"><tt>WhittedIntegrator::Li()</tt></a>: the BSDF at the intersection point is
+computed, emitted radiance is added if the surface is emissive, rays are
+traced recursively for specular reflection and transmission, and so on.  We
+won&rsquo;t include the full implementation of
+<a href="#DirectLightingIntegrator::Li"><tt>DirectLightingIntegrator::Li()</tt></a> here in order to focus on its key
+fragment, &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputedirectlightingformonoDirectLightingIntegratorintegrator-0">Compute direct lighting for
+<tt>DirectLightingIntegrator</tt> integrator</a></span>&gt;&gt;, which estimates the value of
+the integral that gives the reflected radiance, accumulating it into a
+value <tt>L</tt> that will be returned from <tt>Li()</tt>.
+
+</p>
+<p>Two helper functions, which other integrators will also find useful, take
+care of the two sampling strategies.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputedirectlightingformonoDirectLightingIntegratorintegrator-0"></span><div class="fragmentname">&lt;&lt;Compute direct lighting for <tt>DirectLightingIntegrator</tt> integrator&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="#DirectLightingIntegrator::strategy" class="code">strategy</a> == <a href="#LightStrategy::UniformSampleAll" class="code">LightStrategy</a>::UniformSampleAll)
+    L += <a href="#UniformSampleAllLights" class="code">UniformSampleAllLights</a>(isect, scene, arena, sampler,
+                                nLightSamples);
+else
+    L += <a href="#UniformSampleOneLight" class="code">UniformSampleOneLight</a>(isect, scene, arena, sampler);</div><p>
+
+
+</p>
+<p>To understand the approaches implemented by the two strategies, first
+recall the scattering equation from Section&nbsp;<a href="../Color_and_Radiometry/Surface_Reflection.html#sec:surface-reflection">5.6</a>,
+which says that exitant radiance <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.273ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3992.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal o Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1135" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1524" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2081" y="0"></use>
+<g transform="translate(2526,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3602" y="0"></use>
+</g>
+</svg> from a point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg>
+on a surface in direction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.5ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1076.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal o</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+</svg> due to incident radiance at the point is
+given by an integral of incoming radiance over the sphere times the BSDF
+for each direction and a cosine term.  For the
+<tt>DirectLightingIntegrator</tt>, we are only interested in incident
+radiance directly from light sources, which we will denote by
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="8.311ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3578.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal d Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1175" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1564" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2121" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="2566" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3188" y="0"></use>
+</g>
+</svg>:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="48.443ex" height="5.676ex" style="vertical-align: -2.338ex;" viewBox="0 -1437.2 20857.2 2443.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal o Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline right-parenthesis equals integral Underscript script upper S squared Endscripts f Subscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline comma omega Subscript normal i Baseline right-parenthesis upper L Subscript normal d Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal i Baseline right-parenthesis StartAbsoluteValue cosine theta Subscript normal i Baseline EndAbsoluteValue normal d omega Subscript normal i Baseline period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-53" d="M499 186c0 -110 -80 -208 -197 -208c-89 0 -153 36 -184 70c-33 -53 -36 -57 -36 -57c-7 -11 -8 -13 -15 -13c-11 0 -11 7 -11 24v200c0 18 0 25 13 25c3 0 11 0 12 -10c1 -36 4 -100 62 -154c53 -49 129 -54 158 -54c84 0 134 72 134 143c0 33 -10 66 -31 92 c-28 37 -58 44 -85 51c-70 17 -121 29 -132 33c-78 27 -131 100 -131 183c0 106 84 194 195 194c89 0 130 -41 160 -70l35 57c7 12 8 13 15 13c11 0 11 -7 11 -24v-201c0 -19 0 -24 -13 -24c-11 0 -11 6 -12 12c-6 45 -28 209 -195 209c-78 0 -132 -61 -132 -131 c0 -58 39 -112 101 -127l128 -31c84 -20 150 -102 150 -202Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1135" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1524" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2081" y="0"></use>
+<g transform="translate(2526,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3602" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="4270" y="0"></use>
+<g transform="translate(5326,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-53" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="685" y="483"></use>
+</g>
+</g>
+<g transform="translate(6919,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="7676" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="8065" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="8622" y="0"></use>
+<g transform="translate(9067,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="10143" y="0"></use>
+<g transform="translate(10589,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="11508" y="0"></use>
+<g transform="translate(12064,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1175" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1564" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2121" y="0"></use>
+<g transform="translate(2566,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3485" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="16106" y="0"></use>
+<g transform="translate(16385,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(17891,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="663" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="18657" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="19102" y="0"></use>
+<g transform="translate(19659,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="20578" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+This can be broken into a sum over the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> lights in the scene
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="eq:direct-lighting-sum"></span><div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="41.77ex" height="7.176ex" style="vertical-align: -3.338ex;" viewBox="0 -1652.5 17984.4 3089.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma-summation Underscript j equals 1 Overscript n Endscripts integral Underscript script upper S squared Endscripts f Subscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline comma omega Subscript normal i Baseline right-parenthesis upper L Subscript normal d left-parenthesis j right-parenthesis Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal i Baseline right-parenthesis StartAbsoluteValue cosine theta Subscript normal i Baseline EndAbsoluteValue normal d omega Subscript normal i Baseline comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-2211" d="M1387 -130l-121 -320h-1182c-18 0 -27 0 -27 11c0 0 0 6 10 18l518 607l-529 724c0 11 0 30 1 33c3 6 4 7 27 7h1182l121 -281h-25c-34 81 -102 126 -127 142c-79 50 -166 67 -220 75c-9 2 -100 16 -234 16h-548l466 -637c7 -10 7 -15 7 -15c0 -5 -2 -8 -9 -16l-509 -597 h603c192 0 290 26 311 31c115 30 221 98 260 202h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-53" d="M499 186c0 -110 -80 -208 -197 -208c-89 0 -153 36 -184 70c-33 -53 -36 -57 -36 -57c-7 -11 -8 -13 -15 -13c-11 0 -11 7 -11 24v200c0 18 0 25 13 25c3 0 11 0 12 -10c1 -36 4 -100 62 -154c53 -49 129 -54 158 -54c84 0 134 72 134 143c0 33 -10 66 -31 92 c-28 37 -58 44 -85 51c-70 17 -121 29 -132 33c-78 27 -131 100 -131 183c0 106 84 194 195 194c89 0 130 -41 160 -70l35 57c7 12 8 13 15 13c11 0 11 -7 11 -24v-201c0 -19 0 -24 -13 -24c-11 0 -11 6 -12 12c-6 45 -28 209 -195 209c-78 0 -132 -61 -132 -131 c0 -58 39 -112 101 -127l128 -31c84 -20 150 -102 150 -202Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="0" y="0"></use>
+<g transform="translate(124,-1090)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-3D" x="412" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1191" y="0"></use>
+</g>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="721" y="1627"></use>
+<g transform="translate(1611,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-53" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="685" y="483"></use>
+</g>
+</g>
+<g transform="translate(3203,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="3961" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="4350" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="4907" y="0"></use>
+<g transform="translate(5352,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="6428" y="0"></use>
+<g transform="translate(6873,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="7793" y="0"></use>
+<g transform="translate(8349,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+<g transform="translate(681,-186)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-28" x="556" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="946" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-29" x="1358" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="2017" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="2407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2963" y="0"></use>
+<g transform="translate(3408,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4328" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="13233" y="0"></use>
+<g transform="translate(13512,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(15018,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="663" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="15784" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="16229" y="0"></use>
+<g transform="translate(16786,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="17705" y="0"></use>
+</g>
+</svg>
+</div>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+<div class="eqno">(<a href="#eq:direct-lighting-sum">14.12</a>)</div>
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<p>
+
+where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.686ex" height="3.009ex" style="vertical-align: -1.171ex;" viewBox="0 -791.3 2017.5 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal d left-parenthesis j right-parenthesis Superscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+<g transform="translate(681,-186)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-28" x="556" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="946" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-29" x="1358" y="0"></use>
+</g>
+</g>
+</svg> denotes incident radiance from the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.987ex" height="2.509ex" style="vertical-align: -0.671ex; margin-left: -0.029ex;" viewBox="-12.5 -791.3 425 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">j</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D457" x="0" y="0"></use>
+</g>
+</svg>th light
+and
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="27.445ex" height="5.843ex" style="vertical-align: -3.338ex;" viewBox="0 -1078.4 11816.4 2515.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal d Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal i Baseline right-parenthesis equals sigma-summation Underscript j Endscripts upper L Subscript normal d left-parenthesis j right-parenthesis Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal i Baseline right-parenthesis period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-2211" d="M1387 -130l-121 -320h-1182c-18 0 -27 0 -27 11c0 0 0 6 10 18l518 607l-529 724c0 11 0 30 1 33c3 6 4 7 27 7h1182l121 -281h-25c-34 81 -102 126 -127 142c-79 50 -166 67 -220 75c-9 2 -100 16 -234 16h-548l466 -637c7 -10 7 -15 7 -15c0 -5 -2 -8 -9 -16l-509 -597 h603c192 0 290 26 311 31c115 30 221 98 260 202h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1175" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1564" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2121" y="0"></use>
+<g transform="translate(2566,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3485" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="4152" y="0"></use>
+<g transform="translate(5209,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="815" y="-1536"></use>
+</g>
+<g transform="translate(6820,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+<g transform="translate(681,-186)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-28" x="556" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="946" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-29" x="1358" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="2017" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="2407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2963" y="0"></use>
+<g transform="translate(3408,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4328" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="11537" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+One valid approach is to estimate each term of the sum in Equation&nbsp;(<a href="#eq:direct-lighting-sum">14.12</a>) individually,
+adding the results together.  This is the most basic direct lighting
+strategy and is implemented in <a href="#UniformSampleAllLights"><tt>UniformSampleAllLights()</tt></a>.
+
+</p>
+<p>
+
+</p>
+<p>In addition to information about the intersection point and additional
+parameters that are needed to compute the direct lighting,
+<tt>UniformSampleAllLights()</tt> also takes a <tt>handleMedia</tt> parameter
+that indicates whether the effects of volumetric attenuation should be
+considered in the direct lighting computation.  (Between this parameter and
+the detail that it takes an <a href="../Geometry_and_Transformations/Interactions.html#Interaction"><tt>Interaction</tt></a> rather than a
+<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a>, this function is actually able to compute
+reflected radiance at points in participating media; fragments related to
+this functionality will be defined in the next chapter.)
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-IntegratorUtilityFunctions-0"></span><div class="fragmentname">&lt;&lt;Integrator Utility Functions&gt;&gt;=&nbsp;<a href="#fragment-IntegratorUtilityFunctions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="UniformSampleAllLights"></span>UniformSampleAllLights(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;it,
+        const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler,
+        const std::vector&lt;int&gt; &amp;nLightSamples, bool handleMedia) {
+    <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> L(0.f);
+    for (size_t j = 0; j &lt; scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>.size(); ++j) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-AccumulatecontributionofmonojthlighttomonoL-0">Accumulate contribution of <tt>j</tt>th light to <tt>L</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1338" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1338"><i></i></a><div id="fragbit-1338" class="collapse"><div class="fragmentcode">           const std::shared_ptr&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; &amp;light = scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>[j];
+           int nSamples = nLightSamples[j];
+           const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *uLightArray = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2DArray" class="code">Get2DArray</a>(nSamples);
+           const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *uScatteringArray = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2DArray" class="code">Get2DArray</a>(nSamples);
+           if (!uLightArray || !uScatteringArray) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Useasinglesampleforilluminationfrommonolight-0">Use a single sample for illumination from <tt>light</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1339" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1339"><i></i></a><div id="fragbit-1339" class="collapse"><div class="fragmentcode">                  <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uLight = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+                  <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uScattering = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+                  L += <a href="#EstimateDirect" class="code">EstimateDirect</a>(it, uScattering, *light, uLight, scene, sampler,
+                                      arena, handleMedia);</div></div>
+           } else {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Estimatedirectlightingusingsamplearrays-0">Estimate direct lighting using sample arrays</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1340" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1340"><i></i></a><div id="fragbit-1340" class="collapse"><div class="fragmentcode">                  <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Ld(0.f);
+                  for (int k = 0; k &lt; nSamples; ++k)
+                      Ld += <a href="#EstimateDirect" class="code">EstimateDirect</a>(it, uScatteringArray[k], *light, uLightArray[k],
+                                           scene, sampler, arena, handleMedia);
+                  L += Ld / nSamples;</div></div>
+           }</div></div>
+    }
+    return L;
+}</div><p>
+
+
+</p>
+<p>This function attempts to retrieve the sample arrays from the <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>
+that were previously requested in the <tt>Preprocess()</tt> method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AccumulatecontributionofmonojthlighttomonoL-0"></span><div class="fragmentname">&lt;&lt;Accumulate contribution of <tt>j</tt>th light to <tt>L</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const std::shared_ptr&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; &amp;light = scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>[j];
+int nSamples = nLightSamples[j];
+const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *uLightArray = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2DArray" class="code">Get2DArray</a>(nSamples);
+const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *uScatteringArray = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2DArray" class="code">Get2DArray</a>(nSamples);
+if (!uLightArray || !uScatteringArray) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Useasinglesampleforilluminationfrommonolight-0">Use a single sample for illumination from <tt>light</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1341" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1341"><i></i></a><div id="fragbit-1341" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uLight = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+       <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uScattering = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+       L += <a href="#EstimateDirect" class="code">EstimateDirect</a>(it, uScattering, *light, uLight, scene, sampler,
+                           arena, handleMedia);</div></div>
+} else {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Estimatedirectlightingusingsamplearrays-0">Estimate direct lighting using sample arrays</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1342" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1342"><i></i></a><div id="fragbit-1342" class="collapse"><div class="fragmentcode">       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Ld(0.f);
+       for (int k = 0; k &lt; nSamples; ++k)
+           Ld += <a href="#EstimateDirect" class="code">EstimateDirect</a>(it, uScatteringArray[k], *light, uLightArray[k],
+                                scene, sampler, arena, handleMedia);
+       L += Ld / nSamples;</div></div>
+}</div><p>
+
+
+</p>
+<p>If all of the requested arrays have been consumed, the code falls back to a
+single sample estimate via calls to <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D"><tt>Sampler::Get2D()</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Useasinglesampleforilluminationfrommonolight-0"></span><div class="fragmentname">&lt;&lt;Use a single sample for illumination from <tt>light</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uLight = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uScattering = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+L += <a href="#EstimateDirect" class="code">EstimateDirect</a>(it, uScattering, *light, uLight, scene, sampler,
+                    arena, handleMedia);</div><p>
+
+
+</p>
+<p>For each light sample, the <a href="#EstimateDirect"><tt>EstimateDirect()</tt></a> function (which will be
+defined shortly) computes the value of the Monte Carlo estimator for its
+contribution.  When sample arrays were successfully obtained, all that
+remains to be done is to average the estimates from each of their sample values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Estimatedirectlightingusingsamplearrays-0"></span><div class="fragmentname">&lt;&lt;Estimate direct lighting using sample arrays&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Ld(0.f);
+for (int k = 0; k &lt; nSamples; ++k)
+    Ld += <a href="#EstimateDirect" class="code">EstimateDirect</a>(it, uScatteringArray[k], *light, uLightArray[k],
+                         scene, sampler, arena, handleMedia);
+L += Ld / nSamples;</div><p>
+
+
+</p>
+<p>In a scene with a large number of lights, it may not be desirable to always
+compute direct lighting from all of the lights at every point that is shaded.
+The Monte Carlo approach gives a way to do this that still computes the correct
+result on average.  Consider as an example computing the expected value of the
+sum of two functions <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="14.578ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 6276.4 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper E left-bracket f left-parenthesis x right-parenthesis plus g left-parenthesis x right-parenthesis right-bracket</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D438" d="M763 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12s1 12 1 18c4 27 4 29 4 53c0 82 -30 111 -152 111h-141c-44 0 -45 -4 -54 -39l-60 -241h94c92 0 110 23 131 99c3 12 5 18 14 18c7 0 12 -5 12 -11l-57 -234c-4 -15 -7 -20 -15 -20c-9 0 -13 6 -13 11 c0 3 1 6 3 11c7 30 7 42 7 49c0 25 0 46 -85 46h-99l-68 -273c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h146c171 0 208 67 273 215c2 6 4 12 13 12c12 0 12 -11 12 -11s-3 -9 -5 -14l-92 -216c-7 -16 -8 -17 -31 -17h-519c-19 0 -28 0 -28 12 c0 19 11 19 28 19c79 0 81 8 91 47l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h505c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D454" d="M474 395c0 -7 -2 -12 -3 -18l-111 -444c-15 -60 -87 -138 -212 -138c-96 0 -133 20 -133 61c0 40 32 58 54 58c27 0 38 -19 38 -35c0 -17 -11 -43 -41 -52c28 -9 61 -10 80 -10c106 0 140 99 144 108l33 132l-1 1c-10 -11 -57 -58 -116 -58c-72 0 -133 59 -133 158 c0 144 124 284 238 284c40 0 75 -26 93 -63c4 36 31 43 41 43c17 0 29 -10 29 -27zM392 334c0 5 -14 86 -80 86c-42 0 -85 -40 -112 -89c-27 -51 -56 -169 -56 -217c0 -40 15 -92 65 -92c29 0 60 18 81 36c22 19 45 44 51 70l48 191c1 4 3 10 3 15Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="763" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="1042" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1594" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="1984" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2556" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="3168" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D454" x="4168" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="4646" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="5035" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="5608" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="5997" y="0"></use>
+</g>
+</svg>.  If we randomly evaluate just one of
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.422ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 1904 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f left-parenthesis x right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="552" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="942" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1514" y="0"></use>
+</g>
+</svg> or <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.248ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 1829 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">g left-parenthesis x right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D454" d="M474 395c0 -7 -2 -12 -3 -18l-111 -444c-15 -60 -87 -138 -212 -138c-96 0 -133 20 -133 61c0 40 32 58 54 58c27 0 38 -19 38 -35c0 -17 -11 -43 -41 -52c28 -9 61 -10 80 -10c106 0 140 99 144 108l33 132l-1 1c-10 -11 -57 -58 -116 -58c-72 0 -133 59 -133 158 c0 144 124 284 238 284c40 0 75 -26 93 -63c4 36 31 43 41 43c17 0 29 -10 29 -27zM392 334c0 5 -14 86 -80 86c-42 0 -85 -40 -112 -89c-27 -51 -56 -169 -56 -217c0 -40 15 -92 65 -92c29 0 60 18 81 36c22 19 45 44 51 70l48 191c1 4 3 10 3 15Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D454" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="477" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="867" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1439" y="0"></use>
+</g>
+</svg> and multiply the result by&nbsp;2, then the expected value of the
+result will still be <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="11.511ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4955.9 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f left-parenthesis x right-parenthesis plus g left-parenthesis x right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D454" d="M474 395c0 -7 -2 -12 -3 -18l-111 -444c-15 -60 -87 -138 -212 -138c-96 0 -133 20 -133 61c0 40 32 58 54 58c27 0 38 -19 38 -35c0 -17 -11 -43 -41 -52c28 -9 61 -10 80 -10c106 0 140 99 144 108l33 132l-1 1c-10 -11 -57 -58 -116 -58c-72 0 -133 59 -133 158 c0 144 124 284 238 284c40 0 75 -26 93 -63c4 36 31 43 41 43c17 0 29 -10 29 -27zM392 334c0 5 -14 86 -80 86c-42 0 -85 -40 -112 -89c-27 -51 -56 -169 -56 -217c0 -40 15 -92 65 -92c29 0 60 18 81 36c22 19 45 44 51 70l48 191c1 4 3 10 3 15Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="552" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="942" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1514" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="2126" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D454" x="3126" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="3604" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="3993" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4566" y="0"></use>
+</g>
+</svg>.  This idea also generalizes to sums with an
+arbitrary number of terms; see Ross (<a href="Further_Reading.html#cite:Ross:ProbabilityModels">2002</a>, p.&nbsp;102) for a proof.  Here we
+estimate direct lighting for only one randomly chosen light and multiply the
+result by the number of lights to compensate.  
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-IntegratorUtilityFunctions-1"></span><div class="fragmentname">&lt;&lt;Integrator Utility Functions&gt;&gt;+=&nbsp;<a href="#fragment-IntegratorUtilityFunctions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-IntegratorUtilityFunctions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="UniformSampleOneLight"></span>UniformSampleOneLight(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;it,
+        const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler,
+        bool handleMedia) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Randomlychooseasinglelighttosamplemonolight-0">Randomly choose a single light to sample, <tt>light</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1343" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1343"><i></i></a><div id="fragbit-1343" class="collapse"><div class="fragmentcode">       int nLights = int(scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>.size());
+       if (nLights == 0) return <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.f);
+       int lightNum = std::min((int)(sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>() * nLights), nLights - 1);
+       const std::shared_ptr&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; &amp;light = scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>[lightNum];</div></div>
+    <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uLight = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+    <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uScattering = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+    return (Float)nLights * 
+        <a href="#EstimateDirect" class="code">EstimateDirect</a>(it, uScattering, *light, uLight, scene, sampler,
+                       arena, handleMedia);
+}</div><p>
+
+
+</p>
+<p>Which of the <tt>nLights</tt> to sample illumination from is determined using a
+1D sample from <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D"><tt>Sampler::Get1D()</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Randomlychooseasinglelighttosamplemonolight-0"></span><div class="fragmentname">&lt;&lt;Randomly choose a single light to sample, <tt>light</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int nLights = int(scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>.size());
+if (nLights == 0) return <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.f);
+int lightNum = std::min((int)(sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>() * nLights), nLights - 1);
+const std::shared_ptr&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; &amp;light = scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>[lightNum];</div><p>
+
+
+</p>
+<p>It&rsquo;s possible to be even more creative in choosing the individual light
+sampling probabilities than the uniform method used in
+<a href="#UniformSampleOneLight"><tt>UniformSampleOneLight()</tt></a>.  In fact, we&rsquo;re free to set the
+probabilities any way we like, as long as we weight the result
+appropriately and there is a nonzero probability of sampling any light that
+contributes to the reflection at the point.  The better a job we do at
+setting these probabilities to reflect the relative contributions of lights
+to reflected radiance at the reference point, the more efficient the Monte
+Carlo estimator will be, and the fewer rays will be needed to lower
+variance to an acceptable level.  (This is just the discrete instance of
+importance sampling.)
+
+</p>
+<p>One widely used approach to this task is to base the sample distribution on
+the total power of each light.  In a similar manner, we could take more
+than one light sample with this approach; indeed, any number of samples can
+be taken in the end, as long as they are weighted appropriately.
+
+</p>
+<p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#EstimatingtheDirectLightingIntegral"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:estimating-direct-lighting"></span><span id="EstimatingtheDirectLightingIntegral"></span><h3>14.3.1  Estimating the Direct Lighting Integral</h3><p>
+
+
+
+</p>
+<p>Having chosen a particular light to estimate direct lighting from, we need
+to estimate the value of the integral
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="35.425ex" height="5.676ex" style="vertical-align: -2.338ex;" viewBox="0 -1437.2 15252.2 2443.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">integral Underscript script upper S squared Endscripts f Subscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline comma omega Subscript normal i Baseline right-parenthesis upper L Subscript normal d Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal i Baseline right-parenthesis StartAbsoluteValue cosine theta Subscript normal i Baseline EndAbsoluteValue normal d omega Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-53" d="M499 186c0 -110 -80 -208 -197 -208c-89 0 -153 36 -184 70c-33 -53 -36 -57 -36 -57c-7 -11 -8 -13 -15 -13c-11 0 -11 7 -11 24v200c0 18 0 25 13 25c3 0 11 0 12 -10c1 -36 4 -100 62 -154c53 -49 129 -54 158 -54c84 0 134 72 134 143c0 33 -10 66 -31 92 c-28 37 -58 44 -85 51c-70 17 -121 29 -132 33c-78 27 -131 100 -131 183c0 106 84 194 195 194c89 0 130 -41 160 -70l35 57c7 12 8 13 15 13c11 0 11 -7 11 -24v-201c0 -19 0 -24 -13 -24c-11 0 -11 6 -12 12c-6 45 -28 209 -195 209c-78 0 -132 -61 -132 -131 c0 -58 39 -112 101 -127l128 -31c84 -20 150 -102 150 -202Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-53" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="685" y="483"></use>
+</g>
+<g transform="translate(1592,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="2349" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="2739" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3295" y="0"></use>
+<g transform="translate(3741,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="4817" y="0"></use>
+<g transform="translate(5262,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="6182" y="0"></use>
+<g transform="translate(6738,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1175" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1564" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2121" y="0"></use>
+<g transform="translate(2566,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3485" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="10779" y="0"></use>
+<g transform="translate(11058,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(12564,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="663" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="13331" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="13776" y="0"></use>
+<g transform="translate(14332,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</g>
+</svg>
+</div>
+<p>
+
+for that light.  To compute this estimate, we need to choose one or more
+directions <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.323ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1000 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="880" y="-213"></use>
+</g>
+</svg> and apply the Monte Carlo estimator:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="37ex" height="7.676ex" style="vertical-align: -3.338ex;" viewBox="0 -1867.7 15930.7 3304.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartFraction 1 Over upper N EndFraction sigma-summation Underscript j equals 1 Overscript upper N Endscripts StartFraction f Subscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline comma omega Subscript normal r Baseline right-parenthesis upper L Subscript normal d Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal r Baseline right-parenthesis StartAbsoluteValue cosine theta Subscript j Baseline EndAbsoluteValue Over p left-parenthesis omega Subscript normal r Baseline right-parenthesis EndFraction period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D441" d="M881 672c0 -19 -12 -20 -17 -20c-80 -3 -98 -34 -108 -74l-140 -557c-5 -18 -5 -21 -16 -21c-9 0 -12 2 -19 19l-249 589c-5 10 -5 12 -9 18l-132 -528c-3 -11 -4 -16 -4 -23c0 -20 8 -42 66 -44c11 0 20 -1 20 -11c0 -20 -13 -20 -18 -20c-33 0 -69 3 -103 3 c-33 0 -68 -3 -100 -3c-8 0 -13 4 -13 11c0 19 11 20 17 20c81 3 98 35 108 75l134 537c0 9 -63 9 -68 9c-19 0 -28 0 -28 11c0 20 9 20 29 20h134c23 0 24 -1 32 -19l221 -522l112 445c1 3 3 18 3 21c0 22 -11 43 -68 44c-8 0 -18 0 -18 11c0 20 12 20 18 20 c33 0 68 -3 102 -3c33 0 68 3 101 3c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-2211" d="M1387 -130l-121 -320h-1182c-18 0 -27 0 -27 11c0 0 0 6 10 18l518 607l-529 724c0 11 0 30 1 33c3 6 4 7 27 7h1182l121 -281h-25c-34 81 -102 126 -127 142c-79 50 -166 67 -220 75c-9 2 -100 16 -234 16h-548l466 -637c7 -10 7 -15 7 -15c0 -5 -2 -8 -9 -16l-509 -597 h603c192 0 290 26 311 31c115 30 221 98 260 202h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(120,0)">
+<rect stroke="none" width="1001" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="250" y="676"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D441" x="60" y="-704"></use>
+</g>
+<g transform="translate(1408,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="0" y="0"></use>
+<g transform="translate(124,-1090)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-3D" x="412" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1191" y="0"></use>
+</g>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D441" x="580" y="1627"></use>
+</g>
+<g transform="translate(2852,0)">
+<g transform="translate(286,0)">
+<rect stroke="none" width="12392" height="60" x="0" y="220"></rect>
+<g transform="translate(60,815)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="757" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1146" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1703" y="0"></use>
+<g transform="translate(2148,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3224" y="0"></use>
+<g transform="translate(3669,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4669" y="0"></use>
+<g transform="translate(5226,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1175" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1564" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2121" y="0"></use>
+<g transform="translate(2566,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3566" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="9348" y="0"></use>
+<g transform="translate(9626,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(11133,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="663" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="11994" y="0"></use>
+</g>
+<g transform="translate(5055,-769)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="503" y="0"></use>
+<g transform="translate(893,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1893" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="15652" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+To reduce variance, we will use importance sampling to choose the
+directions <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.323ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1000 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="880" y="-213"></use>
+</g>
+</svg>.  Because both the BSDF and the direct radiance terms are
+individually complex, it can be difficult to find sampling distributions that
+match their product well.  (However, see the &ldquo;Further Reading&rdquo; section as
+well as Exercise&nbsp;14.8 at the end of this chapter for approaches that
+sample their product directly.)  Here we will use the BSDF&rsquo;s sampling
+distribution for some of the samples and the light&rsquo;s for the rest.
+Depending on the characteristics of each of them, one of these two sampling
+methods may be far more effective than the other.  Therefore, we will use
+multiple importance sampling to reduce variance for the cases where one or
+the other is more effective.
+
+</p>
+<p>Figure&nbsp;<a href="#fig:sample-bsdf-light">14.13</a> shows cases where one of the sampling
+methods is much better than the other. In this scene, four rectangular
+surfaces ranging from very smooth (top) to very rough (bottom) are
+illuminated by spherical light sources of increasing size.
+Figures&nbsp;<a href="#fig:sample-bsdf-light">14.13</a>(1) and (2) show the BSDF and light
+sampling strategies on their own, while
+Figure&nbsp;<a href="#fig:sample-bsdf-light">14.13</a>(3) shows their combination computed
+using multiple importance sampling.  As the example illustrates, sampling
+the BSDF can be much more effective when it takes on large values on a
+narrow set of directions that is much smaller than the set of directions
+that would be obtained by sampling the light sources. This case is most
+visible in the top left reflection of a large light source in a
+low-roughness surface.  On the other hand, sampling the light sources can
+be considerably more effective in the opposite case&mdash;when the light source
+is small and the BSDF lobe is less concentrated (this case is most visible
+in the bottom right reflection).
+
+</p>
+<p>  </p>
+<span class="anchor" id="fig:sample-bsdf-light"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 77.083%;  position:relative;">
+<div id="BSDF_Sampling60" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('BSDF_Sampling60'), {
+  title: 'BSDF_Sampling60', children: [
+ { title: 'BSDF Sampling', image: 'plates-bsdf.exr' },  { title: 'Light Sampling', image: 'plates-light.exr' },  { title: 'Multiple importance sampling', image: 'plates-mis.exr' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 14.13: <span class="legend"> 
+Four surfaces ranging from very smooth (top) to very rough (bottom)
+illuminated by spherical light sources of decreasing size and rendered
+with different sampling techniques (modeled after a scene by Eric Veach).
+(a)&nbsp;BSDF sampling, (b)&nbsp;Light sampling, and (c)&nbsp;both techniques combined
+using MIS. Sampling the BSDF is generally more
+effective for highly specular materials and large light sources, as
+illumination is coming from many directions, but the BSDF&rsquo;s value is large for
+only a few of them (top left reflection). The converse is true for small sources and rough materials
+(bottom right reflection), where sampling the light source is more effective.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>By applying multiple importance sampling, not only can we use both of the
+two sampling methods, but we can also do so in a way that eliminates the
+extreme variance from the cases where a sampling method unexpectedly finds
+a high-contribution direction, since the weighting terms from MIS reduce
+these contributions substantially.
+
+</p>
+<p><tt>EstimateDirect()</tt> implements this approach and computes a direct
+lighting estimate for a single light source sample.  Its <tt>handleMedia</tt>
+parameter indicates whether the effect of attenuation from participating
+media should be accounted for, and its <tt>specular</tt> parameter indicates
+whether or not perfectly specular lobes should be considered in the direct
+illumination estimate. The default value for both <tt>specular</tt> and
+<tt>handleMedia</tt> arguments is set to <tt>false</tt> in the function
+declaration, which is not shown here.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-IntegratorUtilityFunctions-2"></span><div class="fragmentname">&lt;&lt;Integrator Utility Functions&gt;&gt;+=&nbsp;<a href="#fragment-IntegratorUtilityFunctions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Light_Transport_III_Bidirectional_Methods/Stochastic_Progressive_Photon_Mapping.html#fragment-IntegratorUtilityFunctions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="EstimateDirect"></span>EstimateDirect(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;it,
+        const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;uScattering, const <a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a> &amp;light, 
+        const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;uLight, const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler,
+        <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena, bool handleMedia, bool specular) {
+    BxDFType bsdfFlags = specular ? BSDF_ALL :
+                         BxDFType(BSDF_ALL &amp; ~BSDF_SPECULAR);
+    <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Ld(0.f);
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Samplelightsourcewithmultipleimportancesampling-0">Sample light source with multiple importance sampling</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1344" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1344"><i></i></a><div id="fragbit-1344" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi;
+       Float lightPdf = 0, scatteringPdf = 0;
+       <a href="../Light_Sources/Light_Interface.html#VisibilityTester" class="code">VisibilityTester</a> visibility;
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Li = light.<a href="../Light_Sources/Light_Interface.html#Light::Sample_Li" class="code">Sample_Li</a>(it, uLight, &amp;wi, &amp;lightPdf, &amp;visibility);
+       if (lightPdf &gt; 0 &amp;&amp; !Li.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputeBSDForphasefunctionsvalueforlightsample-0">Compute BSDF or phase function&rsquo;s value for light sample</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1345" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1345"><i></i></a><div id="fragbit-1345" class="collapse"><div class="fragmentcode">              <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> f;
+              if (it.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>()) {
+                  &lt;&lt;<span class="fragmentname"><a href="#fragment-EvaluateBSDFforlightsamplingstrategy-0">Evaluate BSDF for light sampling strategy</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1346" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1346"><i></i></a><div id="fragbit-1346" class="collapse"><div class="fragmentcode">                     const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = (const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)it;
+                     <a href="../Materials/BSDFs.html#BSDF::f" class="code">f</a> = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::f" class="code">f</a>(isect.wo, wi, bsdfFlags) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading" class="code">shading</a>.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+                     scatteringPdf = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Pdf" class="code">Pdf</a>(isect.wo, wi, bsdfFlags);</div></div>
+              } else {
+                  &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_II_Volume_Rendering/Volumetric_Light_Transport.html#fragment-Evaluatephasefunctionforlightsamplingstrategy-0">Evaluate phase function for light sampling strategy</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1347" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1347"><i></i></a><div id="fragbit-1347" class="collapse"><div class="fragmentcode">                     const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;mi = (const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;)it;
+                     Float <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a> = mi.<a href="../Volume_Scattering/Media.html#MediumInteraction::phase" class="code">phase</a>-&gt;<a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>(mi.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::wo" class="code">wo</a>, wi);
+                     f = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(<a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>);
+                     scatteringPdf = <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>;</div></div>
+              }</div></div>
+           if (!f.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Computeeffectofvisibilityforlightsourcesample-0">Compute effect of visibility for light source sample</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1348" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1348"><i></i></a><div id="fragbit-1348" class="collapse"><div class="fragmentcode">                  if (handleMedia)
+                      Li *= visibility.<a href="../Light_Sources/Light_Interface.html#VisibilityTester::Tr" class="code">Tr</a>(scene, sampler);
+                  else if (!visibility.<a href="../Light_Sources/Light_Interface.html#VisibilityTester::Unoccluded" class="code">Unoccluded</a>(scene))
+                      Li = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.f);</div></div>
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Addlightscontributiontoreflectedradiance-0">Add light&rsquo;s contribution to reflected radiance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1349" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1349"><i></i></a><div id="fragbit-1349" class="collapse"><div class="fragmentcode">                  if (!Li.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+                      if (<a href="../Light_Sources/Light_Interface.html#IsDeltaLight" class="code">IsDeltaLight</a>(light.<a href="../Light_Sources/Light_Interface.html#Light::flags" class="code">flags</a>))
+                          Ld += f * Li / lightPdf;
+                      else {
+                          Float weight = <a href="../Monte_Carlo_Integration/Importance_Sampling.html#PowerHeuristic" class="code">PowerHeuristic</a>(1, lightPdf, 1, scatteringPdf);
+                          Ld += f * Li * weight / lightPdf;
+                      }
+                  }</div></div>
+           }
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SampleBSDFwithmultipleimportancesampling-0">Sample BSDF with multiple importance sampling</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1350" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1350"><i></i></a><div id="fragbit-1350" class="collapse"><div class="fragmentcode">       if (!<a href="../Light_Sources/Light_Interface.html#IsDeltaLight" class="code">IsDeltaLight</a>(light.<a href="../Light_Sources/Light_Interface.html#Light::flags" class="code">flags</a>)) {
+           <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> f;
+           bool sampledSpecular = false;
+           if (it.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>()) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Samplescattereddirectionforsurfaceinteractions-0">Sample scattered direction for surface interactions</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1351" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1351"><i></i></a><div id="fragbit-1351" class="collapse"><div class="fragmentcode">                  BxDFType sampledType;
+                  const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = (const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)it;
+                  f = isect.bsdf-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Sample_f" class="code">Sample_f</a>(isect.wo, &amp;wi, uScattering, &amp;scatteringPdf,
+                                           bsdfFlags, &amp;sampledType);
+                  f *= <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.shading.n);
+                  sampledSpecular = sampledType &amp; BSDF_SPECULAR;</div></div>
+           } else {
+               &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_II_Volume_Rendering/Volumetric_Light_Transport.html#fragment-Samplescattereddirectionformediuminteractions-0">Sample scattered direction for medium interactions</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1352" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1352"><i></i></a><div id="fragbit-1352" class="collapse"><div class="fragmentcode">                  const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;mi = (const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;)it;
+                  Float p = mi.phase-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#PhaseFunction::Sample_p" class="code">Sample_p</a>(mi.wo, &amp;wi, uScattering);
+                  f = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(p);
+                  scatteringPdf = p;</div></div>
+           }
+           if (!f.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>() &amp;&amp; scatteringPdf &gt; 0) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Accountforlightcontributionsalongsampleddirectionmonowi-0">Account for light contributions along sampled direction <tt>wi</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1353" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1353"><i></i></a><div id="fragbit-1353" class="collapse"><div class="fragmentcode">                  Float weight = 1;
+                  if (!sampledSpecular) {
+                      lightPdf = light.<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#Light::Pdf_Li" class="code">Pdf_Li</a>(it, wi);
+                      if (lightPdf == 0)
+                          return Ld;
+                      weight = <a href="../Monte_Carlo_Integration/Importance_Sampling.html#PowerHeuristic" class="code">PowerHeuristic</a>(1, scatteringPdf, 1, lightPdf);
+                  }
+                  &lt;&lt;<span class="fragmentname"><a href="#fragment-Findintersectionandcomputetransmittance-0">Find intersection and compute transmittance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1354" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1354"><i></i></a><div id="fragbit-1354" class="collapse"><div class="fragmentcode">                     <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> lightIsect;
+                     <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ray = it.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);
+                     <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Tr(1.f);
+                     bool foundSurfaceInteraction = handleMedia ?
+                           scene.<a href="../Volume_Scattering/Media.html#Scene::IntersectTr" class="code">IntersectTr</a>(ray, sampler, &amp;lightIsect, &amp;Tr) :
+                           scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::Intersect" class="code">Intersect</a>(ray, &amp;lightIsect);</div></div>
+                  &lt;&lt;<span class="fragmentname"><a href="#fragment-Addlightcontributionfrommaterialsampling-0">Add light contribution from material sampling</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1355" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1355"><i></i></a><div id="fragbit-1355" class="collapse"><div class="fragmentcode">                     <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Li(0.f);
+                     if (foundSurfaceInteraction) {
+                         if (lightIsect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::primitive" class="code">primitive</a>-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive::GetAreaLight" class="code">GetAreaLight</a>() == &amp;light)
+                             Li = lightIsect.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(-wi);
+                     }
+                     else
+                         Li = light.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(ray);
+                     if (!Li.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>())
+                         Ld += f * Li * Tr * weight / scatteringPdf;</div></div></div></div>
+           }
+       }</div></div>
+    return Ld;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>First, one sample is taken from the light&rsquo;s sampling distribution using
+<tt>Sample_Li()</tt>, which also returns the light&rsquo;s emitted radiance and the
+value of the PDF for the sampled direction. 
+ 
+
+</p>
+<span class="anchor" id="fragment-Samplelightsourcewithmultipleimportancesampling-0"></span><div class="fragmentname">&lt;&lt;Sample light source with multiple importance sampling&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi;
+Float lightPdf = 0, scatteringPdf = 0;
+<a href="../Light_Sources/Light_Interface.html#VisibilityTester" class="code">VisibilityTester</a> visibility;
+<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Li = light.<a href="../Light_Sources/Light_Interface.html#Light::Sample_Li" class="code">Sample_Li</a>(it, uLight, &amp;wi, &amp;lightPdf, &amp;visibility);
+if (lightPdf &gt; 0 &amp;&amp; !Li.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputeBSDForphasefunctionsvalueforlightsample-0">Compute BSDF or phase function&rsquo;s value for light sample</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1356" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1356"><i></i></a><div id="fragbit-1356" class="collapse"><div class="fragmentcode">       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> f;
+       if (it.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>()) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-EvaluateBSDFforlightsamplingstrategy-0">Evaluate BSDF for light sampling strategy</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1357" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1357"><i></i></a><div id="fragbit-1357" class="collapse"><div class="fragmentcode">              const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = (const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)it;
+              <a href="../Materials/BSDFs.html#BSDF::f" class="code">f</a> = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::f" class="code">f</a>(isect.wo, wi, bsdfFlags) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading" class="code">shading</a>.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+              scatteringPdf = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Pdf" class="code">Pdf</a>(isect.wo, wi, bsdfFlags);</div></div>
+       } else {
+           &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_II_Volume_Rendering/Volumetric_Light_Transport.html#fragment-Evaluatephasefunctionforlightsamplingstrategy-0">Evaluate phase function for light sampling strategy</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1358" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1358"><i></i></a><div id="fragbit-1358" class="collapse"><div class="fragmentcode">              const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;mi = (const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;)it;
+              Float <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a> = mi.<a href="../Volume_Scattering/Media.html#MediumInteraction::phase" class="code">phase</a>-&gt;<a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>(mi.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::wo" class="code">wo</a>, wi);
+              f = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(<a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>);
+              scatteringPdf = <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>;</div></div>
+       }</div></div>
+    if (!f.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Computeeffectofvisibilityforlightsourcesample-0">Compute effect of visibility for light source sample</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1359" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1359"><i></i></a><div id="fragbit-1359" class="collapse"><div class="fragmentcode">           if (handleMedia)
+               Li *= visibility.<a href="../Light_Sources/Light_Interface.html#VisibilityTester::Tr" class="code">Tr</a>(scene, sampler);
+           else if (!visibility.<a href="../Light_Sources/Light_Interface.html#VisibilityTester::Unoccluded" class="code">Unoccluded</a>(scene))
+               Li = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.f);</div></div>
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Addlightscontributiontoreflectedradiance-0">Add light&rsquo;s contribution to reflected radiance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1360" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1360"><i></i></a><div id="fragbit-1360" class="collapse"><div class="fragmentcode">           if (!Li.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+               if (<a href="../Light_Sources/Light_Interface.html#IsDeltaLight" class="code">IsDeltaLight</a>(light.<a href="../Light_Sources/Light_Interface.html#Light::flags" class="code">flags</a>))
+                   Ld += f * Li / lightPdf;
+               else {
+                   Float weight = <a href="../Monte_Carlo_Integration/Importance_Sampling.html#PowerHeuristic" class="code">PowerHeuristic</a>(1, lightPdf, 1, scatteringPdf);
+                   Ld += f * Li * weight / lightPdf;
+               }
+           }</div></div>
+    }
+}</div><p>
+
+
+</p>
+<p>Only if the light successfully samples a direction and returns nonzero
+emitted radiance does <tt>EstimateDirect()</tt> go ahead and evaluate the
+BSDF or phase function at the provided <tt>Interaction</tt>; otherwise,
+there&rsquo;s no reason to go through the computational expense. (Consider, for
+example, a spotlight, which returns no radiance for points outside its
+illumination cone.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputeBSDForphasefunctionsvalueforlightsample-0"></span><div class="fragmentname">&lt;&lt;Compute BSDF or phase function&rsquo;s value for light sample&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> f;
+if (it.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>()) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-EvaluateBSDFforlightsamplingstrategy-0">Evaluate BSDF for light sampling strategy</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1361" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1361"><i></i></a><div id="fragbit-1361" class="collapse"><div class="fragmentcode">       const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = (const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)it;
+       <a href="../Materials/BSDFs.html#BSDF::f" class="code">f</a> = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::f" class="code">f</a>(isect.wo, wi, bsdfFlags) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading" class="code">shading</a>.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+       scatteringPdf = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Pdf" class="code">Pdf</a>(isect.wo, wi, bsdfFlags);</div></div>
+} else {
+    &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_II_Volume_Rendering/Volumetric_Light_Transport.html#fragment-Evaluatephasefunctionforlightsamplingstrategy-0">Evaluate phase function for light sampling strategy</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1362" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1362"><i></i></a><div id="fragbit-1362" class="collapse"><div class="fragmentcode">       const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;mi = (const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;)it;
+       Float <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a> = mi.<a href="../Volume_Scattering/Media.html#MediumInteraction::phase" class="code">phase</a>-&gt;<a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>(mi.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::wo" class="code">wo</a>, wi);
+       f = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(<a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>);
+       scatteringPdf = <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>;</div></div>
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-EvaluateBSDFforlightsamplingstrategy-0"></span><div class="fragmentname">&lt;&lt;Evaluate BSDF for light sampling strategy&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = (const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)it;
+<a href="../Materials/BSDFs.html#BSDF::f" class="code">f</a> = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Materials/BSDFs.html#BSDF::f" class="code">f</a>(isect.wo, wi, bsdfFlags) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading" class="code">shading</a>.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+scatteringPdf = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Pdf" class="code">Pdf</a>(isect.wo, wi, bsdfFlags);</div><p>
+
+
+</p>
+<p>(We postpone the medium-specific fragment that evaluates the phase function
+at the interaction point, &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_II_Volume_Rendering/Volumetric_Light_Transport.html#fragment-Evaluatephasefunctionforlightsamplingstrategy-0">Evaluate phase function for light
+sampling strategy</a></span>&gt;&gt;, to Chapter&nbsp;<a href="../Light_Transport_II_Volume_Rendering.html#chap:volume-integration">15</a>.)
+
+</p>
+<p>If participating media are to be accounted for, the radiance from the light
+to the illuminated point is scaled by the beam transmittance between the
+two points to account for attenuation due to participating
+media. Otherwise, a call to the <a href="../Light_Sources/Light_Interface.html#VisibilityTester"><tt>VisibilityTester</tt></a>&rsquo;s
+<tt>Unoccluded()</tt> method traces a shadow ray to determine if the sampled
+point on the light source is visible.  (This step and the next are skipped
+if the BSDF or phase function returned a black SPD.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computeeffectofvisibilityforlightsourcesample-0"></span><div class="fragmentname">&lt;&lt;Compute effect of visibility for light source sample&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (handleMedia)
+    Li *= visibility.<a href="../Light_Sources/Light_Interface.html#VisibilityTester::Tr" class="code">Tr</a>(scene, sampler);
+else if (!visibility.<a href="../Light_Sources/Light_Interface.html#VisibilityTester::Unoccluded" class="code">Unoccluded</a>(scene))
+    Li = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(0.f);</div><p>
+
+
+</p>
+<p>The light sample&rsquo;s contribution can now be accumulated. Recall from
+Section&nbsp;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#sec:light-delta-distributions">14.2.1</a> that if the light is described
+by a delta distribution then there is an implied delta distribution in
+both the emitted radiance value returned from <tt>Sample_Li()</tt> as well as
+the PDF and that they are expected to cancel out when the estimator is
+evaluated.  In this case, we must not try to apply multiple importance
+sampling and should compute the standard estimator instead.  If this isn&rsquo;t
+a delta distribution light source, then the 
+BSDF&rsquo;s PDF value for sampling the direction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</svg>, which was
+returned by <a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Pdf"><tt>BSDF::Pdf()</tt></a>, is used with the MIS estimator,
+where the weight is computed here with the power heuristic.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Addlightscontributiontoreflectedradiance-0"></span><div class="fragmentname">&lt;&lt;Add light&rsquo;s contribution to reflected radiance&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (!Li.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>()) {
+    if (<a href="../Light_Sources/Light_Interface.html#IsDeltaLight" class="code">IsDeltaLight</a>(light.<a href="../Light_Sources/Light_Interface.html#Light::flags" class="code">flags</a>))
+        Ld += f * Li / lightPdf;
+    else {
+        Float weight = <a href="../Monte_Carlo_Integration/Importance_Sampling.html#PowerHeuristic" class="code">PowerHeuristic</a>(1, lightPdf, 1, scatteringPdf);
+        Ld += f * Li * weight / lightPdf;
+    }
+}</div><p>
+
+
+</p>
+<p>Next, a sample is generated using the BSDF&rsquo;s sampling distribution.  This
+step should be skipped if the light source&rsquo;s emission profile involves a
+delta distribution because, in that case, there&rsquo;s no chance that sampling
+the BSDF will give a direction that receives light from the source.
+Otherwise, the BSDF can be sampled.
+ 
+</p>
+<span class="anchor" id="fragment-SampleBSDFwithmultipleimportancesampling-0"></span><div class="fragmentname">&lt;&lt;Sample BSDF with multiple importance sampling&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (!<a href="../Light_Sources/Light_Interface.html#IsDeltaLight" class="code">IsDeltaLight</a>(light.<a href="../Light_Sources/Light_Interface.html#Light::flags" class="code">flags</a>)) {
+    <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> f;
+    bool sampledSpecular = false;
+    if (it.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>()) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Samplescattereddirectionforsurfaceinteractions-0">Sample scattered direction for surface interactions</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1363" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1363"><i></i></a><div id="fragbit-1363" class="collapse"><div class="fragmentcode">           BxDFType sampledType;
+           const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = (const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)it;
+           f = isect.bsdf-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Sample_f" class="code">Sample_f</a>(isect.wo, &amp;wi, uScattering, &amp;scatteringPdf,
+                                    bsdfFlags, &amp;sampledType);
+           f *= <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.shading.n);
+           sampledSpecular = sampledType &amp; BSDF_SPECULAR;</div></div>
+    } else {
+        &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_II_Volume_Rendering/Volumetric_Light_Transport.html#fragment-Samplescattereddirectionformediuminteractions-0">Sample scattered direction for medium interactions</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1364" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1364"><i></i></a><div id="fragbit-1364" class="collapse"><div class="fragmentcode">           const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;mi = (const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;)it;
+           Float p = mi.phase-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#PhaseFunction::Sample_p" class="code">Sample_p</a>(mi.wo, &amp;wi, uScattering);
+           f = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(p);
+           scatteringPdf = p;</div></div>
+    }
+    if (!f.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>() &amp;&amp; scatteringPdf &gt; 0) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Accountforlightcontributionsalongsampleddirectionmonowi-0">Account for light contributions along sampled direction <tt>wi</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1365" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1365"><i></i></a><div id="fragbit-1365" class="collapse"><div class="fragmentcode">           Float weight = 1;
+           if (!sampledSpecular) {
+               lightPdf = light.<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#Light::Pdf_Li" class="code">Pdf_Li</a>(it, wi);
+               if (lightPdf == 0)
+                   return Ld;
+               weight = <a href="../Monte_Carlo_Integration/Importance_Sampling.html#PowerHeuristic" class="code">PowerHeuristic</a>(1, scatteringPdf, 1, lightPdf);
+           }
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Findintersectionandcomputetransmittance-0">Find intersection and compute transmittance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1366" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1366"><i></i></a><div id="fragbit-1366" class="collapse"><div class="fragmentcode">              <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> lightIsect;
+              <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ray = it.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);
+              <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Tr(1.f);
+              bool foundSurfaceInteraction = handleMedia ?
+                    scene.<a href="../Volume_Scattering/Media.html#Scene::IntersectTr" class="code">IntersectTr</a>(ray, sampler, &amp;lightIsect, &amp;Tr) :
+                    scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::Intersect" class="code">Intersect</a>(ray, &amp;lightIsect);</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Addlightcontributionfrommaterialsampling-0">Add light contribution from material sampling</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1367" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1367"><i></i></a><div id="fragbit-1367" class="collapse"><div class="fragmentcode">              <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Li(0.f);
+              if (foundSurfaceInteraction) {
+                  if (lightIsect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::primitive" class="code">primitive</a>-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive::GetAreaLight" class="code">GetAreaLight</a>() == &amp;light)
+                      Li = lightIsect.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(-wi);
+              }
+              else
+                  Li = light.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(ray);
+              if (!Li.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>())
+                  Ld += f * Li * Tr * weight / scatteringPdf;</div></div></div></div>
+    }
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Once more, we postpone the medium-related code to
+Chapter&nbsp;<a href="../Light_Transport_II_Volume_Rendering.html#chap:volume-integration">15</a>. Given a surface interaction, the
+implementation samples a scattered direction and records whether or not a delta
+distribution was sampled.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Samplescattereddirectionforsurfaceinteractions-0"></span><div class="fragmentname">&lt;&lt;Sample scattered direction for surface interactions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">BxDFType sampledType;
+const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = (const <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)it;
+f = isect.bsdf-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Sample_f" class="code">Sample_f</a>(isect.wo, &amp;wi, uScattering, &amp;scatteringPdf,
+                         bsdfFlags, &amp;sampledType);
+f *= <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.shading.n);
+sampledSpecular = sampledType &amp; BSDF_SPECULAR;</div><p>
+
+
+</p>
+<p>One important detail is that the light&rsquo;s PDF and the multiple importance
+sampling weight are only computed if the BSDF component used for sampling
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</svg> is non-specular; in the specular case, MIS shouldn&rsquo;t be applied since
+there is no chance of the light sampling the specular direction.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Accountforlightcontributionsalongsampleddirectionmonowi-0"></span><div class="fragmentname">&lt;&lt;Account for light contributions along sampled direction <tt>wi</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float weight = 1;
+if (!sampledSpecular) {
+    lightPdf = light.<a href="../Light_Transport_I_Surface_Reflection/Sampling_Light_Sources.html#Light::Pdf_Li" class="code">Pdf_Li</a>(it, wi);
+    if (lightPdf == 0)
+        return Ld;
+    weight = <a href="../Monte_Carlo_Integration/Importance_Sampling.html#PowerHeuristic" class="code">PowerHeuristic</a>(1, scatteringPdf, 1, lightPdf);
+}
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Findintersectionandcomputetransmittance-0">Find intersection and compute transmittance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1368" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1368"><i></i></a><div id="fragbit-1368" class="collapse"><div class="fragmentcode">   <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> lightIsect;
+   <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ray = it.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);
+   <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Tr(1.f);
+   bool foundSurfaceInteraction = handleMedia ?
+         scene.<a href="../Volume_Scattering/Media.html#Scene::IntersectTr" class="code">IntersectTr</a>(ray, sampler, &amp;lightIsect, &amp;Tr) :
+         scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::Intersect" class="code">Intersect</a>(ray, &amp;lightIsect);</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Addlightcontributionfrommaterialsampling-0">Add light contribution from material sampling</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1369" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1369"><i></i></a><div id="fragbit-1369" class="collapse"><div class="fragmentcode">   <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Li(0.f);
+   if (foundSurfaceInteraction) {
+       if (lightIsect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::primitive" class="code">primitive</a>-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive::GetAreaLight" class="code">GetAreaLight</a>() == &amp;light)
+           Li = lightIsect.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(-wi);
+   }
+   else
+       Li = light.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(ray);
+   if (!Li.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>())
+       Ld += f * Li * Tr * weight / scatteringPdf;</div></div></div><p>
+
+
+</p>
+<p>Given a direction sampled by the BSDF or a medium&rsquo;s phase function, we need
+to find out if the ray along that direction intersects this particular
+light source and if so, how much radiance from the light reaches the
+surface. When participating media are being accounted for, the transmittance
+up to the intersection point on the light is recorded.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Findintersectionandcomputetransmittance-0"></span><div class="fragmentname">&lt;&lt;Find intersection and compute transmittance&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> lightIsect;
+<a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ray = it.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);
+<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Tr(1.f);
+bool foundSurfaceInteraction = handleMedia ?
+      scene.<a href="../Volume_Scattering/Media.html#Scene::IntersectTr" class="code">IntersectTr</a>(ray, sampler, &amp;lightIsect, &amp;Tr) :
+      scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::Intersect" class="code">Intersect</a>(ray, &amp;lightIsect);</div><p>
+
+
+</p>
+<p>The code must account for both regular area lights, with geometry associated
+with them, as well as lights like the <a href="../Light_Sources/Infinite_Area_Lights.html#InfiniteAreaLight"><tt>InfiniteAreaLight</tt></a> that don&rsquo;t have
+geometry but need to return their radiance for the sample ray via the
+<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le"><tt>Light::Le()</tt></a> method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Addlightcontributionfrommaterialsampling-0"></span><div class="fragmentname">&lt;&lt;Add light contribution from material sampling&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> Li(0.f);
+if (foundSurfaceInteraction) {
+    if (lightIsect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::primitive" class="code">primitive</a>-&gt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive::GetAreaLight" class="code">GetAreaLight</a>() == &amp;light)
+        Li = lightIsect.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(-wi);
+}
+else
+    Li = light.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(ray);
+if (!Li.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>())
+    Ld += f * Li * Tr * weight / scatteringPdf;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Enrico  and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Light_Transport_I_Surface_Reflection/The_Light_Transport_Equation.html">Light Transport I: Surface Reflection / The Light Transport Equation</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

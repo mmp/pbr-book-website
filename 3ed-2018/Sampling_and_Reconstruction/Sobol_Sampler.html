@@ -1,0 +1,960 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Sobol&rsquo; Sampler</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Sampling_and_Reconstruction.html">Sampling and Reconstruction</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Sobol&rsquo; Sampler</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Sampling_and_Reconstruction/Maximized_Minimal_Distance_Sampler.html">(Previous: Maximized Minimal Distance Sampler)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:sobol-sampler"></span><h2>7.7 Sobol&rsquo; Sampler<button data-toggle="tooltip" data-placement="right" class="btn difficult-button"
+title="This section contains advanced content and may be skipped on a first reading.">
+<i class="fas fa-exclamation-triangle midredtext"></i></button>
+</h2><p>
+
+
+
+</p>
+<p>The last <tt>Sampler</tt> in this chapter is based on a series of generator
+matrices due to Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg>.  The samples from the sequence that these
+matrices generate are distinguished by both being very efficient to
+implement&mdash;thanks to being entirely based on base-2 computations&mdash;while
+also being extremely well distributed over all <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> dimensions of the sample
+vector.  Figure&nbsp;<a href="#fig:sobol-4-matrices">7.34</a> shows the first few Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg>
+generator matrices.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:sobol-4-matrices"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+<img src="sobol0.png" style="max-width: 100%; height: auto;" width=150 height=150>
+<img src="sobol1.png" style="max-width: 100%; height: auto;" width=150 height=150>
+<img src="sobol2.png" style="max-width: 100%; height: auto;" width=150 height=150>
+<img src="sobol3.png" style="max-width: 100%; height: auto;" width=150 height=150>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 7.34: <span class="legend"> Generator matrices for the first four dimensions of the
+Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> sequence. Note their regular structure.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Figure&nbsp;<a href="#fig:dof-strat-halton-sobol">7.35</a> compares Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> samples
+to stratified and Halton points with the depth of field test scene.
+
+</p>
+<p>
+ 
+ </p>
+<span class="anchor" id="fig:dof-strat-halton-sobol"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 106.000%;  position:relative;">
+<div id="Stratified_sampling25" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('Stratified_sampling25'), {
+  title: 'Stratified_sampling25', children: [
+ { title: 'Stratified sampling', image: 'dof-stratified.exr' },  { title: 'Halton sampling', image: 'dof-halton.exr' },  { title: 'Sobol\' sampling', image: 'dof-sobol.exr' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 7.35: Comparisons of the Stratified, Halton, and Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg>
+Samplers for Rendering Depth of Field. <span class="legend"> (1)&nbsp;An image
+rendered using the <a href="../Sampling_and_Reconstruction/Stratified_Sampling.html#StratifiedSampler"><tt>StratifiedSampler</tt></a>,
+(2)&nbsp;an image rendered using the <a href="../Sampling_and_Reconstruction/The_Halton_Sampler.html#HaltonSampler"><tt>HaltonSampler</tt></a>,
+and (3)&nbsp;an image using the <a href="#SobolSampler"><tt>SobolSampler</tt></a>.
+Both low-discrepancy samplers are better than the stratified sampler.
+In spite of the structured grid artifacts visible with this undersampled image
+with the <tt>SobolSampler</tt>, the Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> sequence often provides a faster
+rate of convergence than the Halton sequence.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>The weakness of the Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> points is that they are prone to structural
+grid artifacts before convergence; a sense of this issue can be seen in the
+image sample points shown in Figure&nbsp;<a href="#fig:sobol-samples-2x2">7.36</a>.
+
+</p>
+<p>
+
+</p>
+<span class="anchor" id="fig:sobol-samples-2x2"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="sobol2x2pix.svg" title=""><img src="sobol2x2pix.svg" width=300 height=300 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 7.36: <span class="legend"> A grid of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.165ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2223.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 times 2</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="722" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="1723" y="0"></use>
+</g>
+</svg> pixels, sampled with 16 Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg>
+samples each.  Note that there is a fair amount of structure as well as
+many samples close to others. The very good distribution properties of the
+sequence over all <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> dimensions of the sample vector generally make up for
+these shortcomings.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>This structure is visible in the images in
+Figure&nbsp;<a href="#fig:sobol-vs-halton">7.37</a>. In exchange for this weakness, Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg>
+sequences are extremely well distributed over all <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> dimensions of the
+sample vector.
+
+</p>
+<p> 
+ </p>
+<span class="anchor" id="fig:sobol-vs-halton"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 58.889%;  position:relative;">
+<div id="Halton_sampler26" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('Halton_sampler26'), {
+  title: 'Halton_sampler26', children: [
+ { title: 'Halton sampler', image: 'car-halton-undersampled.png' },  { title: 'Sobol sampler', image: 'car-sobol-undersampled.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 7.37: <span class="legend"> Undersampled images rendered with (1)&nbsp;the Halton sampler
+and (2)&nbsp;the Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> sampler. Both exhibit visible structure, though with
+different visual characteristics. The Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> sequence in particular
+exhibits a clearly visible checkerboard structure.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SobolSamplerDeclarations-0"></span><div class="fragmentname">&lt;&lt;SobolSampler Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="SobolSampler"></span>SobolSampler : public <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#GlobalSampler" class="code">GlobalSampler</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SobolSamplerPublicMethods-0">SobolSampler Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-845" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-845"><i></i></a><div id="fragbit-845" class="collapse"><div class="fragmentcode">       std::unique_ptr&lt;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>&gt; Clone(int seed);
+       SobolSampler(int64_t samplesPerPixel, const Bounds2i &amp;sampleBounds)
+           : GlobalSampler(<a href="../Utilities/Main_Include_File.html#RoundUpPow2" class="code">RoundUpPow2</a>(samplesPerPixel)),
+             sampleBounds(sampleBounds) {
+           <a href="#SobolSampler::resolution" class="code">resolution</a> = <a href="../Utilities/Main_Include_File.html#RoundUpPow2" class="code">RoundUpPow2</a>(std::max(sampleBounds.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Diagonal" class="code">Diagonal</a>().x,
+                                             sampleBounds.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Diagonal" class="code">Diagonal</a>().y));
+           <a href="#SobolSampler::log2Resolution" class="code">log2Resolution</a> = <a href="../Utilities/Main_Include_File.html#Log2Int" class="code">Log2Int</a>(<a href="#SobolSampler::resolution" class="code">resolution</a>);
+       }
+       int64_t GetIndexForSample(int64_t sampleNum) const;
+       Float SampleDimension(int64_t index, int dimension) const;</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SobolSamplerPrivateData-0">SobolSampler Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-846" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-846"><i></i></a><div id="fragbit-846" class="collapse"><div class="fragmentcode">       const Bounds2i sampleBounds;
+       int resolution, log2Resolution;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>SobolSampler</tt> uniformly scales the first two dimensions by the
+smallest power of&nbsp;2 that causes the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.965ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2568.1 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-parenthesis squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+<g transform="translate(1724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="550" y="513"></use>
+</g>
+</g>
+</svg> sample domain to cover the
+image area to be sampled.  As with the <a href="../Sampling_and_Reconstruction/The_Halton_Sampler.html#HaltonSampler"><tt>HaltonSampler</tt></a>, this
+specific scaling scheme is chosen in order to make it easier to compute the
+reverse mapping from pixel coordinates to the sample indices that land
+in each pixel.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SobolSamplerPublicMethods-0"></span><div class="fragmentname">&lt;&lt;SobolSampler Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">SobolSampler(int64_t samplesPerPixel, const Bounds2i &amp;sampleBounds)
+    : GlobalSampler(<a href="../Utilities/Main_Include_File.html#RoundUpPow2" class="code">RoundUpPow2</a>(samplesPerPixel)),
+      sampleBounds(sampleBounds) {
+    <a href="#SobolSampler::resolution" class="code">resolution</a> = <a href="../Utilities/Main_Include_File.html#RoundUpPow2" class="code">RoundUpPow2</a>(std::max(sampleBounds.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Diagonal" class="code">Diagonal</a>().x,
+                                      sampleBounds.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Diagonal" class="code">Diagonal</a>().y));
+    <a href="#SobolSampler::log2Resolution" class="code">log2Resolution</a> = <a href="../Utilities/Main_Include_File.html#Log2Int" class="code">Log2Int</a>(<a href="#SobolSampler::resolution" class="code">resolution</a>);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SobolSamplerPrivateData-0"></span><div class="fragmentname">&lt;&lt;SobolSampler Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const Bounds2i <span class="anchor" id="SobolSampler::sampleBounds"></span>sampleBounds;
+int <span class="anchor" id="SobolSampler::resolution"></span>resolution, <span class="anchor" id="SobolSampler::log2Resolution"></span>log2Resolution;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>SobolIntervalToIndex()</tt> function returns the index of the
+<tt>sampleNum</tt>th sample in the pixel <tt>p</tt>, if the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.965ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2568.1 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-parenthesis squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+<g transform="translate(1724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="550" y="513"></use>
+</g>
+</g>
+</svg> sampling
+domain has been scaled by <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="11.932ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 5137.3 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript normal l normal o normal g Baseline 2 normal upper R normal e normal s normal o normal l normal u normal t normal i normal o normal n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6C" d="M255 0l-111 3l-111 -3v31c67 0 78 0 78 45v520c0 49 -8 56 -78 56v31l144 11v-618c0 -45 11 -45 78 -45v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-67" d="M485 404c0 -23 -19 -30 -29 -30c-16 0 -29 12 -29 29c0 12 5 23 16 27c-3 1 -10 1 -10 1c-18 0 -54 -5 -90 -39c25 -23 41 -60 41 -97c0 -77 -69 -146 -162 -146c-19 0 -60 3 -99 31c-17 -20 -17 -43 -17 -47c0 -32 21 -63 53 -67c7 -1 50 -1 75 -1c61 0 119 0 172 -28 c51 -28 65 -79 65 -114c0 -78 -104 -129 -222 -129c-122 0 -221 55 -221 127c0 40 32 83 92 100c-31 20 -44 58 -44 89c0 35 18 68 31 83c-25 21 -47 59 -47 103c0 77 69 146 162 146c22 0 64 -3 106 -36c42 41 86 47 106 47c39 0 51 -32 51 -49zM309 296 c0 23 0 123 -87 123c-40 0 -63 -28 -71 -40c-15 -25 -16 -57 -16 -84c0 -23 0 -123 87 -123c40 0 63 28 71 40c15 25 16 57 16 84zM419 -79c0 86 -112 86 -198 86h-59c-44 -3 -82 -40 -82 -86c0 -53 69 -104 170 -104c98 0 169 50 169 104Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-52" d="M732 88c0 -28 -17 -110 -95 -110c-30 0 -85 6 -126 42c-41 38 -41 78 -41 143c0 67 0 98 -38 134c-35 34 -77 34 -93 34h-115v-253c0 -36 2 -47 79 -47h24v-31c-36 3 -107 3 -146 3s-110 0 -146 -3v31h24c77 0 79 11 79 47v527c0 36 -2 47 -79 47h-24v31h314 c147 0 261 -84 261 -180c0 -78 -78 -139 -175 -163c55 -19 104 -52 122 -116l13 -80c14 -93 22 -144 71 -144c25 0 60 18 66 89c1 7 1 16 12 16c13 0 13 -11 13 -17zM507 503c0 145 -112 149 -202 149c-20 0 -49 0 -59 -2c-22 -3 -22 -15 -22 -38v-259h111 c148 0 172 81 172 150Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-75" d="M535 0l-144 -11v90c-29 -62 -73 -90 -129 -90c-152 0 -152 91 -152 169v150c0 89 0 92 -78 92v31l147 11v-332c0 -52 4 -99 88 -99c73 0 121 68 121 155v178c0 49 -8 56 -78 56v31l147 11v-355c0 -49 8 -56 78 -56v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-74" d="M332 124c0 -64 -28 -135 -99 -135c-36 0 -129 12 -129 135v276h-85v22c98 4 128 111 129 193h25v-184h143v-31h-143v-278c0 -17 0 -108 67 -108c37 0 67 38 67 112v55h25v-57Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6E" d="M535 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c58 0 91 -20 105 -37 c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6C" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="278" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-67" x="779" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="1279" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-52" x="1779" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-65" x="2516" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-73" x="2960" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="3355" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6C" x="3855" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-75" x="4134" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="4690" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="5080" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="5359" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6E" x="5859" y="0"></use>
+</g>
+</g>
+</svg> to cover the pixel
+sampling area.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LowDiscrepancyDeclarations-3"></span><div class="fragmentname">&lt;&lt;Low Discrepancy Declarations&gt;&gt;+=&nbsp;<a href="Maximized_Minimal_Distance_Sampler.html#fragment-LowDiscrepancyDeclarations-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">inline uint64_t <span class="anchor" id="SobolIntervalToIndex"></span>SobolIntervalToIndex(const uint32_t log2Resolution,
+    uint64_t sampleNum, const <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> &amp;p);</div><p>
+
+
+</p>
+<p>The general approach used to derive the algorithm it implements is similar
+to that used by the Halton sampler in its <tt>GetIndexForSample()</tt>
+method.  Here, scaling by a power of two means that the base-2 logarithm of
+the scale gives the number of digits of the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.662ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 4160 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold upper C left-bracket d Subscript i Baseline left-parenthesis a right-parenthesis right-bracket Superscript upper T</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D402" d="M766 227c0 -115 -113 -238 -300 -238c-249 0 -402 149 -402 354s153 354 402 354c68 0 135 -18 197 -68l66 59c8 7 10 9 19 9c18 0 18 -9 18 -28v-215c0 -26 -1 -28 -27 -28c-23 0 -24 2 -27 21c-22 127 -117 203 -225 203c-52 0 -139 -11 -204 -77 c-63 -66 -66 -174 -66 -230c0 -90 12 -165 59 -222c52 -61 136 -85 214 -85c101 0 222 61 229 195c1 17 10 17 23 17c17 0 24 -1 24 -21Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D451" d="M516 683l-144 -578c-4 -17 -6 -24 -6 -48c0 -20 3 -46 30 -46c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-48 0 -83 33 -91 75c-60 -71 -110 -75 -130 -75c-78 0 -133 66 -133 160c0 146 124 293 241 293 c45 0 74 -27 92 -64l60 237l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 13 6 18 14 19c17 2 112 11 127 11c13 0 13 -11 13 -11zM361 332c0 6 -14 88 -79 88c-40 0 -85 -37 -116 -96c-23 -46 -55 -169 -55 -219c0 -39 14 -94 64 -94c28 0 69 16 113 71c15 17 15 19 20 37 l50 196c1 5 3 11 3 17Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44E" d="M498 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-48 0 -83 33 -91 75c-60 -71 -110 -75 -130 -75c-78 0 -133 66 -133 160c0 146 124 293 241 293c45 0 74 -27 92 -64c3 22 18 44 42 44c17 0 29 -10 29 -27c0 -4 0 -6 -7 -34l-36 -140l-22 -90 c-11 -44 -13 -52 -13 -74c0 -20 3 -46 30 -46c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10zM361 332c0 6 -14 88 -79 88c-40 0 -85 -37 -116 -96c-23 -46 -55 -169 -55 -219c0 -39 14 -94 64 -94c28 0 69 16 113 71c15 17 15 19 20 37l50 196c1 5 3 11 3 17Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D447" d="M704 666c0 -3 -1 -13 -2 -17l-27 -174c-2 -15 -4 -23 -15 -23c-9 0 -12 7 -12 13c0 3 2 15 3 19c4 26 8 65 8 80c0 78 -45 82 -146 82c-21 0 -54 0 -63 -2c-12 -3 -16 -9 -23 -37l-133 -531c-4 -15 -4 -21 -4 -21c0 -16 8 -19 37 -22c26 -2 39 -2 64 -2c26 0 34 0 34 -11 c0 -20 -12 -20 -22 -20c-28 0 -58 2 -87 2l-83 1l-85 -1c-27 0 -55 -2 -82 -2c-6 0 -17 0 -17 12c0 19 6 19 42 19c107 0 110 11 119 48l134 534c1 3 4 15 4 21c0 8 0 12 -28 12h-39c-148 0 -174 -18 -228 -173c-6 -16 -7 -21 -17 -21c-7 0 -12 5 -12 11c0 0 5 16 6 18 l60 176c7 19 8 20 32 20h555c17 0 27 0 27 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D402" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="831" y="0"></use>
+<g transform="translate(1110,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D451" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="736" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1974" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44E" x="2364" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2893" y="0"></use>
+<g transform="translate(3283,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D447" x="393" y="513"></use>
+</g>
+</g>
+</svg> product
+that form the scaled sample&rsquo;s integer component.  To find the values of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.23ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 529.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">a</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44E" d="M498 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-48 0 -83 33 -91 75c-60 -71 -110 -75 -130 -75c-78 0 -133 66 -133 160c0 146 124 293 241 293c45 0 74 -27 92 -64c3 22 18 44 42 44c17 0 29 -10 29 -27c0 -4 0 -6 -7 -34l-36 -140l-22 -90 c-11 -44 -13 -52 -13 -74c0 -20 3 -46 30 -46c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10zM361 332c0 6 -14 88 -79 88c-40 0 -85 -37 -116 -96c-23 -46 -55 -169 -55 -219c0 -39 14 -94 64 -94c28 0 69 16 113 71c15 17 15 19 20 37l50 196c1 5 3 11 3 17Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44E" x="0" y="0"></use>
+</g>
+</svg>
+that give a particular integer value after scaling, we can compute the
+inverse of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 831.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold upper C</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D402" d="M766 227c0 -115 -113 -238 -300 -238c-249 0 -402 149 -402 354s153 354 402 354c68 0 135 -18 197 -68l66 59c8 7 10 9 19 9c18 0 18 -9 18 -28v-215c0 -26 -1 -28 -27 -28c-23 0 -24 2 -27 21c-22 127 -117 203 -225 203c-52 0 -139 -11 -204 -77 c-63 -66 -66 -174 -66 -230c0 -90 12 -165 59 -222c52 -61 136 -85 214 -85c101 0 222 61 229 195c1 17 10 17 23 17c17 0 24 -1 24 -21Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D402" x="0" y="0"></use>
+</g>
+</svg>: given
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="14.535ex" height="3.176ex" style="vertical-align: -0.838ex;" viewBox="0 -1006.6 6258 1367.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v equals bold upper C left-bracket d Subscript i Baseline left-parenthesis a right-parenthesis right-bracket Superscript upper T Baseline comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D402" d="M766 227c0 -115 -113 -238 -300 -238c-249 0 -402 149 -402 354s153 354 402 354c68 0 135 -18 197 -68l66 59c8 7 10 9 19 9c18 0 18 -9 18 -28v-215c0 -26 -1 -28 -27 -28c-23 0 -24 2 -27 21c-22 127 -117 203 -225 203c-52 0 -139 -11 -204 -77 c-63 -66 -66 -174 -66 -230c0 -90 12 -165 59 -222c52 -61 136 -85 214 -85c101 0 222 61 229 195c1 17 10 17 23 17c17 0 24 -1 24 -21Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D451" d="M516 683l-144 -578c-4 -17 -6 -24 -6 -48c0 -20 3 -46 30 -46c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-48 0 -83 33 -91 75c-60 -71 -110 -75 -130 -75c-78 0 -133 66 -133 160c0 146 124 293 241 293 c45 0 74 -27 92 -64l60 237l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 13 6 18 14 19c17 2 112 11 127 11c13 0 13 -11 13 -11zM361 332c0 6 -14 88 -79 88c-40 0 -85 -37 -116 -96c-23 -46 -55 -169 -55 -219c0 -39 14 -94 64 -94c28 0 69 16 113 71c15 17 15 19 20 37 l50 196c1 5 3 11 3 17Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44E" d="M498 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-48 0 -83 33 -91 75c-60 -71 -110 -75 -130 -75c-78 0 -133 66 -133 160c0 146 124 293 241 293c45 0 74 -27 92 -64c3 22 18 44 42 44c17 0 29 -10 29 -27c0 -4 0 -6 -7 -34l-36 -140l-22 -90 c-11 -44 -13 -52 -13 -74c0 -20 3 -46 30 -46c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10zM361 332c0 6 -14 88 -79 88c-40 0 -85 -37 -116 -96c-23 -46 -55 -169 -55 -219c0 -39 14 -94 64 -94c28 0 69 16 113 71c15 17 15 19 20 37l50 196c1 5 3 11 3 17Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D447" d="M704 666c0 -3 -1 -13 -2 -17l-27 -174c-2 -15 -4 -23 -15 -23c-9 0 -12 7 -12 13c0 3 2 15 3 19c4 26 8 65 8 80c0 78 -45 82 -146 82c-21 0 -54 0 -63 -2c-12 -3 -16 -9 -23 -37l-133 -531c-4 -15 -4 -21 -4 -21c0 -16 8 -19 37 -22c26 -2 39 -2 64 -2c26 0 34 0 34 -11 c0 -20 -12 -20 -22 -20c-28 0 -58 2 -87 2l-83 1l-85 -1c-27 0 -55 -2 -82 -2c-6 0 -17 0 -17 12c0 19 6 19 42 19c107 0 110 11 119 48l134 534c1 3 4 15 4 21c0 8 0 12 -28 12h-39c-148 0 -174 -18 -228 -173c-6 -16 -7 -21 -17 -21c-7 0 -12 5 -12 11c0 0 5 16 6 18 l60 176c7 19 8 20 32 20h555c17 0 27 0 27 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="763" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D402" x="1819" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="2651" y="0"></use>
+<g transform="translate(2929,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D451" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="736" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="3794" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44E" x="4183" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4713" y="0"></use>
+<g transform="translate(5102,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D447" x="393" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="5979" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+then equivalently
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="16.868ex" height="3.176ex" style="vertical-align: -0.838ex;" viewBox="0 -1006.6 7262.4 1367.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold upper C Superscript negative 1 Baseline v equals left-bracket d Subscript i Baseline left-parenthesis a right-parenthesis right-bracket Superscript upper T Baseline period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D402" d="M766 227c0 -115 -113 -238 -300 -238c-249 0 -402 149 -402 354s153 354 402 354c68 0 135 -18 197 -68l66 59c8 7 10 9 19 9c18 0 18 -9 18 -28v-215c0 -26 -1 -28 -27 -28c-23 0 -24 2 -27 21c-22 127 -117 203 -225 203c-52 0 -139 -11 -204 -77 c-63 -66 -66 -174 -66 -230c0 -90 12 -165 59 -222c52 -61 136 -85 214 -85c101 0 222 61 229 195c1 17 10 17 23 17c17 0 24 -1 24 -21Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D451" d="M516 683l-144 -578c-4 -17 -6 -24 -6 -48c0 -20 3 -46 30 -46c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-48 0 -83 33 -91 75c-60 -71 -110 -75 -130 -75c-78 0 -133 66 -133 160c0 146 124 293 241 293 c45 0 74 -27 92 -64l60 237l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 13 6 18 14 19c17 2 112 11 127 11c13 0 13 -11 13 -11zM361 332c0 6 -14 88 -79 88c-40 0 -85 -37 -116 -96c-23 -46 -55 -169 -55 -219c0 -39 14 -94 64 -94c28 0 69 16 113 71c15 17 15 19 20 37 l50 196c1 5 3 11 3 17Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44E" d="M498 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-48 0 -83 33 -91 75c-60 -71 -110 -75 -130 -75c-78 0 -133 66 -133 160c0 146 124 293 241 293c45 0 74 -27 92 -64c3 22 18 44 42 44c17 0 29 -10 29 -27c0 -4 0 -6 -7 -34l-36 -140l-22 -90 c-11 -44 -13 -52 -13 -74c0 -20 3 -46 30 -46c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10zM361 332c0 6 -14 88 -79 88c-40 0 -85 -37 -116 -96c-23 -46 -55 -169 -55 -219c0 -39 14 -94 64 -94c28 0 69 16 113 71c15 17 15 19 20 37l50 196c1 5 3 11 3 17Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D447" d="M704 666c0 -3 -1 -13 -2 -17l-27 -174c-2 -15 -4 -23 -15 -23c-9 0 -12 7 -12 13c0 3 2 15 3 19c4 26 8 65 8 80c0 78 -45 82 -146 82c-21 0 -54 0 -63 -2c-12 -3 -16 -9 -23 -37l-133 -531c-4 -15 -4 -21 -4 -21c0 -16 8 -19 37 -22c26 -2 39 -2 64 -2c26 0 34 0 34 -11 c0 -20 -12 -20 -22 -20c-28 0 -58 2 -87 2l-83 1l-85 -1c-27 0 -55 -2 -82 -2c-6 0 -17 0 -17 12c0 19 6 19 42 19c107 0 110 11 119 48l134 534c1 3 4 15 4 21c0 8 0 12 -28 12h-39c-148 0 -174 -18 -228 -173c-6 -16 -7 -21 -17 -21c-7 0 -12 5 -12 11c0 0 5 16 6 18 l60 176c7 19 8 20 32 20h555c17 0 27 0 27 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D402" x="0" y="0"></use>
+<g transform="translate(831,424)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2212" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="778" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="2599" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="3655" y="0"></use>
+<g transform="translate(3933,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D451" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="736" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="4798" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44E" x="5188" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="5717" y="0"></use>
+<g transform="translate(6107,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D447" x="393" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="6983" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+We won&rsquo;t include the implementation of this method here.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SobolSamplerMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;SobolSampler Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-SobolSamplerMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">int64_t <span class="anchor" id="SobolSampler::GetIndexForSample"></span>SobolSampler::GetIndexForSample(int64_t sampleNum) const {
+    return SobolIntervalToIndex(<a href="#SobolSampler::log2Resolution" class="code">log2Resolution</a>, sampleNum,
+        <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>(<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::currentPixel" class="code">currentPixel</a> - <a href="#SobolSampler::sampleBounds" class="code">sampleBounds</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>));
+}</div><p>
+
+
+</p>
+<p>Computing the sample value for a given sample index and dimension is
+straightforward given the <a href="#SobolSample"><tt>SobolSample()</tt></a> function.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SobolSamplerMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;SobolSampler Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-SobolSamplerMethodDefinitions-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="SobolSampler::SampleDimension"></span>SobolSampler::SampleDimension(int64_t index, int dim) const {
+    Float s = <a href="#SobolSample" class="code">SobolSample</a>(index, dim);
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-RemapSoboldimensionsusedforpixelsamples-0">Remap Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> dimensions used for pixel samples</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-847" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-847"><i></i></a><div id="fragbit-847" class="collapse"><div class="fragmentcode">       if (dim == 0 || dim == 1)  {
+           s = s * <a href="#SobolSampler::resolution" class="code">resolution</a> + sampleBounds.pMin[dim];
+           s = <a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>(s - <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::currentPixel" class="code">currentPixel</a>[dim], (Float)0, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#OneMinusEpsilon" class="code">OneMinusEpsilon</a>);
+       }</div></div>
+    return s;
+}</div><p>
+
+
+</p>
+<p>The code for computing Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> sample values takes different paths for 32-
+and 64-bit floating-point values.  Different generator matrices are used
+for these two cases, giving more bits of precision for 64-bit doubles.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LowDiscrepancyInlineFunctions-8"></span><div class="fragmentname">&lt;&lt;Low Discrepancy Inline Functions&gt;&gt;+=&nbsp;<a href="(0,_2)-Sequence_Sampler.html#fragment-LowDiscrepancyInlineFunctions-7"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-LowDiscrepancyInlineFunctions-9"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">inline Float <span class="anchor" id="SobolSample"></span>SobolSample(int64_t index, int dimension,
+                         uint64_t scramble = 0) {
+#ifdef PBRT_FLOAT_AS_DOUBLE
+    return <a href="#SobolSampleDouble" class="code">SobolSampleDouble</a>(index, dimension, scramble);
+#else
+    return <a href="#SobolSampleFloat" class="code">SobolSampleFloat</a>(index, dimension, scramble);
+#endif
+}</div><p>
+
+
+</p>
+<p>The implementation of the <tt>SobolSampleFloat()</tt> function is quite
+similar to that of <a href="../Sampling_and_Reconstruction/(0,_2)-Sequence_Sampler.html#MultiplyGenerator"><tt>MultiplyGenerator()</tt></a>, with the differences
+that it takes a 64-bit index and that the matrices it uses have size <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.49ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 3224.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">32 times 52</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1223" y="0"></use>
+<g transform="translate(2223,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-35"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+</g>
+</g>
+</svg>.  These larger matrices allow it to generate distinct sample
+values up to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="11.37ex" height="2.843ex" style="vertical-align: -0.505ex;" viewBox="0 -1006.6 4895.3 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">a equals 2 Superscript 52 Baseline minus 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44E" d="M498 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-48 0 -83 33 -91 75c-60 -71 -110 -75 -130 -75c-78 0 -133 66 -133 160c0 146 124 293 241 293c45 0 74 -27 92 -64c3 22 18 44 42 44c17 0 29 -10 29 -27c0 -4 0 -6 -7 -34l-36 -140l-22 -90 c-11 -44 -13 -52 -13 -74c0 -20 3 -46 30 -46c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10zM361 332c0 6 -14 88 -79 88c-40 0 -85 -37 -116 -96c-23 -46 -55 -169 -55 -219c0 -39 14 -94 64 -94c28 0 69 16 113 71c15 17 15 19 20 37l50 196c1 5 3 11 3 17Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44E" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="807" y="0"></use>
+<g transform="translate(1863,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-35"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3394" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="4394" y="0"></use>
+</g>
+</svg>, rather than <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.042ex" height="2.843ex" style="vertical-align: -0.505ex;" viewBox="0 -1006.6 3031.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript 32 Baseline minus 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="1530" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2531" y="0"></use>
+</g>
+</svg>, as with the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.49ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 3224.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">32 times 32</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1223" y="0"></use>
+<g transform="translate(2223,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+</g>
+</g>
+</svg> matrices used previously.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LowDiscrepancyInlineFunctions-9"></span><div class="fragmentname">&lt;&lt;Low Discrepancy Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-LowDiscrepancyInlineFunctions-8"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">inline float <span class="anchor" id="SobolSampleFloat"></span>SobolSampleFloat(int64_t a, int dimension,
+                              uint32_t scramble) {
+    uint32_t v = scramble;
+    for (int i = dimension * <a href="#SobolMatrixSize" class="code">SobolMatrixSize</a>; a != 0; a &gt;&gt;= 1, ++i)
+        if (a &amp; 1)
+            v ^= <a href="#SobolMatrices32" class="code">SobolMatrices32</a>[i];
+    return v * 0x1p-32f; /* 1/2^32 */
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SobolMatrixDeclarations-0"></span><div class="fragmentname">&lt;&lt;Sobol Matrix Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">static constexpr int <span class="anchor" id="NumSobolDimensions"></span>NumSobolDimensions = 1024;
+static constexpr int <span class="anchor" id="SobolMatrixSize"></span>SobolMatrixSize = 52;
+extern const uint32_t <span class="anchor" id="SobolMatrices32"></span>SobolMatrices32[NumSobolDimensions *
+                                      SobolMatrixSize];
+</div><p>
+
+
+</p>
+<p>The <tt>SobolSampleDouble()</tt><span class="anchor" id="SobolSampleDouble"></span> function is
+similar, except that it uses 64-bit Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> matrices. It is not
+included in the text here.
+
+</p>
+<p>
+
+</p>
+<p>Because the <tt>SobolSampler</tt> is a <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#GlobalSampler"><tt>GlobalSampler</tt></a>, the values
+returned for the first two dimensions need to be adjusted so that they are
+offsets from the current pixel.  Here, the sample value is scaled up by the
+power-of-two scale computed in the constructor and then offset by the lower
+corner of the sample bounds to find the corresponding raster sample
+location. The current integer pixel coordinate is subtracted to get a
+result in <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.91ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2114.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1724" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RemapSoboldimensionsusedforpixelsamples-0"></span><div class="fragmentname">&lt;&lt;Remap Sobol<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.902ex" height="2.176ex" style="vertical-align: -0.171ex;" viewBox="0 -863.1 388.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="0" y="513"></use>
+</g>
+</svg> dimensions used for pixel samples&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (dim == 0 || dim == 1)  {
+    s = s * <a href="#SobolSampler::resolution" class="code">resolution</a> + sampleBounds.pMin[dim];
+    s = <a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>(s - <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::currentPixel" class="code">currentPixel</a>[dim], (Float)0, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#OneMinusEpsilon" class="code">OneMinusEpsilon</a>);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Denis A. Gladkiy and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Sampling_and_Reconstruction/Image_Reconstruction.html">Sampling and Reconstruction / Image Reconstruction</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

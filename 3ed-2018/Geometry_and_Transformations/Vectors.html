@@ -1,0 +1,2248 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Vectors</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations.html">Geometry and Transformations</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Vectors</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations/Coordinate_Systems.html">(Previous: Coordinate Systems)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:vectors"></span><h2>2.2 Vectors</h2><p>
+
+
+
+</p>
+<p><tt>pbrt</tt> provides both 2D and 3D vector classes. Both are
+parameterized by the type of the underlying vector element, thus making it
+easy to instantiate vectors of both integer and floating-point types. 
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-VectorDeclarations-0"></span><div class="fragmentname">&lt;&lt;Vector Declarations&gt;&gt;=&nbsp;<a href="#fragment-VectorDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="Vector2"></span>Vector2 {
+public:
+    &lt;&lt;<span class="fragmentname">Vector2 Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-85" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-85"><i></i></a><div id="fragbit-85" class="collapse"><div class="fragmentcode">       Vector2() { x = y = 0; }
+       Vector2(T xx, T yy)
+           : x(xx), y(yy) {
+           Assert(!HasNaNs());
+       }
+       bool HasNaNs() const {
+           return std::isnan(x) || std::isnan(y); 
+       }
+       explicit Vector2(const Point2&lt;T&gt; &amp;p);
+       explicit Vector2(const Point3&lt;T&gt; &amp;p);
+       #ifndef NDEBUG
+       // The default versions of these are fine for release builds; for debug
+       // we define them so that we can add the Assert checks.
+       Vector2(const Vector2&lt;T&gt; &amp;v) {
+           Assert(!v.HasNaNs());
+           x = v.x; y = v.y;
+       }
+       Vector2&lt;T&gt; &amp;operator=(const Vector2&lt;T&gt; &amp;v) {
+           Assert(!v.HasNaNs());
+           x = v.x; y = v.y;
+           return *this;
+       }
+       #endif // !NDEBUG
+       friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Vector2&lt;T&gt; &amp;v) {
+           os &lt;&lt; "[" &lt;&lt; v.x &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; "]";
+           return os;
+       }
+       
+       Vector2&lt;T&gt; operator+(const Vector2&lt;T&gt; &amp;v) const {
+           Assert(!v.HasNaNs());
+           return Vector2(x + v.x, y + v.y);
+       }
+       
+       Vector2&lt;T&gt;&amp; operator+=(const Vector2&lt;T&gt; &amp;v) {
+           Assert(!v.HasNaNs());
+           x += v.x; y += v.y;
+           return *this;
+       }
+       Vector2&lt;T&gt; operator-(const Vector2&lt;T&gt; &amp;v) const {
+           Assert(!v.HasNaNs());
+           return Vector2(x - v.x, y - v.y);
+       }
+       
+       Vector2&lt;T&gt;&amp; operator-=(const Vector2&lt;T&gt; &amp;v) {
+           Assert(!v.HasNaNs());
+           x -= v.x; y -= v.y;
+           return *this;
+       }
+       bool operator==(const Vector2&lt;T&gt; &amp;v) const {
+           return x == v.x &amp;&amp; y == v.y;
+       }
+       bool operator!=(const Vector2&lt;T&gt; &amp;v) const {
+           return x != v.x || y != v.y;
+       }
+       Vector2&lt;T&gt; operator*(T f) const { return Vector2&lt;T&gt;(f*x, f*y); }
+       
+       Vector2&lt;T&gt; &amp;operator*=(T f) {
+           Assert(!std::isnan(f));
+           x *= f; y *= f;
+           return *this;
+       }
+       Vector2&lt;T&gt; operator/(T f) const {
+           Assert(f != 0);
+           Float inv = (Float)1 / f;
+           return Vector2&lt;T&gt;(x * inv, y * inv);
+       }
+       
+       Vector2&lt;T&gt; &amp;operator/=(T f) {
+           Assert(f != 0);
+           Float inv = (Float)1 / f;
+           x *= inv; y *= inv;
+           return *this;
+       }
+       Vector2&lt;T&gt; operator-() const { return Vector2&lt;T&gt;(-x, -y); }
+       T operator[](int i) const {
+           Assert(i &gt;= 0 &amp;&amp; i &lt;= 1);
+           if (i == 0) return x;
+           return y;
+       }
+       
+       T &amp;operator[](int i) {
+           Assert(i &gt;= 0 &amp;&amp; i &lt;= 1);
+           if (i == 0) return x;
+           return y;
+       }
+       Float LengthSquared() const { return x*x + y*y; }
+       Float Length() const { return std::sqrt(LengthSquared()); }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Vector2PublicData-0">Vector2 Public Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-86" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-86"><i></i></a><div id="fragbit-86" class="collapse"><div class="fragmentcode">       T x, y;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-VectorDeclarations-1"></span><div class="fragmentname">&lt;&lt;Vector Declarations&gt;&gt;+=&nbsp;<a href="#fragment-VectorDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-VectorDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="Vector3"></span>Vector3 {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Vector3PublicMethods-0">Vector3 Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-87" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-87"><i></i></a><div id="fragbit-87" class="collapse"><div class="fragmentcode">       T operator[](int i) const { 
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(i &gt;= 0 &amp;&amp; i &lt;= 2);
+           if (i == 0) return x;
+           if (i == 1) return y;
+           return z;
+       }
+       T &amp;operator[](int i) { 
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(i &gt;= 0 &amp;&amp; i &lt;= 2);
+           if (i == 0) return x;
+           if (i == 1) return y;
+           return z;
+       }
+       Vector3() { x = y = z = 0; }
+       Vector3(T x, T y, T z)
+           : x(x), y(y), z(z) {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(!<a href="#Vector3::HasNaNs" class="code">HasNaNs</a>());
+       }
+       bool <a href="#Vector3::HasNaNs" class="code">HasNaNs</a>() const {
+           return std::isnan(x) || std::isnan(y) || std::isnan(z);
+       }
+       explicit Vector3(const Point3&lt;T&gt; &amp;p);
+       #ifndef NDEBUG
+       // The default versions of these are fine for release builds; for debug
+       // we define them so that we can add the <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a> checks.
+       Vector3(const Vector3&lt;T&gt; &amp;v) {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(!v.<a href="#Vector3::HasNaNs" class="code">HasNaNs</a>());
+           x = v.x; y = v.y; z = v.z;
+       }
+       
+       Vector3&lt;T&gt; &amp;operator=(const Vector3&lt;T&gt; &amp;v) {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(!v.<a href="#Vector3::HasNaNs" class="code">HasNaNs</a>());
+           x = v.x; y = v.y; z = v.z;
+           return *this;
+       }
+       #endif // !NDEBUG
+       friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Vector3&lt;T&gt; &amp;v) {
+           os &lt;&lt; "[" &lt;&lt; v.x &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; ", " &lt;&lt; v.z &lt;&lt; "]";
+           return os;
+       }
+       Vector3&lt;T&gt; operator+(const Vector3&lt;T&gt; &amp;v) const {
+           return Vector3(x + v.x, y + v.y, z + v.z);
+       }
+       Vector3&lt;T&gt;&amp; operator+=(const Vector3&lt;T&gt; &amp;v) {
+           x += v.x; y += v.y; z += v.z;
+           return *this;
+       }
+       Vector3&lt;T&gt; operator-(const Vector3&lt;T&gt; &amp;v) const {
+           return Vector3(x - v.x, y - v.y, z - v.z);
+       }
+       Vector3&lt;T&gt;&amp; operator-=(const Vector3&lt;T&gt; &amp;v) {
+           x -= v.x; y -= v.y; z -= v.z;
+           return *this;
+       }
+       bool operator==(const Vector3&lt;T&gt; &amp;v) const {
+           return x == v.x &amp;&amp; y == v.y &amp;&amp; z == v.z;
+       }
+       bool operator!=(const Vector3&lt;T&gt; &amp;v) const {
+           return x != v.x || y != v.y || z != v.z;
+       }
+       Vector3&lt;T&gt; operator*(T s) const { return Vector3&lt;T&gt;(s*x, s*y, s*z); }
+       Vector3&lt;T&gt; &amp;operator*=(T s) {
+           x *= s; y *= s; z *= s;
+           return *this;
+       }
+       Vector3&lt;T&gt; operator/(T f) const {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(f != 0);
+           Float inv = (Float)1 / f;
+           return Vector3&lt;T&gt;(x * inv, y * inv, z * inv);
+       }
+       
+       Vector3&lt;T&gt; &amp;operator/=(T f) {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(f != 0);
+           Float inv = (Float)1 / f;
+           x *= inv; y *= inv; z *= inv;
+           return *this;
+       }
+       Vector3&lt;T&gt; operator-() const { return Vector3&lt;T&gt;(-x, -y, -z); }
+       Float LengthSquared() const { return x * x + y * y + z * z; }
+       Float Length() const { return std::sqrt(LengthSquared()); }
+       explicit Vector3(const Normal3&lt;T&gt; &amp;n);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Vector3PublicData-0">Vector3 Public Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-88" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-88"><i></i></a><div id="fragbit-88" class="collapse"><div class="fragmentcode">       T x, y, z;</div></div>
+};</div><p>
+
+
+</p>
+<p>In the following, we will generally only include implementations of
+<tt>Vector3</tt> methods; all have <tt>Vector2</tt> parallels that have 
+straightforward implementation differences.
+
+</p>
+<p>A vector is represented with a tuple of components
+that gives its representation in terms of the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> (in
+3D) axes of the space it is defined in.  The individual components of a 3D
+vector <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg> will be written <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.583ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1112.3 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v Subscript x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="859" y="-213"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.449ex" height="2.343ex" style="vertical-align: -1.005ex;" viewBox="0 -576.1 1054.3 1008.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v Subscript y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="859" y="-213"></use>
+</g>
+</svg>, and
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.411ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1038.1 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v Subscript z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="859" y="-213"></use>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector2PublicData-0"></span><div class="fragmentname">&lt;&lt;Vector2 Public Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">T <span class="anchor" id="Vector2::x"></span>x, <span class="anchor" id="Vector2::y"></span>y;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector3PublicData-0"></span><div class="fragmentname">&lt;&lt;Vector3 Public Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">T <span class="anchor" id="Vector3::x"></span>x, <span class="anchor" id="Vector3::y"></span>y, <span class="anchor" id="Vector3::z"></span>z;</div><p>
+
+
+</p>
+<p>An alternate implementation would be to have a single template class that
+is also parameterized with an integer number of dimensions and to represent
+the coordinates with an array of that many <tt>T</tt> values.  While this
+approach would reduce the total amount of code, individual components of
+the vector couldn&rsquo;t be accessed as <tt>v.x</tt> and so forth.  We believe
+that in this case, a bit more code in the vector implementations is
+worthwhile in return for more transparent access to elements.
+
+</p>
+<p>However, some routines do find it useful to be able to easily loop over the
+components of vectors; the vector classes also provide a C++ operator to
+index into the components so that, given a vector <tt>v</tt>, <tt>v[0] ==
+v.x</tt> and so forth.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector3PublicMethods-0"></span><div class="fragmentname">&lt;&lt;Vector3 Public Methods&gt;&gt;=&nbsp;<a href="#fragment-Vector3PublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">T operator[](int i) const { 
+    Assert(i &gt;= 0 &amp;&amp; i &lt;= 2);
+    if (i == 0) return x;
+    if (i == 1) return y;
+    return z;
+}
+T &amp;operator[](int i) { 
+    Assert(i &gt;= 0 &amp;&amp; i &lt;= 2);
+    if (i == 0) return x;
+    if (i == 1) return y;
+    return z;
+}</div><p>
+
+
+</p>
+<p>
+For convenience, a number of widely used types of vectors are given a
+<tt>typedef</tt>, so that they have more concise names in code elsewhere.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-VectorDeclarations-2"></span><div class="fragmentname">&lt;&lt;Vector Declarations&gt;&gt;+=&nbsp;<a href="#fragment-VectorDeclarations-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">typedef Vector2&lt;<a href="../Utilities/Main_Include_File.html#Float" class="code">Float</a>&gt; <span class="anchor" id="Vector2f"></span>Vector2f;
+typedef Vector2&lt;int&gt;   <span class="anchor" id="Vector2i"></span>Vector2i;
+typedef Vector3&lt;<a href="../Utilities/Main_Include_File.html#Float" class="code">Float</a>&gt; <span class="anchor" id="Vector3f"></span>Vector3f;
+typedef Vector3&lt;int&gt;   <span class="anchor" id="Vector3i"></span>Vector3i;</div><p>
+
+
+</p>
+<p>Readers who have been exposed to object-oriented design may question our
+decision to make the vector element data publicly accessible.  Typically,
+data members are only accessible inside their class, and external code that
+wishes to access or modify the contents of a class must do so through a
+well-defined API of selector and mutator functions.  Although we generally
+agree with this design principle (though see the discussion of
+data-oriented design in the &ldquo;Further Reading&rdquo; section of Chapter&nbsp;<a href="../Introduction.html#chap:overview">1</a>), it
+is not appropriate here.  The purpose of selector and mutator functions is
+to hide the class&rsquo;s internal implementation details.  In the case of
+vectors, hiding this basic part of their design gains nothing and
+adds bulk to code that uses them.
+
+</p>
+<p>By default, the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.432ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3199.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis x comma y comma z right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1897" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="2342" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2810" y="0"></use>
+</g>
+</svg> values are set to zero, although the user of the
+class can optionally supply values for each of the components.  If the user
+does supply values, we check that none of them has the floating-point
+&ldquo;not a number&rdquo; (NaN) value using the <a href="../Utilities/Communicating_with_the_User.html#Assert"><tt>Assert()</tt></a> macro.  When compiled in
+optimized mode, this macro disappears from the compiled code, saving the
+expense of verifying this case.  NaNs almost certainly
+indicate a bug in the system; if a NaN is generated by some computation,
+we&rsquo;d like to catch it as soon as possible in order to make isolating
+its source easier. (See Section&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#sec:ieee-fp">3.9.1</a> for more discussion of
+NaN values.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector3PublicMethods-1"></span><div class="fragmentname">&lt;&lt;Vector3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Vector3PublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Vector3PublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Vector3() { x = y = z = 0; }
+Vector3(T x, T y, T z)
+    : x(x), y(y), z(z) {
+    <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(!<a href="#Vector3::HasNaNs" class="code">HasNaNs</a>());
+}</div><p>
+
+
+</p>
+<p>The code to check for NaNs just calls the <tt>std::isnan()</tt> function on
+each of the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg>, and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> components.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector3PublicMethods-2"></span><div class="fragmentname">&lt;&lt;Vector3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Vector3PublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Vector3PublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="Vector2::HasNaNs"></span><span class="anchor" id="Vector3::HasNaNs"></span>HasNaNs() const {
+    return std::isnan(x) || std::isnan(y) || std::isnan(z);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Addition and subtraction of vectors are done component-wise.  The usual
+geometric interpretation of vector addition and subtraction is shown in
+Figures&nbsp;<a href="#fig:vectoradd">2.3</a> and&nbsp;<a href="#fig:vectorsubtract">2.4</a>.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:vectoradd"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Vector%20addition.svg" title=""><img src="Vector%20addition.svg" width=357 height=201 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 2.3: <span class="legend"> (left) Vector addition: <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.183ex" height="2.176ex" style="vertical-align: -0.505ex;" viewBox="0 -719.6 2661.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v plus bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="829" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1830" y="0"></use>
+</g>
+</svg>.
+(right)  Notice that the sum <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.183ex" height="2.176ex" style="vertical-align: -0.505ex;" viewBox="0 -719.6 2661.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v plus bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="829" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1830" y="0"></use>
+</g>
+</svg> forms the diagonal
+of the parallelogram formed by <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg>,  which
+shows the commutativity of vector addition: <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="15.464ex" height="2.176ex" style="vertical-align: -0.505ex;" viewBox="0 -719.6 6657.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v plus bold w equals bold w plus bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="829" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1830" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="2939" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="3996" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="5049" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="6050" y="0"></use>
+</g>
+</svg>.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:vectorsubtract"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Vector%20subtraction.svg" title=""><img src="Vector%20subtraction.svg" width=323 height=200 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 2.4: <span class="legend"> (left) Vector subtraction. (right) If we consider the
+parallelogram formed by two vectors, the diagonals are given by
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.183ex" height="2.176ex" style="vertical-align: -0.505ex;" viewBox="0 -719.6 2661.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w minus bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="1053" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="2054" y="0"></use>
+</g>
+</svg> (dashed line) and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.991ex" height="2.176ex" style="vertical-align: -0.505ex;" viewBox="0 -719.6 3440.4 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">negative bold v minus bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="778" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="1608" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="2608" y="0"></use>
+</g>
+</svg> (not shown).</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector3PublicMethods-3"></span><div class="fragmentname">&lt;&lt;Vector3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Vector3PublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Vector3PublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Vector3&lt;T&gt; operator+(const Vector3&lt;T&gt; &amp;v) const {
+    return Vector3(x + v.x, y + v.y, z + v.z);
+}
+Vector3&lt;T&gt;&amp; operator+=(const Vector3&lt;T&gt; &amp;v) {
+    x += v.x; y += v.y; z += v.z;
+    return *this;
+}</div><p>
+
+
+</p>
+<p>The code for subtracting two vectors is similar and therefore not shown here.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>A vector can be multiplied component-wise by a scalar, thereby
+changing its length.  Three functions are needed in order to cover all of
+the different ways that this operation may be written in source code (i.e.,
+<tt>v*s</tt>, <tt>s*v</tt>, and <tt>v *= s</tt>):
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector3PublicMethods-4"></span><div class="fragmentname">&lt;&lt;Vector3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Vector3PublicMethods-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Vector3PublicMethods-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Vector3&lt;T&gt; operator*(T s) const { return Vector3&lt;T&gt;(s*x, s*y, s*z); }
+Vector3&lt;T&gt; &amp;operator*=(T s) {
+    x *= s; y *= s; z *= s;
+    return *this;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-0"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;=&nbsp;<a href="#fragment-GeometryInlineFunctions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; inline Vector3&lt;T&gt;
+operator*(T s, const Vector3&lt;T&gt; &amp;v) { return v * s; }</div><p>
+
+
+</p>
+<p>Similarly, a vector can be divided component-wise by a scalar.  The code for
+scalar division is similar to scalar multiplication, although division of a
+scalar by a vector is not well defined and so is not permitted.  
+
+</p>
+<p>In the implementation of these methods, we use a single division to compute
+the scalar&rsquo;s reciprocal and then perform three component-wise multiplications.
+This is a useful trick for avoiding division operations, which are
+generally much slower than multiplies on modern CPUs.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="It is a
+common misconception that these sorts of optimizations are unnecessary
+because the compiler will perform the necessary analysis.  Compilers are
+generally restricted from performing many transformations of this type.
+For division, the IEEE floating-point standard requires that x/x = 1 for
+all x, but if we compute 1/x and store it in a variable and then
+multiply x by that value, it is not guaranteed that 1 will be the result.
+In this case, we are willing to lose that guarantee in exchange for higher
+performance.  See Section&nbsp;3.9 for more discussion of these
+issues.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p>We use the <a href="../Utilities/Communicating_with_the_User.html#Assert"><tt>Assert()</tt></a> macro to make sure that the provided divisor is not
+zero; this should never happen and would indicate a bug elsewhere in the
+system.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector3PublicMethods-5"></span><div class="fragmentname">&lt;&lt;Vector3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Vector3PublicMethods-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Vector3PublicMethods-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Vector3&lt;T&gt; operator/(T f) const {
+    <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(f != 0);
+    Float inv = (Float)1 / f;
+    return Vector3&lt;T&gt;(x * inv, y * inv, z * inv);
+}
+
+Vector3&lt;T&gt; &amp;operator/=(T f) {
+    <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(f != 0);
+    Float inv = (Float)1 / f;
+    x *= inv; y *= inv; z *= inv;
+    return *this;
+}</div><p>
+
+
+</p>
+<p>The <a href="#Vector3"><tt>Vector3</tt></a> class also provides a unary negation operator that returns a
+new vector pointing in the opposite direction of the original one:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector3PublicMethods-6"></span><div class="fragmentname">&lt;&lt;Vector3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Vector3PublicMethods-5"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Vector3PublicMethods-7"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Vector3&lt;T&gt; operator-() const { return Vector3&lt;T&gt;(-x, -y, -z); }</div><p>
+
+
+</p>
+<p>Finally, <tt>Abs()</tt> returns a vector with the absolute value operation
+applied to its components.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-1"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; Vector3&lt;T&gt; <span class="anchor" id="Vector2::Abs"></span><span class="anchor" id="Vector3::Abs"></span>Abs(const Vector3&lt;T&gt; &amp;v) {
+    return Vector3&lt;T&gt;(std::abs(v.x), std::abs(v.y), std::abs(v.z));
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#DotandCrossProduct"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:dot-cross-product"></span><span id="DotandCrossProduct"></span><h3>2.2.1  Dot and Cross Product</h3><p>
+ 
+
+
+</p>
+<p> Two useful operations on vectors are the dot product (also known as
+the scalar or inner product) and the cross product.  For two vectors <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg>
+and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg>, their <em>dot product</em>
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.831ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2940.9 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis bold v dot bold w right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-22C5" d="M192 250c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="1219" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1719" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2551" y="0"></use>
+</g>
+</svg> is defined as:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="22.775ex" height="2.676ex" style="vertical-align: -1.005ex;" viewBox="0 -719.6 9805.8 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v Subscript x Baseline bold w Subscript x Baseline plus bold v Subscript y Baseline bold w Subscript y Baseline plus bold v Subscript z Baseline bold w Subscript z Baseline period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="859" y="-213"></use>
+<g transform="translate(1112,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="1175" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="2670" y="0"></use>
+<g transform="translate(3671,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="859" y="-213"></use>
+</g>
+<g transform="translate(4725,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="1175" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="6226" y="0"></use>
+<g transform="translate(7227,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="859" y="-213"></use>
+</g>
+<g transform="translate(8265,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="1175" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="9527" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-2"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; inline T
+<span class="anchor" id="Dot"></span><a href="#Dot" class="code">Dot</a>(const Vector3&lt;T&gt; &amp;v1, const Vector3&lt;T&gt; &amp;v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+}</div><p>
+
+
+</p>
+<p>The dot product has a simple relationship to the angle between the two
+vectors:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="eq:dot-cos"></span><div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="22.983ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 9895.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis bold v dot bold w right-parenthesis equals double-vertical-bar bold v double-vertical-bar double-vertical-bar bold w double-vertical-bar cosine theta comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E2-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-22C5" d="M192 250c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2016" d="M151 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960zM287 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E2-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="389" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-22C5" x="1219" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D430" x="1719" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-29" x="2551" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-3D" x="3218" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="4275" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="4673" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="5281" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="5846" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D430" x="6244" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="7076" y="0"></use>
+<g transform="translate(7641,0)">
+ <use xlink:href="#E2-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D703" x="9147" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2C" x="9617" y="0"></use>
+</g>
+</svg>
+</div>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+<div class="eqno">(<a href="#eq:dot-cos">2.1</a>)</div>
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<p>
+
+where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 469.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+</g>
+</svg> is the angle between <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg>, and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.262ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 1404.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">double-vertical-bar bold v double-vertical-bar</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2016" d="M151 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960zM287 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="0" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="398" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="1006" y="0"></use>
+</g>
+</svg>
+denotes the length of the vector <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg>.  It follows from
+this that <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.831ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2940.9 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis bold v dot bold w right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-22C5" d="M192 250c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="1219" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1719" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2551" y="0"></use>
+</g>
+</svg> is zero if and only if <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg> and
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg> are perpendicular, provided that neither <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg> nor <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg> is
+<em>degenerate</em>&mdash;equal to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg>.  A&nbsp;set of two or more
+mutually perpendicular vectors is said to be <em>orthogonal</em>.  An orthogonal
+set of unit vectors is called <em>orthonormal</em>.
+
+</p>
+<p>It immediately follows from Equation&nbsp;(<a href="#eq:dot-cos">2.1</a>) that if <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg>
+and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg> are unit vectors, their dot product is the cosine of the
+angle between them.  As the cosine of the angle between two vectors often
+needs to be computed for rendering, we will frequently make use of this
+property.
+ 
+A few basic properties directly follow from the definition.  For example,
+if <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.485ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 639.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42E" d="M615 0l-177 -6v78c-46 -78 -118 -78 -144 -78c-99 0 -180 22 -180 129v233c0 39 -7 39 -69 39v47l183 8v-341c0 -54 3 -79 80 -79c73 0 124 53 124 135v191c0 39 -7 39 -69 39v47l183 8v-364c0 -39 7 -39 69 -39v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42E" x="0" y="0"></use>
+</g>
+</svg>,  <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg>, and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg> are vectors and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 469.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">s</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="0" y="0"></use>
+</g>
+</svg> is a scalar
+value, then:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="33.592ex" height="10.176ex" style="vertical-align: -4.505ex;" viewBox="0 -2441.8 14463.3 4381.3" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartLayout 1st Row 1st Column left-parenthesis bold u dot bold v right-parenthesis 2nd Column equals left-parenthesis bold v dot bold u right-parenthesis 2nd Row 1st Column left-parenthesis s bold u dot bold v right-parenthesis 2nd Column equals s left-parenthesis bold u dot bold v right-parenthesis 3rd Row 1st Column left-parenthesis bold u dot left-parenthesis bold v plus bold w right-parenthesis right-parenthesis 2nd Column equals left-parenthesis bold u dot bold v right-parenthesis plus left-parenthesis bold u dot bold w right-parenthesis period EndLayout</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42E" d="M615 0l-177 -6v78c-46 -78 -118 -78 -144 -78c-99 0 -180 22 -180 129v233c0 39 -7 39 -69 39v47l183 8v-341c0 -54 3 -79 80 -79c73 0 124 53 124 135v191c0 39 -7 39 -69 39v47l183 8v-364c0 -39 7 -39 69 -39v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-22C5" d="M192 250c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(167,0)">
+<g transform="translate(-11,0)">
+<g transform="translate(2833,1523)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42E" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="1251" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="1751" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2359" y="0"></use>
+</g>
+<g transform="translate(2363,-26)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42E" x="859" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="1720" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="2221" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2828" y="0"></use>
+</g>
+<g transform="translate(0,-1575)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42E" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="1251" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1751" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="2141" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="2971" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="3971" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4803" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="5192" y="0"></use>
+</g>
+</g>
+<g transform="translate(5849,0)">
+<g transform="translate(0,1523)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="1445" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="2275" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42E" x="2776" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3415" y="0"></use>
+</g>
+<g transform="translate(0,-26)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1525" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42E" x="1915" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="2777" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="3277" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3885" y="0"></use>
+</g>
+<g transform="translate(0,-1575)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42E" x="1445" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="2307" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="2808" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3415" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="4027" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="5028" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42E" x="5417" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="6279" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="6780" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="7611" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="8001" y="0"></use>
+</g>
+</g>
+</g>
+</g>
+</svg>
+</div>
+<p>
+
+
+</p>
+<p>We will frequently need to compute the absolute value of the dot product
+as well. The <a href="#AbsDot"><tt>AbsDot()</tt></a> function does this for us so that 
+a separate call to <tt>std::abs()</tt> isn&rsquo;t necessary.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-3"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+inline T <span class="anchor" id="AbsDot"></span><a href="#AbsDot" class="code">AbsDot</a>(const Vector3&lt;T&gt; &amp;v1, const Vector3&lt;T&gt; &amp;v2) {
+    return std::abs(<a href="#Dot" class="code">Dot</a>(v1, v2));
+}</div><p>
+
+
+</p>
+<p>The <em>cross product</em> is another useful operation for 3D vectors.  Given
+two vectors in 3D, the cross product <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.15ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 2217.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v times bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="607" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1386" y="0"></use>
+</g>
+</svg> is a vector
+that is perpendicular to both of them. 
+Given orthogonal vectors <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg>,
+then <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.15ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 2217.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v times bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="607" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1386" y="0"></use>
+</g>
+</svg> is defined to be a vector such that
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="12.37ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 5325.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis bold v comma bold w comma bold v times bold w right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="997" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1442" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2273" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="2718" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="3326" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="4104" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4936" y="0"></use>
+</g>
+</svg> form an orthogonal coordinate system.
+
+</p>
+<p>The cross product is defined as:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="26.574ex" height="10.843ex" style="vertical-align: -4.554ex; margin-bottom: -0.284ex;" viewBox="0 -2585.3 11441.7 4668.3" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartLayout 1st Row 1st Column left-parenthesis bold v times bold w right-parenthesis Subscript x 2nd Column equals bold v Subscript y Baseline bold w Subscript z Baseline minus bold v Subscript z Baseline bold w Subscript y Baseline 2nd Row 1st Column left-parenthesis bold v times bold w right-parenthesis Subscript y 2nd Column equals bold v Subscript z Baseline bold w Subscript x Baseline minus bold v Subscript x Baseline bold w Subscript z Baseline 3rd Row 1st Column left-parenthesis bold v times bold w right-parenthesis Subscript z 2nd Column equals bold v Subscript x Baseline bold w Subscript y Baseline minus bold v Subscript y Baseline bold w Subscript x Baseline period EndLayout</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(167,0)">
+<g transform="translate(-11,0)">
+<g transform="translate(0,1660)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="997" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1775" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2607" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="4237" y="-403"></use>
+</g>
+<g transform="translate(57,65)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="997" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1775" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2607" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="4237" y="-403"></use>
+</g>
+<g transform="translate(74,-1666)">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="997" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1775" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2607" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="4237" y="-403"></use>
+</g>
+</g>
+<g transform="translate(3768,0)">
+<g transform="translate(0,1660)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+<g transform="translate(1056,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="859" y="-213"></use>
+</g>
+<g transform="translate(2110,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="1175" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3594" y="0"></use>
+<g transform="translate(4595,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="859" y="-213"></use>
+</g>
+<g transform="translate(5633,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="1175" y="-213"></use>
+</g>
+</g>
+<g transform="translate(0,65)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+<g transform="translate(1056,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="859" y="-213"></use>
+</g>
+<g transform="translate(2094,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="1175" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3652" y="0"></use>
+<g transform="translate(4653,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="859" y="-213"></use>
+</g>
+<g transform="translate(5765,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="1175" y="-213"></use>
+</g>
+</g>
+<g transform="translate(0,-1666)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+<g transform="translate(1056,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="859" y="-213"></use>
+</g>
+<g transform="translate(2168,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="1175" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3669" y="0"></use>
+<g transform="translate(4669,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="859" y="-213"></use>
+</g>
+<g transform="translate(5724,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="1175" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="7060" y="0"></use>
+</g>
+</g>
+</g>
+</g>
+</svg>
+</div>
+<p>
+
+A way to remember this is to compute the determinant of the matrix:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="24.59ex" height="9.843ex" style="vertical-align: -4.338ex;" viewBox="0 -2370 10587.3 4237.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v times bold w equals Start 3 By 3 Determinant 1st Row 1st Column i 2nd Column j 3rd Column k 2nd Row 1st Column bold v Subscript x Baseline 2nd Column bold v Subscript y Baseline 3rd Column bold v Subscript z Baseline 3rd Row 1st Column bold w Subscript x Baseline 2nd Column bold w Subscript y Baseline 3rd Column bold w Subscript z Baseline EndDeterminant comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D458" d="M508 379c0 -39 -29 -61 -55 -61c-27 0 -38 19 -38 35c0 12 9 51 57 54c-2 2 -2 3 -4 4c-8 6 -9 6 -21 8c-2 1 -3 1 -9 1c-49 0 -95 -43 -143 -96c-23 -24 -55 -56 -86 -74c85 -11 148 -40 148 -105c0 -10 0 -14 -4 -31c-4 -16 -8 -39 -8 -56c0 -36 13 -47 32 -47 c44 0 67 51 87 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -11 -57 -36 -101c-22 -37 -49 -53 -79 -53c-52 0 -92 40 -92 99c0 11 2 23 4 35c3 10 3 14 3 21c0 66 -82 82 -116 85c-6 -25 -51 -210 -56 -219c-6 -12 -21 -21 -34 -21c-9 0 -29 5 -29 28c0 6 0 8 4 22l145 576 l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-104 -422c38 15 77 55 111 93c72 80 118 88 146 88c45 0 68 -33 68 -63Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE7-E006" d="M179 0h-79v1163c0 21 17 39 39 39s40 -18 40 -39v-1163Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE7-E004" d="M179 39c0 -21 -18 -39 -40 -39s-39 18 -39 39v1163h78Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE7-E005" d="M179 0h-79v1202h78Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="607" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="1386" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="2495" y="0"></use>
+<g transform="translate(3551,0)">
+<g transform="translate(0,2248)">
+ <use xlink:href="#E1-LATINMODERNSIZE7-E006" x="0" y="-1203"></use>
+<g transform="translate(0,-2841.9248975084515) scale(1,1.403096340406028)">
+ <use xlink:href="#E1-LATINMODERNSIZE7-E005"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNSIZE7-E004" x="0" y="-3997"></use>
+</g>
+<g transform="translate(445,0)">
+<g transform="translate(-11,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D456" x="495" y="1448"></use>
+<g transform="translate(112,42)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="859" y="-213"></use>
+</g>
+<g transform="translate(0,-1453)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D465" x="1175" y="-213"></use>
+</g>
+</g>
+<g transform="translate(2325,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D457" x="432" y="1448"></use>
+<g transform="translate(112,42)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="859" y="-213"></use>
+</g>
+<g transform="translate(0,-1453)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D466" x="1175" y="-213"></use>
+</g>
+</g>
+<g transform="translate(4604,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D458" x="370" y="1448"></use>
+<g transform="translate(112,42)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="859" y="-213"></use>
+</g>
+<g transform="translate(0,-1453)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D467" x="1175" y="-213"></use>
+</g>
+</g>
+</g>
+<g transform="translate(6478,2248)">
+ <use xlink:href="#E1-LATINMODERNSIZE7-E006" x="0" y="-1203"></use>
+<g transform="translate(0,-2841.9248975084515) scale(1,1.403096340406028)">
+ <use xlink:href="#E1-LATINMODERNSIZE7-E005"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNSIZE7-E004" x="0" y="-3997"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="10308" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.802ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 345.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.987ex" height="2.509ex" style="vertical-align: -0.671ex; margin-left: -0.029ex;" viewBox="-12.5 -791.3 425 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">j</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D457" x="0" y="0"></use>
+</g>
+</svg>, and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.211ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 521.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">k</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D458" d="M508 379c0 -39 -29 -61 -55 -61c-27 0 -38 19 -38 35c0 12 9 51 57 54c-2 2 -2 3 -4 4c-8 6 -9 6 -21 8c-2 1 -3 1 -9 1c-49 0 -95 -43 -143 -96c-23 -24 -55 -56 -86 -74c85 -11 148 -40 148 -105c0 -10 0 -14 -4 -31c-4 -16 -8 -39 -8 -56c0 -36 13 -47 32 -47 c44 0 67 51 87 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -11 -57 -36 -101c-22 -37 -49 -53 -79 -53c-52 0 -92 40 -92 99c0 11 2 23 4 35c3 10 3 14 3 21c0 66 -82 82 -116 85c-6 -25 -51 -210 -56 -219c-6 -12 -21 -21 -34 -21c-9 0 -29 5 -29 28c0 6 0 8 4 22l145 576 l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-104 -422c38 15 77 55 111 93c72 80 118 88 146 88c45 0 68 -33 68 -63Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D458" x="0" y="0"></use>
+</g>
+</svg> represent the axes <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 1 comma 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 1 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg>, and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg>,
+respectively.  Note that this equation is merely a memory aid and not a
+rigorous mathematical construction, since the matrix entries are a mix of
+scalars and vectors. 
+
+</p>
+<p>In the implementation here, the vector elements are converted to double-precision (regardless
+of the type of <a href="../Utilities/Main_Include_File.html#Float"><tt>Float</tt></a>) before the subtractions in the <tt>Cross()</tt>
+function. Using extra precision for 32-bit floating-point values here
+protects against error from catastrophic cancellation, a type of
+floating-point error that can happen when subtracting two values that are
+very close together.  This isn&rsquo;t a theoretical concern: this change was
+necessary to fix bugs that came up from this issue previously.  See
+Section&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#sec:fp-error">3.9</a> for more information on floating-point rounding
+error.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-4"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; inline Vector3&lt;T&gt;
+<span class="anchor" id="Cross"></span>Cross(const Vector3&lt;T&gt; &amp;v1, const Vector3&lt;T&gt; &amp;v2) {
+    double v1x = v1.x, v1y = v1.y, v1z = v1.z;
+    double v2x = v2.x, v2y = v2.y, v2z = v2.z;
+    return Vector3&lt;T&gt;((v1y * v2z) - (v1z * v2y),
+                      (v1z * v2x) - (v1x * v2z),
+                      (v1x * v2y) - (v1y * v2x));
+}</div><p>
+
+
+
+</p>
+<p>From the definition of the cross product, we can derive
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="eq:cross-sin-theta"></span><div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="24.192ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 10416.1 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">double-vertical-bar bold v times bold w double-vertical-bar equals double-vertical-bar bold v double-vertical-bar double-vertical-bar bold w double-vertical-bar StartAbsoluteValue sine theta EndAbsoluteValue comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2016" d="M151 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960zM287 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-6E" d="M535 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c58 0 91 -20 105 -37 c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="0" y="0"></use>
+<g transform="translate(398,0)">
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-D7" x="607" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D430" x="1386" y="0"></use>
+</g>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="2616" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-3D" x="3292" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="4348" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="4747" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="5354" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="5919" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D430" x="6318" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="7149" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-7C" x="7548" y="0"></use>
+<g transform="translate(7993,0)">
+ <use xlink:href="#E2-LATINMODERNMAIN-73"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-69" x="394" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-6E" x="673" y="0"></use>
+</g>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D703" x="9389" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-7C" x="9859" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2C" x="10137" y="0"></use>
+</g>
+</svg>
+</div>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+<div class="eqno">(<a href="#eq:cross-sin-theta">2.2</a>)</div>
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<p>
+
+where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 469.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+</g>
+</svg> is the angle between <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg> and
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg>.  An important implication of this is that the cross product of
+two perpendicular unit vectors is itself a unit vector.  Note also
+that the result of the cross product is a degenerate vector if <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg>
+and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.931ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 831.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold w</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D430" d="M805 397c-59 0 -63 -8 -68 -21l-144 -353c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-106 259l-106 -259c-7 -17 -11 -27 -36 -27s-29 10 -36 27l-153 374h-59v47l109 -3l123 3v-47h-56l105 -258l79 192c1 3 4 9 4 13c0 0 0 3 -21 53h-59v47c16 -1 58 -3 100 -3l114 3v-47 h-56l114 -280l105 256c1 3 4 9 4 12c0 11 -49 12 -58 12v47l96 -3c24 0 54 1 77 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D430" x="0" y="0"></use>
+</g>
+</svg> are parallel.
+
+</p>
+<p>This definition also shows a convenient way to compute the area of a
+parallelogram (Figure&nbsp;<a href="#fig:parallelogram-area">2.5</a>).  If the two edges of
+the parallelogram are given by vectors <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.588ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1114.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v bold 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D7CF" d="M494 0c-44 3 -150 3 -199 3s-155 0 -199 -3v47h139v517c-59 -19 -114 -20 -130 -20h-20v47h20c21 0 124 0 201 57c9 7 11 7 22 7c26 0 26 -10 26 -32v-576h140v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D7CF" x="859" y="-213"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.588ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1114.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v bold 2</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D7D0" d="M517 222l-31 -222h-429v18c0 20 0 22 13 34l201 205c70 71 108 139 108 208c0 75 -46 143 -132 143c-36 0 -74 -11 -103 -35c15 -4 57 -20 57 -72c0 -50 -40 -72 -72 -72c-24 0 -72 15 -72 74c0 90 94 152 215 152c141 0 245 -74 245 -189c0 -95 -64 -142 -178 -226 c-45 -33 -97 -76 -144 -115h147c16 0 91 0 102 6c14 7 23 71 26 91h47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D7D0" x="859" y="-213"></use>
+</g>
+</svg>, and it
+has height <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.339ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 576.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">h</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-210E" d="M546 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 20 5 32 13 55c24 61 62 170 62 224c0 36 -11 70 -54 70s-74 -19 -96 -35c-34 -27 -65 -83 -68 -92c-1 -6 -9 -39 -11 -45c-5 -23 -11 -45 -17 -67l-22 -90l-19 -76c-5 -14 -21 -26 -37 -26c-9 0 -29 5 -29 28 c0 6 0 8 4 22l145 576l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-78 -318c37 46 85 77 148 77c75 0 115 -42 115 -107c0 -58 -45 -177 -61 -220c-9 -22 -18 -46 -18 -71c0 -23 7 -33 24 -33c55 0 87 71 102 124 c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-210E" x="0" y="0"></use>
+</g>
+</svg>, the area is given by <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.778ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2487.9 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">double-vertical-bar bold v bold 1 double-vertical-bar h</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2016" d="M151 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960zM287 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D7CF" d="M494 0c-44 3 -150 3 -199 3s-155 0 -199 -3v47h139v517c-59 -19 -114 -20 -130 -20h-20v47h20c21 0 124 0 201 57c9 7 11 7 22 7c26 0 26 -10 26 -32v-576h140v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-210E" d="M546 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 20 5 32 13 55c24 61 62 170 62 224c0 36 -11 70 -54 70s-74 -19 -96 -35c-34 -27 -65 -83 -68 -92c-1 -6 -9 -39 -11 -45c-5 -23 -11 -45 -17 -67l-22 -90l-19 -76c-5 -14 -21 -26 -37 -26c-9 0 -29 5 -29 28 c0 6 0 8 4 22l145 576l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-78 -318c37 46 85 77 148 77c75 0 115 -42 115 -107c0 -58 -45 -177 -61 -220c-9 -22 -18 -46 -18 -71c0 -23 7 -33 24 -33c55 0 87 71 102 124 c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="0" y="0"></use>
+<g transform="translate(398,0)">
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E2-LATINMODERNNORMAL-1D7CF" x="859" y="-213"></use>
+</g>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="1512" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-210E" x="1911" y="0"></use>
+</g>
+</svg>.  Since <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="13.21ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 5687.7 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">h equals sine theta double-vertical-bar bold v bold 2 double-vertical-bar</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-210E" d="M546 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 20 5 32 13 55c24 61 62 170 62 224c0 36 -11 70 -54 70s-74 -19 -96 -35c-34 -27 -65 -83 -68 -92c-1 -6 -9 -39 -11 -45c-5 -23 -11 -45 -17 -67l-22 -90l-19 -76c-5 -14 -21 -26 -37 -26c-9 0 -29 5 -29 28 c0 6 0 8 4 22l145 576l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-78 -318c37 46 85 77 148 77c75 0 115 -42 115 -107c0 -58 -45 -177 -61 -220c-9 -22 -18 -46 -18 -71c0 -23 7 -33 24 -33c55 0 87 71 102 124 c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-6E" d="M535 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c58 0 91 -20 105 -37 c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2016" d="M151 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960zM287 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D7D0" d="M517 222l-31 -222h-429v18c0 20 0 22 13 34l201 205c70 71 108 139 108 208c0 75 -46 143 -132 143c-36 0 -74 -11 -103 -35c15 -4 57 -20 57 -72c0 -50 -40 -72 -72 -72c-24 0 -72 15 -72 74c0 90 94 152 215 152c141 0 245 -74 245 -189c0 -95 -64 -142 -178 -226 c-45 -33 -97 -76 -144 -115h147c16 0 91 0 102 6c14 7 23 71 26 91h47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E2-LATINMODERNNORMAL-210E" x="0" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-3D" x="854" y="0"></use>
+<g transform="translate(1910,0)">
+ <use xlink:href="#E2-LATINMODERNMAIN-73"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-69" x="394" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-6E" x="673" y="0"></use>
+</g>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D703" x="3306" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="3776" y="0"></use>
+<g transform="translate(4174,0)">
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E2-LATINMODERNNORMAL-1D7D0" x="859" y="-213"></use>
+</g>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="5289" y="0"></use>
+</g>
+</svg>, we can use Equation&nbsp;(<a href="#eq:cross-sin-theta">2.2</a>) to see
+that the area is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="8.836ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3804.4 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">double-vertical-bar bold v bold 1 times bold v bold 2 double-vertical-bar</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2016" d="M151 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960zM287 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D7CF" d="M494 0c-44 3 -150 3 -199 3s-155 0 -199 -3v47h139v517c-59 -19 -114 -20 -130 -20h-20v47h20c21 0 124 0 201 57c9 7 11 7 22 7c26 0 26 -10 26 -32v-576h140v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D7D0" d="M517 222l-31 -222h-429v18c0 20 0 22 13 34l201 205c70 71 108 139 108 208c0 75 -46 143 -132 143c-36 0 -74 -11 -103 -35c15 -4 57 -20 57 -72c0 -50 -40 -72 -72 -72c-24 0 -72 15 -72 74c0 90 94 152 215 152c141 0 245 -74 245 -189c0 -95 -64 -142 -178 -226 c-45 -33 -97 -76 -144 -115h147c16 0 91 0 102 6c14 7 23 71 26 91h47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="0" y="0"></use>
+<g transform="translate(398,0)">
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E2-LATINMODERNNORMAL-1D7CF" x="859" y="-213"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-D7" x="1114" y="0"></use>
+<g transform="translate(1892,0)">
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E2-LATINMODERNNORMAL-1D7D0" x="859" y="-213"></use>
+</g>
+</g>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="3405" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:parallelogram-area"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Parallelogram%20area.svg" title=""><img src="Parallelogram%20area.svg" width=377 height=249 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 2.5: <span class="legend"> The area of a parallelogram with
+edges given by vectors <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.588ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1114.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v bold 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D7CF" d="M494 0c-44 3 -150 3 -199 3s-155 0 -199 -3v47h139v517c-59 -19 -114 -20 -130 -20h-20v47h20c21 0 124 0 201 57c9 7 11 7 22 7c26 0 26 -10 26 -32v-576h140v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D7CF" x="859" y="-213"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.588ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1114.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v bold 2</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D7D0" d="M517 222l-31 -222h-429v18c0 20 0 22 13 34l201 205c70 71 108 139 108 208c0 75 -46 143 -132 143c-36 0 -74 -11 -103 -35c15 -4 57 -20 57 -72c0 -50 -40 -72 -72 -72c-24 0 -72 15 -72 74c0 90 94 152 215 152c141 0 245 -74 245 -189c0 -95 -64 -142 -178 -226 c-45 -33 -97 -76 -144 -115h147c16 0 91 0 102 6c14 7 23 71 26 91h47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D7D0" x="859" y="-213"></use>
+</g>
+</svg> is equal to
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.778ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2487.9 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">double-vertical-bar bold v bold 1 double-vertical-bar h</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2016" d="M151 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960zM287 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D7CF" d="M494 0c-44 3 -150 3 -199 3s-155 0 -199 -3v47h139v517c-59 -19 -114 -20 -130 -20h-20v47h20c21 0 124 0 201 57c9 7 11 7 22 7c26 0 26 -10 26 -32v-576h140v-47Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-210E" d="M546 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 20 5 32 13 55c24 61 62 170 62 224c0 36 -11 70 -54 70s-74 -19 -96 -35c-34 -27 -65 -83 -68 -92c-1 -6 -9 -39 -11 -45c-5 -23 -11 -45 -17 -67l-22 -90l-19 -76c-5 -14 -21 -26 -37 -26c-9 0 -29 5 -29 28 c0 6 0 8 4 22l145 576l3 20c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-78 -318c37 46 85 77 148 77c75 0 115 -42 115 -107c0 -58 -45 -177 -61 -220c-9 -22 -18 -46 -18 -71c0 -23 7 -33 24 -33c55 0 87 71 102 124 c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="0" y="0"></use>
+<g transform="translate(398,0)">
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E2-LATINMODERNNORMAL-1D7CF" x="859" y="-213"></use>
+</g>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="1512" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-210E" x="1911" y="0"></use>
+</g>
+</svg>.  From Equation&nbsp;(<a href="#eq:cross-sin-theta">2.2</a>), the length of the cross
+product of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.588ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1114.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v bold 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D7CF" d="M494 0c-44 3 -150 3 -199 3s-155 0 -199 -3v47h139v517c-59 -19 -114 -20 -130 -20h-20v47h20c21 0 124 0 201 57c9 7 11 7 22 7c26 0 26 -10 26 -32v-576h140v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D7CF" x="859" y="-213"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.588ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1114.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v bold 2</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D7D0" d="M517 222l-31 -222h-429v18c0 20 0 22 13 34l201 205c70 71 108 139 108 208c0 75 -46 143 -132 143c-36 0 -74 -11 -103 -35c15 -4 57 -20 57 -72c0 -50 -40 -72 -72 -72c-24 0 -72 15 -72 74c0 90 94 152 215 152c141 0 245 -74 245 -189c0 -95 -64 -142 -178 -226 c-45 -33 -97 -76 -144 -115h147c16 0 91 0 102 6c14 7 23 71 26 91h47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D7D0" x="859" y="-213"></use>
+</g>
+</svg>  is equal to the product of the two
+vector lengths times the sine of the angle between them&mdash;the parallelogram
+area.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Normalization"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Normalization"></span><h3>2.2.2  Normalization</h3><p>
+
+
+</p>
+<p> It is often necessary to <em>normalize</em> a vector&mdash;that is, to
+compute a new vector pointing in the same direction but with unit length.
+A normalized vector is often called a <em>unit vector</em>.  The notation
+used in this book for normalized vectors is that <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="2.176ex" style="vertical-align: -0.012ex; margin-bottom: -0.326ex;" viewBox="0 -791.3 607.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">ModifyingAbove bold v With caret</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-302" d="M-82 607l-12 -20c-58 25 -115 54 -170 85c-55 -31 -112 -60 -170 -85l-12 20c56 49 117 91 182 127c65 -36 126 -78 182 -127Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-302" x="526" y="-34"></use>
+</g>
+</svg> is the
+normalized version of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.411ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 607.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+</g>
+</svg>.  To normalize a vector, it&rsquo;s first useful
+to be able to compute its length.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Vector3PublicMethods-7"></span><div class="fragmentname">&lt;&lt;Vector3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Vector3PublicMethods-6"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="Vector3::LengthSquared"></span><span class="anchor" id="Vector2::LengthSquared"></span>LengthSquared() const { return x * x + y * y + z * z; }
+Float <span class="anchor" id="Vector3::Length"></span>Length() const { return std::sqrt(LengthSquared()); }</div><p>
+
+
+</p>
+<p><tt>Normalize()</tt> normalizes a vector.  It divides each component by the
+length of the vector, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.262ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 1404.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">double-vertical-bar bold v double-vertical-bar</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E2-LATINMODERNMAIN-2016" d="M151 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960zM287 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E2-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="0" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNNORMAL-1D42F" x="398" y="0"></use>
+ <use xlink:href="#E2-LATINMODERNMAIN-2016" x="1006" y="0"></use>
+</g>
+</svg>. It returns a new vector; it does
+<em>not</em> normalize the vector in place:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-5"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; inline Vector3&lt;T&gt;
+<span class="anchor" id="Vector3::Normalize"></span>Normalize(const Vector3&lt;T&gt; &amp;v) { return v / v.Length(); }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#MiscellaneousOperations"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="MiscellaneousOperations"></span><h3>2.2.3  Miscellaneous Operations</h3><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A few additional operations are useful when working with vectors.  The
+<tt>MinComponent()</tt> and <tt>MaxComponent()</tt> methods return the
+smallest and largest coordinate value,
+respectively.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-6"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-5"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-7"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; T
+<span class="anchor" id="Vector2::MinComponent"></span><span class="anchor" id="Vector3::MinComponent"></span>MinComponent(const Vector3&lt;T&gt; &amp;v) {
+    return std::min(v.x, std::min(v.y, v.z));
+}
+template &lt;typename T&gt; T
+<span class="anchor" id="Vector2::MaxComponent"></span><span class="anchor" id="Vector3::MaxComponent"></span>MaxComponent(const Vector3&lt;T&gt; &amp;v) {
+    return std::max(v.x, std::max(v.y, v.z));
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Related, <tt>MaxDimension()</tt> returns the index of the component with the
+largest value.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-7"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-6"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-8"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; int
+<span class="anchor" id="Vector2::MaxDimension"></span><span class="anchor" id="Vector3::MaxDimension"></span>MaxDimension(const Vector3&lt;T&gt; &amp;v) {
+    return (v.x &gt; v.y) ? ((v.x &gt; v.z) ? 0 : 2) : 
+           ((v.y &gt; v.z) ? 1 : 2);
+}</div><p>
+
+
+</p>
+<p>Component-wise minimum and maximum operations are also
+available.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-8"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-7"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-9"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; Vector3&lt;T&gt;
+<span class="anchor" id="Vector2::Min"></span><span class="anchor" id="Vector3::Min"></span>Min(const Vector3&lt;T&gt; &amp;p1, const Vector3&lt;T&gt; &amp;p2) {
+    return Vector3&lt;T&gt;(std::min(p1.x, p2.x), std::min(p1.y, p2.y), 
+                      std::min(p1.z, p2.z));
+}
+template &lt;typename T&gt; Vector3&lt;T&gt;
+<span class="anchor" id="Vector2::Max"></span><span class="anchor" id="Vector3::Max"></span>Max(const Vector3&lt;T&gt; &amp;p1, const Vector3&lt;T&gt; &amp;p2) {
+    return Vector3&lt;T&gt;(std::max(p1.x, p2.x), std::max(p1.y, p2.y), 
+                      std::max(p1.z, p2.z));
+}</div><p>
+
+
+</p>
+<p>Finally, <tt>Permute()</tt> permutes the coordinate values according to the
+index values provided.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-9"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-8"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-10"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; Vector3&lt;T&gt;
+<span class="anchor" id="Vector2::Permute"></span><span class="anchor" id="Vector3::Permute"></span>Permute(const Vector3&lt;T&gt; &amp;v, int x, int y, int z) {
+    return Vector3&lt;T&gt;(v[x], v[y], v[z]);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#CoordinateSystemfromaVector"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="CoordinateSystemfromaVector"></span><h3>2.2.4  Coordinate System from a Vector</h3><p>
+
+
+</p>
+<p> We will frequently want to construct a local coordinate system
+given only a single 3D vector.  Because the cross product of two vectors is
+orthogonal to both, we can apply the cross product two times to get a set
+of three orthogonal vectors for the coordinate system.  Note that the two
+vectors generated by this technique are unique only up to a rotation about
+the given vector.
+
+</p>
+<p>The implementation of this function assumes that the vector passed in,
+<tt>v1</tt>, has already been normalized.  It first constructs a
+perpendicular vector by zeroing one of the components of the original
+vector, swapping the remaining two, and negating one of them. Inspection of
+the two cases should make clear that <tt>v2</tt> will be normalized and that
+the dot product <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="8.665ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3730.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis bold v bold 1 dot bold v bold 2 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D42F" d="M580 397c-64 0 -68 -7 -74 -21l-166 -356c-10 -21 -20 -24 -37 -24c-13 0 -26 0 -38 25l-175 376h-64v47l114 -3l124 3v-47h-54l127 -273l116 250c5 10 5 12 5 12c0 8 -29 11 -48 11v47l91 -3c25 0 54 1 79 3v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D7CF" d="M494 0c-44 3 -150 3 -199 3s-155 0 -199 -3v47h139v517c-59 -19 -114 -20 -130 -20h-20v47h20c21 0 124 0 201 57c9 7 11 7 22 7c26 0 26 -10 26 -32v-576h140v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-22C5" d="M192 250c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D7D0" d="M517 222l-31 -222h-429v18c0 20 0 22 13 34l201 205c70 71 108 139 108 208c0 75 -46 143 -132 143c-36 0 -74 -11 -103 -35c15 -4 57 -20 57 -72c0 -50 -40 -72 -72 -72c-24 0 -72 15 -72 74c0 90 94 152 215 152c141 0 245 -74 245 -189c0 -95 -64 -142 -178 -226 c-45 -33 -97 -76 -144 -115h147c16 0 91 0 102 6c14 7 23 71 26 91h47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D7CF" x="859" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-22C5" x="1726" y="0"></use>
+<g transform="translate(2226,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D42F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D7D0" x="859" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3341" y="0"></use>
+</g>
+</svg> must be equal to zero.  Given
+these two perpendicular vectors, a single cross product gives the third,
+which by definition will be perpendicular to the first two.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-10"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-9"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Points.html#fragment-GeometryInlineFunctions-11"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; inline void
+<span class="anchor" id="CoordinateSystem"></span>CoordinateSystem(const Vector3&lt;T&gt; &amp;v1, Vector3&lt;T&gt; *v2, Vector3&lt;T&gt; *v3) {
+    if (std::abs(v1.x) &gt; std::abs(v1.y))
+        *v2 = Vector3&lt;T&gt;(-v1.z, 0, v1.x) /
+              std::sqrt(v1.x * v1.x + v1.z * v1.z);
+    else
+        *v2 = Vector3&lt;T&gt;(0, v1.z, -v1.y) /
+              std::sqrt(v1.y * v1.y + v1.z * v1.z);
+    *v3 = <a href="#Cross" class="code">Cross</a>(v1, *v2);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Denis A. Gladkiy and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Geometry_and_Transformations/Points.html">Geometry and Transformations / Points</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

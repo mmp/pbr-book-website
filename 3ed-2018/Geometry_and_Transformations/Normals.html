@@ -1,0 +1,795 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Normals</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations.html">Geometry and Transformations</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Normals</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations/Points.html">(Previous: Points)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>2.4 Normals</h2><p>
+
+
+</p>
+<p> A <em>surface normal</em> (or just <em>normal</em>) is a vector that is
+perpendicular to a surface at a particular position.  It can be defined as the
+cross product of any two nonparallel vectors that are tangent to the surface
+at a point.  Although normals are superficially similar to vectors, it is
+important to distinguish between the two of them: because normals are defined
+in terms of their relationship to a particular surface, they behave differently
+than vectors in some situations, particularly when applying transformations.
+This difference is discussed in Section&nbsp;<a href="../Geometry_and_Transformations/Applying_Transformations.html#sec:applying-transforms">2.8</a>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-NormalDeclarations-0"></span><div class="fragmentname">&lt;&lt;Normal Declarations&gt;&gt;=&nbsp;<a href="#fragment-NormalDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="Normal3"></span>Normal3 {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Normal3PublicMethods-0">Normal3 Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-93" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-93"><i></i></a><div id="fragbit-93" class="collapse"><div class="fragmentcode">       Normal3() { x = y = z = 0; }
+       Normal3(T xx, T yy, T zz)
+           : x(xx), y(yy), z(zz) {
+       }
+       Normal3&lt;T&gt; operator-() const {
+           return Normal3(-x, -y, -z);
+       }
+       Normal3&lt;T&gt; operator+(const Normal3&lt;T&gt; &amp;n) const {
+           return Normal3&lt;T&gt;(x + n.x, y + n.y, z + n.z);
+       }
+       
+       Normal3&lt;T&gt;&amp; operator+=(const Normal3&lt;T&gt; &amp;n) {
+           x += n.x; y += n.y; z += n.z;
+           return *this;
+       }
+       Normal3&lt;T&gt; operator- (const Normal3&lt;T&gt; &amp;n) const {
+           return Normal3&lt;T&gt;(x - n.x, y - n.y, z - n.z);
+       }
+       
+       Normal3&lt;T&gt;&amp; operator-=(const Normal3&lt;T&gt; &amp;n) {
+           x -= n.x; y -= n.y; z -= n.z;
+           return *this;
+       }
+       bool HasNaNs() const {
+           return std::isnan(x) || std::isnan(y) || std::isnan(z);
+       }
+       Normal3&lt;T&gt; operator*(T f) const {
+           return Normal3&lt;T&gt;(f*x, f*y, f*z);
+       }
+       
+       Normal3&lt;T&gt; &amp;operator*=(T f) {
+           x *= f; y *= f; z *= f;
+           return *this;
+       }
+       Normal3&lt;T&gt; operator/(T f) const {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(f != 0);
+           Float inv = (Float)1 / f;
+           return Normal3&lt;T&gt;(x * inv, y * inv, z * inv);
+       }
+       
+       Normal3&lt;T&gt; &amp;operator/=(T f) {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(f != 0);
+           Float inv = (Float)1 / f;
+           x *= inv; y *= inv; z *= inv;
+           return *this;
+       }
+       Float LengthSquared() const { return x*x + y*y + z*z; }
+       Float Length() const        { return std::sqrt(LengthSquared()); }
+       
+       &lt;&lt;<span class="fragmentname"><a href="Vectors.html#fragment-GeometryInlineFunctions-0">Geometry Inline Functions</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-94" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-94"><i></i></a><div id="fragbit-94" class="collapse"><div class="fragmentcode">          template &lt;typename T&gt; inline
+          Vector3&lt;T&gt;::Vector3(const Point3&lt;T&gt; &amp;p) : x(p.x), y(p.y), z(p.z) {
+          }
+          template &lt;typename T&gt; inline Vector3&lt;T&gt;
+          operator*(T s, const Vector3&lt;T&gt; &amp;v) { return v * s; }
+          template &lt;typename T&gt; Vector3&lt;T&gt; Abs(const Vector3&lt;T&gt; &amp;v) {
+              return Vector3&lt;T&gt;(std::abs(v.x), std::abs(v.y), std::abs(v.z));
+          }
+          template &lt;typename T&gt; inline T
+          <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(const Vector3&lt;T&gt; &amp;v1, const Vector3&lt;T&gt; &amp;v2) {
+              return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
+          }
+          template &lt;typename T&gt;
+          inline T <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(const Vector3&lt;T&gt; &amp;v1, const Vector3&lt;T&gt; &amp;v2) {
+              return std::abs(<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(v1, v2));
+          }
+          template &lt;typename T&gt; inline Vector3&lt;T&gt;
+          <a href="../Geometry_and_Transformations/Vectors.html#Cross" class="code">Cross</a>(const Vector3&lt;T&gt; &amp;v1, const Vector3&lt;T&gt; &amp;v2) {
+              double v1x = v1.x, v1y = v1.y, v1z = v1.z;
+              double v2x = v2.x, v2y = v2.y, v2z = v2.z;
+              return Vector3&lt;T&gt;((v1y * v2z) - (v1z * v2y),
+                                (v1z * v2x) - (v1x * v2z),
+                                (v1x * v2y) - (v1y * v2x));
+          }
+          template &lt;typename T&gt; inline Vector3&lt;T&gt;
+          <a href="../Geometry_and_Transformations/Vectors.html#Cross" class="code">Cross</a>(const Vector3&lt;T&gt; &amp;v1, const Normal3&lt;T&gt; &amp;v2) {
+              double v1x = v1.x, v1y = v1.y, v1z = v1.z;
+              double v2x = v2.x, v2y = v2.y, v2z = v2.z;
+              return Vector3&lt;T&gt;((v1y * v2z) - (v1z * v2y),
+                                (v1z * v2x) - (v1x * v2z),
+                                (v1x * v2y) - (v1y * v2x));
+          }
+          template &lt;typename T&gt; inline Vector3&lt;T&gt;
+          <a href="../Geometry_and_Transformations/Vectors.html#Cross" class="code">Cross</a>(const Normal3&lt;T&gt; &amp;v1, const Vector3&lt;T&gt; &amp;v2) {
+              double v1x = v1.x, v1y = v1.y, v1z = v1.z;
+              double v2x = v2.x, v2y = v2.y, v2z = v2.z;
+              return Vector3&lt;T&gt;((v1y * v2z) - (v1z * v2y),
+                                (v1z * v2x) - (v1x * v2z),
+                                (v1x * v2y) - (v1y * v2x));
+          }
+          template &lt;typename T&gt; inline Vector3&lt;T&gt;
+          Normalize(const Vector3&lt;T&gt; &amp;v) { return v / v.Length(); }
+          template &lt;typename T&gt; T
+          MinComponent(const Vector3&lt;T&gt; &amp;v) {
+              return std::min(v.x, std::min(v.y, v.z));
+          }
+          template &lt;typename T&gt; T
+          MaxComponent(const Vector3&lt;T&gt; &amp;v) {
+              return std::max(v.x, std::max(v.y, v.z));
+          }
+          template &lt;typename T&gt; int
+          MaxDimension(const Vector3&lt;T&gt; &amp;v) {
+              return (v.x &gt; v.y) ? ((v.x &gt; v.z) ? 0 : 2) : 
+                     ((v.y &gt; v.z) ? 1 : 2);
+          }
+          template &lt;typename T&gt; Vector3&lt;T&gt;
+          Min(const Vector3&lt;T&gt; &amp;p1, const Vector3&lt;T&gt; &amp;p2) {
+              return Vector3&lt;T&gt;(std::min(p1.x, p2.x), std::min(p1.y, p2.y), 
+                                std::min(p1.z, p2.z));
+          }
+          template &lt;typename T&gt; Vector3&lt;T&gt;
+          Max(const Vector3&lt;T&gt; &amp;p1, const Vector3&lt;T&gt; &amp;p2) {
+              return Vector3&lt;T&gt;(std::max(p1.x, p2.x), std::max(p1.y, p2.y), 
+                                std::max(p1.z, p2.z));
+          }
+          template &lt;typename T&gt; Vector3&lt;T&gt;
+          Permute(const Vector3&lt;T&gt; &amp;v, int x, int y, int z) {
+              return Vector3&lt;T&gt;(v[x], v[y], v[z]);
+          }
+          template &lt;typename T&gt; inline void
+          CoordinateSystem(const Vector3&lt;T&gt; &amp;v1, Vector3&lt;T&gt; *v2, Vector3&lt;T&gt; *v3) {
+              if (std::abs(v1.x) &gt; std::abs(v1.y))
+                  *v2 = Vector3&lt;T&gt;(-v1.z, 0, v1.x) /
+                        std::sqrt(v1.x * v1.x + v1.z * v1.z);
+              else
+                  *v2 = Vector3&lt;T&gt;(0, v1.z, -v1.y) /
+                        std::sqrt(v1.y * v1.y + v1.z * v1.z);
+              *v3 = <a href="../Geometry_and_Transformations/Vectors.html#Cross" class="code">Cross</a>(v1, *v2);
+          }
+          template &lt;typename T&gt; Vector2&lt;T&gt;::Vector2(const Point2&lt;T&gt; &amp;p)
+              : x(p.x), y(p.y) {
+              Assert(!HasNaNs());
+          }
+          template &lt;typename T&gt; Vector2&lt;T&gt;::Vector2(const Point3&lt;T&gt; &amp;p)
+              : x(p.x), y(p.y) {
+              Assert(!HasNaNs());
+          }
+          template &lt;typename T&gt; inline Vector2&lt;T&gt;
+          operator*(T f, const Vector2&lt;T&gt; &amp;v) { return v*f; }
+          template &lt;typename T&gt; inline Float
+          <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(const Vector2&lt;T&gt; &amp;v1, const Vector2&lt;T&gt; &amp;v2) {
+              return v1.x * v2.x + v1.y * v2.y;
+          }
+          template &lt;typename T&gt;
+          inline Float <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(const Vector2&lt;T&gt; &amp;v1, const Vector2&lt;T&gt; &amp;v2) {
+              return std::abs(<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(v1, v2));
+          }
+          template &lt;typename T&gt; inline Vector2&lt;T&gt;
+          Normalize(const Vector2&lt;T&gt; &amp;v) { return v / v.Length(); }
+          template &lt;typename T&gt; Vector2&lt;T&gt; Abs(const Vector2&lt;T&gt; &amp;v) {
+              return Vector2&lt;T&gt;(std::abs(v.x), std::abs(v.y));
+          }
+          template &lt;typename T&gt; inline Float
+          Distance(const Point3&lt;T&gt; &amp;p1, const Point3&lt;T&gt; &amp;p2) {
+              return (p1 - p2).Length();
+          }
+          template &lt;typename T&gt; inline Float
+          DistanceSquared(const Point3&lt;T&gt; &amp;p1, const Point3&lt;T&gt; &amp;p2) {
+              return (p1 - p2).LengthSquared();
+          }
+          template &lt;typename T&gt; inline Point3&lt;T&gt;
+          operator*(Float f, const Point3&lt;T&gt; &amp;p) {
+              Assert(!p.HasNaNs());
+              return p * f;
+          }
+          template &lt;typename T&gt; Point3&lt;T&gt;
+          <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(Float t, const Point3&lt;T&gt; &amp;p0, const Point3&lt;T&gt; &amp;p1) {
+              return (1 - t) * p0 + t * p1;
+          }
+          template &lt;typename T&gt; Point3&lt;T&gt;
+          Min(const Point3&lt;T&gt; &amp;p1, const Point3&lt;T&gt; &amp;p2) {
+              return Point3&lt;T&gt;(std::min(p1.x, p2.x), std::min(p1.y, p2.y), 
+                               std::min(p1.z, p2.z));
+          }
+          template &lt;typename T&gt; Point3&lt;T&gt;
+          Max(const Point3&lt;T&gt; &amp;p1, const Point3&lt;T&gt; &amp;p2) {
+              return Point3&lt;T&gt;(std::max(p1.x, p2.x), std::max(p1.y, p2.y), 
+                               std::max(p1.z, p2.z));
+          }
+          template &lt;typename T&gt; Point3&lt;T&gt; Floor(const Point3&lt;T&gt; &amp;p) {
+              return Point3&lt;T&gt;(std::floor(p.x), std::floor(p.y), std::floor(p.z));
+          }
+          template &lt;typename T&gt; Point3&lt;T&gt; Ceil(const Point3&lt;T&gt; &amp;p) {
+              return Point3&lt;T&gt;(std::ceil(p.x), std::ceil(p.y), std::ceil(p.z));
+          }
+          template &lt;typename T&gt; Point3&lt;T&gt; Abs(const Point3&lt;T&gt; &amp;p) {
+              return Point3&lt;T&gt;(std::abs(p.x), std::abs(p.y), std::abs(p.z));
+          }
+          template &lt;typename T&gt; inline Float
+          Distance(const Point2&lt;T&gt; &amp;p1, const Point2&lt;T&gt; &amp;p2) {
+              return (p1 - p2).Length();
+          }
+          template &lt;typename T&gt; inline Float
+          DistanceSquared(const Point2&lt;T&gt; &amp;p1, const Point2&lt;T&gt; &amp;p2) {
+              return (p1 - p2).LengthSquared();
+          }
+          template &lt;typename T&gt; inline Point2&lt;T&gt;
+          operator*(T f, const Point2&lt;T&gt; &amp;p) {
+              Assert(!p.HasNaNs());
+              return p*f;
+          }
+          template &lt;typename T&gt; Point2&lt;T&gt; Floor(const Point2&lt;T&gt; &amp;p) {
+              return Point2&lt;T&gt;(std::floor(p.x), std::floor(p.y));
+          }
+          template &lt;typename T&gt; Point2&lt;T&gt; Ceil(const Point2&lt;T&gt; &amp;p) {
+              return Point2&lt;T&gt;(std::ceil(p.x), std::ceil(p.y));
+          }
+          template &lt;typename T&gt; Point2&lt;T&gt;
+          <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(Float t, const Point2&lt;T&gt; &amp;v0, const Point2&lt;T&gt; &amp;v1) {
+              return (1 - t) * v0 + t * v1;
+          }
+          template &lt;typename T&gt; Point2&lt;T&gt;
+          Min(const Point2&lt;T&gt; &amp;pa, const Point2&lt;T&gt; &amp;pb) {
+              return Point2&lt;T&gt;(std::min(pa.x, pb.x), std::min(pa.y, pb.y));
+          }
+          template &lt;typename T&gt; Point2&lt;T&gt;
+          Max(const Point2&lt;T&gt; &amp;pa, const Point2&lt;T&gt; &amp;pb) {
+              return Point2&lt;T&gt;(std::max(pa.x, pb.x), std::max(pa.y, pb.y));
+          }
+          template &lt;typename T&gt; Point3&lt;T&gt;
+          Permute(const Point3&lt;T&gt; &amp;p, int x, int y, int z) {
+              return Point3&lt;T&gt;(p[x], p[y], p[z]);
+          }
+          template &lt;typename T&gt; inline Normal3&lt;T&gt;
+          operator*(T f, const Normal3&lt;T&gt; &amp;n) {
+              return Normal3&lt;T&gt;(f*n.x, f*n.y, f*n.z);
+          }
+          template &lt;typename T&gt; inline
+          Vector3&lt;T&gt;::Vector3(const Normal3&lt;T&gt; &amp;n) : x(n.x), y(n.y), z(n.z) {
+              Assert(!n.HasNaNs());
+          }
+          template &lt;typename T&gt; inline T
+          <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(const Normal3&lt;T&gt; &amp;n1, const Vector3&lt;T&gt; &amp;v2) {
+              return n1.x * v2.x + n1.y * v2.y + n1.z * v2.z;
+          }
+          template &lt;typename T&gt; inline T
+          <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(const Vector3&lt;T&gt; &amp;v1, const Normal3&lt;T&gt; &amp;n2) {
+              return v1.x * n2.x + v1.y * n2.y + v1.z * n2.z;
+          }
+          template &lt;typename T&gt; inline T
+          <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(const Normal3&lt;T&gt; &amp;n1, const Normal3&lt;T&gt; &amp;n2) {
+              return n1.x * n2.x + n1.y * n2.y + n1.z * n2.z;
+          }
+          template &lt;typename T&gt; inline T
+          <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(const Normal3&lt;T&gt; &amp;n1, const Vector3&lt;T&gt; &amp;v2) {
+              return std::abs(n1.x * v2.x + n1.y * v2.y + n1.z * v2.z);
+          }
+          template &lt;typename T&gt; inline T
+          <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(const Vector3&lt;T&gt; &amp;v1, const Normal3&lt;T&gt; &amp;n2) {
+              return std::abs(v1.x * n2.x + v1.y * n2.y + v1.z * n2.z);
+          }
+          template &lt;typename T&gt; inline T
+          <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(const Normal3&lt;T&gt; &amp;n1, const Normal3&lt;T&gt; &amp;n2) {
+              return std::abs(n1.x * n2.x + n1.y * n2.y + n1.z * n2.z);
+          }
+          template &lt;typename T&gt; inline Normal3&lt;T&gt;
+          Faceforward(const Normal3&lt;T&gt; &amp;n, const Vector3&lt;T&gt; &amp;v) {
+              return (<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(n, v) &lt; 0.f) ? -n : n;
+          }
+          template &lt;typename T&gt; inline Normal3&lt;T&gt;
+          Faceforward(const Normal3&lt;T&gt; &amp;n, const Normal3&lt;T&gt; &amp;n2) {
+              return (<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(n, n2) &lt; 0.f) ? -n : n;
+          }
+          
+          template &lt;typename T&gt; inline Vector3&lt;T&gt;
+          Faceforward(const Vector3&lt;T&gt; &amp;v, const Vector3&lt;T&gt; &amp;v2) {
+              return (<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(v, v2) &lt; 0.f) ? -v : v;
+          }
+          
+          template &lt;typename T&gt; inline Vector3&lt;T&gt;
+          Faceforward(const Vector3&lt;T&gt; &amp;v, const Normal3&lt;T&gt; &amp;n2) {
+              return (<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(v, n2) &lt; 0.f) ? -v : v;
+          }
+          template &lt;typename T&gt; Normal3&lt;T&gt; Abs(const Normal3&lt;T&gt; &amp;v) {
+              return Normal3&lt;T&gt;(std::abs(v.x), std::abs(v.y), std::abs(v.z));
+          }
+          template &lt;typename T&gt; inline const Point3&lt;T&gt; &amp;
+          Bounds3&lt;T&gt;::operator[](int i) const {
+              Assert(i == 0 || i == 1);
+              return (i == 0) ? <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a> : pMax;
+          }
+          
+          template &lt;typename T&gt; inline Point3&lt;T&gt; &amp;
+          Bounds3&lt;T&gt;::operator[](int i) {
+              Assert(i == 0 || i == 1);
+              return (i == 0) ? <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a> : pMax;
+          }
+          template &lt;typename T&gt; Bounds3 &lt;T&gt;
+          Union(const Bounds3&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>, const Point3&lt;T&gt; &amp;p) {
+              return Bounds3&lt;T&gt;(Point3&lt;T&gt;(std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x, p.x),
+                                          std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y, p.y),
+                                          std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.z, p.z)),
+                                Point3&lt;T&gt;(std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.x, p.x),
+                                          std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.y, p.y),
+                                          std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.z, p.z)));
+          }
+          template &lt;typename T&gt; Bounds3&lt;T&gt;
+          Union(const Bounds3&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>, const Bounds3&lt;T&gt; &amp;b2) {
+              return Bounds3&lt;T&gt;(Point3&lt;T&gt;(std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x),
+                                          std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y),
+                                          std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.z, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.z)),
+                                Point3&lt;T&gt;(std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.pMax.x, b2.pMax.x),
+                                          std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.pMax.y, b2.pMax.y),
+                                          std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.pMax.z, b2.pMax.z)));
+          }
+          template &lt;typename T&gt; Bounds3&lt;T&gt;
+          Intersect(const Bounds3&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>, const Bounds3&lt;T&gt; &amp;b2) {
+              return Bounds3&lt;T&gt;(Point3&lt;T&gt;(std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x),
+                                          std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y),
+                                          std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.z, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.z)),
+                                Point3&lt;T&gt;(std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.pMax.x, b2.pMax.x),
+                                          std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.pMax.y, b2.pMax.y),
+                                          std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.pMax.z, b2.pMax.z)));
+          }
+          template &lt;typename T&gt;
+          bool Overlaps(const Bounds3&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>, const Bounds3&lt;T&gt; &amp;b2) {
+              bool x = (<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.pMax.x &gt;= b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x) &amp;&amp; (<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x &lt;= b2.pMax.x);
+              bool y = (<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.pMax.y &gt;= b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y) &amp;&amp; (<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y &lt;= b2.pMax.y);
+              bool z = (<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.pMax.z &gt;= b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.z) &amp;&amp; (<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b1</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.z &lt;= b2.pMax.z);
+              return (x &amp;&amp; y &amp;&amp; z);
+          }
+          template &lt;typename T&gt;
+          bool Inside(const Point3&lt;T&gt; &amp;p, const Bounds3&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>) {
+              return (p.x &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x &amp;&amp; p.x &lt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.x &amp;&amp;
+                      p.y &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y &amp;&amp; p.y &lt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.y &amp;&amp;
+                      p.z &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.z &amp;&amp; p.z &lt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.z);
+          }
+          template &lt;typename T&gt;
+          bool InsideExclusive(const Point3&lt;T&gt; &amp;p, const Bounds3&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>) {
+              return (p.x &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x &amp;&amp; p.x &lt; <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.x &amp;&amp;
+                      p.y &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y &amp;&amp; p.y &lt; <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.y &amp;&amp;
+                      p.z &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.z &amp;&amp; p.z &lt; <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.z);
+          }
+          template &lt;typename T, typename U&gt; inline Bounds3&lt;T&gt;
+          Expand(const Bounds3&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>, U delta) {
+              return Bounds3&lt;T&gt;(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a> - Vector3&lt;T&gt;(delta, delta, delta),
+                                <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax + Vector3&lt;T&gt;(delta, delta, delta));
+          }
+          inline Bounds2iIterator begin(const Bounds2i &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>) {
+              return Bounds2iIterator(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>, <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>);
+          }
+          inline Bounds2iIterator end(const Bounds2i &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>) {
+              return Bounds2iIterator(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>, <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x, <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.y));
+          }
+          template &lt;typename T&gt; Bounds2&lt;T&gt;
+          Union(const Bounds2&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>, const Point2&lt;T&gt; &amp;p) {
+              Bounds2&lt;T&gt; ret(Point2&lt;T&gt;(std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x, p.x),
+                                       std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y, p.y)),
+                             Point2&lt;T&gt;(std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.x, p.x),
+                                       std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.y, p.y)));
+              return ret;
+          }
+          template &lt;typename T&gt; Bounds2&lt;T&gt;
+          Union(const Bounds2&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>, const Bounds2&lt;T&gt; &amp;b2) {
+              Bounds2&lt;T&gt; ret(Point2&lt;T&gt;(std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x),
+                                       std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y)),
+                             Point2&lt;T&gt;(std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.x, b2.pMax.x),
+                                       std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.y, b2.pMax.y)));
+              return ret;
+          }
+          template &lt;typename T&gt; Bounds2&lt;T&gt;
+          Intersect(const Bounds2&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>, const Bounds2&lt;T&gt; &amp;b2) {
+              Bounds2&lt;T&gt; ret(Point2&lt;T&gt;(std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x),
+                                       std::max(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y, b2.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y)),
+                             Point2&lt;T&gt;(std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.x, b2.pMax.x),
+                                       std::min(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.y, b2.pMax.y)));
+              return ret;
+          }
+          template &lt;typename T&gt;
+          bool Overlaps(const Bounds2&lt;T&gt; &amp;ba, const Bounds2&lt;T&gt; &amp;bb) {
+              bool x = (ba.pMax.x &gt;= bb.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x) &amp;&amp; (ba.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x &lt;= bb.pMax.x);
+              bool y = (ba.pMax.y &gt;= bb.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y) &amp;&amp; (ba.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y &lt;= bb.pMax.y);
+              return (x &amp;&amp; y);
+          }
+          template &lt;typename T&gt;
+          bool Inside(const Point2&lt;T&gt; &amp;pt, const Bounds2&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>) {
+              return (pt.x &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x &amp;&amp; pt.x &lt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.x &amp;&amp;
+                      pt.y &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y &amp;&amp; pt.y &lt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.y);
+          }
+          template &lt;typename T&gt;
+          bool InsideExclusive(const Point2&lt;T&gt; &amp;pt, const Bounds2&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>) {
+              return (pt.x &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.x &amp;&amp; pt.x &lt; <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.x &amp;&amp;
+                      pt.y &gt;= <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>.y &amp;&amp; pt.y &lt; <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax.y);
+          }
+          template &lt;typename T, typename U&gt;
+          Bounds2&lt;T&gt; Expand(const Bounds2&lt;T&gt; &amp;<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>, U delta) {
+              return Bounds2&lt;T&gt;(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a> - Vector2&lt;T&gt;(delta, delta),
+                                <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">b</a>.pMax + Vector2&lt;T&gt;(delta, delta));
+          }
+          template &lt;typename T&gt;
+          inline bool Bounds3&lt;T&gt;::IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, Float *hitt0,
+                  Float *hitt1) const {
+              Float t0 = 0, t1 = ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::tMax" class="code">tMax</a>;
+              for (int i = 0; i &lt; 3; ++i) {
+                  &lt;&lt;<span class="fragmentname"><a href="../Shapes/Basic_Shape_Interface.html#fragment-Updateintervalformonoithboundingboxslab-0">Update interval for <tt>i</tt>th bounding box slab</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-95" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-95"><i></i></a><div id="fragbit-95" class="collapse"><div class="fragmentcode">                     Float invRayDir = 1 / ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>[i];
+                     Float tNear = (<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMin" class="code">pMin</a>[i] - ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>[i]) * invRayDir;
+                     Float tFar  = (<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::pMax" class="code">pMax</a>[i] - ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>[i]) * invRayDir;
+                     &lt;&lt;<span class="fragmentname"><a href="../Shapes/Basic_Shape_Interface.html#fragment-Updateparametricintervalfromslabintersectiontvalues-0">Update parametric interval from slab intersection <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> values</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-96" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-96"><i></i></a><div id="fragbit-96" class="collapse"><div class="fragmentcode">                        if (tNear &gt; tFar) std::swap(tNear, tFar);
+                        &lt;&lt;<span class="fragmentname"><a href="../Shapes/Managing_Rounding_Error.html#fragment-UpdatemonotFartoensurerobustray--boundsintersection-0">Update <tt>tFar</tt> to ensure robust ray&ndash;bounds intersection</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-97" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-97"><i></i></a><div id="fragbit-97" class="collapse"><div class="fragmentcode">                           tFar *= 1 + 2 * <a href="../Shapes/Managing_Rounding_Error.html#gamma" class="code">gamma</a>(3);</div></div>
+                        t0 = tNear &gt; t0 ? tNear : t0;
+                        t1 = tFar  &lt; t1 ? tFar  : t1;
+                        if (t0 &gt; t1) return false;</div></div></div></div>
+              }
+              if (hitt0) *hitt0 = t0;
+              if (hitt1) *hitt1 = t1;
+              return true;
+          }
+          template &lt;typename T&gt;
+          inline bool Bounds3&lt;T&gt;::IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;invDir,
+                  const int dirIsNeg[3]) const {
+              const <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> &amp;bounds = *this;
+              &lt;&lt;<span class="fragmentname"><a href="../Shapes/Basic_Shape_Interface.html#fragment-Checkforrayintersectionagainstxandyslabs-0">Check for ray intersection against <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> slabs</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-98" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-98"><i></i></a><div id="fragbit-98" class="collapse"><div class="fragmentcode">                 Float tMin =  (bounds[  dirIsNeg[0]].x - ray.o.x) * invDir.x;
+                 Float tMax =  (bounds[1-dirIsNeg[0]].x - ray.o.x) * invDir.x;
+                 Float tyMin = (bounds[  dirIsNeg[1]].y - ray.o.y) * invDir.y;
+                 Float tyMax = (bounds[1-dirIsNeg[1]].y - ray.o.y) * invDir.y;
+                 &lt;&lt;<span class="fragmentname">Update <tt>tMax</tt> and <tt>tyMax</tt> to ensure robust bounds intersection</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-99" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-99"><i></i></a><div id="fragbit-99" class="collapse"><div class="fragmentcode">                    tMax *= 1 + 2 * <a href="../Shapes/Managing_Rounding_Error.html#gamma" class="code">gamma</a>(3);
+                    tyMax *= 1 + 2 * <a href="../Shapes/Managing_Rounding_Error.html#gamma" class="code">gamma</a>(3);</div></div> 
+                 if (tMin &gt; tyMax || tyMin &gt; tMax) 
+                     return false;
+                 if (tyMin &gt; tMin) tMin = tyMin; 
+                 if (tyMax &lt; tMax) tMax = tyMax;</div></div>
+              &lt;&lt;<span class="fragmentname">Check for ray intersection against <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> slab</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-100" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-100"><i></i></a><div id="fragbit-100" class="collapse"><div class="fragmentcode">                 Float tzMin = (bounds[  dirIsNeg[2]].z - ray.o.z) * invDir.z; 
+                 Float tzMax = (bounds[1-dirIsNeg[2]].z - ray.o.z) * invDir.z; 
+                 &lt;&lt;<span class="fragmentname">Update <tt>tzMax</tt> to ensure robust bounds intersection</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-101" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-101"><i></i></a><div id="fragbit-101" class="collapse"><div class="fragmentcode">                    tzMax *= 1 + 2 * <a href="../Shapes/Managing_Rounding_Error.html#gamma" class="code">gamma</a>(3);</div></div> 
+                 if (tMin &gt; tzMax || tzMin &gt; tMax) 
+                     return false; 
+                 if (tzMin &gt; tMin) 
+                     tMin = tzMin; 
+                 if (tzMax &lt; tMax) 
+                     tMax = tzMax;</div></div>
+              return (tMin &lt; ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::tMax" class="code">tMax</a>) &amp;&amp; (<a href="../Geometry_and_Transformations/Rays.html#Ray::tMax" class="code">tMax</a> &gt; 0); 
+          }
+          inline <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> OffsetRayOrigin(const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;p, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;pError,
+                                         const <a href="#Normal3f" class="code">Normal3f</a> &amp;n, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;w) {
+              Float d = <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(Abs(n), pError);
+              <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> offset = d * <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(n);
+              if (<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(w, n) &lt; 0)
+                  offset = -offset;
+              <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> po = p + offset;
+              &lt;&lt;<span class="fragmentname"><a href="../Shapes/Managing_Rounding_Error.html#fragment-Roundoffsetpointmonopoawayfrommonop-0">Round offset point <tt>po</tt> away from <tt>p</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-102" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-102"><i></i></a><div id="fragbit-102" class="collapse"><div class="fragmentcode">                 for (int i = 0; i &lt; 3; ++i) {
+                     if (offset[i] &gt; 0)      po[i] = NextFloatUp(po[i]);
+                     else if (offset[i] &lt; 0) po[i] = NextFloatDown(po[i]);
+                 }</div></div>
+              return po;
+          }
+          inline <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> SphericalDirection(Float sinTheta, 
+                  Float cosTheta, Float phi) {
+              return <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(sinTheta * std::cos(phi), 
+                              sinTheta * std::sin(phi),
+                              cosTheta);
+          }
+          inline <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> SphericalDirection(Float sinTheta, Float cosTheta, 
+                  Float phi, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;x, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;y,
+                  const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;z) {
+              return sinTheta * std::cos(phi) * x +
+                     sinTheta * std::sin(phi) * y + cosTheta * z;
+          }
+          inline Float SphericalTheta(const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;v) {
+              return std::acos(<a href="../Utilities/Main_Include_File.html#Clamp" class="code">Clamp</a>(v.z, -1, 1));
+          }
+          inline Float SphericalPhi(const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;v) {
+              Float p = std::atan2(v.y, v.x);
+              return (p &lt; 0) ? (p + 2 * <a href="../Utilities/Main_Include_File.html#Pi" class="code">Pi</a>) : p;
+          }</div></div>=
+       template &lt;typename T&gt; inline Normal3&lt;T&gt;
+       Normalize(const Normal3&lt;T&gt; &amp;n) {
+           return n / n.Length();
+       }
+       #ifndef NDEBUG
+       Normal3&lt;T&gt;(const Normal3&lt;T&gt; &amp;n) {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(!n.HasNaNs());
+           x = n.x; y = n.y; z = n.z;
+       }
+       
+       Normal3&lt;T&gt; &amp;operator=(const Normal3&lt;T&gt; &amp;n) {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(!n.HasNaNs());
+           x = n.x; y = n.y; z = n.z;
+           return *this;
+       }
+       #endif // !NDEBUG
+       friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Normal3&lt;T&gt; &amp;v) {
+           os &lt;&lt; "[" &lt;&lt; v.x &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; ", " &lt;&lt; v.z &lt;&lt; "]";
+           return os;
+       }
+       explicit Normal3&lt;T&gt;(const Vector3&lt;T&gt; &amp;v) : x(v.x), y(v.y), z(v.z) {
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(!v.HasNaNs());
+       }
+       bool operator==(const Normal3&lt;T&gt; &amp;n) const {
+           return x == n.x &amp;&amp; y == n.y &amp;&amp; z == n.z;
+       }
+       bool operator!=(const Normal3&lt;T&gt; &amp;n) const {
+           return x != n.x || y != n.y || z != n.z;
+       }
+       
+       T operator[](int i) const { 
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(i &gt;= 0 &amp;&amp; i &lt;= 2);
+           if (i == 0) return x;
+           if (i == 1) return y;
+           return z;
+       }
+       
+       T &amp;operator[](int i) { 
+           <a href="../Utilities/Communicating_with_the_User.html#Assert" class="code">Assert</a>(i &gt;= 0 &amp;&amp; i &lt;= 2);
+           if (i == 0) return x;
+           if (i == 1) return y;
+           return z;
+       }</div></div>
+    &lt;&lt;<span class="fragmentname">Normal3 Public Data</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-103" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-103"><i></i></a><div id="fragbit-103" class="collapse"><div class="fragmentcode">       T x, y, z;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-NormalDeclarations-1"></span><div class="fragmentname">&lt;&lt;Normal Declarations&gt;&gt;+=&nbsp;<a href="#fragment-NormalDeclarations-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">typedef Normal3&lt;Float&gt; <span class="anchor" id="Normal3f"></span>Normal3f;</div><p>
+
+
+</p>
+<p>The implementations of <a href="#Normal3"><tt>Normal3</tt></a>s and <a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a>s are very similar.  Like
+vectors, normals are represented by three components <tt>x</tt>,&nbsp;<tt>y</tt>,
+and&nbsp;<tt>z</tt>;
+they can be added and subtracted to compute new normals; and they can be scaled
+and normalized<span class="anchor" id="Normal3::Normalize"></span>.
+However, a normal cannot be added to a point, and one cannot
+take the cross product of two normals.  Note that, in an unfortunate turn of
+terminology, normals are <em>not</em> necessarily normalized.
+
+</p>
+<p>
+
+</p>
+<p><a href="#Normal3"><tt>Normal3</tt></a> provides an extra constructor that initializes a
+<a href="#Normal3"><tt>Normal3</tt></a> from a <a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a>.  Because <a href="#Normal3"><tt>Normal3</tt></a>s and <a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a>s
+are different in subtle ways, we want to make sure that this conversion
+doesn&rsquo;t happen when we don&rsquo;t intend it to, so the C++ <tt>explicit</tt> keyword
+is again used here.  <a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a> also provides a constructor that
+converts the other way.
+Thus, given the declarations <tt>Vector3f v;</tt> and <tt>Normal3f n;</tt>, then the assignment 
+<tt>n = v</tt> is illegal, so it is necessary to explicitly convert the vector, as in
+<tt>n = Normal3f(v)</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Normal3PublicMethods-0"></span><div class="fragmentname">&lt;&lt;Normal3 Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">explicit Normal3&lt;T&gt;(const Vector3&lt;T&gt; &amp;v) : x(v.x), y(v.y), z(v.z) {
+    Assert(!v.HasNaNs());
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-16"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="Points.html#fragment-GeometryInlineFunctions-15"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-17"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; inline
+Vector3&lt;T&gt;::Vector3(const Normal3&lt;T&gt; &amp;n) : x(n.x), y(n.y), z(n.z) {
+    Assert(!n.HasNaNs());
+}</div><p>
+
+
+</p>
+<p>The <a href="../Geometry_and_Transformations/Vectors.html#Dot"><tt>Dot()</tt></a> and <a href="../Geometry_and_Transformations/Vectors.html#AbsDot"><tt>AbsDot()</tt></a> functions are also overloaded to compute
+dot products between the various possible combinations of normals and
+vectors.  This code won&rsquo;t be included in the text here.  We also won&rsquo;t include
+implementations of all of the various other <a href="#Normal3"><tt>Normal3</tt></a> methods here,
+since they are similar to those for vectors.
+
+</p>
+<p>
+
+</p>
+<p>One new operation to implement comes from the fact it&rsquo;s often necessary to
+flip a surface normal so that it lies in the same hemisphere as a given
+vector&mdash;for example, the surface normal that lies in the same hemisphere
+as an outgoing ray is frequently needed.  The <tt>Faceforward()</tt> utility
+function encapsulates this small computation.  (<tt>pbrt</tt> also provides
+variants of this function for the other three combinations of
+<a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a>s and <a href="#Normal3"><tt>Normal3</tt></a>s as parameters.)  Be careful when using
+the other instances, though: when using the version that takes two
+<a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a>s, for example, ensure that the first parameter is the one
+that should be returned (possibly flipped) and the second is the one to
+test against.  Reversing the two parameters will give unexpected results.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-17"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-16"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Bounding_Boxes.html#fragment-GeometryInlineFunctions-18"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; inline Normal3&lt;T&gt;
+<span class="anchor" id="Faceforward"></span>Faceforward(const Normal3&lt;T&gt; &amp;n, const Vector3&lt;T&gt; &amp;v) {
+    return (<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(n, v) &lt; 0.f) ? -n : n;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Farhan Wali and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Geometry_and_Transformations/Rays.html">Geometry and Transformations / Rays</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

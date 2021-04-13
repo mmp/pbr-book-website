@@ -1,0 +1,802 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Bounding Boxes</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations.html">Geometry and Transformations</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Bounding Boxes</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations/Rays.html">(Previous: Rays)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:bbox"></span><h2>2.6 Bounding Boxes</h2><p>
+
+
+
+</p>
+<p>Many parts of the system operate on axis-aligned regions of space.  For
+example, multi-threading in <tt>pbrt</tt> is implemented by subdividing the image
+into rectangular tiles that can be processed independently, and the
+bounding volume hierarchy in Section&nbsp;<a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#sec:bvh">4.3</a> uses 3D boxes to bound
+geometric primitives in the scene.  The <tt>Bounds2</tt> and <tt>Bounds3</tt>
+template classes are used to represent the extent of these sorts of
+regions.  Both are parameterized by a type <tt>T</tt> that is used to
+represent the coordinates of its extents.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BoundsDeclarations-0"></span><div class="fragmentname">&lt;&lt;Bounds Declarations&gt;&gt;=&nbsp;<a href="#fragment-BoundsDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="Bounds2"></span>Bounds2 {
+public:
+    &lt;&lt;<span class="fragmentname">Bounds2 Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-108" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-108"><i></i></a><div id="fragbit-108" class="collapse"><div class="fragmentcode">       Bounds2() {
+           T minNum = std::numeric_limits&lt;T&gt;::lowest();
+           T maxNum = std::numeric_limits&lt;T&gt;::max();
+           pMin = Point2&lt;T&gt;(maxNum, maxNum);
+           pMax = Point2&lt;T&gt;(minNum, minNum);
+       }
+       Bounds2(const Point2&lt;T&gt; &amp;p) : pMin(p), pMax(p) { }
+       Bounds2(const Point2&lt;T&gt; &amp;p1, const Point2&lt;T&gt; &amp;p2) {
+           pMin = Point2&lt;T&gt;(std::min(p1.x, p2.x), std::min(p1.y, p2.y));
+           pMax = Point2&lt;T&gt;(std::max(p1.x, p2.x), std::max(p1.y, p2.y));
+       }
+       template &lt;typename U&gt; explicit operator Bounds2&lt;U&gt;() const {
+           return Bounds2&lt;U&gt;((Point2&lt;U&gt;)pMin, (Point2&lt;U&gt;)pMax);
+       }
+       
+       Vector2&lt;T&gt; Diagonal() const {
+           return pMax - pMin;
+       }
+       T Area() const {
+           Vector2&lt;T&gt; d = pMax - pMin;
+           return (d.x * d.y);
+       }
+       int MaximumExtent() const {
+           Vector2&lt;T&gt; diag = Diagonal();
+           if (diag.x &gt; diag.y)
+               return 0;
+           else
+               return 1;
+       }
+       inline const Point2&lt;T&gt; &amp; operator[](int i) const {
+           Assert(i == 0 || i == 1);
+           return (i == 0) ? pMin : pMax;
+       }
+       inline Point2&lt;T&gt; &amp;operator[](int i) {
+           Assert(i == 0 || i == 1);
+           return (i == 0) ? pMin : pMax;
+       }
+       bool operator==(const Bounds2&lt;T&gt; &amp;b) const {
+           return b.pMin == pMin &amp;&amp; b.pMax == pMax;
+       }
+       bool operator!=(const Bounds2&lt;T&gt; &amp;b) const {
+           return b.pMin != pMin || b.pMax != pMax;
+       }
+       Point2&lt;T&gt; <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;t) const {
+           return Point2&lt;T&gt;(::<a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(t.x, pMin.x, pMax.x), ::<a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(t.y, pMin.y, pMax.y));
+       }
+       Vector2&lt;T&gt; Offset(const Point2&lt;T&gt; &amp;p) const {
+           Vector2&lt;T&gt; o = p - pMin;
+           if (pMax.x &gt; pMin.x) o.x /= pMax.x - pMin.x;
+           if (pMax.y &gt; pMin.y) o.y /= pMax.y - pMin.y;
+           return o;
+       }
+       void BoundingSphere(Point2&lt;T&gt; *c, Float *rad) const {
+           *c = (pMin + pMax) / 2;
+           *rad = Inside(*c, *this) ? Distance(*c, pMax) : 0;
+       }</div></div>
+    &lt;&lt;<span class="fragmentname">Bounds2 Public Data</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-109" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-109"><i></i></a><div id="fragbit-109" class="collapse"><div class="fragmentcode">       Point2&lt;T&gt; pMin, pMax;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BoundsDeclarations-1"></span><div class="fragmentname">&lt;&lt;Bounds Declarations&gt;&gt;+=&nbsp;<a href="#fragment-BoundsDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BoundsDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="Bounds3"></span>Bounds3 {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Bounds3PublicMethods-0">Bounds3 Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-110" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-110"><i></i></a><div id="fragbit-110" class="collapse"><div class="fragmentcode">       Bounds3() {
+           T minNum = std::numeric_limits&lt;T&gt;::lowest();
+           T maxNum = std::numeric_limits&lt;T&gt;::max();
+           <a href="#Bounds3::pMin" class="code">pMin</a> = Point3&lt;T&gt;(maxNum, maxNum, maxNum);
+           <a href="#Bounds3::pMax" class="code">pMax</a> = Point3&lt;T&gt;(minNum, minNum, minNum);
+       }
+       Bounds3(const Point3&lt;T&gt; &amp;p) : <a href="#Bounds3::pMin" class="code">pMin</a>(p), <a href="#Bounds3::pMax" class="code">pMax</a>(p) { }
+       Bounds3(const Point3&lt;T&gt; &amp;p1, const Point3&lt;T&gt; &amp;p2)
+           : <a href="#Bounds3::pMin" class="code">pMin</a>(std::min(p1.x, p2.x), std::min(p1.y, p2.y),
+                  std::min(p1.z, p2.z)),
+             <a href="#Bounds3::pMax" class="code">pMax</a>(std::max(p1.x, p2.x), std::max(p1.y, p2.y),
+                  std::max(p1.z, p2.z)) {
+       }
+       const Point3&lt;T&gt; &amp;operator[](int i) const;
+       Point3&lt;T&gt; &amp;operator[](int i);
+       bool operator==(const Bounds3&lt;T&gt; &amp;b) const {
+           return b.<a href="#Bounds3::pMin" class="code">pMin</a> == <a href="#Bounds3::pMin" class="code">pMin</a> &amp;&amp; b.<a href="#Bounds3::pMax" class="code">pMax</a> == <a href="#Bounds3::pMax" class="code">pMax</a>;
+       }
+       bool operator!=(const Bounds3&lt;T&gt; &amp;b) const {
+           return b.<a href="#Bounds3::pMin" class="code">pMin</a> != <a href="#Bounds3::pMin" class="code">pMin</a> || b.<a href="#Bounds3::pMax" class="code">pMax</a> != <a href="#Bounds3::pMax" class="code">pMax</a>;
+       }
+       Point3&lt;T&gt; Corner(int corner) const {
+           return Point3&lt;T&gt;((*this)[(corner &amp; 1)].x,
+                            (*this)[(corner &amp; 2) ? 1 : 0].y,
+                            (*this)[(corner &amp; 4) ? 1 : 0].z);
+       }
+       Vector3&lt;T&gt; <a href="#Bounds3::Diagonal" class="code">Diagonal</a>() const { return <a href="#Bounds3::pMax" class="code">pMax</a> - <a href="#Bounds3::pMin" class="code">pMin</a>; }
+       T SurfaceArea() const {
+           Vector3&lt;T&gt; d = <a href="#Bounds3::Diagonal" class="code">Diagonal</a>();
+           return 2 * (d.x * d.y + d.x * d.z + d.y * d.z);
+       }
+       T Volume() const {
+           Vector3&lt;T&gt; d = <a href="#Bounds3::Diagonal" class="code">Diagonal</a>();
+           return d.x * d.y * d.z;
+       }
+       int MaximumExtent() const {
+           Vector3&lt;T&gt; d = <a href="#Bounds3::Diagonal" class="code">Diagonal</a>();
+           if (d.x &gt; d.y &amp;&amp; d.x &gt; d.z)
+               return 0;
+           else if (d.y &gt; d.z)
+               return 1;
+           else
+               return 2;
+       }
+       Point3&lt;T&gt; <a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;t) const {
+           return Point3&lt;T&gt;(::<a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(t.x, <a href="#Bounds3::pMin" class="code">pMin</a>.x, <a href="#Bounds3::pMax" class="code">pMax</a>.x),
+                            ::<a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(t.y, <a href="#Bounds3::pMin" class="code">pMin</a>.y, <a href="#Bounds3::pMax" class="code">pMax</a>.y),
+                            ::<a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(t.z, <a href="#Bounds3::pMin" class="code">pMin</a>.z, <a href="#Bounds3::pMax" class="code">pMax</a>.z));
+       }
+       Vector3&lt;T&gt; Offset(const Point3&lt;T&gt; &amp;p) const {
+           Vector3&lt;T&gt; o = p - <a href="#Bounds3::pMin" class="code">pMin</a>;
+           if (<a href="#Bounds3::pMax" class="code">pMax</a>.x &gt; <a href="#Bounds3::pMin" class="code">pMin</a>.x) o.x /= <a href="#Bounds3::pMax" class="code">pMax</a>.x - <a href="#Bounds3::pMin" class="code">pMin</a>.x;
+           if (<a href="#Bounds3::pMax" class="code">pMax</a>.y &gt; <a href="#Bounds3::pMin" class="code">pMin</a>.y) o.y /= <a href="#Bounds3::pMax" class="code">pMax</a>.y - <a href="#Bounds3::pMin" class="code">pMin</a>.y;
+           if (<a href="#Bounds3::pMax" class="code">pMax</a>.z &gt; <a href="#Bounds3::pMin" class="code">pMin</a>.z) o.z /= <a href="#Bounds3::pMax" class="code">pMax</a>.z - <a href="#Bounds3::pMin" class="code">pMin</a>.z;
+           return o;
+       }
+       void BoundingSphere(Point3&lt;T&gt; *center, Float *radius) const {
+           *center = (<a href="#Bounds3::pMin" class="code">pMin</a> + <a href="#Bounds3::pMax" class="code">pMax</a>) / 2;
+           *radius = <a href="#Bounds3::Inside" class="code">Inside</a>(*center, *this) ? <a href="../Geometry_and_Transformations/Points.html#Distance" class="code">Distance</a>(*center, <a href="#Bounds3::pMax" class="code">pMax</a>) : 0;
+       }
+       template &lt;typename U&gt; explicit operator Bounds3&lt;U&gt;() const {
+           return Bounds3&lt;U&gt;((Point3&lt;U&gt;)<a href="#Bounds3::pMin" class="code">pMin</a>, (Point3&lt;U&gt;)<a href="#Bounds3::pMax" class="code">pMax</a>);
+       }
+       bool IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, Float *hitt0 = nullptr, Float *hitt1 = nullptr) const;
+       inline bool IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;invDir,
+                              const int dirIsNeg[3]) const;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Bounds3PublicData-0">Bounds3 Public Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-111" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-111"><i></i></a><div id="fragbit-111" class="collapse"><div class="fragmentcode">       Point3&lt;T&gt; pMin, pMax;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BoundsDeclarations-2"></span><div class="fragmentname">&lt;&lt;Bounds Declarations&gt;&gt;+=&nbsp;<a href="#fragment-BoundsDeclarations-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">typedef Bounds2&lt;Float&gt; <span class="anchor" id="Bounds2f"></span>Bounds2f;
+typedef Bounds2&lt;int&gt;   <span class="anchor" id="Bounds2i"></span>Bounds2i;
+typedef Bounds3&lt;Float&gt; <span class="anchor" id="Bounds3f"></span>Bounds3f;
+typedef Bounds3&lt;int&gt;   <span class="anchor" id="Bounds3i"></span>Bounds3i;</div><p>
+
+
+</p>
+<p>There are a few possible representations for these sorts of bounding boxes;
+<tt>pbrt</tt> uses <em>axis-aligned bounding boxes</em> (AABBs), where the box edges
+are mutually perpendicular and aligned with the coordinate system axes.
+Another possible choice is <em>oriented bounding boxes</em> (OBBs), where the
+box edges on different sides are still perpendicular to each other but not
+necessarily coordinate-system aligned.  A 3D AABB can be described by one
+of its vertices and three lengths, each representing the distance spanned
+along the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg>, and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> coordinate axes.  Alternatively, two opposite
+vertices of the box can describe it.  We chose the two-point representation
+for <tt>pbrt</tt>&rsquo;s <a href="#Bounds2"><tt>Bounds2</tt></a> and <a href="#Bounds3"><tt>Bounds3</tt></a> classes; they store the
+positions of the vertex with minimum coordinate values and of the one with
+maximum coordinate values.  A&nbsp;2D illustration of a bounding box and its
+representation is shown in Figure&nbsp;<a href="#fig:bboxexample">2.8</a>.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fig:bboxexample"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="AABB.svg" title=""><img src="AABB.svg" width=531 height=233 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 2.8: An Axis-Aligned Bounding Box. <span class="legend"> The <a href="#Bounds2"><tt>Bounds2</tt></a> and
+<a href="#Bounds3"><tt>Bounds3</tt></a> classes store only
+the coordinates of the minimum and maximum points of the box; the other
+box corners are implicit in this representation.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>The default constructors create an empty
+box by setting the extent to an invalid configuration, which violates the
+invariant that <tt>pMin.x &lt;= pMax.x</tt> (and similarly for the other
+dimensions). By initializing two corner points with the largest and smallest
+representable number, any operations involving an empty box (e.g.,
+<tt>Union()</tt>) will yield the correct result.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-0"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;=&nbsp;<a href="#fragment-Bounds3PublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Bounds3() {
+    T minNum = std::numeric_limits&lt;T&gt;::lowest();
+    T maxNum = std::numeric_limits&lt;T&gt;::max();
+    <a href="#Bounds3::pMin" class="code">pMin</a> = Point3&lt;T&gt;(maxNum, maxNum, maxNum);
+    <a href="#Bounds3::pMax" class="code">pMax</a> = Point3&lt;T&gt;(minNum, minNum, minNum);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicData-0"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Point3&lt;T&gt; <span class="anchor" id="Bounds3::pMin"></span><span class="anchor" id="Bounds2::pMin"></span>pMin, <span class="anchor" id="Bounds3::pMax"></span><span class="anchor" id="Bounds2::pMax"></span>pMax;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p> It is also useful to be able to initialize a <a href="#Bounds3"><tt>Bounds3</tt></a> to enclose a single
+point:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-1"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Bounds3(const Point3&lt;T&gt; &amp;p) : <a href="#Bounds3::pMin" class="code">pMin</a>(p), <a href="#Bounds3::pMax" class="code">pMax</a>(p) { }</div><p>
+
+
+</p>
+<p>If the caller passes two corner points (<tt>p1</tt> and <tt>p2</tt>) to define
+the box, the constructor needs to find their component-wise minimum and
+maximum values since <tt>p1</tt> and <tt>p2</tt> are not necessarily chosen so
+that <tt>p1.x &lt;= p2.x</tt>, and so on.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-2"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Bounds3(const Point3&lt;T&gt; &amp;p1, const Point3&lt;T&gt; &amp;p2)
+    : <a href="#Bounds3::pMin" class="code">pMin</a>(std::min(p1.x, p2.x), std::min(p1.y, p2.y),
+           std::min(p1.z, p2.z)),
+      <a href="#Bounds3::pMax" class="code">pMax</a>(std::max(p1.x, p2.x), std::max(p1.y, p2.y),
+           std::max(p1.z, p2.z)) {
+}</div><p>
+
+
+</p>
+<p>In some cases, it&rsquo;s also useful to use array indexing to select between the
+two points at the corners of the box.  The implementations of these methods
+select between <tt>pMin</tt> and <tt>pMax</tt> based on the value of <tt>i</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-3"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">const Point3&lt;T&gt; &amp;<span class="anchor" id="Bounds3::operator"></span>operator[](int i) const;
+Point3&lt;T&gt; &amp;operator[](int i);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>Corner()</tt> method returns the coordinates of one of the eight
+corners of the bounding box.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-4"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Point3&lt;T&gt; <span class="anchor" id="Bounds3::Corner"></span>Corner(int corner) const {
+    return Point3&lt;T&gt;((*this)[(corner &amp; 1)].x,
+                     (*this)[(corner &amp; 2) ? 1 : 0].y,
+                     (*this)[(corner &amp; 4) ? 1 : 0].z);
+}</div><p>
+
+
+</p>
+<p>Given a bounding box and a point, the <tt>Union()</tt> function returns a new
+bounding box that encompasses that point as well as the original
+box.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-18"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="Normals.html#fragment-GeometryInlineFunctions-17"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-19"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; <span class="anchor" id="Bounds3::Union"></span><span class="anchor" id="Bounds2::Union"></span>Bounds3 &lt;T&gt;
+Union(const Bounds3&lt;T&gt; &amp;b, const Point3&lt;T&gt; &amp;p) {
+    return Bounds3&lt;T&gt;(Point3&lt;T&gt;(std::min(b.pMin.x, p.x),
+                                std::min(b.pMin.y, p.y),
+                                std::min(b.pMin.z, p.z)),
+                      Point3&lt;T&gt;(std::max(b.pMax.x, p.x),
+                                std::max(b.pMax.y, p.y),
+                                std::max(b.pMax.z, p.z)));
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>It is similarly possible to construct a new box that bounds the space
+encompassed by two other bounding boxes.  The definition of this function
+is similar to the earlier <tt>Union()</tt> method that takes a <a href="../Geometry_and_Transformations/Points.html#Point3f"><tt>Point3f</tt></a>; the
+difference is that the <tt>pMin</tt> and <tt>pMax</tt> of the second box are used
+for the <tt>std::min()</tt> and <tt>std::max()</tt> tests, respectively.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-19"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-18"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-20"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; Bounds3&lt;T&gt;
+Union(const Bounds3&lt;T&gt; &amp;b1, const Bounds3&lt;T&gt; &amp;b2) {
+    return Bounds3&lt;T&gt;(Point3&lt;T&gt;(std::min(b1.pMin.x, b2.pMin.x),
+                                std::min(b1.pMin.y, b2.pMin.y),
+                                std::min(b1.pMin.z, b2.pMin.z)),
+                      Point3&lt;T&gt;(std::max(b1.pMax.x, b2.pMax.x),
+                                std::max(b1.pMax.y, b2.pMax.y),
+                                std::max(b1.pMax.z, b2.pMax.z)));
+}</div><p>
+
+
+</p>
+<p>The intersection of two bounding boxes can be found by computing the
+maximum of their two respective minimum coordinates and the minimum of
+their maximum coordinates. (See
+Figure&nbsp;<a href="#fig:bbox-intersection">2.9</a>.)
+
+</p>
+<p></p>
+<span class="anchor" id="fig:bbox-intersection"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="Bbox%20overlap.svg" title=""><img src="Bbox%20overlap.svg" width=377 height=249 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 2.9: Intersection of Two Bounding Boxes.
+<span class="legend"> Given two bounding boxes with <tt>pMin</tt> and <tt>pMax</tt> points
+denoted by open circles, the bounding box of their area of intersection
+(shaded region) has a minimum point (lower left filled circle) with coordinates given by the maximum
+of the coordinates of the minimum points of the two boxes in each
+dimension.  Similarly, its maximum point (upper right filled circle) is given by the minimums of the
+boxes&rsquo; maximum coordinates.
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-20"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-19"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-21"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; Bounds3&lt;T&gt;
+<span class="anchor" id="Bounds2::Intersect"></span><span class="anchor" id="Bounds3::Intersect"></span>Intersect(const Bounds3&lt;T&gt; &amp;b1, const Bounds3&lt;T&gt; &amp;b2) {
+    return Bounds3&lt;T&gt;(Point3&lt;T&gt;(std::max(b1.pMin.x, b2.pMin.x),
+                                std::max(b1.pMin.y, b2.pMin.y),
+                                std::max(b1.pMin.z, b2.pMin.z)),
+                      Point3&lt;T&gt;(std::min(b1.pMax.x, b2.pMax.x),
+                                std::min(b1.pMax.y, b2.pMax.y),
+                                std::min(b1.pMax.z, b2.pMax.z)));
+}</div><p>
+
+
+</p>
+<p>We are able to determine if two bounding boxes overlap by seeing if their
+extents overlap in all of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg>, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg>, and&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg>:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-21"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-20"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-22"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+bool <span class="anchor" id="Bounds2::Overlaps"></span><span class="anchor" id="Bounds3::Overlaps"></span>Overlaps(const Bounds3&lt;T&gt; &amp;<a href="#Bounds3::pMax" class="code">b1</a>, const Bounds3&lt;T&gt; &amp;b2) {
+    bool x = (<a href="#Bounds3::pMax" class="code">b1</a>.pMax.x &gt;= b2.<a href="#Bounds3::pMin" class="code">pMin</a>.x) &amp;&amp; (<a href="#Bounds3::pMax" class="code">b1</a>.<a href="#Bounds3::pMin" class="code">pMin</a>.x &lt;= b2.pMax.x);
+    bool y = (<a href="#Bounds3::pMax" class="code">b1</a>.pMax.y &gt;= b2.<a href="#Bounds3::pMin" class="code">pMin</a>.y) &amp;&amp; (<a href="#Bounds3::pMax" class="code">b1</a>.<a href="#Bounds3::pMin" class="code">pMin</a>.y &lt;= b2.pMax.y);
+    bool z = (<a href="#Bounds3::pMax" class="code">b1</a>.pMax.z &gt;= b2.<a href="#Bounds3::pMin" class="code">pMin</a>.z) &amp;&amp; (<a href="#Bounds3::pMax" class="code">b1</a>.<a href="#Bounds3::pMin" class="code">pMin</a>.z &lt;= b2.pMax.z);
+    return (x &amp;&amp; y &amp;&amp; z);
+}</div><p>
+
+
+</p>
+<p>Three 1D containment tests determine if a given point is inside the
+bounding box:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-22"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-21"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-23"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+bool <span class="anchor" id="Bounds2::Inside"></span><span class="anchor" id="Bounds3::Inside"></span>Inside(const Point3&lt;T&gt; &amp;p, const Bounds3&lt;T&gt; &amp;<a href="#Bounds3::pMax" class="code">b</a>) {
+    return (p.x &gt;= <a href="#Bounds3::pMax" class="code">b</a>.pMin.x &amp;&amp; p.x &lt;= <a href="#Bounds3::pMax" class="code">b</a>.pMax.x &amp;&amp;
+            p.y &gt;= <a href="#Bounds3::pMax" class="code">b</a>.pMin.y &amp;&amp; p.y &lt;= <a href="#Bounds3::pMax" class="code">b</a>.pMax.y &amp;&amp;
+            p.z &gt;= <a href="#Bounds3::pMax" class="code">b</a>.pMin.z &amp;&amp; p.z &lt;= <a href="#Bounds3::pMax" class="code">b</a>.pMax.z);
+}</div><p>
+
+
+</p>
+<p>The <tt>InsideExclusive()</tt> variant of <tt>Inside()</tt> doesn&rsquo;t consider
+points on the upper boundary to be inside the bounds.  It is mostly useful
+with integer-typed bounds.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-23"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-22"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometryInlineFunctions-24"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+bool <span class="anchor" id="Bounds2::InsideExclusive"></span><span class="anchor" id="Bounds3::InsideExclusive"></span>InsideExclusive(const Point3&lt;T&gt; &amp;p, const Bounds3&lt;T&gt; &amp;<a href="#Bounds3::pMax" class="code">b</a>) {
+    return (p.x &gt;= <a href="#Bounds3::pMax" class="code">b</a>.pMin.x &amp;&amp; p.x &lt; <a href="#Bounds3::pMax" class="code">b</a>.pMax.x &amp;&amp;
+            p.y &gt;= <a href="#Bounds3::pMax" class="code">b</a>.pMin.y &amp;&amp; p.y &lt; <a href="#Bounds3::pMax" class="code">b</a>.pMax.y &amp;&amp;
+            p.z &gt;= <a href="#Bounds3::pMax" class="code">b</a>.pMin.z &amp;&amp; p.z &lt; <a href="#Bounds3::pMax" class="code">b</a>.pMax.z);
+}</div><p>
+
+
+</p>
+<p>The <tt>Expand()</tt> function pads the bounding box by a constant factor in
+all dimensions.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometryInlineFunctions-24"></span><div class="fragmentname">&lt;&lt;Geometry Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GeometryInlineFunctions-23"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Shapes/Basic_Shape_Interface.html#fragment-GeometryInlineFunctions-25"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T, typename U&gt; inline Bounds3&lt;T&gt;
+<span class="anchor" id="Bounds2::Expand"></span><span class="anchor" id="Bounds3::Expand"></span>Expand(const Bounds3&lt;T&gt; &amp;<a href="#Bounds3::pMax" class="code">b</a>, U delta) {
+    return Bounds3&lt;T&gt;(<a href="#Bounds3::pMax" class="code">b</a>.pMin - Vector3&lt;T&gt;(delta, delta, delta),
+                      <a href="#Bounds3::pMax" class="code">b</a>.pMax + Vector3&lt;T&gt;(delta, delta, delta));
+}</div><p>
+
+
+</p>
+<p><tt>Diagonal()</tt> returns the vector along the box diagonal from the
+minimum point to the maximum point.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-5"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Vector3&lt;T&gt; <span class="anchor" id="Bounds2::Diagonal"></span><span class="anchor" id="Bounds3::Diagonal"></span>Diagonal() const { return <a href="#Bounds3::pMax" class="code">pMax</a> - <a href="#Bounds3::pMin" class="code">pMin</a>; }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Methods for computing the surface area of the six faces of the box and the
+volume inside of it are also frequently useful.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-6"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-5"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-7"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">T <span class="anchor" id="Bounds3::SurfaceArea"></span>SurfaceArea() const {
+    Vector3&lt;T&gt; d = <a href="#Bounds3::Diagonal" class="code">Diagonal</a>();
+    return 2 * (d.x * d.y + d.x * d.z + d.y * d.z);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-7"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-6"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-8"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">T <span class="anchor" id="Bounds3::Volume"></span>Volume() const {
+    Vector3&lt;T&gt; d = <a href="#Bounds3::Diagonal" class="code">Diagonal</a>();
+    return d.x * d.y * d.z;
+}</div><p>
+
+
+</p>
+<p>The <a href="#Bounds3::MaximumExtent"><tt>Bounds3::MaximumExtent()</tt></a> method returns the index of which of the
+three axes is longest.  This is useful, for example, when deciding
+which axis to subdivide when building some of the ray-intersection
+acceleration structures.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-8"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-7"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-9"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">int <span class="anchor" id="Bounds3::MaximumExtent"></span>MaximumExtent() const {
+    Vector3&lt;T&gt; d = <a href="#Bounds3::Diagonal" class="code">Diagonal</a>();
+    if (d.x &gt; d.y &amp;&amp; d.x &gt; d.z)
+        return 0;
+    else if (d.y &gt; d.z)
+        return 1;
+    else
+        return 2;
+}</div><p>
+
+
+</p>
+<p>The <a href="../Utilities/Mathematical_Routines.html#Lerp"><tt>Lerp()</tt></a> method linearly interpolates between the corners of the
+box by the given amount in each dimension.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-9"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-8"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-10"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Point3&lt;T&gt; <span class="anchor" id="Bounds2::Lerp"></span><span class="anchor" id="Bounds3::Lerp"></span><a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;t) const {
+    return Point3&lt;T&gt;(::<a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(t.x, pMin.x, pMax.x),
+                     ::<a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(t.y, pMin.y, pMax.y),
+                     ::<a href="../Utilities/Mathematical_Routines.html#Lerp" class="code">Lerp</a>(t.z, pMin.z, pMax.z));
+}</div><p>
+
+
+</p>
+<p><tt>Offset()</tt> returns the continuous
+position of a point relative to the corners of the box, where a point at
+the minimum corner has offset <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg>, a point at the maximum corner has
+offset <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 1 comma 1 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg>, and so forth.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-10"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-9"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Bounds3PublicMethods-11"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Vector3&lt;T&gt; <span class="anchor" id="Bounds3::Offset"></span><span class="anchor" id="Bounds2::Offset"></span>Offset(const Point3&lt;T&gt; &amp;p) const {
+    Vector3&lt;T&gt; o = p - pMin;
+    if (pMax.x &gt; pMin.x) o.x /= pMax.x - pMin.x;
+    if (pMax.y &gt; pMin.y) o.y /= pMax.y - pMin.y;
+    if (pMax.z &gt; pMin.z) o.z /= pMax.z - pMin.z;
+    return o;
+}</div><p>
+
+
+</p>
+<p><a href="#Bounds3"><tt>Bounds3</tt></a> also provides a method that returns the center and radius of
+a sphere that bounds the bounding box.  In general, this may give a far looser
+fit than a sphere that bounded the original contents of the <a href="#Bounds3"><tt>Bounds3</tt></a>
+directly, although it is a useful method to have available.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bounds3PublicMethods-11"></span><div class="fragmentname">&lt;&lt;Bounds3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Bounds3PublicMethods-10"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="Bounds3::BoundingSphere"></span>BoundingSphere(Point3&lt;T&gt; *center, Float *radius) const {
+    *center = (<a href="#Bounds3::pMin" class="code">pMin</a> + <a href="#Bounds3::pMax" class="code">pMax</a>) / 2;
+    *radius = <a href="#Bounds3::Inside" class="code">Inside</a>(*center, *this) ? <a href="../Geometry_and_Transformations/Points.html#Distance" class="code">Distance</a>(*center, <a href="#Bounds3::pMax" class="code">pMax</a>) : 0;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Finally, for integer bounds, there is an iterator class that fulfills the
+requirements of a C++ forward iterator (i.e., it can only be advanced). The
+details are slightly tedious and not particularly interesting, so the code
+isn&rsquo;t included in the book.  Having this definition makes it possible to
+write code using range-based <tt>for</tt> loops to iterate over integer
+coordinates in a bounding box:
+
+</p>
+<p></p>
+<div class="fragmentcode">    Bounds2i b = ...;
+    for (Point2i p : b) {
+       //  &hellip;
+    }</div><p>
+
+
+</p>
+<p>As implemented, the iteration goes up to but doesn&rsquo;t visit points equal to the
+maximum extent in each dimension.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Geometry_and_Transformations/Transformations.html">Geometry and Transformations / Transformations</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

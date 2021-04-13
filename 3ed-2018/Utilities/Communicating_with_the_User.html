@@ -1,0 +1,365 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Communicating with the User</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Communicating with the User</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities/Image_File_Input_and_Output.html">(Previous: Image File Input and Output)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>A.3 Communicating with the User</h2><p>
+
+
+</p>
+<p>A number of functions and classes are useful to mediate communicating
+information to the user.  In addition to consolidating functionality like
+printing progress bars, hiding user communication behind a small API like
+the one here also permits easy modification of the communication
+mechanisms.  For example, if <tt>pbrt</tt> were embedded in an application that
+had a graphical user interface, errors might be reported via a dialog box
+or a routine provided by the parent application.  If <tt>printf()</tt> calls
+were strewn throughout the system, it would be more difficult to make the
+two systems work together well.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ErrorReporting"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:error-reporting"></span><span id="ErrorReporting"></span><h3>A.3.1  Error Reporting</h3><p>
+
+
+
+</p>
+<p><span class="anchor" id="Info"></span>
+<span class="anchor" id="Warning"></span>
+<span class="anchor" id="Error"></span>
+<span class="anchor" id="Severe"></span>
+
+</p>
+<p> <tt>pbrt</tt> provides four functions for reporting anomalous conditions.  In order of
+increasing severity, they are <tt>Info()</tt>, <tt>Warning()</tt>, <tt>Error()</tt>, and
+<tt>Severe()</tt>.  
+These functions are defined in the files
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/error.h"><tt>core/error.h</tt></a><span class="anchor" id="coreerror.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/error.cpp"><tt>core/error.cpp</tt></a><span class="anchor" id="coreerror.cpp"></span>.
+All of them take a formatting string as their first argument
+and a variable number of additional arguments providing values for the
+format.  The syntax is identical to that used by the <tt>printf</tt> family
+of functions.  For example, if the variable <tt>rayNum</tt> has
+type <tt>int</tt>, then the following call could be made:
+</p>
+<div class="fragmentcode">Info("Now tracing ray number %d", rayNum);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/pbrt.h"><tt>core/pbrt.h</tt></a> includes this header file, as these functions are useful
+to have available in almost all parts of the system.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalIncludeFiles-1"></span><div class="fragmentname">&lt;&lt;Global Include Files&gt;&gt;+=&nbsp;<a href="Main_Include_File.html#fragment-GlobalIncludeFiles-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">#include "error.h"</div><p>
+
+
+</p>
+<p>We will not show the implementation of these functions here because
+they are a straightforward application of the C++ variable argument
+processing functions that in turn calls a common function to print the
+full error string.  For sufficiently severe errors, the program aborts.
+
+</p>
+<p>
+
+</p>
+<p><tt>pbrt</tt> also has its own version of the standard <tt>assert()</tt> macro, named
+<a href="#Assert"><tt>Assert()</tt></a>.  It checks that the given expression evaluates to true;
+if not, <a href="#Severe"><tt>Severe()</tt></a> is called with information about the location of the
+assertion failure.  <a href="#Assert"><tt>Assert()</tt></a> is used for basic sanity checks where
+failure indicates little possibility of recovery.  In general, assertions
+should be used to detect internal bugs in the code, not expected error
+conditions (such as invalid scene file input), because the message printed will
+likely be cryptic to anyone other than the developer.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-16"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="Main_Include_File.html#fragment-GlobalInlineFunctions-15"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Mathematical_Routines.html#fragment-GlobalInlineFunctions-17"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">#ifdef NDEBUG
+#define Assert(expr) ((void)0)
+#else
+#define <span class="anchor" id="Assert"></span>Assert(expr) \
+    ((expr) ? (void)0 : \
+        <a href="#Severe" class="code">Severe</a>("Assertion \"%s\" failed in %s, line %d", \
+               #expr, __FILE__, __LINE__))
+#endif // NDEBUG</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ReportingProgress"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ReportingProgress"></span><h3>A.3.2  Reporting Progress</h3><p>
+
+
+</p>
+<p>The <a href="#ProgressReporter"><tt>ProgressReporter</tt></a> class gives the user feedback about how much of
+a task has been completed and how much longer it is expected to take.  For
+example, implementations of the various <a href="../Introduction/pbrt_System_Overview.html#Integrator::Render"><tt>Integrator::Render()</tt></a> methods
+generally use a <a href="#ProgressReporter"><tt>ProgressReporter</tt></a> to show rendering progress.  The
+implementation prints a row of plus signs, the elapsed time, and the
+estimated remaining time.  Its implementation is in the files
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/progressreporter.h"><tt>core/progressreporter.h</tt></a><span class="anchor" id="coreprogressreporter.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/progressreporter.cpp"><tt>core/progressreporter.cpp</tt></a><span class="anchor" id="coreprogressreporter.cpp"></span>.
+
+</p>
+<p>
+
+</p>
+<p>The constructor takes the total number of units of work to be done
+(e.g., the total number of camera rays that will be traced) and a short
+string describing the task being performed.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProgressReporterPublicMethods-0"></span><div class="fragmentname">&lt;&lt;ProgressReporter Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ProgressReporterPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><span class="anchor" id="ProgressReporter"></span>ProgressReporter(int64_t totalWork, const std::string &amp;title);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Once the <tt>ProgressReporter</tt> has been created, each call to its
+<tt>Update()</tt> method signifies that one unit of work has been completed.
+An optional integer value can be passed to indicate that multiple units
+have been
+done.  
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProgressReporterPublicMethods-1"></span><div class="fragmentname">&lt;&lt;ProgressReporter Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ProgressReporterPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ProgressReporterPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ProgressReporter::Update"></span>Update(int64_t num = 1);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="#ProgressReporter::Done"><tt>ProgressReporter::Done()</tt></a> method should be called when all of the
+work being measured is complete; in turn, it lets the user know that the
+task is complete.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProgressReporterPublicMethods-2"></span><div class="fragmentname">&lt;&lt;ProgressReporter Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ProgressReporterPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ProgressReporter::Done"></span>Done();</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SimpleFloatFileReader"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="SimpleFloatFileReader"></span><h3>A.3.3  Simple Float File Reader</h3><p>
+
+
+</p>
+<p>A number of places in the <tt>pbrt</tt> code need to read text files that
+store a series of floating-point values.  Examples include the code that
+reads measured spectral distribution data and the code that reads lens
+description files in Section&nbsp;<a href="../Camera_Models/Realistic_Cameras.html#sec:realistic-cameras">6.4</a>.  Both use the
+<tt>ReadFloatFile()</tt> function, which parses text files of
+whitespace-separated numbers, returning the values found in the given
+<tt>vector</tt>.  The parsing code ignores all text after a hash mark
+(<tt>#</tt>) to the end of its line to allow comments.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-floatfile.h-0"></span><div class="fragmentname">&lt;&lt;floatfile.h*&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">bool <span class="anchor" id="ReadFloatFile"></span>ReadFloatFile(const char *filename, std::vector&lt;Float&gt; *values);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Enrico  and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Memory_Management.html">Utilities / Memory Management</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

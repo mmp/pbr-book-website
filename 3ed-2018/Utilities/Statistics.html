@@ -1,0 +1,785 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Statistics</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Statistics</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities/Parallelism.html">(Previous: Parallelism)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:stats"></span><h2>A.7 Statistics</h2><p>
+
+
+
+</p>
+<p>Collecting data about the run-time behavior of the system can provide a
+substantial amount of insight into its behavior and opportunities for
+improving its performance.  For example, we might want to track the average
+number of primitive intersection tests performed for all of the rays; if
+this number is surprisingly high, then there may be a latent bug somewhere
+in the system. <tt>pbrt</tt>&rsquo;s statistics system makes it possible to measure and
+aggregate this sort of data in a variety of ways.
+
+</p>
+<p>It&rsquo;s important to make it as easy as possible to add new measurements to track
+the system&rsquo;s run-time behavior; the easier it is to do this, the more
+measurements end up being added to the system, and the more likely that
+&ldquo;interesting&rdquo; data will be discovered, leading to new insights and
+improvements. Therefore, adding new measurements to the system is fairly
+straightforward.  For example, the following lines declare two counters
+that can be used to record how many times the corresponding events happen.
+
+</p>
+<p></p>
+<div class="fragmentcode">STAT_COUNTER("Integrator/Regular ray intersection tests",
+             nIntersectionTests);
+STAT_COUNTER("Integrator/Shadow ray intersection tests",
+             nShadowTests);</div><p>
+
+
+</p>
+<p>As appropriate, counters can be incremented with simple statements like
+</p>
+<div class="fragmentcode">  ++nIntersectionTests;</div><p>
+
+With no further intervention from the
+developer, the preceding is enough for the statistics system to be able to
+automatically print out nicely formatted results like the following when
+rendering completes:
+
+</p>
+<p></p>
+<div class="fragmentcode">  Integrator
+    Regular ray intersection tests                752982
+    Shadow ray intersection tests                4237165</div><p>
+
+
+</p>
+<p>The statistics system supports the following measurements:
+
+</p>
+<p>
+
+</p>
+<p></p>
+<ul>
+<li> <tt>STAT_COUNTER("name", var)</tt>:
+A simple count of the number of instances of an event.  The counter
+variable <tt>var</tt> can be updated as if it was a regular <tt>int</tt>
+variable; for example, <tt>++var</tt> and <tt>var += 10</tt> are both valid.
+
+<li> <tt>STAT_MEMORY_COUNTER("name", var)</tt>:
+A specialized counter for recording memory usage.  In particular, the
+values reported at the end of rendering are in terms of kilobytes,
+megabytes, or gigabytes, as appropriate.  The counter is updated the same
+way as a regular counter: <tt>var += count * sizeof(MyStruct)</tt> and so forth.
+
+<li> <tt>STAT_INT_DISTRIBUTION("name", dist)</tt>:
+Tracks the distribution of some value; at the end of rendering, the
+minimum, maximum, and average of the reported values are reported.
+Call <span class="anchor" id="ReportValue"></span><tt>ReportValue(dist, val)</tt> to include
+<tt>val</tt> in the distribution.
+
+<li> <tt>STAT_FLOAT_DISTRIBUTION("name", dist)</tt>:
+This counter also tracks the distribution of a value but expects floating-point
+values to be reported.  <tt>ReportValue(dist, val)</tt> is also used to
+report values.
+
+<li> <tt>STAT_PERCENT("name", num, denom)</tt>:
+Tracks how often a given event happens; the aggregate value is reported as
+the percentage <tt>num/denom</tt> when statistics are printed.  Both
+<tt>num</tt> and <tt>denom</tt> can be incremented as if they were
+integers&mdash;for example, one might write <tt>if (event) ++num;</tt> or <tt>++denom</tt>.
+
+<li> <tt>STAT_RATIO("name", num, denom)</tt>:
+This tracks how often an event happens but reports the result as a ratio
+<tt>num/denom</tt> rather than a percentage.  This is often a more useful
+presentation if <tt>num</tt> is often greater than <tt>denom</tt>.  (For
+example, we might record the percentage of ray&ndash;triangle intersection tests
+that resulted in an intersection but the ratio of triangle intersection
+tests to the total number of rays traced.)
+
+<li> <tt>STAT_TIMER("name", timer)</tt>:
+The timer can be used to record how much time is spent in a given block of
+code.  To run the timer, one can add a declaration such as <tt>StatTimer
+t(&amp;timer);</tt> to the start of a block of code; the timer will run until the
+declared <tt>t</tt> variable goes out of scope and the <tt>StatTimer</tt>
+destructor runs.  Note that there is some overhead to getting the current
+system time, so timers shouldn&rsquo;t be used for very small blocks of code.
+</ul><p>
+
+
+</p>
+<p>All of the macros to define statistics trackers can
+only be used at file scope and should only be used
+in <tt>cpp</tt> files (for reasons that will become apparent as we dig into
+their implementations).  They specifically should not be used in header
+files or function or class definitions.  
+
+</p>
+<p>Note also that the string names provided for each measurement should be of the
+form &ldquo;category/statistic.&rdquo;  When values are reported, everything under
+the same category is reported together (as in the preceding example).
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Implementation"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:stats-implementation"></span><span id="Implementation"></span><h3>A.7.1  Implementation</h3><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p>There are a number of challenges in making the statistics system both
+efficient and easy to use.  The efficiency challenges stem from <tt>pbrt</tt> being multi-threaded: if there wasn&rsquo;t any parallelism, we could associate
+regular integer or floating-point variables with each measurement and just
+update them like regular variables.  In the presence of multiple concurrent
+threads of execution, however, we need to ensure that two threads do not
+try to modify these variables at the same time (recall the discussion of
+mutual exclusion in Section&nbsp;<a href="../Introduction/Parallelization_of_pbrt.html#sec:parallel-principles">1.4</a>).
+
+</p>
+<p>While atomic operations like those described in
+Section&nbsp;<a href="../Utilities/Parallelism.html#sec:atomic-ops">A.6.2</a> could be used to safely increment counters
+without using a mutex, there would still be a performance impact from
+multiple threads modifying the same location in memory.  Recall from
+Section&nbsp;<a href="../Utilities/Parallelism.html#sec:multi-thread-memory-perf">A.6.1</a> that the cache coherence
+protocols can introduce substantial overhead in this case.  Because the
+statistics measurements are updated so frequently during the course of
+rendering, we found that an atomics-based implementation caused the overall
+renderer to be 10&ndash;15% slower than the current implementation, which avoids
+the overhead of multiple threads frequently modifying the same memory
+location.
+
+</p>
+<p>The implementation here is based on having separate counters for each
+running thread, allowing the counters to be updated without atomics and
+without cache coherence overhead (since each thread increments its own
+counters).  This approach means that in order to report statistics, it&rsquo;s
+necessary to merge all of these per-thread counters into final aggregate
+values, which we&rsquo;ll see is possible with a bit of trickiness.
+
+</p>
+<p>To see how this all works, we&rsquo;ll dig into the implementation for regular
+counters; the other types of measurements are all along similar lines.
+First, here is the <tt>STAT_COUNTER</tt> macro, which packs three different
+things into its definition.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsMacros-0"></span><div class="fragmentname">&lt;&lt;Statistics Macros&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">#define STAT_COUNTER(title, var)                        \
+static thread_local int64_t var;                        \
+static void STATS_FUNC##var(StatsAccumulator &amp;accum) {  \
+    accum.<a href="#StatsAccumulator::ReportCounter" class="code">ReportCounter</a>(title, var);                    \
+    var = 0;                                            \
+}                                                       \
+static StatRegisterer STATS_REG##var(STATS_FUNC##var)</div><p>
+
+
+</p>
+<p>First, and most obviously, the macro defines a 64-bit integer variable
+named <tt>var</tt>, the second argument passed to the macro.  The variable
+definition has the <tt>thread_local</tt> qualifier, which indicates that
+there should be a separate copy of the variable for each executing thread.
+Given these per-thread instances, we need to be able to sum together the
+per-thread values and to aggregate all of the individual counters into the
+final program output.
+
+</p>
+<p>To this end, the macro next defines a function, giving it a
+(we hope!) unique name derived from <tt>var</tt>.  When called, this
+function passes along the value of <tt>var</tt> for the current thread to an
+instance of the <tt>StatsAccumulator</tt> class.
+<tt>StatsAccumulator</tt><span class="anchor" id="StatsAccumulator"></span> accumulates values of
+measurement statistics counters into its own storage; here is its
+<tt>ReportCounter()</tt> method, which totals up the given values,
+associating them with their respective string names.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatsAccumulatorPublicMethods-0"></span><div class="fragmentname">&lt;&lt;StatsAccumulator Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="StatsAccumulator::ReportCounter"></span>ReportCounter(const std::string &amp;name, int64_t val) {
+    counters[name] += val;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatsAccumulatorPrivateData-0"></span><div class="fragmentname">&lt;&lt;StatsAccumulator Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::map&lt;std::string, int64_t&gt; <span class="anchor" id="StatsAccumulator::counters"></span>counters;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>All we need now is for the <tt>STATS_FUNC##var()</tt> function to be
+called for each per-thread instance of each counter variable when rendering
+has finished; this is what
+the last line of the <tt>STAT_COUNTER</tt> macro takes care of.  To
+understand what it does, first recall that in C++, constructors of global
+<tt>static</tt> objects run when program execution starts; thus, each
+<tt>static</tt> instance of the <tt>StatRegisterer</tt> class runs its
+constructor before <tt>main()</tt> starts running.
+
+</p>
+<p>The constructor for <tt>StatRegisterer</tt> objects in turn adds the function passed to
+it to a vector that holds all of the various <tt>STATS_FUNC##var()</tt>
+functions.  Note that because the <tt>StatRegisterer</tt> constructors run at
+program start time, the constructor for the <tt>funcs</tt> vector (another
+global <tt>static</tt>) may not yet have run.  Therefore, <tt>funcs</tt> is a
+pointer to a vector rather than a vector, so that it can be explicitly
+constructed before it&rsquo;s first used.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatRegistererPublicMethods-0"></span><div class="fragmentname">&lt;&lt;StatRegisterer Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><span class="anchor" id="StatRegisterer"></span>StatRegisterer(std::function&lt;void(StatsAccumulator &amp;)&gt; func) {
+    if (!funcs)
+        funcs = new std::vector&lt;std::function&lt;void(StatsAccumulator &amp;)&gt;&gt;;
+    funcs-&gt;push_back(func);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatRegistererPrivateData-0"></span><div class="fragmentname">&lt;&lt;StatRegisterer Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">static std::vector&lt;std::function&lt;void(StatsAccumulator &amp;)&gt;&gt; *<span class="anchor" id="StatRegisterer::funcs"></span>funcs;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Now all the pieces can come together.  Each thread launched for
+multi-threading in <tt>pbrt</tt> runs the function <a href="../Utilities/Parallelism.html#workerThreadFunc"><tt>workerThreadFunc()</tt></a>.  When
+this function exits at the end of program execution, it calls
+<tt>ReportThreadStats()</tt>, which in turn causes the per-thread
+measurements for the thread to be merged into the given
+<tt>StatsAccumulator</tt>.  (The initial processing thread also calls this
+function after rendering has completed so that its values are reported.)
+
+</p>
+<p>The <tt>ReportThreadStats()</tt> method uses a mutex to ensure that no
+other thread can be updating the <tt>StatsAccumulator</tt>
+concurrently and then dispatches to <tt>StatRegisterer::CallCallbacks()</tt>,
+passing in a single <tt>StatsAccumulator</tt> to store all of the aggregated
+values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsDefinitions-0"></span><div class="fragmentname">&lt;&lt;Statistics Definitions&gt;&gt;=&nbsp;<a href="#fragment-StatisticsDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ReportThreadStats"></span>ReportThreadStats() {
+    static std::mutex mutex;
+    std::lock_guard&lt;std::mutex&gt; lock(mutex);
+    <a href="#StatRegisterer::CallCallbacks" class="code">StatRegisterer</a>::CallCallbacks(<a href="#statsAccumulator" class="code">statsAccumulator</a>);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsLocalVariables-0"></span><div class="fragmentname">&lt;&lt;Statistics Local Variables&gt;&gt;=&nbsp;<a href="#fragment-StatisticsLocalVariables-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static StatsAccumulator <span class="anchor" id="statsAccumulator"></span>statsAccumulator;</div><p>
+
+
+</p>
+<p>Finally, <tt>CallCallbacks()</tt> calls each of the function pointers to the
+<tt>STATS_FUNC##var()</tt> functions that were assembled when the program
+started.  This is where the magic happens: because these functions are
+called repeatedly, once in each of the threads, each call to the
+<tt>STATS_FUNC##var()</tt> functions reports each thread&rsquo;s
+value.  In the end, we will have aggregated all of the
+various measurement values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsDefinitions-1"></span><div class="fragmentname">&lt;&lt;Statistics Definitions&gt;&gt;+=&nbsp;<a href="#fragment-StatisticsDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-StatisticsDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="StatRegisterer::CallCallbacks"></span>StatRegisterer::CallCallbacks(StatsAccumulator &amp;accum) {
+    for (auto func : *<a href="#StatRegisterer::funcs" class="code">funcs</a>)
+        func(accum);
+}</div><p>
+
+
+</p>
+<p>The <tt>PrintStats()</tt><span class="anchor" id="PrintStats"></span> function prints all of the
+statistics that have been accumulated in <tt>StatsAccumulator</tt>. This
+function is called by <a href="../Scene_Description_Interface/Scene_Definition.html#pbrtWorldEnd"><tt>pbrtWorldEnd()</tt></a> at the end of rendering. Its
+task is straightforward: it sorts the measurements by category and formats
+the values so that columns of numbers line up and so forth.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Profiling"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Profiling"></span><h3>A.7.2  Profiling</h3><p>
+
+
+</p>
+<p>When doing significant work on optimizing the performance of any sort of
+software system, using a stand-alone profiler is a necessity. Modern
+profilers provide a wealth of information about program
+execution&mdash;which functions, and even which lines of code most execution
+time is spent in. Equally useful, many also provide information about the
+program&rsquo;s interaction with the computer system&mdash;which lines of code
+suffered the most from CPU cache misses, places in the program where cache
+coherence overhead was high, and so forth.
+
+</p>
+<p>We have found that a useful supplement to stand-alone profilers is to have
+a simple profiling system embedded in <tt>pbrt</tt>.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="The
+design follows the approach used in Disney&rsquo;s Hyperion
+renderer, as described by Selle (2015).">
+      <sup>&dagger;</sup>
+    </button>
+		
+This system provides
+high-level information about the fraction of overall run time consumed by
+various parts of the system.  The information it provides is useful for
+understanding the differences across scenes where <tt>pbrt</tt> spends its time
+and for helping to guide more focused profiling investigations.  In
+exchange for only providing high-level information, it adds minimal
+overhead; in practice, we have measured a roughly 2.5% increase in
+run&nbsp;time.
+
+</p>
+<p>Here is an example of the profiler&rsquo;s output for one of the test scenes:
+
+</p>
+<p></p>
+<div class="fragmentcode">  Integrator::Render()                            95.0 %
+    Sampler::StartPixelSample()                   10.1 %
+    SamplerIntegrator::Li()                       81.1 %
+      Accelerator::Intersect()                     3.6 %
+        Triangle::Intersect()                      1.1 %
+      BSDF::f()                                    0.1 %
+      Direct lighting                             75.1 %
+        Accelerator::Intersect()                  16.4 %
+          Triangle::Intersect()                    4.3 %</div><p>
+
+
+</p>
+<p>There are a few things to know in order to understand this output. First,
+all percentages reported are with respect to the system&rsquo;s overall
+run time. Thus, here we can see that about 5% of the run time was spent
+parsing the scene file and constructing the scene, and the remainder was
+spent rendering it. Most of the rendering time was spent doing direct
+lighting calculations.
+
+</p>
+<p>Second, note that there is a hierarchy in the reported results. For
+example, <tt>Accelerator::Intersect()</tt> appears twice, and we can see that
+3.6% of the run time was spent in calls to the accelerator&rsquo;s traversal
+method from <tt>Li()</tt>, but 16.4% of the run time was spent in calls to it
+from the direct lighting code. The percentage reported for each level of
+this hierarchy includes the time of all of the indented items reported
+underneath it.
+
+</p>
+<p>The profiling system is based on explicit annotations in the program code
+to denote these phases of execution. (We haven&rsquo;t included those annotations
+in the program source code in the book in the interests of simplicity.) In
+turn, <tt>pbrt</tt> uses operating-system-specific functionality to periodically
+interrupt the system and record which phases are currently active. At the
+end of execution, it counts up how many times each phase was found to be
+active and reports these counts with respect to the totals, as above.
+
+</p>
+<p>As suggested by the profiling output, there is a series of categories that
+a phase of execution can be charged to; these are represented by the
+<a href="#Prof"><tt>Prof</tt></a> enumerant.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsDeclarations-0"></span><div class="fragmentname">&lt;&lt;Statistics Declarations&gt;&gt;=&nbsp;<a href="#fragment-StatisticsDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">enum class <span class="anchor" id="Prof"></span>Prof {
+    IntegratorRender,    SamplerIntegratorLi,    DirectLighting,
+    AccelIntersect,      AccelIntersectP,        TriIntersect,
+    &lt;&lt;<span class="fragmentname">Remainder of <tt>Prof</tt> <tt>enum</tt> entries</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1936" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1936"><i></i></a><div id="fragbit-1936" class="collapse"><div class="fragmentcode">       TriIntersectP,
+       ComputeScatteringFuncs,
+       GenerateCameraRay,
+       BSDFEvaluation,
+       BSSRDFEvaluation,
+       MergeFilmTile,
+       SplatFilm,
+       StartPixel,
+       TexFiltTrilerp,
+       TexFiltEWA,
+       NumProfEvents</div></div>
+};</div><p>
+
+
+</p>
+<p>The hierarchy of reported percentages is implicitly defined by the ordering
+of values in this enumerant; when multiple execution phases are active,
+later values in the enumerant are assumed to be children of earlier ones.
+
+</p>
+<p>
+
+</p>
+<p>One bit in the <tt>ProfilerState</tt> variable is used to indicate whether
+each category in <a href="#Prof"><tt>Prof</tt></a> is currently active. Note that this variable
+has the <tt>thread_local</tt> qualifier; thus, a separate instance is
+maintained for each program execution thread.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsDeclarations-1"></span><div class="fragmentname">&lt;&lt;Statistics Declarations&gt;&gt;+=&nbsp;<a href="#fragment-StatisticsDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-StatisticsDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">extern thread_local uint32_t <span class="anchor" id="ProfilerState"></span>ProfilerState;</div><p>
+
+
+</p>
+<p><tt>CurrentProfilerState()</tt> makes the state available to the
+<a href="../Utilities/Parallelism.html#ParallelFor"><tt>ParallelFor()</tt></a> implementation; this makes it possible for work done in
+parallel <tt>for</tt> loop bodies to be charged to the
+execution phases that were active when <tt>ParallelFor()</tt> was called.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsDeclarations-2"></span><div class="fragmentname">&lt;&lt;Statistics Declarations&gt;&gt;+=&nbsp;<a href="#fragment-StatisticsDeclarations-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-StatisticsDeclarations-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">inline uint32_t <span class="anchor" id="CurrentProfilerState"></span>CurrentProfilerState() { return ProfilerState; }</div><p>
+
+
+</p>
+<p>In turn, a method like <a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel::Intersect"><tt>BVHAccel::Intersect()</tt></a> starts with a single
+line of code for the profiling system&rsquo;s benefit:
+</p>
+<div class="fragmentcode">  ProfilePhase p(Prof::AccelIntersect);</div><p>
+
+
+</p>
+<p>The <tt>ProfilePhase</tt> helper class&rsquo;s constructor records that the
+provided phase of execution has begun; when its destructor later runs when
+the <tt>ProfilePhase</tt> instance goes out of scope, it records that the
+corresponding phase is no longer active.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsDeclarations-3"></span><div class="fragmentname">&lt;&lt;Statistics Declarations&gt;&gt;+=&nbsp;<a href="#fragment-StatisticsDeclarations-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="ProfilePhase"></span>ProfilePhase {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ProfilePhasePublicMethods-0">ProfilePhase Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1937" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1937"><i></i></a><div id="fragbit-1937" class="collapse"><div class="fragmentcode">       ProfilePhase(Prof p) {
+           <a href="#ProfilePhase::categoryBit" class="code">categoryBit</a> = (1 &lt;&lt; (int)p);
+           <a href="#ProfilePhase::reset" class="code">reset</a> = (<a href="#ProfilerState" class="code">ProfilerState</a> &amp; <a href="#ProfilePhase::categoryBit" class="code">categoryBit</a>) == 0;
+           <a href="#ProfilerState" class="code">ProfilerState</a> |= <a href="#ProfilePhase::categoryBit" class="code">categoryBit</a>;
+       }
+       ~ProfilePhase() {
+           if (<a href="#ProfilePhase::reset" class="code">reset</a>)
+               <a href="#ProfilerState" class="code">ProfilerState</a> &amp;= ~<a href="#ProfilePhase::categoryBit" class="code">categoryBit</a>;
+       }</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ProfilePhasePrivateData-0">ProfilePhase Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1938" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1938"><i></i></a><div id="fragbit-1938" class="collapse"><div class="fragmentcode">       bool reset;
+       uint32_t categoryBit;</div></div>
+};</div><p>
+
+
+</p>
+<p>The constructor starts by mapping the provided phase to a bit and then
+enabling that bit in <tt>ProfilerState</tt>. In the presence of recursion
+(notably, via recursive calls to <a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator::Li"><tt>SamplerIntegrator::Li()</tt></a>), it&rsquo;s
+possible that a higher level of the recursion will already have indicated
+the start of an execution phase. In this case, <tt>reset</tt> is set to
+<tt>false</tt>, and the <tt>ProfilePhase</tt> destructor won&rsquo;t clear the
+corresponding bit when it runs, leaving that task to the destructor of the
+earlier <tt>ProfilePhase</tt> instance that first set that bit.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProfilePhasePublicMethods-0"></span><div class="fragmentname">&lt;&lt;ProfilePhase Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ProfilePhasePublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">ProfilePhase(Prof p) {
+    <a href="#ProfilePhase::categoryBit" class="code">categoryBit</a> = (1 &lt;&lt; (int)p);
+    <a href="#ProfilePhase::reset" class="code">reset</a> = (<a href="#ProfilerState" class="code">ProfilerState</a> &amp; <a href="#ProfilePhase::categoryBit" class="code">categoryBit</a>) == 0;
+    <a href="#ProfilerState" class="code">ProfilerState</a> |= <a href="#ProfilePhase::categoryBit" class="code">categoryBit</a>;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProfilePhasePrivateData-0"></span><div class="fragmentname">&lt;&lt;ProfilePhase Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">bool <span class="anchor" id="ProfilePhase::reset"></span>reset;
+uint32_t <span class="anchor" id="ProfilePhase::categoryBit"></span>categoryBit;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProfilePhasePublicMethods-1"></span><div class="fragmentname">&lt;&lt;ProfilePhase Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ProfilePhasePublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">~ProfilePhase() {
+    if (<a href="#ProfilePhase::reset" class="code">reset</a>)
+        <a href="#ProfilerState" class="code">ProfilerState</a> &amp;= ~<a href="#ProfilePhase::categoryBit" class="code">categoryBit</a>;
+}</div><p>
+
+
+</p>
+<p>
+
+
+</p>
+<p>The <tt>InitProfiler()</tt> function has two tasks. First, it allocates the
+<tt>profileSamples</tt> array; this array has one entry for each possible
+combination of active phases of execution. While many of these combinations
+aren&rsquo;t actually possible, using a simple data structure like this makes it
+possible to very efficiently record the sample counts of the current phase
+of execution. (However, note that the number of entries grows at the rate
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.381ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1025.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="707" y="557"></use>
+</g>
+</svg>, where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> is the number of distinct phases of execution in the
+<a href="#Prof"><tt>Prof</tt></a> enumerant. Thus, this implementation is not suited to extremely
+fine-grained decomposition of profiling categories.)
+
+</p>
+<p>Second, <tt>InitProfiler()</tt> uses system-dependent functionality to ask
+that <tt>pbrt</tt> be periodically interrupted to record the current phase of
+execution. We won&rsquo;t include this code here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsDefinitions-2"></span><div class="fragmentname">&lt;&lt;Statistics Definitions&gt;&gt;+=&nbsp;<a href="#fragment-StatisticsDefinitions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-StatisticsDefinitions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="InitProfiler"></span>InitProfiler() {
+    profileSamples.reset(new std::atomic&lt;uint64_t&gt;[1 &lt;&lt; NumProfEvents]);
+    for (int i = 0; i &lt; (1 &lt;&lt; NumProfEvents); ++i)
+        profileSamples[i] = 0;
+    &lt;&lt;<span class="fragmentname">Set timer to periodically interrupt the system for profiling</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1939" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1939"><i></i></a><div id="fragbit-1939" class="collapse"><div class="fragmentcode">       #ifndef PBRT_IS_WINDOWS
+       struct sigaction sa;
+       memset(&amp;sa, 0, sizeof(sa));
+       sa.sa_sigaction = ReportProfileSample;
+       sa.sa_flags = SA_RESTART | SA_SIGINFO;
+       sigemptyset(&amp;sa.sa_mask);
+       sigaction(SIGPROF, &amp;sa, NULL);
+       
+       static struct itimerval timer;
+       timer.it_interval.tv_sec = 0;
+       timer.it_interval.tv_usec = 1000000 / 100;  // 100 Hz sampling
+       timer.it_value = timer.it_interval;
+       
+       if (setitimer(ITIMER_PROF, &amp;timer, NULL) != 0)
+          Error("Timer could not be initialized");
+       #endif</div></div>
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsLocalVariables-1"></span><div class="fragmentname">&lt;&lt;Statistics Local Variables&gt;&gt;+=&nbsp;<a href="#fragment-StatisticsLocalVariables-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">static std::unique_ptr&lt;std::atomic&lt;uint64_t&gt;[]&gt; <span class="anchor" id="profileSamples"></span>profileSamples;</div><p>
+
+
+</p>
+<p>Each time the system interrupt occurs for a thread,
+<tt>ReportProfileSample()</tt> is called. This function is extremely simple
+and just increments the tally for the current set of active phases as
+encoded in <tt>ProfilerState</tt>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsDefinitions-3"></span><div class="fragmentname">&lt;&lt;Statistics Definitions&gt;&gt;+=&nbsp;<a href="#fragment-StatisticsDefinitions-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">static void <span class="anchor" id="ReportProfileSample"></span>ReportProfileSample(int, siginfo_t *, void *) {
+    if (<a href="#profileSamples" class="code">profileSamples</a>)
+       <a href="#profileSamples" class="code">profileSamples</a>[<a href="#ProfilerState" class="code">ProfilerState</a>]++;
+}
+</div><p>
+
+
+</p>
+<p>At the end of rendering, the
+<tt>ReportProfilerResults()</tt><span class="anchor" id="ReportProfilerResults"></span> function
+is called.  It aggregates the profile counters and generates reports of the
+form above; its implementation isn&rsquo;t particularly interesting with respect
+to its length, so we won&rsquo;t include it here.
+
+</p>
+<p>
+
+</p>
+<p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Farhan Wali and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Further_Reading.html">Utilities / Further Reading</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,641 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Parameter Sets</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface.html">Scene Description Interface</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Parameter Sets</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface.html">(Previous: Scene Description Interface)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:param-set"></span><h2>B.1 Parameter Sets</h2><p>
+
+
+
+</p>
+<p>A key problem that a rendering API must address is extensibility&mdash;as new
+features are added to the system, how does the user-visible API change and
+what parts of its implementation change?  For <tt>pbrt</tt>, it&rsquo;s important that
+developers be able to easily add new implementations of <tt>Shape</tt>s,
+<tt>Camera</tt>s, <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a>s, and so forth. We&rsquo;ve designed the API
+with this goal in mind.
+
+</p>
+<p>To this end, the caller-visible API and its implementation are both as
+unaware as possible of what particular parameters these objects take and
+what their semantics are.  <tt>pbrt</tt> uses the <a href="#ParamSet"><tt>ParamSet</tt></a> class to bundle
+up parameters and their values in a generic way.  For example, it might
+record that there is a single floating-point value named &ldquo;radius&rdquo; with a
+value of 2.5 and an array of four color values named &ldquo;specular&rdquo; with
+various SPDs.  The <a href="#ParamSet"><tt>ParamSet</tt></a> provides methods for both setting
+and retrieving values from these kinds of generic parameter lists.  It is
+defined in <a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/paramset.h"><tt>core/paramset.h</tt></a><span class="anchor" id="coreparamset.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/paramset.cpp"><tt>core/paramset.cpp</tt></a><span class="anchor" id="coreparamset.cpp"></span>.
+
+</p>
+<p>Most of <tt>pbrt</tt>&rsquo;s API routines take a <a href="#ParamSet"><tt>ParamSet</tt></a> as one of their
+parameters; for example, the shape creation routine, <a href="../Scene_Description_Interface/Scene_Definition.html#pbrtShape"><tt>pbrtShape()</tt></a>,
+just takes a string giving the name of the shape to make and a
+<a href="#ParamSet"><tt>ParamSet</tt></a> with parameters for it.  The creation routine of the
+corresponding shape implementation is called with the <a href="#ParamSet"><tt>ParamSet</tt></a> passed
+along as a parameter; it extracts values from the <tt>ParamSet</tt> to get
+parameters to use in a call to the class&rsquo;s constructor. 
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetDeclarations-0"></span><div class="fragmentname">&lt;&lt;ParamSet Declarations&gt;&gt;=&nbsp;<a href="#fragment-ParamSetDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="ParamSet"></span>ParamSet {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParamSetPublicMethods-0">ParamSet Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1940" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1940"><i></i></a><div id="fragbit-1940" class="collapse"><div class="fragmentcode">       ParamSet() { }
+       void AddFloat(const std::string &amp;, const Float *, int nValues = 1);
+       void AddInt(const std::string &amp;, const int *, int nValues);
+       void AddBool(const std::string &amp;, const bool *, int nValues);
+       void AddPoint2f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *, int nValues);
+       void AddVector2f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a> *, int nValues);
+       void AddPoint3f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> *, int nValues);
+       void AddVector3f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *, int nValues);
+       void AddNormal3f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> *, int nValues);
+       void AddString(const std::string &amp;, const std::string *, int nValues);
+       void AddTexture(const std::string &amp;, const std::string &amp;);
+       void AddRGBSpectrum(const std::string &amp;, const Float *, int nValues);
+       void AddXYZSpectrum(const std::string &amp;, const Float *, int nValues);
+       void AddBlackbodySpectrum(const std::string &amp;, const Float *,
+           int nValues);
+       void AddSampledSpectrumFiles(const std::string &amp;, const char **,
+           int nValues);
+       void AddSampledSpectrum(const std::string &amp;, const Float *, int nValues);
+       bool EraseInt(const std::string &amp;);
+       bool EraseBool(const std::string &amp;);
+       bool EraseFloat(const std::string &amp;);
+       bool ErasePoint2f(const std::string &amp;);
+       bool EraseVector2f(const std::string &amp;);
+       bool ErasePoint3f(const std::string &amp;);
+       bool EraseVector3f(const std::string &amp;);
+       bool EraseNormal3f(const std::string &amp;);
+       bool EraseSpectrum(const std::string &amp;);
+       bool EraseString(const std::string &amp;);
+       bool EraseTexture(const std::string &amp;);
+       Float FindOneFloat(const std::string &amp;, Float d) const;
+       int FindOneInt(const std::string &amp;, int d) const;
+       bool FindOneBool(const std::string &amp;, bool d) const;
+       <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> FindOnePoint2f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;d) const;
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a> FindOneVector2f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a> &amp;d) const;
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> FindOnePoint3f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> &amp;d) const;
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> FindOneVector3f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> &amp;d) const;
+       <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> FindOneNormal3f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> &amp;d) const;
+       <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> FindOneSpectrum(const std::string &amp;, const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> &amp;d) const;
+       std::string FindOneString(const std::string &amp;, const std::string &amp;d) const;
+       std::string FindOneFilename(const std::string &amp;, const std::string &amp;d) const;
+       std::string FindTexture(const std::string &amp;) const;
+       const Float *FindFloat(const std::string &amp;, int *n) const;
+       const int *FindInt(const std::string &amp;, int *nValues) const;
+       const bool *FindBool(const std::string &amp;, int *nValues) const;
+       const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *FindPoint2f(const std::string &amp;, int *nValues) const;
+       const <a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a> *FindVector2f(const std::string &amp;, int *nValues) const;
+       const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> *FindPoint3f(const std::string &amp;, int *nValues) const;
+       const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *FindVector3f(const std::string &amp;, int *nValues) const;
+       const <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> *FindNormal3f(const std::string &amp;, int *nValues) const;
+       const <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> *FindSpectrum(const std::string &amp;, int *nValues) const;
+       const std::string *FindString(const std::string &amp;, int *nValues) const;
+       void ReportUnused() const;
+       void Clear();
+       std::string ToString() const;</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParamSetPrivateData-0">ParamSet Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1941" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1941"><i></i></a><div id="fragbit-1941" class="collapse"><div class="fragmentcode">       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;bool&gt;&gt;&gt; bools;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;int&gt;&gt;&gt; ints;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;Float&gt;&gt;&gt; floats;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>&gt;&gt;&gt; point2fs;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a>&gt;&gt;&gt; vector2fs;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>&gt;&gt;&gt; point3fs;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>&gt;&gt;&gt; vector3fs;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a>&gt;&gt;&gt; normals;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt;&gt; spectra;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;std::string&gt;&gt;&gt; strings;
+       std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;std::string&gt;&gt;&gt; textures;
+       static std::map&lt;std::string, <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt; cachedSpectra;</div></div>
+};</div><p>
+
+
+</p>
+<p>A <a href="#ParamSet"><tt>ParamSet</tt></a> can hold eleven types of parameters: Booleans, integers,
+floating-point values, points (2D and 3D), vectors (2D and 3D), normals,
+spectra, strings, and the names of <a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture"><tt>Texture</tt></a>s that are being used as
+parameters for <a href="../Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a>s and other <a href="../Texture/Texture_Interface_and_Basic_Textures.html#Texture"><tt>Texture</tt></a>s.  Internally, it
+stores a <tt>vector</tt> of named values for each of the different types that
+it stores; each parameter is represented by a pointer to a <a href="#ParamSetItem"><tt>ParamSetItem</tt></a> of the
+appropriate type. A <tt>shared_ptr</tt> is used for these pointers;
+doing so allows a parameter to easily be stored in multiple <tt>ParamSet</tt>s,
+which we&rsquo;ll find useful in the following.
+
+</p>
+<p>Storing parameters unsorted in <tt>vector</tt>s means that searching for a
+given parameter takes <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.977ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2143 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper O left-parenthesis n right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D442" d="M740 436c0 -239 -223 -458 -435 -458c-144 0 -256 101 -256 267c0 233 220 460 436 460c149 0 255 -108 255 -269zM651 475c0 149 -90 205 -172 205c-79 0 -177 -52 -246 -156c-77 -117 -91 -263 -91 -307c0 -132 70 -213 169 -213c84 0 166 59 214 120 c99 123 126 279 126 351Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D442" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="763" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="1153" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1753" y="0"></use>
+</g>
+</svg> time, where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> is the number of parameters of
+the parameter&rsquo;s type.  In practice, there are just a handful of parameters
+to any function, so a more time-efficient representation isn&rsquo;t necessary.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fragment-ParamSetPrivateData-0"></span><div class="fragmentname">&lt;&lt;ParamSet Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;bool&gt;&gt;&gt; <span class="anchor" id="ParamSet::bools"></span>bools;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;int&gt;&gt;&gt; <span class="anchor" id="ParamSet::ints"></span>ints;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;Float&gt;&gt;&gt; <span class="anchor" id="ParamSet::floats"></span>floats;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>&gt;&gt;&gt; <span class="anchor" id="ParamSet::point2fs"></span>point2fs;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a>&gt;&gt;&gt; <span class="anchor" id="ParamSet::vector2fs"></span>vector2fs;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>&gt;&gt;&gt; <span class="anchor" id="ParamSet::point3fs"></span>point3fs;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>&gt;&gt;&gt; <span class="anchor" id="ParamSet::vector3fs"></span>vector3fs;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a>&gt;&gt;&gt; <span class="anchor" id="ParamSet::normals"></span>normals;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>&gt;&gt;&gt; <span class="anchor" id="ParamSet::spectra"></span>spectra;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;std::string&gt;&gt;&gt; <span class="anchor" id="ParamSet::strings"></span>strings;
+std::vector&lt;std::shared_ptr&lt;ParamSetItem&lt;std::string&gt;&gt;&gt; <span class="anchor" id="ParamSet::textures"></span>textures;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TheParamSetItemStructure"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="TheParamSetItemStructure"></span><h3>B.1.1  The ParamSetItem Structure</h3><p>
+
+
+</p>
+<p>The <a href="#ParamSetItem"><tt>ParamSetItem</tt></a> structure stores all of the relevant information about a
+single parameter, such as its name, its base type, and its value(s).  For example (using the
+syntax from <tt>pbrt</tt>&rsquo;s input files), the <tt>foo</tt> parameter
+</p>
+<div class="fragmentcode">"float foo" [ 0 1 2 3 4 5 ]</div><p>
+
+
+</p>
+<p>has a base type of <tt>float</tt>, and six values have been supplied for it.
+It would be represented by a <tt>ParamSetItem&lt;Float&gt;</tt>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetDeclarations-1"></span><div class="fragmentname">&lt;&lt;ParamSet Declarations&gt;&gt;+=&nbsp;<a href="#fragment-ParamSetDeclarations-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; struct <span class="anchor" id="ParamSetItem"></span>ParamSetItem {
+    &lt;&lt;<span class="fragmentname">ParamSetItem Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1942" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1942"><i></i></a><div id="fragbit-1942" class="collapse"><div class="fragmentcode">       ParamSetItem(const std::string &amp;name, const T *val, int nValues = 1);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParamSetItemData-0">ParamSetItem Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1943" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1943"><i></i></a><div id="fragbit-1943" class="collapse"><div class="fragmentcode">       const std::string name;
+       const std::unique_ptr&lt;T[]&gt; values;
+       const int nValues;
+       mutable bool lookedUp = false;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>ParamSetItem</tt> directly initializes its members from the arguments
+and makes a copy of the values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetItemMethods-0"></span><div class="fragmentname">&lt;&lt;ParamSetItem Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T&gt;
+ParamSetItem&lt;T&gt;::ParamSetItem(const std::string &amp;<a href="#ParamSetItem::name" class="code">name</a>, const T *v,
+                              int nValues)
+    : <a href="#ParamSetItem::name" class="code">name</a>(<a href="#ParamSetItem::name" class="code">name</a>), <a href="#ParamSetItem::values" class="code">values</a>(new T[nValues]), nValues(nValues) {
+    std::copy(v, v + nValues, <a href="#ParamSetItem::values" class="code">values</a>.get());
+}</div><p>
+
+
+</p>
+<p>The Boolean value <tt>lookedUp</tt> is set to <tt>true</tt> after the value has
+been retrieved from the <tt>ParamSet</tt>.  This makes it possible to print
+warning messages if any parameters were added to the parameter set but
+never used, which typically indicates a misspelling in the scene
+description file or other user error.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetItemData-0"></span><div class="fragmentname">&lt;&lt;ParamSetItem Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const std::string <span class="anchor" id="ParamSetItem::name"></span>name;
+const std::unique_ptr&lt;T[]&gt; <span class="anchor" id="ParamSetItem::values"></span>values;
+const int <span class="anchor" id="ParamSetItem::nValues"></span>nValues;
+mutable bool <span class="anchor" id="ParamSetItem::lookedUp"></span>lookedUp = false;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#AddingtotheParameterSet"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="AddingtotheParameterSet"></span><h3>B.1.2  Adding to the Parameter Set</h3><p>
+
+
+</p>
+<p>To add an entry to the parameter set, the appropriate <tt>ParamSet</tt>
+method should be called with the name of the parameter, a pointer to its
+data, and the number of data items.  These methods first remove previous
+values for the parameter in the <tt>ParamSet</tt>, if any.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetMethods-0"></span><div class="fragmentname">&lt;&lt;ParamSet Methods&gt;&gt;=&nbsp;<a href="#fragment-ParamSetMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void ParamSet::<span class="anchor" id="ParamSet::AddFloat"></span>AddFloat(const std::string &amp;name, const Float *values,
+                        int nValues) {
+    EraseFloat(name);
+    floats.emplace_back(new ParamSetItem&lt;Float&gt;(name, values, nValues));
+}</div><p>
+
+
+</p>
+<p>We won&rsquo;t include the rest of the methods to add data to the <a href="#ParamSet"><tt>ParamSet</tt></a>, but
+we do include their prototypes here for reference.  The erasure methods are also
+straightforward and won&rsquo;t be included here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetPublicMethods-0"></span><div class="fragmentname">&lt;&lt;ParamSet Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ParamSetPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ParamSet::AddInt"></span>AddInt(const std::string &amp;, const int *, int nValues);
+void <span class="anchor" id="ParamSet::AddBool"></span>AddBool(const std::string &amp;, const bool *, int nValues);
+void <span class="anchor" id="ParamSet::AddPoint2f"></span>AddPoint2f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *, int nValues);
+void <span class="anchor" id="ParamSet::AddVector2f"></span>AddVector2f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a> *, int nValues);
+void <span class="anchor" id="ParamSet::AddPoint3f"></span>AddPoint3f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> *, int nValues);
+void <span class="anchor" id="ParamSet::AddVector3f"></span>AddVector3f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *, int nValues);
+void <span class="anchor" id="ParamSet::AddNormal3f"></span>AddNormal3f(const std::string &amp;, const <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> *, int nValues);
+void <span class="anchor" id="ParamSet::AddString"></span>AddString(const std::string &amp;, const std::string *, int nValues);
+void <span class="anchor" id="ParamSet::AddTexture"></span>AddTexture(const std::string &amp;, const std::string &amp;);</div><p>
+
+
+</p>
+<p>A number of different methods for adding spectral data are provided, making
+it easy for this data to be supplied with a variety of representations. The
+RGB and XYZ variants take 3 floating-point values for each spectrum.
+<tt>AddBlackbodySpectrum()</tt> takes pairs of temperature in Kelvins and a
+scale factor; it uses <a href="../Light_Sources/Light_Emission.html#BlackbodyNormalized"><tt>BlackbodyNormalized()</tt></a> to compute the SPD, which
+it scales with the given scale. Finally, <tt>AddSampledSpectrumFiles()</tt>
+reads SPDs from files on disk; both it and <tt>AddSampledSpectrum()</tt>
+construct a piecewise linear SPD given pairs of wavelengths and SPD values
+at each wavelength.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetPublicMethods-1"></span><div class="fragmentname">&lt;&lt;ParamSet Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParamSetPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParamSetPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ParamSet::AddRGBSpectrum"></span>AddRGBSpectrum(const std::string &amp;, const Float *, int nValues);
+void <span class="anchor" id="ParamSet::AddXYZSpectrum"></span>AddXYZSpectrum(const std::string &amp;, const Float *, int nValues);
+void <span class="anchor" id="ParamSet::AddBlackbodySpectrum"></span>AddBlackbodySpectrum(const std::string &amp;, const Float *,
+    int nValues);
+void <span class="anchor" id="ParamSet::AddSampledSpectrumFiles"></span>AddSampledSpectrumFiles(const std::string &amp;, const char **,
+    int nValues);
+void <span class="anchor" id="ParamSet::AddSampledSpectrum"></span>AddSampledSpectrum(const std::string &amp;, const Float *, int nValues);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#LookingupValuesintheParameterSet"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="LookingupValuesintheParameterSet"></span><h3>B.1.3  Looking up Values in the Parameter Set</h3><p>
+ 
+
+</p>
+<p>To retrieve a parameter value from a set, it is necessary to loop through the entries
+of the requested type and return the appropriate value, if any.  There are two
+versions of the lookup method for each parameter type: a simple one for
+parameters that have a single data value, and a more general one that returns a
+pointer to the possibly multiple values of array parameter types.  The first
+method mostly serves to reduce the amount of code needed in routines that
+retrieve parameter values.
+
+</p>
+<p>The methods that look up a single item (e.g., <tt>FindOneFloat()</tt>) take the
+name of the parameter and a default value.  If the parameter is not found,
+the default value is returned.  This makes it easy to write
+initialization code like
+</p>
+<div class="fragmentcode">    Float radius = params.FindOneFloat("radius", 1.f);</div><p>
+
+
+</p>
+<p>In this case, it is not an error if the user didn&rsquo;t provide a &ldquo;radius&rdquo;
+parameter value; the
+default value will be used instead.  If calling code wants to detect a
+missing parameter and issue an error, the appropriate second variant of lookup method
+should be used, since those methods return a <tt>nullptr</tt> value if the parameter
+isn&rsquo;t found.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetMethods-1"></span><div class="fragmentname">&lt;&lt;ParamSet Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParamSetMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParamSetMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float ParamSet::<span class="anchor" id="ParamSet::FindOneFloat"></span>FindOneFloat(const std::string &amp;<a href="#ParamSetItem::name" class="code">name</a>, Float d) const {
+    for (const auto &amp;f : floats)
+        if (f-&gt;<a href="#ParamSetItem::name" class="code">name</a> == <a href="#ParamSetItem::name" class="code">name</a> &amp;&amp; f-&gt;<a href="#ParamSetItem::nValues" class="code">nValues</a> == 1) {
+            f-&gt;<a href="#ParamSetItem::lookedUp" class="code">lookedUp</a> = true;
+            return f-&gt;<a href="#ParamSetItem::values" class="code">values</a>[0];
+        }
+    return d;
+}</div><p>
+
+
+</p>
+<p>We won&rsquo;t include the declarations of the analogous methods for the
+remaining types here
+(<tt>FindOneInt()</tt><span class="anchor" id="ParamSet::FindOneInt"></span>,
+<tt>FindOnePoint3f()</tt><span class="anchor" id="ParamSet::FindOnePoint3f"></span>, and so
+forth); they all follow the same form as <tt>FindOneFloat()</tt>&mdash;each takes a
+parameter name and a default value and returns a value of the
+corresponding type.
+<span class="anchor" id="ParamSet::FindOneBool"></span>
+<span class="anchor" id="ParamSet::FindOnePoint2f"></span>
+<span class="anchor" id="ParamSet::FindOneVector2f"></span>
+<span class="anchor" id="ParamSet::FindOneVector3f"></span>
+<span class="anchor" id="ParamSet::FindOneNormal3f"></span>
+<span class="anchor" id="ParamSet::FindOneSpectrum"></span>
+<span class="anchor" id="ParamSet::FindOneString"></span>
+<span class="anchor" id="ParamSet::FindOneFilename"></span>
+<span class="anchor" id="ParamSet::FindTexture"></span>
+
+</p>
+<p>
+
+</p>
+<p>The second kind of lookup method returns a pointer to the data if the data is present
+and returns the number of values in <tt>n</tt>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetMethods-2"></span><div class="fragmentname">&lt;&lt;ParamSet Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParamSetMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">const Float *ParamSet::<span class="anchor" id="ParamSet::FindFloat"></span>FindFloat(const std::string &amp;<a href="#ParamSetItem::name" class="code">name</a>, int *n) const {
+    for (const auto &amp;f : floats)
+        if (f-&gt;<a href="#ParamSetItem::name" class="code">name</a> == <a href="#ParamSetItem::name" class="code">name</a>) {
+            *n = f-&gt;<a href="#ParamSetItem::nValues" class="code">nValues</a>;
+            f-&gt;<a href="#ParamSetItem::lookedUp" class="code">lookedUp</a> = true;
+            return f-&gt;<a href="#ParamSetItem::values" class="code">values</a>.get();
+        }
+    return nullptr;
+}</div><p>
+
+
+</p>
+<p>The general lookup functions for the other types follow the same form and
+so won&rsquo;t be included here.
+<span class="anchor" id="ParamSet::FindInt"></span>
+<span class="anchor" id="ParamSet::FindBool"></span>
+<span class="anchor" id="ParamSet::FindPoint2f"></span>
+<span class="anchor" id="ParamSet::FindVector2f"></span>
+<span class="anchor" id="ParamSet::FindPoint3f"></span>
+<span class="anchor" id="ParamSet::FindVector3f"></span>
+<span class="anchor" id="ParamSet::FindNormal3f"></span>
+<span class="anchor" id="ParamSet::FindSpectrum"></span>
+<span class="anchor" id="ParamSet::FindString"></span>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>Because the user may misspell parameter names in the scene description
+file, the <a href="#ParamSet"><tt>ParamSet</tt></a> also provides a <tt>ReportUnused()</tt> function,
+not included here, that goes through the parameter set and reports if any
+of the parameters present were never looked up, checking
+the <a href="#ParamSetItem::lookedUp"><tt>ParamSetItem::lookedUp</tt></a> member variable.  For any items where this
+variable is <tt>false</tt>, it is likely that the user has
+given an incorrect parameter.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetPublicMethods-2"></span><div class="fragmentname">&lt;&lt;ParamSet Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParamSetPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParamSetPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ParamSet::ReportUnused"></span>ReportUnused() const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="#ParamSet::Clear"><tt>ParamSet::Clear()</tt></a> method clears all of the individual parameter
+vectors.  The corresponding
+<tt>ParamSetItem</tt>s will in turn be freed if their reference count goes
+to&nbsp;0.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParamSetPublicMethods-3"></span><div class="fragmentname">&lt;&lt;ParamSet Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParamSetPublicMethods-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ParamSet::Clear"></span>Clear();</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Farhan Wali and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html">Scene Description Interface / Initialization and Rendering Options</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

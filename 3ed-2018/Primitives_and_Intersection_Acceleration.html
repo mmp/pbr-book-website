@@ -1,0 +1,268 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="/3ed-2018/pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Primitives and Intersection Acceleration</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="/3ed-2018/contents.html"><img src="/3ed-2018/pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="contents.html">Physically Based Rendering: </a></li>
+    <li class="nav-item"><a class="nav-link" href="#">Primitives and Intersection Acceleration</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="/3ed-2018/Shapes/Exercises.html">(Previous: Exercises)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="jumbotron jumbotron-fluid bg-cover-100 opener-image" style="background-image: url('openers/landscape-above.jpg'); background-position: center;">
+</div>
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="chap:acceleration"></span><h1>4 Primitives and Intersection Acceleration</h1><p>
+
+
+
+</p>
+<p>The classes described in the last chapter focus exclusively on representing
+geometric properties of 3D objects.  Although the <a href="Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> class
+provides a convenient abstraction for geometric operations such as
+intersection and bounding, it doesn&rsquo;t contain enough information to fully
+describe an object in a scene.  For example, it is necessary to bind
+material properties to each shape in order to specify its appearance.  To
+accomplish these goals, this chapter introduces the <a href="Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a>
+abstract base class and provides a number of implementations.
+
+</p>
+<p>Shapes to be rendered directly are represented by the
+<a href="Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#GeometricPrimitive"><tt>GeometricPrimitive</tt></a> class.  This class combines a <a href="Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> with a
+description of its appearance properties.  So that the geometric and
+shading portions of <tt>pbrt</tt> can be cleanly separated, these appearance
+properties are encapsulated in the <a href="Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a> class, which is described
+in Chapter&nbsp;<a href="Materials.html#chap:materials">9</a>.  
+
+</p>
+<p>The <a href="Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> class handles two more general uses of
+<a href="Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a>s in the scene: shapes with animated transformation matrices
+and object instancing, which can greatly reduce the memory requirements for
+scenes that contain many instances of the same geometry at
+different locations (such as the one in Figure&nbsp;<a href="#fig:ecosys-instancing">4.1</a>).
+Implementing each of these features essentially requires injecting an
+additional transformation matrix between the <a href="Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a>&rsquo;s notion of world
+space and the actual scene world space.  Therefore, both are handled by a
+single class.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:ecosys-instancing"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 56.250%; position:relative;">
+<div id="landscape-above.png12" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('landscape-above.png12'), { image: 'landscape-above.png' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 4.1: <span class="legend"> This outdoor scene 
+ makes heavy use of instancing as a mechanism
+for compressing the scene&rsquo;s description.  There are only 24 million unique
+triangles in the scene, although, thanks to object reuse through instancing,
+the total geometric complexity is 3.1 billion triangles. (<em>Scene courtesy of
+Laubwerk.</em>)</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+This chapter also introduces the <a href="Primitives_and_Intersection_Acceleration/Aggregates.html#Aggregate"><tt>Aggregate</tt></a> class, which represents a
+container that can hold many <a href="Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a>s.  <tt>pbrt</tt> uses this class as a
+base for <em>acceleration structures</em>&mdash;data structures that help reduce
+the otherwise <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.977ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2143 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper O left-parenthesis n right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D442" d="M740 436c0 -239 -223 -458 -435 -458c-144 0 -256 101 -256 267c0 233 220 460 436 460c149 0 255 -108 255 -269zM651 475c0 149 -90 205 -172 205c-79 0 -177 -52 -246 -156c-77 -117 -91 -263 -91 -307c0 -132 70 -213 169 -213c84 0 166 59 214 120 c99 123 126 279 126 351Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D442" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="763" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="1153" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1753" y="0"></use>
+</g>
+</svg> complexity of testing a ray for intersection with all
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> objects in a scene.  Most rays will intersect only a few primitives and
+miss the others by a large distance.  If an intersection acceleration
+algorithm can reject whole groups of primitives at once, there will be a
+substantial performance improvement compared to simply testing each ray
+against each primitive in turn.  One benefit from reusing the
+<a href="Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a> interface for these acceleration structures is that it
+makes it easy to support hybrid approaches where an accelerator of one type
+holds accelerators of other types.
+
+</p>
+<p>This chapter describes the implementation of two accelerators, one,
+<a href="Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAccel"><tt>BVHAccel</tt></a>, based on building a hierarchy of bounding boxes around
+objects in the scene, and the second, <a href="Primitives_and_Intersection_Acceleration/Kd-Tree_Accelerator.html#KdTreeAccel"><tt>KdTreeAccel</tt></a>, based on adaptive
+recursive spatial subdivision.  While many other acceleration structures
+have been proposed, almost all ray tracers today use one of these two.  The
+&ldquo;Further Reading&rdquo; section at the end of this chapter has extensive
+references to other possibilities. 
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Farhan Wali and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html">Primitives and Intersection Acceleration / Primitive Interface and Geometric Primitives</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

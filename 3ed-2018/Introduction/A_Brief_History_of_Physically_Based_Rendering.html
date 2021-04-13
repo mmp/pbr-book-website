@@ -1,0 +1,568 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>A Brief History of Physically Based Rendering</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Introduction.html">Introduction</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">A Brief History of Physically Based Rendering</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Introduction/Using_and_Understanding_the_Code.html">(Previous: Using and Understanding the Code)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:pbr-history"></span><h2>1.7 A Brief History of Physically Based Rendering</h2><p>
+
+
+
+</p>
+<p>Through the early years of computer graphics in the 1970s, the most
+important problems to solve were fundamental issues like visibility algorithms
+and geometric representations.  When a megabyte of RAM was a rare and
+expensive luxury and when a computer capable of a million floating-point
+operations per second cost hundreds of thousands of dollars, the complexity
+of what was possible in computer graphics was correspondingly limited, and
+any attempt to accurately simulate physics for rendering was infeasible. 
+
+</p>
+<p>As computers have become more capable and less expensive, it became
+possible to consider more computationally demanding approaches to
+rendering, which in turn has made physically based approaches viable.
+This progression is neatly explained by <em>Blinn&rsquo;s law</em>: &ldquo;as technology
+advances, rendering time remains constant.&rdquo;
+
+</p>
+<p>Jim Blinn&rsquo;s simple statement captures an important constraint: given a
+certain number of images that must be rendered (be it a handful for a
+research paper or over a hundred thousand for a feature film), it&rsquo;s only
+possible to take so much processing time for each one. One has a certain
+amount of computation available and one has some amount of time available
+before rendering must be finished, so the maximum computation per image
+is necessarily limited.
+
+</p>
+<p>Blinn&rsquo;s law also expresses the observation that there remains a gap between
+the images people would like to be able to render and the images that they
+can render: as computers have become faster, content creators have
+continued to use increased computational capability to render more
+complex scenes with more sophisticated rendering algorithms, rather than
+rendering the same scenes as before, just more quickly. Rendering continues
+to consume all of the computational capabilities made available to it.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Research"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Research"></span><h3>1.7.1  Research</h3><p>
+
+
+</p>
+<p>Physically based approaches to rendering started to be seriously considered
+by graphics researchers in the 1980s.  Whitted&rsquo;s paper (<a href="Further_Reading.html#cite:Whitted80">1980</a>) introduced
+the idea of using ray tracing for global lighting effects, opening the door
+to accurately simulating the distribution of light in scenes. The rendered
+images his approach produced were markedly different from any that had been
+seen before, which spurred excitement about this approach.
+
+</p>
+<p>Another notable early advancement in physically based rendering was Cook and
+Torrance&rsquo;s reflection model (<a href="Further_Reading.html#cite:Cook81">1981</a>, <a href="Further_Reading.html#cite:Cook82">1982</a>), which introduced microfacet
+reflection models to graphics. Among other contributions, they showed that
+accurately modeling microfacet reflection made it possible to render metal
+surfaces accurately; metal was not well rendered by earlier approaches.
+
+</p>
+<p>Shortly afterward, Goral et al. (<a href="Further_Reading.html#cite:Goral1984">1984</a>) made connections between the thermal
+transfer literature and rendering, showing how to incorporate global
+diffuse lighting effects using a physically based approximation of light
+transport.  This method was based on finite-element methods, where areas of
+surfaces in the scene exchanged energy with each other. This approach came
+to be referred to as &ldquo;radiosity,&rdquo; after a related physical unit.
+Following work by Cohen and Greenberg (<a href="Further_Reading.html#cite:Cohen1985">1985</a>) and Nishita and Nakamae (<a href="Further_Reading.html#cite:Nishita1985">1985</a>)
+introduced important improvements. Once again, a physically based approach
+led to images with lighting effects that hadn&rsquo;t previously been seen in
+rendered images, which led to many researchers pursuing improvements in
+this area.
+
+</p>
+<p>While the radiosity approach was strongly based on physical units and
+conservation of energy, in time it became clear that it didn&rsquo;t lead to
+viable rendering algorithms: the asymptotic computational complexity was a
+difficult-to-manage <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.032ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2596.9 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper O left-parenthesis n squared right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D442" d="M740 436c0 -239 -223 -458 -435 -458c-144 0 -256 101 -256 267c0 233 220 460 436 460c149 0 255 -108 255 -269zM651 475c0 149 -90 205 -172 205c-79 0 -177 -52 -246 -156c-77 -117 -91 -263 -91 -307c0 -132 70 -213 169 -213c84 0 166 59 214 120 c99 123 126 279 126 351Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D442" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="763" y="0"></use>
+<g transform="translate(1153,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="849" y="513"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2207" y="0"></use>
+</g>
+</svg>, and it was necessary to be able to
+re-tessellate geometric models along shadow boundaries for good results;
+researchers had difficulty developing robust and efficient tessellation
+algorithms for this purpose and radiosity&rsquo;s adoption in practice was
+limited.
+
+</p>
+<p>During the radiosity years, a small group of researchers pursued
+physically based approaches to rendering that were based on ray tracing and
+Monte Carlo integration.  At the time, many looked at their work with
+skepticism; objectionable noise in images due to variance from Monte
+Carlo integration seemed unavoidable, while radiosity-based methods quickly
+gave visually pleasing results, at least on relatively simple scenes.
+
+</p>
+<p>In 1984, Cook, Porter, and Carpenter introduced distributed ray tracing,
+which generalized Whitted&rsquo;s algorithm to compute motion blur and defocus blur
+from cameras, blurry reflection from glossy surfaces, and illumination from
+area light sources (Cook et&nbsp;al.&nbsp;<a href="Further_Reading.html#cite:Cook84">1984</a>), showing that ray tracing was capable
+of generating a host of important lighting effects.
+
+</p>
+<p>Shortly afterward, Kajiya (<a href="Further_Reading.html#cite:Kajiya86">1986</a>) introduced path tracing; he set out
+a rigorous formulation of the rendering problem (the light transport
+integral equation) and showed how to apply Monte Carlo integration to
+solve it.  This work required immense amounts of computation: to render a
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.815ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 4225.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">256 times 256</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-36" x="1001" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1723" y="0"></use>
+<g transform="translate(2724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-36" x="1001" y="0"></use>
+</g>
+</g>
+</svg> pixel image of two spheres with path tracing required 7
+hours of computation on an IBM 4341 computer, which cost roughly $280,000
+when it was first released (Farmer&nbsp;<a href="Further_Reading.html#cite:Farmer1981">1981</a>).  With von Herzen, Kajiya also
+introduced the volume-rendering equation to graphics (Kajiya and von Herzen
+<a href="Further_Reading.html#cite:Kajiya84">1984</a>); this equation rigorously describes the scattering of light in
+participating media.
+
+</p>
+<p>Both Cook et&nbsp;al.&rsquo;s and Kajiya&rsquo;s work once again led to images unlike any
+that had been seen before, demonstrating the value of physically based
+methods.  In subsequent years, important work on Monte Carlo for realistic
+image synthesis was described in papers by Arvo and Kirk (<a href="Further_Reading.html#cite:Arvo90pt">1990</a>) and Kirk and Arvo (<a href="Further_Reading.html#cite:Kirk91">1991</a>).  Shirley&rsquo;s Ph.D. dissertation (<a href="Further_Reading.html#cite:Shirley90phd">1990</a>)
+and follow-on work by Shirley et al. (<a href="Further_Reading.html#cite:Shirley96">1996</a>) were important contributions to Monte Carlo&ndash;based efforts.
+Hall&rsquo;s book, <em>Illumination and Color in Computer Generated Imagery</em>,
+(<a href="Further_Reading.html#cite:Hall89">1989</a>) is one of the first books to present rendering in a
+physically based framework, and Andrew Glassner&rsquo;s <em>Principles of
+Digital Image Synthesis</em> rigorously laid out foundations of the field
+(<a href="Further_Reading.html#cite:Glassner:PODIS">1995</a>).  Ward&rsquo;s <em>Radiance</em>
+rendering system was an early open source
+physically based rendering system, focused on lighting design (Ward&nbsp;<a href="Further_Reading.html#cite:Ward94">1994</a>),
+and Slusallek&rsquo;s <em>Vision</em> renderer was designed to bridge the gap
+between physically based approaches and the then widely used RenderMan
+interface, which wasn&rsquo;t physically based (Slusallek&nbsp;<a href="Further_Reading.html#cite:SlusallekThesis">1996</a>).
+
+</p>
+<p>Following Torrance and Cook&rsquo;s work, much of the research in the Program of
+Computer Graphics at Cornell University investigated physically based
+approaches. The motivations for this work were summarized by Greenberg et al. (<a href="Further_Reading.html#cite:Greenberg:1997:AFF">1997</a>), who made a strong argument for a physically accurate rendering
+based on measurements of the material properties of real-world objects and
+on deep understanding of the human visual system.
+
+</p>
+<p>A crucial step forward for physically based rendering was Veach&rsquo;s work,
+described in detail in his dissertation (Veach&nbsp;<a href="Further_Reading.html#cite:VeachThesis">1997</a>).  Veach advanced key
+theoretical foundations of Monte Carlo rendering while also developing new
+algorithms like multiple importance sampling, bidirectional path tracing,
+and Metropolis light transport that greatly improved its efficiency. Using
+Blinn&rsquo;s law as a guide, we believe that 
+these significant improvements in efficiency were critical
+to practical adoption of these approaches.
+
+</p>
+<p>Around this time, as computers became faster and more parallel, a number of
+researchers started pursuing real-time ray tracing; Wald, Slusallek, and
+Benthin wrote an influential paper that described a highly optimized ray
+tracer that was much more efficient than previous ray tracers (Wald et&nbsp;al.&nbsp;<a href="Further_Reading.html#cite:Wald01b">2001b</a>).  Many subsequent papers introduced increasingly more
+efficient ray-tracing algorithms. Though most of this work wasn&rsquo;t
+physically based, the results led to great progress in ray-tracing
+acceleration structures and performance of the geometric components of ray
+tracing.  Because physically based rendering generally makes substantial
+use of ray tracing, this work has in turn had the same helpful effect as
+faster computers have, making it possible to render more complex scenes
+with physical approaches.
+
+</p>
+<p>At this point, we&rsquo;ll end our summary of the key steps in the research
+progress of physically based rendering; much more has been done.  The
+&ldquo;Further Reading&rdquo; sections in all of the subsequent chapters of this book
+cover this work in detail.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Production"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Production"></span><h3>1.7.2  Production</h3><p>
+
+
+</p>
+<p>With more capable computers in the 1980s, computer graphics could start to
+be used for animation and film production.  Early examples include Jim
+Blinn&rsquo;s rendering of the Voyager 2 Flyby of Saturn in 1981 and visual
+effects in the movies <em>Star Trek II: The Wrath of Khan</em> (1982),
+<em>Tron</em> (1982), and <em>The Last Starfighter</em> (1984).
+
+</p>
+<p>In early production use of computer-generated imagery, rasterization-based
+rendering (notably, the Reyes algorithm (Cook et al.&nbsp;<a href="Further_Reading.html#cite:Cook87">1987</a>)) was the only
+viable option.  One reason was that not enough computation was available
+for complex reflection models or for the global lighting effects that
+physically based ray tracing could provide.  More significantly,
+rasterization had the important advantage that it didn&rsquo;t require that the
+entire scene representation fit into main memory.
+
+</p>
+<p>
+
+</p>
+<p>When RAM was much less plentiful, almost any interesting scene was too
+large to fit into main memory.  Rasterization-based algorithms made it
+possible to render scenes while having
+only a small subset of the full scene representation in memory at any
+time. Global lighting effects are difficult to achieve if the whole
+scene can&rsquo;t fit into main memory; for many years, with limited
+computer systems, content creators effectively decided that geometric and
+texture complexity was more important to visual realism than lighting
+complexity (and in turn physical accuracy).
+
+</p>
+<p>Many practitioners at this time also believed that physically
+based approaches were undesirable for production: one of the great things
+about computer graphics is that one can cheat reality with impunity to achieve a desired artistic
+effect.  For example, lighting designers on regular movies often struggle
+to place light sources so that they aren&rsquo;t visible to the camera or spend
+a lot of effort placing a light to illuminate an actor without shining too
+much light on the background.  Computer graphics offers the opportunity to,
+for example, implement a light source model that shines twice as much light
+on a character as on a background object, in a fairly straightforward
+manner. For many years, this capability seemed much more useful than
+physical accuracy.
+
+</p>
+<p>Visual effects practitioners who had the specific need to match rendered
+imagery to filmed real-world environments pioneered capturing real-world
+lighting and shading effects and were early adopters of physically based
+approaches in the late 1990s and early 2000s.  (See Snow (<a href="Further_Reading.html#cite:Snow2010">2010</a>) for a
+history of ILM&rsquo;s early work in this area, for example.)
+
+</p>
+<p>During this time, Blue Sky Studios adopted a physically based pipeline
+early in their history (Ohmer&nbsp;<a href="Further_Reading.html#cite:Ohmer1997">1997</a>). The photorealism of an advertisement
+they made for a Braun shaver in 1992 caught the attention of many, and
+their short film, <em>Bunny</em>, shown in 1998, was an early example of
+Monte Carlo global illumination used in production.  Its visual look was
+substantially different from those of films and shorts rendered with Reyes
+and was widely noted.  Subsequent feature films from Blue Sky also followed
+this approach.  Unfortunately, Blue Sky never published significant
+technical details of their approach, limiting their wider influence.
+
+</p>
+<p>During the early 2000s, the <em>mental ray</em> ray-tracing system was used
+by a number of studios, mostly for visual effects.  It was a very efficient
+ray tracer with sophisticated global illumination algorithm
+implementations.  The main focus of its developers was computer-aided
+design and product design applications, so it lacked features like the
+ability to handle extremely complex scenes and the enormous numbers of texture
+maps that film production demanded.
+
+</p>
+<p>After <em>Bunny</em>, another watershed moment came in 2001, when Marcos
+Fajardo came to the SIGGRAPH with an early version of his <em>Arnold</em>
+renderer.  He showed images in the Monte Carlo image synthesis course that
+not only had complex geometry, textures, and global illumination but also were
+rendered in tens of minutes. While these scenes weren&rsquo;t of the complexity
+of those used in film production at the time, his results showed many the
+creative opportunities from global illumination in complex scenes. 
+
+</p>
+<p>Fajardo brought <em>Arnold</em> to Sony Pictures Imageworks, where work
+started to transform it to a production-capable physically based rendering
+system.  Work on efficient motion blur, programmable shading, support for
+massively complex scenes and deferred loading of scene geometry, and
+support for texture caching, where only a small subset of the texture in
+the scene is kept in memory, were all important areas to be addressed.
+<em>Arnold</em> was first used on the movie <em>Monster House</em> and is now
+generally available as a product.
+
+</p>
+<p>In the mid-2000s, Pixar&rsquo;s <em>RenderMan</em> renderer started to support hybrid
+rasterization and ray-tracing algorithms and included a number of
+innovative algorithms for computing global illumination solutions in
+complex scenes.  <em>RenderMan</em> was recently rewritten to be a physically based
+ray tracer, following the general system architecture of <tt>pbrt</tt> (Christensen&nbsp;<a href="Further_Reading.html#cite:Christensen2015">2015</a>).
+
+</p>
+<p>One of the main reasons that physically based Monte Carlo approaches to
+rendering have been successful in production is that they end up improving
+the productivity of artists. Some of the important factors have been:
+</p>
+<ul>
+<li> The algorithms involved have essentially just a single quality knob:
+how many samples to take per pixel; this is extremely helpful for artists.
+Ray-tracing algorithms are also suited to both progressive refinement and
+quickly computing rough previews by taking just a few samples per pixel;
+rasterization-based renderers don&rsquo;t have equivalent capabilities.
+
+<li> Adopting physically based reflection models has made it easier to
+design surface materials. Earlier, when reflection models that didn&rsquo;t
+necessarily conserve energy were used, an object might be placed in a single
+lighting environment while its surface reflection parameters were adjusted.
+The object might look great in that environment, but it would often appear completely
+wrong when moved to another lighting environment because surfaces were
+actually reflecting too little or too much energy: surface properties had
+been set to unreasonable values.
+
+<li> The quality of shadows computed with ray tracing is much better than
+it is with rasterization.  Eliminating the need to tweak shadow map
+resolutions, biases, and other parameters has eliminated an unpleasant task
+of lighting artists.  Further, physically based methods bring with them
+bounce lighting and other soft-lighting effects from the method itself,
+rather than as an artistically tuned manual process.
+</ul><p>
+
+
+</p>
+<p>As of this writing, physically based rendering is used widely for producing
+computer-generated imagery for movies; Figures&nbsp;<a href="#fig:gravity">1.22</a>
+and&nbsp;<a href="#fig:hobbit">1.23</a> show images from two recent movies that used
+physically based approaches.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:gravity"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 46.462%; position:relative;">
+<div id="gravity.png2" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('gravity.png2'), { image: 'gravity.png' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 1.22: <span class="legend">
+<em>Gravity</em> (2013) featured spectacular computer-generated imagery of a
+realistic space environment with volumetric scattering and large numbers of
+anisotropic metal surfaces. The image was generated using Arnold, a
+physically based rendering system that accounts for global illumination. 
+Image courtesy of Warner Bros. and Framestore. </span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:hobbit"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 42.385%; position:relative;">
+<div id="hobbit.png3" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('hobbit.png3'), { image: 'hobbit.png' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 1.23: <span class="legend">
+This image from <em>The Hobbit: The Battle of the
+Five Armies</em> (2014) was also rendered using a
+physically based rendering system; the characters feature 
+heterogeneous subsurface scattering and vast amounts of geometric detail. Image
+by Weta Digital, courtesy of Warner Bros. and Metro-Goldwyn-Mayer. </span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Introduction/Further_Reading.html">Introduction / Further Reading</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

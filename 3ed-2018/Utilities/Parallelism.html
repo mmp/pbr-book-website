@@ -1,0 +1,1241 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Parallelism</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Parallelism</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities/Mathematical_Routines.html">(Previous: Mathematical Routines)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:parallelism"></span><h2>A.6 Parallelism</h2><p>
+
+
+
+</p>
+<p>Section&nbsp;<a href="../Introduction/Parallelization_of_pbrt.html#sec:parallel-principles">1.4</a> introduced some basic principles of
+parallel programming and described their application to <tt>pbrt</tt>.  Here, we&rsquo;ll
+go into more detail about performance issues related to multi-threading as
+well as describe the implementation of <tt>pbrt</tt>&rsquo;s <a href="#ParallelFor"><tt>ParallelFor()</tt></a>
+function, which is used throughout the system for parallel <tt>for</tt>
+loops, where different iterations of the loop can execute concurrently in
+different threads.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#MemoryCoherenceModelsandPerformance"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:multi-thread-memory-perf"></span><span id="MemoryCoherenceModelsandPerformance"></span><h3>A.6.1  Memory Coherence Models and Performance</h3><p>
+
+
+
+</p>
+<p>Cache coherence is a feature of all modern multicore CPUs; with it, memory
+writes by one processor are automatically visible to other processors.
+This is an incredibly useful feature; being able to assume it in the
+implementation of a system like <tt>pbrt</tt> is extremely helpful to the
+programmer.  Understanding the subtleties and performance
+characteristics of this feature is important, however.
+
+</p>
+<p>
+
+</p>
+<p>One potential issue is that other processors may not see writes to memory
+in the same order that the processor that performed the writes issued them.
+This can happen for two main reasons: the compiler&rsquo;s optimizer may have
+reordered write operations to improve performance, and the CPU hardware may
+write values to memory in a different order than the stream of executed
+machine instructions.  In the single-threaded case, both of these are
+innocuous; by design, the compiler and hardware, respectively, ensure that
+it&rsquo;s impossible for a single thread of execution running the program to detect when these cases
+happen.  This guarantee is not provided for multi-threaded code, however;
+doing so would impose a significant performance penalty, so hardware
+architectures leave handling this problem, when it matters, to software.
+
+</p>
+<p><em>Memory barrier</em> instructions can be used to ensure that all write
+instructions before the barrier are visible in memory before any subsequent
+instructions execute.  In practice, we generally don&rsquo;t need to issue memory
+barrier instructions explicitly, since the thread synchronization calls
+used to build multi-threaded algorithms take care of this; they are defined
+to make sure that writes are visible so that if we are coordinating
+execution between multiple threads using these calls, then they have a
+consistent view of memory after synchronization points.
+
+</p>
+<p>Although cache coherence is helpful to the programmer, it can sometimes
+impose a substantial performance penalty for data that is frequently
+modified and accessed by multiple processors.  Read-only data has little
+penalty; copies of it can be stored in the local caches of all of the
+processors that are accessing it, allowing all of them the same performance
+benefits from the caches as in the single-threaded case.  To understand the
+downside of taking too much advantage of cache coherence for read&ndash;write
+data, it&rsquo;s useful to understand how cache coherence is typically
+implemented on processors.
+
+</p>
+<p>CPUs implement a <em>cache coherence protocol</em>, which is responsible for
+tracking the memory transactions issued by all of the processors in order
+to provide cache coherence.  A classic such protocol is <em>MESI</em>, where
+the acronym represents the four states that each cache line can be in.
+Each processor stores the current state for each cache line in its local
+caches:
+</p>
+<ul>
+<li> <em>Modified</em>&mdash;The current processor has written to the memory location,
+but the result is only stored in the cache&mdash;it&rsquo;s <em>dirty</em> and hasn&rsquo;t
+been written to main memory.  No other processor has the location in its
+cache.
+<li> <em>Exclusive</em>&mdash;The current processor is the only one with the data from
+the corresponding memory location in its cache.  The value in the cache
+matches the value in memory.
+<li> <em>Shared</em>&mdash;Multiple processors have the corresponding memory
+location in their caches, but they have only performed read operations.
+<li> <em>Invalid</em>&mdash;The cache line doesn&rsquo;t hold valid data.
+</ul><p>
+
+At system startup time, the caches are empty and all cache lines are in the
+invalid state.  The first time a processor reads a memory location, the data
+for that location is loaded into cache and its cache line marked as being
+in the &ldquo;exclusive&rdquo; state.  If another processor performs a memory read
+of a location that is in the &ldquo;exclusive&rdquo; state in another cache, then
+both caches record the state for the corresponding memory location to
+instead be &ldquo;shared.&rdquo;
+
+</p>
+<p>When a processor writes to a memory location, the performance of the write
+depends on the state of the corresponding cache line.  If it&rsquo;s in the
+&ldquo;exclusive&rdquo; state and already in the writing processor&rsquo;s cache, then the
+write is cheap; the data is modified in the cache and the cache line&rsquo;s
+state is changed to &ldquo;modified.&rdquo;  (If it was already in the &ldquo;modified&rdquo;
+state, then the write is similarly efficient.)  In these cases, the value
+will eventually be written to main memory, at which point the corresponding
+cache line returns to the &ldquo;exclusive&rdquo; state.  
+
+</p>
+<p>However, if a processor writes to a memory location that&rsquo;s in the
+&ldquo;shared&rdquo; state in its cache or is in the &ldquo;modified&rdquo; or &ldquo;exclusive&rdquo;
+state in another processor&rsquo;s cache, then expensive communication between
+the cores is required.  All of this is handled transparently by the
+hardware, though it still has a performance impact.  In this case, the
+writing processor must issue a <em>read for ownership</em> (RFO), which marks
+the memory location as invalid in the caches of any other processors; RFOs
+can cause stalls of tens or hundreds of cycles&mdash;a substantial penalty for
+a single memory write.
+
+</p>
+<p>In general, we&rsquo;d therefore like to avoid the situation of multiple
+processors concurrently writing to the same memory location as well as
+unnecessarily reading memory that another processor is writing to.  
+An important case to be aware of is &ldquo;false sharing,&rdquo; where a single cache
+line holds some read-only data and some data that is frequently modified.
+In this case, even if only a single processor is writing to the part of the
+cache line that is modified but many are reading from the read-only part,
+the overhead of frequent RFO operations will be unnecessarily incurred.
+
+</p>
+<p>A situation where many processors might be concurrently trying to write to
+the same or nearby memory locations is when image sample values are accumulated into
+the final image. To ensure that image updates don&rsquo;t pay the RFO cost,
+each rendering thread in the
+<a href="#ParallelFor"><tt>ParallelFor()</tt></a> loop of the <a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator"><tt>SamplerIntegrator</tt></a> creates a private
+<a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#FilmTile"><tt>FilmTile</tt></a> to use for accumulating sample values for the part of the
+image that it&rsquo;s working on; it is then free to modify the <tt>FilmTile</tt>
+pixel values without worrying about contention with other threads for those
+memory locations.  Only when a portion of the image is finished is the tile
+merged into the main image, thus allowing the overhead of mutual exclusion
+and RFO operations to be amortized over a smaller number of larger updates.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#AtomicOperations"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:atomic-ops"></span><span id="AtomicOperations"></span><h3>A.6.2  Atomic Operations</h3><p>
+
+
+
+</p>
+<p>Recall from Section&nbsp;<a href="../Introduction/Parallelization_of_pbrt.html#sec:parallel-principles">1.4</a> that mutexes can be used
+to ensure that multiple
+threads don&rsquo;t simultaneously try to update the same memory
+locations.
+However, modern CPUs and GPUs also provide specialized hardware instructions to
+perform certain operations <em>atomically</em>, generating consistent results
+when multiple threads use them to modify the same location concurrently.
+When applicable, atomics are generally more efficient than acquiring a
+mutex, updating the memory location, and releasing the mutex.  Atomic
+instructions can only operate on a limited amount of memory (up to 8 bytes on current architectures)
+and support only a few operations (addition, swap, etc.).  If atomic
+updates to more data or other kinds of operations are required, mutexes must generally be used instead.
+
+</p>
+<p>C++11 provides a variety of atomic operations in the standard library,
+available via the <tt>&lt;atomic&gt;</tt> header file.  For example, given the
+declaration of an integer value as <tt>std::atomic</tt> as follows,
+incrementing <tt>counter</tt> is an atomic operation.
+
+</p>
+<p></p>
+<div class="fragmentcode">std::atomic&lt;int&gt; counter(0);
+//  &hellip;
+counter++;</div><p>
+
+
+</p>
+<p>Atomic instructions do introduce some overhead, so they should only be
+used in cases where they are actually necessary.
+
+</p>
+<p>Another useful atomic operation is &ldquo;compare
+and swap,&rdquo; which is also exposed by the C++ standard library. It takes a memory
+location and the value that the caller believes the location currently
+stores.  If the memory location still holds that value when the atomic
+compare and swap executes, then a new value is stored and <tt>true</tt> is
+returned; otherwise, memory is left unchanged and <tt>false</tt> is returned.
+
+</p>
+<p>
+
+</p>
+<p>Compare and swap is a building block that can be used to build many other
+atomic operations.  For example, the code below could be executed by
+multiple threads to compute the maximum of values computed by all of the
+threads. (For this
+particular case, the specialized atomic maximum function would be a better
+choice, but this example helps convey the usage.)
+</p>
+<div class="fragmentcode">std::atomic&lt;int&gt; maxValue;
+int localMax = ...;
+int currentMax = maxValue;
+while (localMax &gt; currentMax) {
+    if (maxValue.compare_exchange_weak(currentMax, localMax))
+        break;
+}</div><p>
+
+
+</p>
+<p> If only a single thread is trying to update the memory location and the
+local value is larger, the loop
+is successful the first time through; the value loaded into
+<tt>currentMax</tt> is still the value stored by <tt>maxValue</tt> when
+<tt>compare_exchange_weak()</tt> executes and so <tt>localMax</tt> is
+successfully stored and <tt>true</tt> is returned.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="The &ldquo;weak&rdquo; in
+the compare/exchange instruction refers to the shared memory model required
+of the underlying hardware.  For our purposes, the lesser requirement of
+&ldquo;weak&rdquo; is fine, as it can be much more efficient than a strongly ordered
+memory model on some architectures.  In return for this choice, the compare
+and exchange may occasionally fail incorrectly, so it requires a retry loop as
+we have implemented here.">
+      <sup>&dagger;</sup>
+    </button>
+		  If multiple threads are executing concurrently,
+then another thread may update the value in <tt>maxValue</tt> between the
+thread&rsquo;s read of <tt>maxValue</tt> and the execution of
+<tt>compare_exchange_weak()</tt>.  In that case, the compare and swap
+fails, memory isn&rsquo;t updated, and another pass is taken through the loop to
+try again. In the case of a failure, 
+<tt>compare_exchange_weak()</tt> updates <tt>currentMax</tt>
+with the new value of <tt>maxValue</tt>.
+
+</p>
+<p>An important application of atomic compare and swap is for the construction
+of data structures (as is done in Section&nbsp;<a href="../Light_Transport_III_Bidirectional_Methods/Stochastic_Progressive_Photon_Mapping.html#sec:sppm-hit-point-grid">16.2.5</a> for
+photon mapping).  Consider, for example, a tree data structure where each node has child
+node pointers initially set to <tt>nullptr</tt>.  If code traversing the tree
+wants to create a new child at a node, code could be written like:
+
+</p>
+<div class="fragmentcode">// atomic&lt;Type *&gt; node-&gt;firstChild
+if (!node-&gt;firstChild) {
+    Type *newChild = new Type ...
+    Type *current = nullptr;
+    if (node-&gt;firstChild.compare_exchange_weak(current, newChild) == false)
+        delete newChild;
+}
+// node-&gt;firstChild != nullptr now</div><p>
+
+
+</p>
+<p>The idea is that if the child has the value <tt>nullptr</tt>, the thread
+speculatively creates and fully initializes the child node into a local
+variable, not yet visible to the other threads.  Atomic compare
+and swap is then used to try to initialize the child pointer;
+if it still has the value <tt>nullptr</tt>, then the new child is stored and
+made available to all threads.  If the child pointer no longer has the value
+<tt>nullptr</tt>, then another thread has initialized the child in the time
+between the current thread first seeing that it was <tt>nullptr</tt> and
+later trying to update it.  In this case, the work done in the
+current thread turns out to have been wasted, but it can delete the locally
+created child node and continue execution, using the node created by the
+other thread.
+
+</p>
+<p>This method of tree construction is a simple example of a <em>lock-free</em>
+algorithm.  This approach has a few advantages compared to, for example,
+using a reader&ndash;writer mutex to manage updating the tree.  First, there&rsquo;s
+no overhead of acquiring the reader mutex for regular tree traversal.
+Second, multiple threads can naturally concurrently update different parts
+of the tree.  With a single reader&ndash;writer mutex, if one thread acquires
+the mutex to update one node in the tree, other threads won&rsquo;t be able to
+update other nodes.  The &ldquo;Further Reading&rdquo; section at the end of the
+appendix has pointers to more information about lock-free algorithms.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#AtomicFloating-PointValues"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="AtomicFloating-PointValues"></span><h3>A.6.3  Atomic Floating-Point Values</h3><p>
+
+
+</p>
+<p>The <tt>std::atomic</tt> template cannot be used with floating-point
+types. One of the main reasons that atomic operations are not supported
+with it is that floating-point operations are generally not associative: as
+discussed in Section&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#sec:ieee-fp">3.9.1</a>, when computed in floating-point,
+the value of the sum <tt>(a+b)+c</tt> is not necessarily equal to the sum
+<tt>a+(b+c)</tt>.  In turn, if a multi-threaded computation used atomic
+floating-point addition operations to compute some value, then the result
+computed wouldn&rsquo;t be the same across multiple program executions.
+(In contrast, with integer types, all of the supported operations are
+associative, and so atomic operations give consistent results no matter
+which order threads perform them in.)
+
+</p>
+<p>For <tt>pbrt</tt>&rsquo;s needs, these inconsistencies are generally tolerable, and being
+able to use atomic operations on <tt>Float</tt>s is preferable in some cases
+to using a lock. (One example is splatting pixel contributions in the
+<a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film::AddSplat"><tt>Film::AddSplat()</tt></a> method.)  For these purposes, we provide a small
+<tt>AtomicFloat</tt> class.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelDeclarations-0"></span><div class="fragmentname">&lt;&lt;Parallel Declarations&gt;&gt;=&nbsp;<a href="#fragment-ParallelDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="AtomicFloat"></span>AtomicFloat {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AtomicFloatPublicMethods-0">AtomicFloat Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1892" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1892"><i></i></a><div id="fragbit-1892" class="collapse"><div class="fragmentcode">       explicit AtomicFloat(Float v = 0) { <a href="#AtomicFloat::bits" class="code">bits</a> = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(v); }
+       operator Float() const { return <a href="../Shapes/Managing_Rounding_Error.html#BitsToFloat" class="code">BitsToFloat</a>(<a href="#AtomicFloat::bits" class="code">bits</a>); }
+       Float operator=(Float v) { <a href="#AtomicFloat::bits" class="code">bits</a> = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(v); return v; }
+       void Add(Float v) {
+           uint32_t oldBits = <a href="#AtomicFloat::bits" class="code">bits</a>, newBits;
+           do {
+               newBits = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(<a href="../Shapes/Managing_Rounding_Error.html#BitsToFloat" class="code">BitsToFloat</a>(oldBits) + v);
+           } while (!<a href="#AtomicFloat::bits" class="code">bits</a>.compare_exchange_weak(oldBits, newBits));
+       }</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AtomicFloatPrivateData-0">AtomicFloat Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1893" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1893"><i></i></a><div id="fragbit-1893" class="collapse"><div class="fragmentcode">       std::atomic&lt;uint32_t&gt; bits;
+       </div></div>
+};</div><p>
+
+
+</p>
+<p>An <tt>AtomicFloat</tt> can be initialized from a provided floating-point
+value.  In the implementation here, floating-point values are actually
+represented as their unsigned integer bitwise values, as returned by the
+<a href="../Shapes/Managing_Rounding_Error.html#FloatToBits"><tt>FloatToBits()</tt></a> function.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AtomicFloatPublicMethods-0"></span><div class="fragmentname">&lt;&lt;AtomicFloat Public Methods&gt;&gt;=&nbsp;<a href="#fragment-AtomicFloatPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">explicit AtomicFloat(Float v = 0) { <a href="#AtomicFloat::bits" class="code">bits</a> = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(v); }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>By using a <tt>uint32_t</tt> to represent the value, we can use a
+<tt>std::atomic</tt> type to store it in memory, which in turn allows the
+compiler to be aware that the value in memory is being updated atomically.
+(If <tt>pbrt</tt> has been compiled to use 64-bit <tt>double</tt>s for
+<tt>Float</tt> values, a <tt>uint64_t</tt> is used instead, though this code
+isn&rsquo;t included here.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AtomicFloatPrivateData-0"></span><div class="fragmentname">&lt;&lt;AtomicFloat Private Data&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::atomic&lt;uint32_t&gt; <span class="anchor" id="AtomicFloat::bits"></span>bits;
+</div><p>
+
+
+</p>
+<p>Assigning the value or returning it as a <tt>Float</tt> is just a matter of
+converting to or from the unsigned integer representation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AtomicFloatPublicMethods-1"></span><div class="fragmentname">&lt;&lt;AtomicFloat Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-AtomicFloatPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-AtomicFloatPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">operator Float() const { return <a href="../Shapes/Managing_Rounding_Error.html#BitsToFloat" class="code">BitsToFloat</a>(bits); }
+Float operator=(Float v) { bits = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(v); return v; }</div><p>
+
+
+</p>
+<p>Atomic floating-point addition is implemented via an atomic compare and
+exchange operation.  In the <tt>do</tt> loop below, we convert the in-memory
+bit representation of the value to a <tt>Float</tt>, add the provided
+difference in <tt>v</tt>, and attempt to atomically store the resulting
+bits. If the in-memory value has been changed by another thread since
+the value from <tt>bits</tt> was read from memory, the implementation continues retrying
+until the value in memory matches the expected value (in <tt>oldBits</tt>),
+at which point the atomic update succeeds.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AtomicFloatPublicMethods-2"></span><div class="fragmentname">&lt;&lt;AtomicFloat Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-AtomicFloatPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="AtomicFloat::Add"></span>Add(Float v) {
+    uint32_t oldBits = <a href="#AtomicFloat::bits" class="code">bits</a>, newBits;
+    do {
+        newBits = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(<a href="../Shapes/Managing_Rounding_Error.html#BitsToFloat" class="code">BitsToFloat</a>(oldBits) + v);
+    } while (!<a href="#AtomicFloat::bits" class="code">bits</a>.compare_exchange_weak(oldBits, newBits));
+}</div><p>
+
+
+</p>
+<p><tt>pbrt</tt> doesn&rsquo;t currently need to perform any other operations on
+<tt>AtomicFloat</tt>s, so we don&rsquo;t provide any additional methods.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ParallelForLoops"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:parallel-for"></span><span id="ParallelForLoops"></span><h3>A.6.4  Parallel For Loops</h3><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p>All of the multi-core parallelism in <tt>pbrt</tt> is expressed through parallel
+<tt>for</tt> loops using the <tt>ParallelFor()</tt> function, which is
+implemented in the files <span class="anchor" id="coreparallel.h"></span><a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/parallel.h"><tt>core/parallel.h</tt></a>
+and <span class="anchor" id="coreparallel.cpp"></span><a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/parallel.cpp"><tt>core/parallel.cpp</tt></a>.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Our
+implementation here, which is more efficient than the task system in the
+previous version of <tt>pbrt</tt>, is based on the parallel <tt>for</tt> loop
+implementation in <em>Halide</em> written by Jonathan Ragan-Kelley, Andrew
+Adams, and Zalman Stern.">
+      <sup>&dagger;</sup>
+    </button>
+		
+<tt>ParallelFor()</tt> takes the loop body in the form of a function that is
+called for each loop iteration as well as a count of the total number of
+loop iterations to execute.  It generally runs multiple iterations in
+parallel on different CPU cores and it returns only after all of the loop
+iterations have finished.  In using <tt>ParallelFor()</tt>, the
+caller makes the implicit promise that it&rsquo;s safe to execute multiple loop
+iterations concurrently.  An important implication of this promise is that
+the order in which the loop iterations are executed must not affect the final
+results computed.
+
+</p>
+<p>Here is a simple example of using <tt>ParallelFor()</tt>.  A C++ lambda
+expression is used to define the loop body; the loop index is
+passed to it as an argument.  The lambda has access to the
+local <tt>array</tt> variable and doubles each array element in its body.
+Note that the value 1024 is passed as the second parameter to
+<tt>ParallelFor()</tt> after the lambda, giving the number of times to
+execute the loop body.
+</p>
+<div class="fragmentcode">Float array[1024] = { ... };
+ParallelFor(
+    [array](int index) {
+        array[index] *= 2.; 
+    }, 1024);</div><p>
+
+
+</p>
+<p>While it&rsquo;s also possible to pass a function pointer to
+<tt>ParallelFor()</tt>, lambdas are generally much more convenient given
+their ability to capture locally visible variables and make them available
+in their body.
+
+</p>
+<p>For loops with relatively large iteration counts where the work done per
+iteration is small, it can be worthwhile to have the threads running loop
+iterations do multiple iterations before getting more work.  (Doing so
+helps amortize the overhead of determining which iterations
+should be assigned to a thread.)  Therefore, <tt>ParallelFor()</tt> also takes an optional
+<tt>chunkSize</tt> parameter that controls the granularity of the mapping of
+loop iterations to processing threads.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelDefinitions-0"></span><div class="fragmentname">&lt;&lt;Parallel Definitions&gt;&gt;=&nbsp;<a href="#fragment-ParallelDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ParallelFor"></span>ParallelFor(const std::function&lt;void(int)&gt; &amp;func,
+        int count, int chunkSize) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Runiterationsimmediatelyifnotusingthreadsorifmonocountissmall-0">Run iterations immediately if not using threads or if <tt>count</tt> is small</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1894" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1894"><i></i></a><div id="fragbit-1894" class="collapse"><div class="fragmentcode">       if (<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#PbrtOptions" class="code">PbrtOptions</a>.<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#Options::nThreads" class="code">nThreads</a> == 1 || count &lt; chunkSize) {
+           for (int i = 0; i &lt; count; ++i)
+               func(i);
+           return;
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Launchworkerthreadsifneeded-0">Launch worker threads if needed</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1895" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1895"><i></i></a><div id="fragbit-1895" class="collapse"><div class="fragmentcode">       if (<a href="#threads" class="code">threads</a>.size() == 0) {
+           <a href="#ThreadIndex" class="code">ThreadIndex</a> = 0;
+           for (int i = 0; i &lt; <a href="#NumSystemCores" class="code">NumSystemCores</a>() - 1; ++i)
+               <a href="#threads" class="code">threads</a>.push_back(std::thread(<a href="#workerThreadFunc" class="code">workerThreadFunc</a>, i + 1));
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CreateandenqueuemonoParallelForLoopforthisloop-0">Create and enqueue <tt>ParallelForLoop</tt> for this loop</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1896" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1896"><i></i></a><div id="fragbit-1896" class="collapse"><div class="fragmentcode">       ParallelForLoop loop(func, count, chunkSize, <a href="../Utilities/Statistics.html#CurrentProfilerState" class="code">CurrentProfilerState</a>());
+       <a href="#workListMutex" class="code">workListMutex</a>.lock();
+       loop.<a href="#ParallelForLoop::next" class="code">next</a> = <a href="#workList" class="code">workList</a>;
+       <a href="#workList" class="code">workList</a> = &amp;loop;
+       <a href="#workListMutex" class="code">workListMutex</a>.unlock();</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Notifyworkerthreadsofworktobedone-0">Notify worker threads of work to be done</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1897" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1897"><i></i></a><div id="fragbit-1897" class="collapse"><div class="fragmentcode">       std::unique_lock&lt;std::mutex&gt; lock(<a href="#workListMutex" class="code">workListMutex</a>);
+       <a href="#workListCondition" class="code">workListCondition</a>.notify_all();</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Helpoutwithparallelloopiterationsinthecurrentthread-0">Help out with parallel loop iterations in the current thread</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1898" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1898"><i></i></a><div id="fragbit-1898" class="collapse"><div class="fragmentcode">       while (!loop.<a href="#ParallelForLoop::Finished" class="code">Finished</a>()) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Runachunkofloopiterationsformonoloop-0">Run a chunk of loop iterations for <tt>loop</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1899" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1899"><i></i></a><div id="fragbit-1899" class="collapse"><div class="fragmentcode">              &lt;&lt;<span class="fragmentname"><a href="#fragment-Findthesetofloopiterationstorunnext-0">Find the set of loop iterations to run next</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1900" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1900"><i></i></a><div id="fragbit-1900" class="collapse"><div class="fragmentcode">                 int64_t indexStart = loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a>;
+                 int64_t indexEnd = std::min(indexStart + loop.<a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>, loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>);</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectiterationsthisthreadwillrun-0">Update <tt>loop</tt> to reflect iterations this thread will run</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1901" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1901"><i></i></a><div id="fragbit-1901" class="collapse"><div class="fragmentcode">                 loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> = indexEnd;
+                 if (loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> == loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>)
+                     <a href="#workList" class="code">workList</a> = loop.<a href="#ParallelForLoop::next" class="code">next</a>;
+                 loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>++;</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-RunloopindicesinmonoindexStartindexEnd-0">Run loop indices in <tt>[indexStart, indexEnd)</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1902" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1902"><i></i></a><div id="fragbit-1902" class="collapse"><div class="fragmentcode">                 lock.unlock();
+                 for (int index = indexStart; index &lt; indexEnd; ++index) {
+                     if (loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>) {
+                         loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>(index);
+                     }
+                     &lt;&lt;<span class="fragmentname">Handle other types of loops</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1903" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1903"><i></i></a><div id="fragbit-1903" class="collapse"><div class="fragmentcode">                        else {
+                            Assert(loop.func2D);
+                            loop.func2D(<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>(index % loop.nX, index / loop.nX));
+                        }</div></div>
+                 }
+                 lock.lock();</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectcompletionofiterations-0">Update <tt>loop</tt> to reflect completion of iterations</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1904" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1904"><i></i></a><div id="fragbit-1904" class="collapse"><div class="fragmentcode">                 loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>--;</div></div></div></div>
+       }</div></div> 
+}</div><p>
+
+
+</p>
+<p><tt>ParallelFor()</tt> usually distributes loop iterations across multiple
+threads.  However, if the system has only one CPU (or the user specified
+that only one thread should be used for rendering), or if the number of loop iterations is
+small, then the loop just runs immediately in the current thread, without any
+parallelism.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Runiterationsimmediatelyifnotusingthreadsorifmonocountissmall-0"></span><div class="fragmentname">&lt;&lt;Run iterations immediately if not using threads or if <tt>count</tt> is small&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#PbrtOptions" class="code">PbrtOptions</a>.<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#Options::nThreads" class="code">nThreads</a> == 1 || count &lt; chunkSize) {
+    for (int i = 0; i &lt; count; ++i)
+        func(i);
+    return;
+}</div><p>
+
+
+</p>
+<p>Parallel execution is implemented using a set of worker threads (a
+<em>thread pool</em>) that is created the first time <tt>ParallelFor()</tt> is
+called.  The threads don&rsquo;t terminate after <tt>ParallelFor()</tt> returns,
+however; instead they wait on a condition variable that signals more work.
+This approach means that using the threads for parallel work is a fairly
+lightweight operation&mdash;the overhead of numerous operating system calls to
+create the threads is only paid once.  (This implementation approach is
+often called <em>persistent threads</em>.)  It&rsquo;s thus possible to use the
+thread pool for fairly fine-grained tasks, which in turn lets the system
+load-balance well when tasks have variable amounts of computation and lets
+the system scale well as more cores are available in the future.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelLocalDefinitions-0"></span><div class="fragmentname">&lt;&lt;Parallel Local Definitions&gt;&gt;=&nbsp;<a href="#fragment-ParallelLocalDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static std::vector&lt;std::thread&gt; <span class="anchor" id="threads"></span>threads;
+static bool <span class="anchor" id="shutdownThreads"></span>shutdownThreads = false;</div><p>
+
+
+</p>
+<p><tt>pbrt</tt>&rsquo;s initial execution thread also helps run loop iterations, so the
+number of worker threads launched is one fewer than the number of available
+CPU cores.  There is thus a one-to-one relationship between cores and
+worker threads.  Notwithstanding other processes running on the system,
+<tt>pbrt</tt>&rsquo;s threads are collectively enough to fully occupy the CPUs without
+introducing unnecessary thread-switching overhead from having more threads
+running than there are available cores.
+(<span class="anchor" id="NumSystemCores"></span><tt>NumSystemCores()</tt> returns the number
+of processing cores in the system.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Launchworkerthreadsifneeded-0"></span><div class="fragmentname">&lt;&lt;Launch worker threads if needed&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="#threads" class="code">threads</a>.size() == 0) {
+    <a href="#ThreadIndex" class="code">ThreadIndex</a> = 0;
+    for (int i = 0; i &lt; <a href="#NumSystemCores" class="code">NumSystemCores</a>() - 1; ++i)
+        <a href="#threads" class="code">threads</a>.push_back(std::thread(<a href="#workerThreadFunc" class="code">workerThreadFunc</a>, i + 1));
+}</div><p>
+
+
+</p>
+<p>The function that worker threads run, <tt>workerThreadFunc()</tt>, will be
+introduced after we show how the state of enqueued parallel <tt>for</tt> loops is
+represented.
+
+</p>
+<p>In the following, threads will need to determine which of the running
+threads they are.  The <tt>ThreadIndex</tt> variable is declared with a
+qualifier that indicates that thread-local storage should be allocated for
+it, so that there is a separate instance of it for each thread.  This
+variable is initialized to&nbsp;0 for the main thread and goes from&nbsp;1 to
+the number of threads for the worker threads.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelDeclarations-1"></span><div class="fragmentname">&lt;&lt;Parallel Declarations&gt;&gt;+=&nbsp;<a href="#fragment-ParallelDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParallelDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">extern thread_local int <span class="anchor" id="ThreadIndex"></span>ThreadIndex;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>workList</tt> variable holds a pointer to the head of a list of
+parallel <tt>for</tt> loops that aren&rsquo;t yet finished.  Usually, there will be
+no more than one loop in this list, except in the presence of <em>nested
+parallelism</em>, when the body of one parallel <tt>for</tt> loop iteration
+specifies another parallel <tt>for</tt> loop in its body.  The
+<tt>workListMutex</tt> must always be held when accessing <a href="#workList"><tt>workList</tt></a> or
+values stored in the <tt>ParallelForLoop</tt> objects held in it.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelLocalDefinitions-1"></span><div class="fragmentname">&lt;&lt;Parallel Local Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ParallelLocalDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParallelLocalDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static ParallelForLoop *<span class="anchor" id="workList"></span>workList = nullptr;
+static std::mutex <span class="anchor" id="workListMutex"></span>workListMutex;</div><p>
+
+
+</p>
+<p>Adding a new loop to the work queue is fairly straightforward.  After
+initializing the <tt>ParallelForLoop</tt> object that represents the loop&rsquo;s
+work, the implementation here locks the mutex and adds the loop to the
+head of the list.
+There are two important details here: first, because the call to
+<tt>ParallelFor()</tt> here doesn&rsquo;t return until all work for the loop is
+done, it&rsquo;s safe to allocate <tt>loop</tt> on the stack&mdash;no dynamic memory
+allocation is required.
+
+</p>
+<p>Second, the loop is added to the <em>front</em> of the work list&mdash;doing so
+means that in the presence of nested parallelism, the inner loops will run
+before their enclosing loops.  This leads to depth-first processing of the
+nested loops (rather than breadth-first), which in turn can avoid an
+explosion in the number of loops in the work list.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CreateandenqueuemonoParallelForLoopforthisloop-0"></span><div class="fragmentname">&lt;&lt;Create and enqueue <tt>ParallelForLoop</tt> for this loop&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">ParallelForLoop loop(func, count, chunkSize, <a href="../Utilities/Statistics.html#CurrentProfilerState" class="code">CurrentProfilerState</a>());
+<a href="#workListMutex" class="code">workListMutex</a>.lock();
+loop.<a href="#ParallelForLoop::next" class="code">next</a> = <a href="#workList" class="code">workList</a>;
+<a href="#workList" class="code">workList</a> = &amp;loop;
+<a href="#workListMutex" class="code">workListMutex</a>.unlock();</div><p>
+
+
+</p>
+<p>The <tt>ParallelForLoop</tt> class encapsulates the relevant information
+about a parallel <tt>for</tt> loop body, including the function to run, the
+number of iterations, and which iterations are already done.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelLocalDefinitions-2"></span><div class="fragmentname">&lt;&lt;Parallel Local Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ParallelLocalDefinitions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParallelLocalDefinitions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="ParallelForLoop"></span>ParallelForLoop {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParallelForLoopPublicMethods-0">ParallelForLoop Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1905" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1905"><i></i></a><div id="fragbit-1905" class="collapse"><div class="fragmentcode">       ParallelForLoop(std::function&lt;void(int)&gt; <a href="#ParallelForLoop::func1D" class="code">func1D</a>,
+               int64_t <a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>, int <a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>, int <a href="#ParallelForLoop::profilerState" class="code">profilerState</a>)
+           : <a href="#ParallelForLoop::func1D" class="code">func1D</a>(std::move(<a href="#ParallelForLoop::func1D" class="code">func1D</a>)), <a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>(<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>),
+             <a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>(<a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>), <a href="#ParallelForLoop::profilerState" class="code">profilerState</a>(<a href="#ParallelForLoop::profilerState" class="code">profilerState</a>) { }
+       ParallelForLoop(const std::function&lt;void(<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>)&gt; &amp;f, const <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> &amp;count, int <a href="#ParallelForLoop::profilerState" class="code">profilerState</a>)
+           : func2D(f), <a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>(count.x * count.y), <a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>(1), <a href="#ParallelForLoop::profilerState" class="code">profilerState</a>(<a href="#ParallelForLoop::profilerState" class="code">profilerState</a>) {
+           nX = count.x;
+       }</div></div>
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParallelForLoopPrivateData-0">ParallelForLoop Private Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1906" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1906"><i></i></a><div id="fragbit-1906" class="collapse"><div class="fragmentcode">       std::function&lt;void(int)&gt; func1D;
+       const int64_t maxIndex;
+       const int chunkSize, profilerState;
+       int64_t nextIndex = 0;
+       int activeWorkers = 0;
+       ParallelForLoop *next = nullptr;
+       </div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParallelForLoopPrivateMethods-0">ParallelForLoop Private Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1907" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1907"><i></i></a><div id="fragbit-1907" class="collapse"><div class="fragmentcode">       bool Finished() const { return <a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> &gt;= <a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a> &amp;&amp;
+                               <a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a> == 0; }</div></div>
+};</div><p>
+
+
+</p>
+<p><tt>ParallelForLoop</tt> can represent loops over both 1D and 2D domains
+corresponding to the variants of the <a href="#ParallelFor"><tt>ParallelFor()</tt></a> function.  In the
+following, we&rsquo;ll only show the code for the 1D case.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelForLoopPublicMethods-0"></span><div class="fragmentname">&lt;&lt;ParallelForLoop Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">ParallelForLoop(std::function&lt;void(int)&gt; <a href="#ParallelForLoop::func1D" class="code">func1D</a>,
+        int64_t <a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>, int <a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>, int <a href="#ParallelForLoop::profilerState" class="code">profilerState</a>)
+    : <a href="#ParallelForLoop::func1D" class="code">func1D</a>(std::move(<a href="#ParallelForLoop::func1D" class="code">func1D</a>)), <a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>(<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>),
+      <a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>(<a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>), <a href="#ParallelForLoop::profilerState" class="code">profilerState</a>(<a href="#ParallelForLoop::profilerState" class="code">profilerState</a>) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelForLoopPrivateData-0"></span><div class="fragmentname">&lt;&lt;ParallelForLoop Private Data&gt;&gt;=&nbsp;<a href="#fragment-ParallelForLoopPrivateData-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::function&lt;void(int)&gt; <span class="anchor" id="ParallelForLoop::func1D"></span>func1D;
+const int64_t <span class="anchor" id="ParallelForLoop::maxIndex"></span>maxIndex;
+const int <span class="anchor" id="ParallelForLoop::chunkSize"></span>chunkSize, <span class="anchor" id="ParallelForLoop::profilerState"></span>profilerState;</div><p>
+
+
+</p>
+<p>The <tt>nextIndex</tt> member variable tracks the next loop index to be
+executed.  It is incremented by workers as they claim loop iterations to
+execute in their threads. The value stored in <tt>activeWorkers</tt> records how many worker
+threads are currently running iterations of the loop.  <tt>next</tt> is used
+to maintain the linked list of nested loops.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelForLoopPrivateData-1"></span><div class="fragmentname">&lt;&lt;ParallelForLoop Private Data&gt;&gt;+=&nbsp;<a href="#fragment-ParallelForLoopPrivateData-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">int64_t <span class="anchor" id="ParallelForLoop::nextIndex"></span>nextIndex = 0;
+int <span class="anchor" id="ParallelForLoop::activeWorkers"></span>activeWorkers = 0;
+ParallelForLoop *<span class="anchor" id="ParallelForLoop::next"></span>next = nullptr;
+</div><p>
+
+
+</p>
+<p>A parallel <tt>for</tt> loop is only finished when the index has been
+advanced to the end of the loop&rsquo;s range and there are no threads currently
+working on it.  Note that the first of these conditions will be reached
+while work is still in progress.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelForLoopPrivateMethods-0"></span><div class="fragmentname">&lt;&lt;ParallelForLoop Private Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">bool <span class="anchor" id="ParallelForLoop::Finished"></span>Finished() const { return <a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> &gt;= <a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a> &amp;&amp;
+                        <a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a> == 0; }</div><p>
+
+
+</p>
+<p>After the loop has been added to the work list, the worker threads are signaled
+so that they wake up and start taking work from the list.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Notifyworkerthreadsofworktobedone-0"></span><div class="fragmentname">&lt;&lt;Notify worker threads of work to be done&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::unique_lock&lt;std::mutex&gt; lock(<a href="#workListMutex" class="code">workListMutex</a>);
+<a href="#workListCondition" class="code">workListCondition</a>.notify_all();</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelLocalDefinitions-3"></span><div class="fragmentname">&lt;&lt;Parallel Local Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ParallelLocalDefinitions-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParallelLocalDefinitions-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static std::condition_variable <span class="anchor" id="workListCondition"></span>workListCondition;</div><p>
+
+
+</p>
+<p>Finally, the thread that called <tt>ParallelFor()</tt> (be it the main thread
+or one of the worker threads) starts work on the loop.  In the presence of
+nested parallelism, this means that the thread that enqueued this
+loop works on it exclusively before returning. By finishing the
+loop before allowing the thread that submitted it to do any more work, the
+implementation keeps the amount of enqueued work limited and allows
+subsequent code in the caller to proceed, knowing the loop&rsquo;s work is done
+after its call to <tt>ParallelFor()</tt> returns.
+
+</p>
+<p>A lock to <a href="#workListMutex"><tt>workListMutex</tt></a> is always held going into the <tt>while</tt>
+loop here.  Note that the lock is necessary even for calling
+the <tt>Finished()</tt> method, since <tt>loop</tt> is stored in <a href="#workList"><tt>workList</tt></a>
+and thus will be accessed by the other threads.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Helpoutwithparallelloopiterationsinthecurrentthread-0"></span><div class="fragmentname">&lt;&lt;Help out with parallel loop iterations in the current thread&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">while (!loop.<a href="#ParallelForLoop::Finished" class="code">Finished</a>()) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Runachunkofloopiterationsformonoloop-0">Run a chunk of loop iterations for <tt>loop</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1908" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1908"><i></i></a><div id="fragbit-1908" class="collapse"><div class="fragmentcode">       &lt;&lt;<span class="fragmentname"><a href="#fragment-Findthesetofloopiterationstorunnext-0">Find the set of loop iterations to run next</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1909" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1909"><i></i></a><div id="fragbit-1909" class="collapse"><div class="fragmentcode">          int64_t indexStart = loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a>;
+          int64_t indexEnd = std::min(indexStart + loop.<a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>, loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>);</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectiterationsthisthreadwillrun-0">Update <tt>loop</tt> to reflect iterations this thread will run</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1910" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1910"><i></i></a><div id="fragbit-1910" class="collapse"><div class="fragmentcode">          loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> = indexEnd;
+          if (loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> == loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>)
+              <a href="#workList" class="code">workList</a> = loop.<a href="#ParallelForLoop::next" class="code">next</a>;
+          loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>++;</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-RunloopindicesinmonoindexStartindexEnd-0">Run loop indices in <tt>[indexStart, indexEnd)</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1911" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1911"><i></i></a><div id="fragbit-1911" class="collapse"><div class="fragmentcode">          lock.unlock();
+          for (int index = indexStart; index &lt; indexEnd; ++index) {
+              if (loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>) {
+                  loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>(index);
+              }
+              &lt;&lt;<span class="fragmentname">Handle other types of loops</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1912" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1912"><i></i></a><div id="fragbit-1912" class="collapse"><div class="fragmentcode">                 else {
+                     Assert(loop.func2D);
+                     loop.func2D(<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>(index % loop.nX, index / loop.nX));
+                 }</div></div>
+          }
+          lock.lock();</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectcompletionofiterations-0">Update <tt>loop</tt> to reflect completion of iterations</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1913" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1913"><i></i></a><div id="fragbit-1913" class="collapse"><div class="fragmentcode">          loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>--;</div></div></div></div>
+}</div><p>
+
+
+</p>
+<p>Each time through the <tt>while</tt> loop, the thread runs one or more
+iterations of the parallel loop&rsquo;s body.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Runachunkofloopiterationsformonoloop-0"></span><div class="fragmentname">&lt;&lt;Run a chunk of loop iterations for <tt>loop</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">&lt;&lt;<span class="fragmentname"><a href="#fragment-Findthesetofloopiterationstorunnext-0">Find the set of loop iterations to run next</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1914" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1914"><i></i></a><div id="fragbit-1914" class="collapse"><div class="fragmentcode">   int64_t indexStart = loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a>;
+   int64_t indexEnd = std::min(indexStart + loop.<a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>, loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>);</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectiterationsthisthreadwillrun-0">Update <tt>loop</tt> to reflect iterations this thread will run</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1915" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1915"><i></i></a><div id="fragbit-1915" class="collapse"><div class="fragmentcode">   loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> = indexEnd;
+   if (loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> == loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>)
+       <a href="#workList" class="code">workList</a> = loop.<a href="#ParallelForLoop::next" class="code">next</a>;
+   loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>++;</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-RunloopindicesinmonoindexStartindexEnd-0">Run loop indices in <tt>[indexStart, indexEnd)</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1916" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1916"><i></i></a><div id="fragbit-1916" class="collapse"><div class="fragmentcode">   lock.unlock();
+   for (int index = indexStart; index &lt; indexEnd; ++index) {
+       if (loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>) {
+           loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>(index);
+       }
+       &lt;&lt;<span class="fragmentname">Handle other types of loops</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1917" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1917"><i></i></a><div id="fragbit-1917" class="collapse"><div class="fragmentcode">          else {
+              Assert(loop.func2D);
+              loop.func2D(<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>(index % loop.nX, index / loop.nX));
+          }</div></div>
+   }
+   lock.lock();</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectcompletionofiterations-0">Update <tt>loop</tt> to reflect completion of iterations</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1918" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1918"><i></i></a><div id="fragbit-1918" class="collapse"><div class="fragmentcode">   loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>--;</div></div></div><p>
+
+
+</p>
+<p>The range of iterations goes from the current index to <tt>chunkSize</tt>
+ahead subject to the total number of iterations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Findthesetofloopiterationstorunnext-0"></span><div class="fragmentname">&lt;&lt;Find the set of loop iterations to run next&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int64_t indexStart = loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a>;
+int64_t indexEnd = std::min(indexStart + loop.<a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>, loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>);</div><p>
+
+
+</p>
+<p>Now that the thread has found the iterations that it will run, <tt>loop</tt>
+must be updated. If this thread took the final iterations, the
+loop is removed from the work list so that other threads can start on the
+next loop (if any).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Updatemonolooptoreflectiterationsthisthreadwillrun-0"></span><div class="fragmentname">&lt;&lt;Update <tt>loop</tt> to reflect iterations this thread will run&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> = indexEnd;
+if (loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> == loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>)
+    <a href="#workList" class="code">workList</a> = loop.<a href="#ParallelForLoop::next" class="code">next</a>;
+loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>++;</div><p>
+
+
+</p>
+<p>Given the range of loop iterations to run, it&rsquo;s fairly straightforward to
+call back to the <tt>std::function</tt> representing the loop body.  This is
+the only time in the enclosing <tt>while</tt> loop that the lock is
+relinquished, though the time spent running these loop iterations is generally
+the majority of the time spent in the <tt>while</tt> loop, so other worker
+threads generally don&rsquo;t need to wait long for the lock.  The
+&lt;&lt;<span class="fragmentname">Handle other types of loops</span>&gt;&gt; fragment, not included here, handles
+the 2D loop supported by <tt>ParallelForLoop</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RunloopindicesinmonoindexStartindexEnd-0"></span><div class="fragmentname">&lt;&lt;Run loop indices in <tt>[indexStart, indexEnd)</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">lock.unlock();
+for (int index = indexStart; index &lt; indexEnd; ++index) {
+    if (loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>) {
+        loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>(index);
+    }
+    &lt;&lt;<span class="fragmentname">Handle other types of loops</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1919" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1919"><i></i></a><div id="fragbit-1919" class="collapse"><div class="fragmentcode">       else {
+           Assert(loop.func2D);
+           loop.func2D(<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>(index % loop.nX, index / loop.nX));
+       }</div></div>
+}
+lock.lock();</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>After running the set of loop iterations and re-acquiring the lock, the
+active worker count is updated to reflect that (for now at least) the
+current thread is no longer working on <tt>loop</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Updatemonolooptoreflectcompletionofiterations-0"></span><div class="fragmentname">&lt;&lt;Update <tt>loop</tt> to reflect completion of iterations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>--;</div><p>
+
+
+</p>
+<p>While the thread that called <tt>ParallelFor()</tt> is working on the loop,
+the other threads also run iterations.  <tt>workerThreadFunc()</tt> is the
+function that runs to do this in each task execution thread.  Its structure
+is similar to the fragment &lt;&lt;<span class="fragmentname"><a href="#fragment-Helpoutwithparallelloopiterationsinthecurrentthread-0">Help out with parallel loop iterations
+in the current thread</a></span>&gt;&gt;, with three main differences.  First, it runs loops
+from whatever <tt>ParallelForLoop</tt>s are in <a href="#workList"><tt>workList</tt></a>, not just from
+a single parallel <tt>for</tt> loop.  Second, it has the thread sleep
+whenever there isn&rsquo;t any work to be done.  Finally, it continues waiting
+for more loops to run
+until the <a href="#shutdownThreads"><tt>shutdownThreads</tt></a> variable is set, which only happens at the end of
+program execution.
+
+</p>
+<p>As before, a lock to the <a href="#workListMutex"><tt>workListMutex</tt></a> must be held at entry to the
+<tt>while</tt> loop here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelLocalDefinitions-4"></span><div class="fragmentname">&lt;&lt;Parallel Local Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ParallelLocalDefinitions-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">static void <span class="anchor" id="workerThreadFunc"></span>workerThreadFunc(int tIndex) {
+    <a href="#ThreadIndex" class="code">ThreadIndex</a> = tIndex;
+    std::unique_lock&lt;std::mutex&gt; lock(<a href="#workListMutex" class="code">workListMutex</a>);
+    while (!<a href="#shutdownThreads" class="code">shutdownThreads</a>) {
+        if (!<a href="#workList" class="code">workList</a>) {
+            &lt;&lt;<span class="fragmentname"><a href="#fragment-Sleepuntiltherearemoretaskstorun-0">Sleep until there are more tasks to run</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1920" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1920"><i></i></a><div id="fragbit-1920" class="collapse"><div class="fragmentcode">               <a href="#workListCondition" class="code">workListCondition</a>.wait(lock);</div></div>
+        } else {
+            &lt;&lt;<span class="fragmentname"><a href="#fragment-GetworkfrommonoworkListandrunloopiterations-0">Get work from <tt>workList</tt> and run loop iterations</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1921" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1921"><i></i></a><div id="fragbit-1921" class="collapse"><div class="fragmentcode">               ParallelForLoop &amp;loop = *<a href="#workList" class="code">workList</a>;
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Runachunkofloopiterationsformonoloop-0">Run a chunk of loop iterations for <tt>loop</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1922" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1922"><i></i></a><div id="fragbit-1922" class="collapse"><div class="fragmentcode">                  &lt;&lt;<span class="fragmentname"><a href="#fragment-Findthesetofloopiterationstorunnext-0">Find the set of loop iterations to run next</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1923" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1923"><i></i></a><div id="fragbit-1923" class="collapse"><div class="fragmentcode">                     int64_t indexStart = loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a>;
+                     int64_t indexEnd = std::min(indexStart + loop.<a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>, loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>);</div></div>
+                  &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectiterationsthisthreadwillrun-0">Update <tt>loop</tt> to reflect iterations this thread will run</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1924" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1924"><i></i></a><div id="fragbit-1924" class="collapse"><div class="fragmentcode">                     loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> = indexEnd;
+                     if (loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> == loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>)
+                         <a href="#workList" class="code">workList</a> = loop.<a href="#ParallelForLoop::next" class="code">next</a>;
+                     loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>++;</div></div>
+                  &lt;&lt;<span class="fragmentname"><a href="#fragment-RunloopindicesinmonoindexStartindexEnd-0">Run loop indices in <tt>[indexStart, indexEnd)</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1925" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1925"><i></i></a><div id="fragbit-1925" class="collapse"><div class="fragmentcode">                     lock.unlock();
+                     for (int index = indexStart; index &lt; indexEnd; ++index) {
+                         if (loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>) {
+                             loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>(index);
+                         }
+                         &lt;&lt;<span class="fragmentname">Handle other types of loops</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1926" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1926"><i></i></a><div id="fragbit-1926" class="collapse"><div class="fragmentcode">                            else {
+                                Assert(loop.func2D);
+                                loop.func2D(<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>(index % loop.nX, index / loop.nX));
+                            }</div></div>
+                     }
+                     lock.lock();</div></div>
+                  &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectcompletionofiterations-0">Update <tt>loop</tt> to reflect completion of iterations</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1927" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1927"><i></i></a><div id="fragbit-1927" class="collapse"><div class="fragmentcode">                     loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>--;</div></div></div></div>
+               if (loop.<a href="#ParallelForLoop::Finished" class="code">Finished</a>())
+                   <a href="#workListCondition" class="code">workListCondition</a>.notify_all();</div></div>
+        }
+    }
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Reportthreadstatisticsatworkerthreadexit-0">Report thread statistics at worker thread exit</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1928" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1928"><i></i></a><div id="fragbit-1928" class="collapse"><div class="fragmentcode">       <a href="../Utilities/Statistics.html#ReportThreadStats" class="code">ReportThreadStats</a>();</div></div>
+}</div><p>
+
+
+</p>
+<p>If there is no available work, the worker thread waits on
+the <a href="#workListCondition"><tt>workListCondition</tt></a> condition variable.  The semantics of condition
+variables are such that doing so releases the lock, but when this thread is
+later woken up by the condition variable being signaled, it will again hold
+the lock.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Sleepuntiltherearemoretaskstorun-0"></span><div class="fragmentname">&lt;&lt;Sleep until there are more tasks to run&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#workListCondition" class="code">workListCondition</a>.wait(lock);</div><p>
+
+
+</p>
+<p>Otherwise, a range of loop iterations to run is taken from the head of
+<a href="#workList"><tt>workList</tt></a>.  The code to run iterations is reused from the 
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Runachunkofloopiterationsformonoloop-0">Run a chunk of loop iterations for <tt>loop</tt></a></span>&gt;&gt; fragment defined
+earlier.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GetworkfrommonoworkListandrunloopiterations-0"></span><div class="fragmentname">&lt;&lt;Get work from <tt>workList</tt> and run loop iterations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">ParallelForLoop &amp;loop = *<a href="#workList" class="code">workList</a>;
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Runachunkofloopiterationsformonoloop-0">Run a chunk of loop iterations for <tt>loop</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1929" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1929"><i></i></a><div id="fragbit-1929" class="collapse"><div class="fragmentcode">   &lt;&lt;<span class="fragmentname"><a href="#fragment-Findthesetofloopiterationstorunnext-0">Find the set of loop iterations to run next</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1930" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1930"><i></i></a><div id="fragbit-1930" class="collapse"><div class="fragmentcode">      int64_t indexStart = loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a>;
+      int64_t indexEnd = std::min(indexStart + loop.<a href="#ParallelForLoop::chunkSize" class="code">chunkSize</a>, loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>);</div></div>
+   &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectiterationsthisthreadwillrun-0">Update <tt>loop</tt> to reflect iterations this thread will run</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1931" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1931"><i></i></a><div id="fragbit-1931" class="collapse"><div class="fragmentcode">      loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> = indexEnd;
+      if (loop.<a href="#ParallelForLoop::nextIndex" class="code">nextIndex</a> == loop.<a href="#ParallelForLoop::maxIndex" class="code">maxIndex</a>)
+          <a href="#workList" class="code">workList</a> = loop.<a href="#ParallelForLoop::next" class="code">next</a>;
+      loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>++;</div></div>
+   &lt;&lt;<span class="fragmentname"><a href="#fragment-RunloopindicesinmonoindexStartindexEnd-0">Run loop indices in <tt>[indexStart, indexEnd)</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1932" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1932"><i></i></a><div id="fragbit-1932" class="collapse"><div class="fragmentcode">      lock.unlock();
+      for (int index = indexStart; index &lt; indexEnd; ++index) {
+          if (loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>) {
+              loop.<a href="#ParallelForLoop::func1D" class="code">func1D</a>(index);
+          }
+          &lt;&lt;<span class="fragmentname">Handle other types of loops</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1933" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1933"><i></i></a><div id="fragbit-1933" class="collapse"><div class="fragmentcode">             else {
+                 Assert(loop.func2D);
+                 loop.func2D(<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>(index % loop.nX, index / loop.nX));
+             }</div></div>
+      }
+      lock.lock();</div></div>
+   &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonolooptoreflectcompletionofiterations-0">Update <tt>loop</tt> to reflect completion of iterations</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1934" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1934"><i></i></a><div id="fragbit-1934" class="collapse"><div class="fragmentcode">      loop.<a href="#ParallelForLoop::activeWorkers" class="code">activeWorkers</a>--;</div></div></div></div>
+if (loop.<a href="#ParallelForLoop::Finished" class="code">Finished</a>())
+    <a href="#workListCondition" class="code">workListCondition</a>.notify_all();</div><p>
+
+
+</p>
+<p>Finally, as will be discussed shortly in
+Appendix&nbsp;<a href="../Utilities/Statistics.html#sec:stats-implementation">A.7.1</a>, the worker thread must call
+<tt>ReportThreadStats()</tt> before exiting so that its per-thread statistics
+are merged into the aggregate statistics.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Reportthreadstatisticsatworkerthreadexit-0"></span><div class="fragmentname">&lt;&lt;Report thread statistics at worker thread exit&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Utilities/Statistics.html#ReportThreadStats" class="code">ReportThreadStats</a>();</div><p>
+
+
+</p>
+<p>A variant of <tt>ParallelFor()</tt> takes a <a href="../Geometry_and_Transformations/Points.html#Point2i"><tt>Point2i</tt></a> to describe
+a 2D iteration domain from <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg> to the given point.  This version is
+used to loop over image buckets in Section&nbsp;<a href="../Introduction/pbrt_System_Overview.html#sec:rendering-loop">1.3.4</a>, for
+example.<span class="anchor" id="ParallelFor2D"></span>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelDeclarations-2"></span><div class="fragmentname">&lt;&lt;Parallel Declarations&gt;&gt;+=&nbsp;<a href="#fragment-ParallelDeclarations-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void ParallelFor2D(std::function&lt;void(<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a>)&gt; func,
+                   const <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> &amp;count);</div><p>
+
+
+</p>
+<p>The <a href="#ThreadIndex"><tt>ThreadIndex</tt></a> variable allows code in parallel <tt>for</tt> loops to
+use preallocated temporary buffers or objects like <a href="../Utilities/Memory_Management.html#MemoryArena"><tt>MemoryArena</tt></a>s,
+giving a separate instance to each worker thread without needing to worry
+about data races.  (See, for example, the &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_III_Bidirectional_Methods/Stochastic_Progressive_Photon_Mapping.html#fragment-GenerateSPPMvisiblepoints-0">Generate SPPM visible
+points</a></span>&gt;&gt; fragment.)  For this
+use, it&rsquo;s also useful for calling code to be able to find out the
+maximum possible thread index.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelDefinitions-1"></span><div class="fragmentname">&lt;&lt;Parallel Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ParallelDefinitions-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">int <span class="anchor" id="MaxThreadIndex"></span>MaxThreadIndex() {
+    if (<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#PbrtOptions" class="code">PbrtOptions</a>.<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#Options::nThreads" class="code">nThreads</a> != 1) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Launchworkerthreadsifneeded-0">Launch worker threads if needed</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1935" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1935"><i></i></a><div id="fragbit-1935" class="collapse"><div class="fragmentcode">           if (<a href="#threads" class="code">threads</a>.size() == 0) {
+               <a href="#ThreadIndex" class="code">ThreadIndex</a> = 0;
+               for (int i = 0; i &lt; <a href="#NumSystemCores" class="code">NumSystemCores</a>() - 1; ++i)
+                   <a href="#threads" class="code">threads</a>.push_back(std::thread(<a href="#workerThreadFunc" class="code">workerThreadFunc</a>, i + 1));
+           }</div></div>
+    }
+    return 1 + <a href="#threads" class="code">threads</a>.size();
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p><span class="anchor" id="TerminateWorkerThreads"></span><tt>TerminateWorkerThreads()</tt>, not
+included here, cleans up the resources allocated for the threads.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Jay Patel and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Statistics.html">Utilities / Statistics</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

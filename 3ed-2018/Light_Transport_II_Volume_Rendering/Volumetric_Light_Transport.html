@@ -1,0 +1,508 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Volumetric Light Transport</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Light_Transport_II_Volume_Rendering.html">Light Transport II: Volume Rendering</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Volumetric Light Transport</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html">(Previous: Sampling Volume Scattering)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>15.3 Volumetric Light Transport</h2><p>
+
+
+</p>
+<p>These sampling building blocks make it possible to implement various light
+transport algorithms in participating media.  We can now implement the
+fragments in the <a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#EstimateDirect"><tt>EstimateDirect()</tt></a> function from
+Section&nbsp;<a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#sec:estimating-direct-lighting">14.3.1</a> that handle the cases related to
+participating media.
+
+</p>
+<p>First, after a light has been sampled, if the interaction is a scattering
+event in participating media, it&rsquo;s necessary to compute the value of the
+phase function for the outgoing direction and the incident illumination
+direction as well as the value of the PDF for sampling that direction for
+multiple importance sampling. Because we assume that phase functions are
+sampled perfectly, these values are the same.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Evaluatephasefunctionforlightsamplingstrategy-0"></span><div class="fragmentname">&lt;&lt;Evaluate phase function for light sampling strategy&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;mi = (const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;)it;
+Float <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a> = mi.<a href="../Volume_Scattering/Media.html#MediumInteraction::phase" class="code">phase</a>-&gt;<a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>(mi.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::wo" class="code">wo</a>, wi);
+f = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(<a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>);
+scatteringPdf = <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction::p" class="code">p</a>;</div><p>
+
+
+</p>
+<p>The direct lighting calculation needs to take a sample from the phase
+function&rsquo;s distribution.  <tt>Sample_p()</tt> provides this capability; as
+described earlier, the value it returns gives both the phase function&rsquo;s
+value and the PDF&rsquo;s.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Samplescattereddirectionformediuminteractions-0"></span><div class="fragmentname">&lt;&lt;Sample scattered direction for medium interactions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;mi = (const <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> &amp;)it;
+Float p = mi.phase-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#PhaseFunction::Sample_p" class="code">Sample_p</a>(mi.wo, &amp;wi, uScattering);
+f = <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a>(p);
+scatteringPdf = p;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#PathTracing"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:volumetric-path-tracing"></span><span id="PathTracing"></span><h3>15.3.1  Path Tracing</h3><p>
+
+
+
+</p>
+<p>The <tt>VolPathIntegrator</tt><span class="anchor" id="VolPathIntegrator"></span> is a
+<a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator"><tt>SamplerIntegrator</tt></a> that accounts for scattering and attenuation from
+participating media as well as scattering from surfaces.  It is defined in the
+files <a href="https://github.com/mmp/pbrt-v3/tree/master/src/integrators/volpath.h"><tt>integrators/volpath.h</tt></a><span class="anchor" id="integratorsvolpath.h"></span> and
+<a href="https://github.com/mmp/pbrt-v3/tree/master/src/integrators/volpath.cpp"><tt>integrators/volpath.cpp</tt></a><span class="anchor" id="integratorsvolpath.cpp"></span> and has a
+general structure that is very similar to the <a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#PathIntegrator"><tt>PathIntegrator</tt></a>, so here we
+will only discuss the differences between those two classes.  See
+Figures&nbsp;<a href="#fig:volpath-renderings">15.4</a> and&nbsp;<a href="#fig:volume-splash">15.5</a> for images
+rendered with this integrator that show off the importance of accounting for
+multiple scattering in participating media.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:volpath-renderings"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 91.852%;  position:relative;">
+<div id="Direct_Lighting62" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('Direct_Lighting62'), {
+  title: 'Direct_Lighting62', children: [
+ { title: 'Direct Lighting', image: 'cloud-direct.exr' },  { title: 'Path tracing, depth 5', image: 'cloud-path5.exr' },  { title: 'Path tracing, depth 25', image: 'cloud-path25.exr' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 15.4: Volumetric Path Tracing. <span class="legend">
+(1) Heterogeneous smoke data set rendered with direct lighting only.
+(2) Rendered with path tracing with a maximum depth of 5.
+(3) Path tracing with a maximum depth of 25.
+For this medium, which has an albedo of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.272ex" height="2.676ex" style="vertical-align: -0.838ex;" viewBox="0 -791.3 3131.1 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">rho equals 0.7</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70C" d="M502 279c0 -149 -129 -290 -246 -290c-47 0 -79 27 -99 67c-27 -108 -59 -242 -64 -251c-2 -3 -14 -21 -35 -21c-17 0 -28 12 -28 27c0 0 0 4 3 16l98 393c30 122 135 222 232 222c73 0 139 -57 139 -163zM430 322c0 69 -32 98 -69 98c-31 0 -81 -22 -124 -95 c-22 -40 -32 -76 -60 -188c-3 -13 -8 -33 -8 -37c0 -9 16 -89 86 -89c38 0 86 32 119 95c27 49 56 161 56 216Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-37" d="M485 644c0 -21 0 -23 -9 -35l-135 -190c-44 -62 -58 -148 -62 -171c-8 -54 -11 -109 -11 -164v-51c0 -10 0 -55 -46 -55s-46 45 -46 55c0 102 33 241 123 376l112 158h-207c-13 0 -91 0 -98 -6c-13 -12 -22 -75 -25 -91h-25l33 206h25c4 -19 6 -32 128 -32h243Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70C" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="795" y="0"></use>
+<g transform="translate(1851,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-30"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-37" x="779" y="0"></use>
+</g>
+</g>
+</svg>, multiple scattering has
+a significant effect on the final result. For (3), 1024 samples per pixel
+were required for this noise-free result.
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>As a <a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator"><tt>SamplerIntegrator</tt></a>, the <tt>VolPathIntegrator</tt>&rsquo;s
+main responsibility is to implement the
+<tt>Li()</tt> method. The general structure of its implementation is very
+similar to that of <a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#PathIntegrator::Li"><tt>PathIntegrator::Li()</tt></a>, though with a few small
+changes related to participating media.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-VolPathIntegratorMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;VolPathIntegrator Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="VolPathIntegrator::Li"></span>VolPathIntegrator::Li(const RayDifferential &amp;r,
+        const <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> &amp;scene, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> &amp;sampler, <a href="../Utilities/Memory_Management.html#MemoryArena" class="code">MemoryArena</a> &amp;arena,
+        int depth) const {
+    <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> L(0.f), beta(1.f);
+    RayDifferential ray(r);
+    bool specularBounce = false;
+    for (int bounces = 0; ; ++bounces) {
+        &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-Intersectmonoraywithsceneandstoreintersectioninmonoisect-0">Intersect <tt>ray</tt> with scene and store intersection in <tt>isect</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1409" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1409"><i></i></a><div id="fragbit-1409" class="collapse"><div class="fragmentcode">           <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> isect;
+           bool foundIntersection = scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::Intersect" class="code">Intersect</a>(ray, &amp;isect);</div></div>
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Sampletheparticipatingmediumifpresent-0">Sample the participating medium, if present</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1410" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1410"><i></i></a><div id="fragbit-1410" class="collapse"><div class="fragmentcode">           <a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> mi;
+           if (ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>)
+               beta *= ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#Medium::Sample" class="code">Sample</a>(ray, sampler, arena, &amp;mi);
+           if (beta.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>())
+               break;</div></div>
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Handleaninteractionwithamediumorasurface-0">Handle an interaction with a medium or a surface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1411" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1411"><i></i></a><div id="fragbit-1411" class="collapse"><div class="fragmentcode">           if (mi.<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#MediumInteraction::IsValid" class="code">IsValid</a>()) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Handlescatteringatpointinmediumforvolumetricpathtracer-0">Handle scattering at point in medium for volumetric path tracer</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1412" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1412"><i></i></a><div id="fragbit-1412" class="collapse"><div class="fragmentcode">                  L += beta * <a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#UniformSampleOneLight" class="code">UniformSampleOneLight</a>(mi, scene, arena, sampler, true);
+                  <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo = -ray.d, wi;
+                  mi.<a href="../Volume_Scattering/Media.html#MediumInteraction::phase" class="code">phase</a>-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#PhaseFunction::Sample_p" class="code">Sample_p</a>(wo, &amp;wi, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>());
+                  ray = mi.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);</div></div>
+           } else {
+               &lt;&lt;<span class="fragmentname">Handle scattering at point on surface for volumetric path tracer</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1413" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1413"><i></i></a><div id="fragbit-1413" class="collapse"><div class="fragmentcode">                  &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-Possiblyaddemittedlightatintersection-0">Possibly add emitted light at intersection</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1414" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1414"><i></i></a><div id="fragbit-1414" class="collapse"><div class="fragmentcode">                     if (bounces == 0 || specularBounce) {
+                         &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-Addemittedlightatpathvertexorfromtheenvironment-0">Add emitted light at path vertex or from the environment</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1415" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1415"><i></i></a><div id="fragbit-1415" class="collapse"><div class="fragmentcode">                            if (foundIntersection)
+                                L += beta * isect.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(-ray.d);
+                            else
+                                for (const auto &amp;light : scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>)
+                                    L += beta * light-&gt;<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(ray);</div></div>
+                     }</div></div>
+                  &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-TerminatepathifrayescapedormonomaxDepthwasreached-0">Terminate path if ray escaped or <tt>maxDepth</tt> was reached</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1416" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1416"><i></i></a><div id="fragbit-1416" class="collapse"><div class="fragmentcode">                     if (!foundIntersection || bounces &gt;= <a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#PathIntegrator::maxDepth" class="code">maxDepth</a>)
+                         break;</div></div>
+                  &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-Computescatteringfunctionsandskipovermediumboundaries-0">Compute scattering functions and skip over medium boundaries</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1417" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1417"><i></i></a><div id="fragbit-1417" class="collapse"><div class="fragmentcode">                     isect.<a href="../Materials/Material_Interface_and_Implementations.html#SurfaceInteraction::ComputeScatteringFunctions" class="code">ComputeScatteringFunctions</a>(ray, arena, true);
+                     if (!isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>) {
+                         ray = isect.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(ray.d);
+                         bounces--;
+                         continue;
+                     }</div></div>
+                  &lt;&lt;<span class="fragmentname">Sample illumination from lights to find attenuated path contribution</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1418" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1418"><i></i></a><div id="fragbit-1418" class="collapse"><div class="fragmentcode">                     L += beta * <a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#UniformSampleOneLight" class="code">UniformSampleOneLight</a>(isect, scene, arena, sampler, true);</div></div>
+                  &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-SampleBSDFtogetnewpathdirection-0">Sample BSDF to get new path direction</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1419" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1419"><i></i></a><div id="fragbit-1419" class="collapse"><div class="fragmentcode">                     <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo = -ray.d, wi;
+                     Float pdf;
+                     BxDFType flags;
+                     <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> f = isect.bsdf-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Sample_f" class="code">Sample_f</a>(wo, &amp;wi, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>(),
+                                                       &amp;pdf, BSDF_ALL, &amp;flags);
+                     if (f.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>() || pdf == 0.f)
+                         break;
+                     beta *= f * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading" class="code">shading</a>.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>) / pdf;
+                     specularBounce = (flags &amp; BSDF_SPECULAR) != 0;
+                     ray = isect.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);</div></div>
+                  &lt;&lt;<span class="fragmentname">Account for attenuated subsurface scattering, if applicable</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1420" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1420"><i></i></a><div id="fragbit-1420" class="collapse"><div class="fragmentcode">                     if (isect.bssrdf &amp;&amp; (flags &amp; BSDF_TRANSMISSION)) {
+                         &lt;&lt;<span class="fragmentname"><a href="Sampling_Subsurface_Reflection_Functions.html#fragment-ImportancesampletheBSSRDF-0">Importance sample the BSSRDF</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1421" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1421"><i></i></a><div id="fragbit-1421" class="collapse"><div class="fragmentcode">                            <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> pi;
+                            <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> S = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bssrdf" class="code">bssrdf</a>-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Subsurface_Reflection_Functions.html#BSSRDF::Sample_S" class="code">Sample_S</a>(scene, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>(), 
+                                                                sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>(), arena, &amp;pi, &amp;pdf);
+                            if (S.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>() || pdf == 0)
+                                break;
+                            beta *= S / pdf;</div></div>
+                         &lt;&lt;<span class="fragmentname">Account for the attenuated direct subsurface scattering component</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1422" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1422"><i></i></a><div id="fragbit-1422" class="collapse"><div class="fragmentcode">                            L += beta * <a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#UniformSampleOneLight" class="code">UniformSampleOneLight</a>(pi, scene, arena, sampler, true);</div></div>
+                         &lt;&lt;<span class="fragmentname"><a href="Sampling_Subsurface_Reflection_Functions.html#fragment-Accountfortheindirectsubsurfacescatteringcomponent-0">Account for the indirect subsurface scattering component</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1423" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1423"><i></i></a><div id="fragbit-1423" class="collapse"><div class="fragmentcode">                            <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> f = pi.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Sample_f" class="code">Sample_f</a>(pi.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::wo" class="code">wo</a>, &amp;wi, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>(), &amp;pdf,
+                                                           <a href="../Reflection_Models/Basic_Interface.html#BSDF_ALL" class="code">BSDF_ALL</a>, &amp;flags);
+                            if (f.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>() || pdf == 0)
+                                break;
+                            beta *= f * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, pi.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading" class="code">shading</a>.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>) / pdf;
+                            specularBounce = (flags &amp; <a href="../Reflection_Models/Basic_Interface.html#BSDF_SPECULAR" class="code">BSDF_SPECULAR</a>) != 0;
+                            ray = pi.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);</div></div>
+                     }</div></div></div></div>
+           }</div></div>
+        &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-PossiblyterminatethepathwithRussianroulette-0">Possibly terminate the path with Russian roulette</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1424" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1424"><i></i></a><div id="fragbit-1424" class="collapse"><div class="fragmentcode">           if (bounces &gt; 3) {
+               Float q = std::max((Float).05, 1 - beta.<a href="../Color_and_Radiometry/The_SampledSpectrum_Class.html#Spectrum::y" class="code">y</a>());
+               if (sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>() &lt; q)
+                   break;
+               beta /= 1 - q;
+           }</div></div>
+    }
+    return L;
+}</div><p>
+
+
+</p>
+<p>At each step in sampling the scattering path, the ray is first intersected with
+the surfaces in the scene to find the closest surface intersection, if any.
+Next, participating media are accounted for with a call to the
+<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#Medium::Sample"><tt>Medium::Sample()</tt></a> method, which initializes the provided
+<tt>MediumInteraction</tt> if a medium interaction should be the next vertex in
+the path.  In either case, <tt>Sample()</tt> also returns a factor accounting for
+the beam transmittance and sampling PDF to either the surface or medium
+interaction.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Sampletheparticipatingmediumifpresent-0"></span><div class="fragmentname">&lt;&lt;Sample the participating medium, if present&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Volume_Scattering/Media.html#MediumInteraction" class="code">MediumInteraction</a> mi;
+if (ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>)
+    beta *= ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#Medium::Sample" class="code">Sample</a>(ray, sampler, arena, &amp;mi);
+if (beta.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>())
+    break;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fig:volume-splash"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 80.000%; position:relative;">
+<div id="liquid.exr63" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('liquid.exr63'), { image: 'liquid.exr' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 15.5: Homogeneous Volumetric Scattering in Liquid. <span class="legend">
+Scattering in the liquid is modeled with participating media and 
+rendered with the <a href="#VolPathIntegrator"><tt>VolPathIntegrator</tt></a>. (<em>Scene courtesy &ldquo;guismo&rdquo;
+from blendswap.com.</em>)
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>In scenes with very dense scattering media, the effort spent on first
+finding surface intersections will often be wasted, as
+<tt>Medium::Sample()</tt> will usually generate a medium interaction instead.
+For such scenes, a more efficient implementation would be to first sample a
+medium interaction, updating the ray&rsquo;s <tt>tMax</tt> value accordingly before
+intersecting the ray with primitives in the scene. In turn, surface
+intersection tests would be much more efficient, as the ray to be tested
+would often be fairly short.  (Further investigating and addressing this
+issue is left for Exercise&nbsp;15.5.)
+
+</p>
+<p>Depending on whether the sampled interaction for this ray is within
+participating media or at a point on a surface, one of two fragments
+handles computing the direct illumination at the point and sampling the
+next direction.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Handleaninteractionwithamediumorasurface-0"></span><div class="fragmentname">&lt;&lt;Handle an interaction with a medium or a surface&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (mi.<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#MediumInteraction::IsValid" class="code">IsValid</a>()) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Handlescatteringatpointinmediumforvolumetricpathtracer-0">Handle scattering at point in medium for volumetric path tracer</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1425" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1425"><i></i></a><div id="fragbit-1425" class="collapse"><div class="fragmentcode">       L += beta * <a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#UniformSampleOneLight" class="code">UniformSampleOneLight</a>(mi, scene, arena, sampler, true);
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo = -ray.d, wi;
+       mi.<a href="../Volume_Scattering/Media.html#MediumInteraction::phase" class="code">phase</a>-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#PhaseFunction::Sample_p" class="code">Sample_p</a>(wo, &amp;wi, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>());
+       ray = mi.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);</div></div>
+} else {
+    &lt;&lt;<span class="fragmentname">Handle scattering at point on surface for volumetric path tracer</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1426" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1426"><i></i></a><div id="fragbit-1426" class="collapse"><div class="fragmentcode">       &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-Possiblyaddemittedlightatintersection-0">Possibly add emitted light at intersection</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1427" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1427"><i></i></a><div id="fragbit-1427" class="collapse"><div class="fragmentcode">          if (bounces == 0 || specularBounce) {
+              &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-Addemittedlightatpathvertexorfromtheenvironment-0">Add emitted light at path vertex or from the environment</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1428" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1428"><i></i></a><div id="fragbit-1428" class="collapse"><div class="fragmentcode">                 if (foundIntersection)
+                     L += beta * isect.<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(-ray.d);
+                 else
+                     for (const auto &amp;light : scene.<a href="../Introduction/pbrt_System_Overview.html#Scene::lights" class="code">lights</a>)
+                         L += beta * light-&gt;<a href="../Light_Sources/Infinite_Area_Lights.html#Light::Le" class="code">Le</a>(ray);</div></div>
+          }</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-TerminatepathifrayescapedormonomaxDepthwasreached-0">Terminate path if ray escaped or <tt>maxDepth</tt> was reached</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1429" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1429"><i></i></a><div id="fragbit-1429" class="collapse"><div class="fragmentcode">          if (!foundIntersection || bounces &gt;= <a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#PathIntegrator::maxDepth" class="code">maxDepth</a>)
+              break;</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-Computescatteringfunctionsandskipovermediumboundaries-0">Compute scattering functions and skip over medium boundaries</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1430" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1430"><i></i></a><div id="fragbit-1430" class="collapse"><div class="fragmentcode">          isect.<a href="../Materials/Material_Interface_and_Implementations.html#SurfaceInteraction::ComputeScatteringFunctions" class="code">ComputeScatteringFunctions</a>(ray, arena, true);
+          if (!isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>) {
+              ray = isect.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(ray.d);
+              bounces--;
+              continue;
+          }</div></div>
+       &lt;&lt;<span class="fragmentname">Sample illumination from lights to find attenuated path contribution</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1431" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1431"><i></i></a><div id="fragbit-1431" class="collapse"><div class="fragmentcode">          L += beta * <a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#UniformSampleOneLight" class="code">UniformSampleOneLight</a>(isect, scene, arena, sampler, true);</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#fragment-SampleBSDFtogetnewpathdirection-0">Sample BSDF to get new path direction</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1432" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1432"><i></i></a><div id="fragbit-1432" class="collapse"><div class="fragmentcode">          <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo = -ray.d, wi;
+          Float pdf;
+          BxDFType flags;
+          <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> f = isect.bsdf-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Sample_f" class="code">Sample_f</a>(wo, &amp;wi, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>(),
+                                            &amp;pdf, BSDF_ALL, &amp;flags);
+          if (f.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>() || pdf == 0.f)
+              break;
+          beta *= f * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading" class="code">shading</a>.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>) / pdf;
+          specularBounce = (flags &amp; BSDF_SPECULAR) != 0;
+          ray = isect.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);</div></div>
+       &lt;&lt;<span class="fragmentname">Account for attenuated subsurface scattering, if applicable</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1433" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1433"><i></i></a><div id="fragbit-1433" class="collapse"><div class="fragmentcode">          if (isect.bssrdf &amp;&amp; (flags &amp; BSDF_TRANSMISSION)) {
+              &lt;&lt;<span class="fragmentname"><a href="Sampling_Subsurface_Reflection_Functions.html#fragment-ImportancesampletheBSSRDF-0">Importance sample the BSSRDF</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1434" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1434"><i></i></a><div id="fragbit-1434" class="collapse"><div class="fragmentcode">                 <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> pi;
+                 <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> S = isect.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bssrdf" class="code">bssrdf</a>-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Subsurface_Reflection_Functions.html#BSSRDF::Sample_S" class="code">Sample_S</a>(scene, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>(), 
+                                                     sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>(), arena, &amp;pi, &amp;pdf);
+                 if (S.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>() || pdf == 0)
+                     break;
+                 beta *= S / pdf;</div></div>
+              &lt;&lt;<span class="fragmentname">Account for the attenuated direct subsurface scattering component</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1435" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1435"><i></i></a><div id="fragbit-1435" class="collapse"><div class="fragmentcode">                 L += beta * <a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#UniformSampleOneLight" class="code">UniformSampleOneLight</a>(pi, scene, arena, sampler, true);</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="Sampling_Subsurface_Reflection_Functions.html#fragment-Accountfortheindirectsubsurfacescatteringcomponent-0">Account for the indirect subsurface scattering component</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1436" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1436"><i></i></a><div id="fragbit-1436" class="collapse"><div class="fragmentcode">                 <a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum" class="code">Spectrum</a> f = pi.<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#SurfaceInteraction::bsdf" class="code">bsdf</a>-&gt;<a href="../Light_Transport_I_Surface_Reflection/Sampling_Reflection_Functions.html#BSDF::Sample_f" class="code">Sample_f</a>(pi.<a href="../Geometry_and_Transformations/Interactions.html#Interaction::wo" class="code">wo</a>, &amp;wi, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>(), &amp;pdf,
+                                                <a href="../Reflection_Models/Basic_Interface.html#BSDF_ALL" class="code">BSDF_ALL</a>, &amp;flags);
+                 if (f.<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum::IsBlack" class="code">IsBlack</a>() || pdf == 0)
+                     break;
+                 beta *= f * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, pi.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading" class="code">shading</a>.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>) / pdf;
+                 specularBounce = (flags &amp; <a href="../Reflection_Models/Basic_Interface.html#BSDF_SPECULAR" class="code">BSDF_SPECULAR</a>) != 0;
+                 ray = pi.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);</div></div>
+          }</div></div></div></div>
+}</div><p>
+
+
+</p>
+<p>Thanks to the fragments defined earlier in this section, the
+<tt>UniformSampleOneLight()</tt> function already supports estimating direct
+illumination at points in participating media, so we just need to pass the
+<a href="../Volume_Scattering/Media.html#MediumInteraction"><tt>MediumInteraction</tt></a> for the sampled interaction to it.  The direction
+for the ray leaving the medium interaction is then easily found with a call
+to <tt>Sample_p()</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Handlescatteringatpointinmediumforvolumetricpathtracer-0"></span><div class="fragmentname">&lt;&lt;Handle scattering at point in medium for volumetric path tracer&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">L += beta * <a href="../Light_Transport_I_Surface_Reflection/Direct_Lighting.html#UniformSampleOneLight" class="code">UniformSampleOneLight</a>(mi, scene, arena, sampler, true);
+<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo = -ray.d, wi;
+mi.<a href="../Volume_Scattering/Media.html#MediumInteraction::phase" class="code">phase</a>-&gt;<a href="../Light_Transport_II_Volume_Rendering/Sampling_Volume_Scattering.html#PhaseFunction::Sample_p" class="code">Sample_p</a>(wo, &amp;wi, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>());
+ray = mi.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRay" class="code">SpawnRay</a>(wi);</div><p>
+
+
+</p>
+<p>For scattering from surfaces, the computation performed is almost exactly
+the same as the regular <a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#PathIntegrator"><tt>PathIntegrator</tt></a>, except that attenuation of
+radiance from light sources to surface intersection points is incorporated
+by calling <a href="../Light_Sources/Light_Interface.html#VisibilityTester::Tr"><tt>VisibilityTester::Tr()</tt></a> instead of
+<a href="../Light_Sources/Light_Interface.html#VisibilityTester::Unoccluded"><tt>VisibilityTester::Unoccluded()</tt></a> when sampling direct
+illumination. Because these differences are minor, we won&rsquo;t
+include the corresponding code here.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p> 
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Jay Patel and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Light_Transport_II_Volume_Rendering/Sampling_Subsurface_Reflection_Functions.html">Light Transport II: Volume Rendering / Sampling Subsurface Reflection Functions</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,957 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Initialization and Rendering Options</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface.html">Scene Description Interface</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Initialization and Rendering Options</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Scene_Description_Interface/Parameter_Sets.html">(Previous: Parameter Sets)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:api-init-options"></span><h2>B.2 Initialization and Rendering Options</h2><p>
+
+
+
+</p>
+<p>We now have the machinery to describe the routines that make up the
+rendering API.  Before any other API functions can be called, the rendering
+system must be initialized by a call to <tt>pbrtInit()</tt>.  Similarly, when
+rendering is done, <tt>pbrtCleanup()</tt> should be called; this handles
+final cleanup of the system.  The definitions of these two functions will
+be filled in at a number of points throughout the rest of this appendix.
+
+</p>
+<p>
+
+</p>
+<p>A few system-wide options are passed to <tt>pbrtInit()</tt> using the
+<tt>Options</tt> structure here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalForwardDeclarations-2"></span><div class="fragmentname">&lt;&lt;Global Forward Declarations&gt;&gt;+=&nbsp;<a href="../Utilities/Main_Include_File.html#fragment-GlobalForwardDeclarations-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">struct <span class="anchor" id="Options"></span>Options {
+    int <span class="anchor" id="Options::nThreads"></span>nThreads = 0;
+    bool <span class="anchor" id="Options::quickRender"></span>quickRender = false;
+    bool <span class="anchor" id="Options::quiet"></span>quiet = false, <span class="anchor" id="Options::verbose"></span>verbose = false;
+    std::string <span class="anchor" id="Options::imageFile"></span>imageFile;
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-0"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;=&nbsp;<a href="#fragment-APIFunctionDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtInit"></span>pbrtInit(const Options &amp;opt) {
+    PbrtOptions = opt;
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-APIInitialization-0">API Initialization</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1944" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1944"><i></i></a><div id="fragbit-1944" class="collapse"><div class="fragmentcode">       if (currentApiState != APIState::Uninitialized)
+           <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("pbrtInit() has already been called.");
+       currentApiState = APIState::OptionsBlock;
+       renderOptions.reset(new RenderOptions);
+       graphicsState = GraphicsState();</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="../Color_and_Radiometry/The_SampledSpectrum_Class.html#fragment-GeneralpbrtInitialization-0">General <tt>pbrt</tt> Initialization</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1945" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1945"><i></i></a><div id="fragbit-1945" class="collapse"><div class="fragmentcode">       <a href="../Color_and_Radiometry/The_SampledSpectrum_Class.html#SampledSpectrum::Init" class="code">SampledSpectrum</a>::Init();
+       InitProfiler();</div></div>
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The options are stored in a global variable for easy access by other parts
+of the system.  This variable is only used in a read-only fashion by the
+system after initialization in <tt>pbrtInit()</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIGlobalVariables-0"></span><div class="fragmentname">&lt;&lt;API Global Variables&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Options <span class="anchor" id="PbrtOptions"></span>PbrtOptions;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-1"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtCleanup"></span>pbrtCleanup() {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-APICleanup-0">API Cleanup</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1946" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1946"><i></i></a><div id="fragbit-1946" class="collapse"><div class="fragmentcode">       if (currentApiState == APIState::Uninitialized)
+           <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("pbrtCleanup() called without pbrtInit().");
+       else if (currentApiState == APIState::WorldBlock)
+           <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("pbrtCleanup() called while inside world block.");
+       currentApiState = APIState::Uninitialized;
+       renderOptions.reset(nullptr);</div></div>
+}</div><p>
+
+
+</p>
+<p>After the system has been initialized, a subset of the API routines is
+available.  Legal calls at this point are those that set general rendering
+options like the camera and sampler properties, the type of film to be
+used, and so on, but the user is not yet allowed to start to describe the
+lights, shapes, and materials in the scene.
+
+</p>
+<p>After the overall rendering options have been set, the
+<a href="../Scene_Description_Interface/Scene_Definition.html#pbrtWorldBegin"><tt>pbrtWorldBegin()</tt></a> function locks them in; it is no longer
+legal to call the routines that set them.  At this point, the user can
+begin to describe the geometric primitives and lights that are in the
+scene.  This separation of global versus scene-specific information can help
+simplify the implementation of the renderer.  For example, consider a
+spline patch shape that tessellates itself into triangles.  This shape
+might compute the required size of its generated triangles based on the
+area of the screen that it covers.  If the camera&rsquo;s position and image
+resolution are guaranteed not to change after the shape is created, then
+the shape can potentially do the tessellation work immediately at creation time.
+
+</p>
+<p>Once the scene has been fully specified, the <a href="../Scene_Description_Interface/Scene_Definition.html#pbrtWorldEnd"><tt>pbrtWorldEnd()</tt></a> routine
+is called.  At this point, the renderer knows that the scene description
+is complete and that rendering can begin.  The image will be rendered and
+written to a file before <tt>pbrtWorldEnd()</tt> returns.  The user may then
+specify new options for another frame of an animation, and then another
+<tt>pbrtWorldBegin()</tt>/<tt>pbrtWorldEnd()</tt> block to describe the geometry
+for the next frame, repeating as many times as desired.  The remainder of this
+section will discuss the routines related to setting rendering options.
+Section&nbsp;<a href="../Scene_Description_Interface/Scene_Definition.html#sec:api-world-block">A.3</a> describes the routines for specifying the
+scene inside the world block.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#StateTracking"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="StateTracking"></span><h3>B.2.1  State Tracking</h3><p>
+
+
+</p>
+<p>There are three distinct states that the renderer&rsquo;s API can be in:
+
+</p>
+<p></p>
+<ul>
+<li> <em>Uninitialized:</em> Before <a href="#pbrtInit"><tt>pbrtInit()</tt></a> has been called or
+after <a href="#pbrtCleanup"><tt>pbrtCleanup()</tt></a> has been called, no other API calls are legal.
+<li> <em>Options block:</em> Outside a <a href="../Scene_Description_Interface/Scene_Definition.html#pbrtWorldBegin"><tt>pbrtWorldBegin()</tt></a> and
+<a href="../Scene_Description_Interface/Scene_Definition.html#pbrtWorldEnd"><tt>pbrtWorldEnd()</tt></a> pair, scene-wide global options may be set.
+<li> <em>World block:</em> Inside a <a href="../Scene_Description_Interface/Scene_Definition.html#pbrtWorldBegin"><tt>pbrtWorldBegin()</tt></a> and
+<a href="../Scene_Description_Interface/Scene_Definition.html#pbrtWorldEnd"><tt>pbrtWorldEnd()</tt></a> pair, the scene may be described.
+</ul><p>
+
+
+</p>
+<p>The module <tt>static</tt> variable <tt>currentApiState</tt> starts out with the value
+<tt>APIState::Uninitialized</tt>, indicating that the API system hasn&rsquo;t yet been
+initialized.  Its value is updated appropriately by <tt>pbrtInit()</tt>,
+<tt>pbrtWorldBegin()</tt>, and <tt>pbrtCleanup()</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIStaticData-0"></span><div class="fragmentname">&lt;&lt;API Static Data&gt;&gt;=&nbsp;<a href="#fragment-APIStaticData-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">enum class <span class="anchor" id="APIState"></span>APIState { <span class="anchor" id="APIState::Uninitialized"></span>Uninitialized, <span class="anchor" id="APIState::OptionsBlock"></span>OptionsBlock, <span class="anchor" id="APIState::WorldBlock"></span>WorldBlock };
+static APIState <span class="anchor" id="currentApiState"></span>currentApiState = APIState::Uninitialized;</div><p>
+
+
+</p>
+<p>Now we can start to define the implementation of <a href="#pbrtInit"><tt>pbrtInit()</tt></a>.
+<a href="#pbrtInit"><tt>pbrtInit()</tt></a> first makes sure that it hasn&rsquo;t already been called and then
+sets the <a href="#currentApiState"><tt>currentApiState</tt></a> variable to <tt>OptionsBlock</tt> to
+indicate that the scene-wide options can be specified.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIInitialization-0"></span><div class="fragmentname">&lt;&lt;API Initialization&gt;&gt;=&nbsp;<a href="#fragment-APIInitialization-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">if (currentApiState != APIState::Uninitialized)
+    <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("pbrtInit() has already been called.");
+currentApiState = APIState::OptionsBlock;</div><p>
+
+
+</p>
+<p>Similarly, <tt>pbrtCleanup()</tt> makes sure that <tt>pbrtInit()</tt> has been
+called and that we&rsquo;re not in the middle of a
+<tt>pbrtWorldBegin()</tt>/<tt>pbrtWorldEnd()</tt> block before resetting the state
+to the uninitialized state.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APICleanup-0"></span><div class="fragmentname">&lt;&lt;API Cleanup&gt;&gt;=&nbsp;<a href="#fragment-APICleanup-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">if (currentApiState == APIState::Uninitialized)
+    <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("pbrtCleanup() called without pbrtInit().");
+else if (currentApiState == APIState::WorldBlock)
+    <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("pbrtCleanup() called while inside world block.");
+currentApiState = APIState::Uninitialized;
+</div><p>
+
+
+</p>
+<p>All API functions that are only valid in particular states invoke a state
+verification macro like <tt>VERIFY_INITIALIZED()</tt>, to make sure that
+<tt>currentApiState</tt> holds an appropriate value.  If the states don&rsquo;t
+match, an error message is printed and the function immediately
+returns. (Note that this check must be implemented as a macro rather than a
+separate function so that its <tt>return</tt> statement causes the calling
+function itself to return.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIMacros-0"></span><div class="fragmentname">&lt;&lt;API Macros&gt;&gt;=&nbsp;<a href="#fragment-APIMacros-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">#define <span class="anchor" id="VERIFY_INITIALIZED"></span>VERIFY_INITIALIZED(func)                         \
+if (currentApiState == APIState::Uninitialized) {        \
+    <a href="../Utilities/Communicating_with_the_User.html#Error" class="code">Error</a>("pbrtInit() must be before calling \"%s()\". " \
+          "Ignoring.", func);                            \
+    return;                                              \
+} else /* swallow trailing semicolon */</div><p>
+
+
+</p>
+<p>The implementations of <tt>VERIFY_OPTIONS()</tt><span class="anchor" id="VERIFY_OPTIONS"></span>
+and <tt>VERIFY_WORLD()</tt><span class="anchor" id="VERIFY_WORLD"></span> are analogous.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Transformations"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:ri-xforms"></span><span id="Transformations"></span><h3>B.2.2  Transformations</h3><p>
+
+
+
+</p>
+<p>As the scene is being described, <tt>pbrt</tt> maintains <em>current
+transformation matrices</em> (CTMs), one for each of a number of points in
+time.  If the transformations are different, then they describe an animated
+transformation.  (Recall, for example, that the <a href="../Geometry_and_Transformations/Animating_Transformations.html#AnimatedTransform"><tt>AnimatedTransform</tt></a> class
+defined in Section&nbsp;<a href="../Geometry_and_Transformations/Animating_Transformations.html#sec:animated-transform-class">2.9.3</a> stores two
+transformation matrices for two given times.)  A number of API calls are
+available to modify the CTMs; when objects like shapes, cameras, and lights
+are created, the CTMs are passed to their constructor to define the
+transformation from their local coordinate system to world space.
+
+</p>
+<p>The code below stores two CTMs in the module-local <a href="#curTransform"><tt>curTransform</tt></a>
+variable. They are represented by the <a href="#TransformSet"><tt>TransformSet</tt></a> class, to be defined
+shortly, which stores a fixed number of transformations.
+The <a href="#activeTransformBits"><tt>activeTransformBits</tt></a> variable is a bit-vector indicating which of
+the CTMs are active; the active transforms are updated when the
+transformation-related API calls are made, while the others are unchanged.
+This mechanism allows the user to modify some of the CTMs selectively in
+order to define animated transformations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIStaticData-1"></span><div class="fragmentname">&lt;&lt;API Static Data&gt;&gt;+=&nbsp;<a href="#fragment-APIStaticData-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIStaticData-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static TransformSet <span class="anchor" id="curTransform"></span>curTransform;
+static int <span class="anchor" id="activeTransformBits"></span>activeTransformBits = AllTransformsBits;</div><p>
+
+
+</p>
+<p>The implementation here just stores two transformation
+matrices, one that defines the CTM
+for the starting time (provided via the <a href="#pbrtTransformTimes"><tt>pbrtTransformTimes()</tt></a> call,
+defined in a few pages), and the other for the ending time.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APILocalClasses-0"></span><div class="fragmentname">&lt;&lt;API Local Classes&gt;&gt;=&nbsp;<a href="#fragment-APILocalClasses-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">constexpr int <span class="anchor" id="MaxTransforms"></span>MaxTransforms = 2;
+constexpr int <span class="anchor" id="StartTransformBits"></span>StartTransformBits = 1 &lt;&lt; 0;
+constexpr int <span class="anchor" id="EndTransformBits"></span>EndTransformBits =   1 &lt;&lt; 1;
+constexpr int <span class="anchor" id="AllTransformsBits"></span>AllTransformsBits = (1 &lt;&lt; MaxTransforms) - 1;</div><p>
+
+
+</p>
+<p><tt>TransformSet</tt> is a small utility class that stores an array of
+transformations and provides some utility routines for managing them.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APILocalClasses-1"></span><div class="fragmentname">&lt;&lt;API Local Classes&gt;&gt;+=&nbsp;<a href="#fragment-APILocalClasses-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APILocalClasses-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">struct <span class="anchor" id="TransformSet"></span>TransformSet {
+   &lt;&lt;<span class="fragmentname"><a href="#fragment-TransformSetPublicMethods-0">TransformSet Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1947" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1947"><i></i></a><div id="fragbit-1947" class="collapse"><div class="fragmentcode">      <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;operator[](int i) { 
+          return <a href="#TransformSet::t" class="code">t</a>[i]; 
+      }
+      friend TransformSet <a href="../Utilities/Mathematical_Routines.html#Inverse" class="code">Inverse</a>(const TransformSet &amp;ts) {
+          TransformSet tInv;
+          for (int i = 0; i &lt; <a href="#MaxTransforms" class="code">MaxTransforms</a>; ++i)
+              tInv.<a href="#TransformSet::t" class="code">t</a>[i] = <a href="../Utilities/Mathematical_Routines.html#Inverse" class="code">Inverse</a>(ts.<a href="#TransformSet::t" class="code">t</a>[i]);
+          return tInv;
+      }
+      bool IsAnimated() const {
+          for (int i = 0; i &lt; <a href="#MaxTransforms" class="code">MaxTransforms</a> - 1; ++i)
+              if (<a href="#TransformSet::t" class="code">t</a>[i] != <a href="#TransformSet::t" class="code">t</a>[i + 1]) return true;
+          return false;
+      }</div></div>
+private:
+    <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> <span class="anchor" id="TransformSet::t"></span>t[<a href="#MaxTransforms" class="code">MaxTransforms</a>];
+};</div><p>
+
+
+</p>
+<p>An accessor function is provided to access the individual <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>s.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TransformSetPublicMethods-0"></span><div class="fragmentname">&lt;&lt;TransformSet Public Methods&gt;&gt;=&nbsp;<a href="#fragment-TransformSetPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;operator[](int i) { 
+    return t[i]; 
+}
+</div><p>
+
+
+</p>
+<p>The <tt>Inverse()</tt> method returns a new <a href="#TransformSet"><tt>TransformSet</tt></a> that holds
+the inverses of the individual <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>s.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TransformSetPublicMethods-1"></span><div class="fragmentname">&lt;&lt;TransformSet Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-TransformSetPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TransformSetPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">friend TransformSet <span class="anchor" id="TransformSet::Inverse"></span><a href="../Utilities/Mathematical_Routines.html#Inverse" class="code">Inverse</a>(const TransformSet &amp;ts) {
+    TransformSet tInv;
+    for (int i = 0; i &lt; <a href="#MaxTransforms" class="code">MaxTransforms</a>; ++i)
+        tInv.t[i] = <a href="../Utilities/Mathematical_Routines.html#Inverse" class="code">Inverse</a>(ts.t[i]);
+    return tInv;
+}</div><p>
+
+
+</p>
+<p>The actual transformation functions are straightforward.  Because the CTM
+is used both for the rendering options and the scene description phases,
+these routines only need to verify that <a href="#pbrtInit"><tt>pbrtInit()</tt></a> has been called.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-2"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtIdentity"></span>pbrtIdentity() {
+    VERIFY_INITIALIZED("Identity");
+    <a href="#FOR_ACTIVE_TRANSFORMS" class="code">FOR_ACTIVE_TRANSFORMS</a>(curTransform[i] = <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>();)
+}</div><p>
+
+
+</p>
+<p>The <tt>FOR_ACTIVE_TRANSFORMS()</tt> macro encapsulates the logic for
+determining which of the CTMs is active and applying the given operation to
+those that are.  The given statement is executed only for the active
+transforms.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIMacros-1"></span><div class="fragmentname">&lt;&lt;API Macros&gt;&gt;+=&nbsp;<a href="#fragment-APIMacros-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIMacros-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">#define <span class="anchor" id="FOR_ACTIVE_TRANSFORMS"></span>FOR_ACTIVE_TRANSFORMS(expr)                   \
+    for (int i = 0; i &lt; <a href="#MaxTransforms" class="code">MaxTransforms</a>; ++i)           \
+        if (activeTransformBits &amp; (1 &lt;&lt; i)) { expr }</div><p>
+
+
+</p>
+<p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-3"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtTranslate"></span>pbrtTranslate(Float dx, Float dy, Float dz) {
+    VERIFY_INITIALIZED("Translate");
+    <a href="#FOR_ACTIVE_TRANSFORMS" class="code">FOR_ACTIVE_TRANSFORMS</a>(curTransform[i] =
+        curTransform[i] * Translate(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(dx, dy, dz));)
+}</div><p>
+
+
+</p>
+<p>Most of the rest of the functions are similarly defined, so we will not show
+their definitions here.  <tt>pbrt</tt> also provides <a href="#pbrtConcatTransform"><tt>pbrtConcatTransform()</tt></a> and
+<a href="#pbrtTransform"><tt>pbrtTransform()</tt></a> functions to allow the user to specify an arbitrary
+matrix to postmultiply or replace the active CTM(s), respectively.  
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;API Function Declarations&gt;&gt;=&nbsp;<a href="#fragment-APIFunctionDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtRotate"></span>pbrtRotate(Float angle, Float ax, Float ay, Float az);
+void <span class="anchor" id="pbrtScale"></span>pbrtScale(Float sx, Float sy, Float sz);
+void <span class="anchor" id="pbrtLookAt"></span>pbrtLookAt(Float ex, Float ey, Float ez, 
+                Float lx, Float ly, Float lz, 
+                Float ux, Float uy, Float uz);
+void <span class="anchor" id="pbrtConcatTransform"></span>pbrtConcatTransform(Float transform[16]);
+void <span class="anchor" id="pbrtTransform"></span>pbrtTransform(Float transform[16]);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+
+</p>
+<p>It can be useful to make a named copy of the CTM so that it can be referred
+to later.  For example, to place a light at the camera&rsquo;s position, it is
+useful to first apply the transformation into the camera coordinate system,
+since then the light can just be placed at the origin <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg>.  This way,
+if the camera position is changed and the scene is rerendered, the light
+will move with it.  The <a href="#pbrtCoordinateSystem"><tt>pbrtCoordinateSystem()</tt></a> function copies the
+current <tt>TransformSet</tt> into the <a href="#namedCoordinateSystems"><tt>namedCoordinateSystems</tt></a>
+associative array, and <a href="#pbrtCoordSysTransform"><tt>pbrtCoordSysTransform()</tt></a> loads a named set of
+CTMs.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIStaticData-2"></span><div class="fragmentname">&lt;&lt;API Static Data&gt;&gt;+=&nbsp;<a href="#fragment-APIStaticData-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIStaticData-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static std::map&lt;std::string, TransformSet&gt; <span class="anchor" id="namedCoordinateSystems"></span>namedCoordinateSystems;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-4"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtCoordinateSystem"></span>pbrtCoordinateSystem(const std::string &amp;name) {
+    VERIFY_INITIALIZED("CoordinateSystem");
+    namedCoordinateSystems[name] = curTransform;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-5"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtCoordSysTransform"></span>pbrtCoordSysTransform(const std::string &amp;name) {
+    VERIFY_INITIALIZED("CoordSysTransform");
+    if (namedCoordinateSystems.find(name) != 
+        namedCoordinateSystems.end())
+        curTransform = namedCoordinateSystems[name];
+    else
+        <a href="../Utilities/Communicating_with_the_User.html#Warning" class="code">Warning</a>("Couldn't find named coordinate system \"%s\"",
+                name.c_str()); 
+}</div><p>
+
+
+</p>
+<p>Not all of the types in <tt>pbrt</tt> that take transformations support animated
+transformations.  (Textures are one example
+(Section&nbsp;<a href="../Scene_Description_Interface/Scene_Definition.html#sec:tex-material-params">A.3.2</a>); it&rsquo;s not worth the additional code
+complexity to support them, especially since the utility an animated
+texture transform brings isn&rsquo;t obvious.)  For such cases,
+<a href="#WARN_IF_ANIMATED_TRANSFORM"><tt>WARN_IF_ANIMATED_TRANSFORM()</tt></a> macro warns if the CTMs are
+different, indicating that an animated transformation has been specified.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIMacros-2"></span><div class="fragmentname">&lt;&lt;API Macros&gt;&gt;+=&nbsp;<a href="#fragment-APIMacros-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">#define <span class="anchor" id="WARN_IF_ANIMATED_TRANSFORM"></span>WARN_IF_ANIMATED_TRANSFORM(func)                              \
+do { if (curTransform.<a href="#TransformSet::IsAnimated" class="code">IsAnimated</a>())                                   \
+         Warning("Animated transformations set; ignoring for \"%s\" " \
+                 "and using the start transform only", func);         \
+} while (false) /* swallow trailing semicolon */</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TransformSetPublicMethods-2"></span><div class="fragmentname">&lt;&lt;TransformSet Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-TransformSetPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="TransformSet::IsAnimated"></span>IsAnimated() const {
+    for (int i = 0; i &lt; <a href="#MaxTransforms" class="code">MaxTransforms</a> - 1; ++i)
+        if (<a href="#TransformSet::t" class="code">t</a>[i] != <a href="#TransformSet::t" class="code">t</a>[i + 1]) return true;
+    return false;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Options"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Options"></span><h3>B.2.3  Options</h3><p>
+
+
+</p>
+<p>All of the rendering options that are set before the <a href="../Scene_Description_Interface/Scene_Definition.html#pbrtWorldBegin"><tt>pbrtWorldBegin()</tt></a>
+call are stored in a <a href="#RenderOptions"><tt>RenderOptions</tt></a> structure.  This structure contains
+public data members that are set by API calls and methods that help create
+objects used by the rest of <tt>pbrt</tt> for rendering.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APILocalClasses-2"></span><div class="fragmentname">&lt;&lt;API Local Classes&gt;&gt;+=&nbsp;<a href="#fragment-APILocalClasses-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Scene_Definition.html#fragment-APILocalClasses-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">struct <span class="anchor" id="RenderOptions"></span>RenderOptions {
+    &lt;&lt;<span class="fragmentname"><a href="Scene_Definition.html#fragment-RenderOptionsPublicMethods-0">RenderOptions Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1948" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1948"><i></i></a><div id="fragbit-1948" class="collapse"><div class="fragmentcode">       <a href="../Introduction/pbrt_System_Overview.html#Integrator" class="code">Integrator</a> *MakeIntegrator() const;
+       <a href="../Introduction/pbrt_System_Overview.html#Scene" class="code">Scene</a> *MakeScene();
+       <a href="../Camera_Models/Camera_Model.html#Camera" class="code">Camera</a> *MakeCamera() const;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-RenderOptionsPublicData-0">RenderOptions Public Data</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1949" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1949"><i></i></a><div id="fragbit-1949" class="collapse"><div class="fragmentcode">       Float transformStartTime = 0, transformEndTime = 1;
+       std::string FilterName = "box";
+       ParamSet FilterParams;
+       std::string FilmName = "image";
+       ParamSet FilmParams;
+       std::string SamplerName = "halton";
+       ParamSet SamplerParams;
+       std::string AcceleratorName = "bvh";
+       ParamSet AcceleratorParams;
+       std::string IntegratorName = "path";
+       ParamSet IntegratorParams;
+       std::string CameraName = "perspective";
+       ParamSet CameraParams;
+       TransformSet CameraToWorld;
+       std::map&lt;std::string, std::shared_ptr&lt;<a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt;&gt; namedMedia;
+       std::vector&lt;std::shared_ptr&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt;&gt; lights;
+       std::vector&lt;std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt;&gt; primitives;
+       std::map&lt;std::string, std::vector&lt;std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt;&gt;&gt; instances;
+       std::vector&lt;std::shared_ptr&lt;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a>&gt;&gt; *currentInstance = nullptr;</div></div>
+};</div><p>
+
+
+</p>
+<p>A single <tt>static</tt> instance of a <a href="#RenderOptions"><tt>RenderOptions</tt></a> structure is available
+to the rest of the API functions:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIStaticData-3"></span><div class="fragmentname">&lt;&lt;API Static Data&gt;&gt;+=&nbsp;<a href="#fragment-APIStaticData-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Scene_Definition.html#fragment-APIStaticData-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static std::unique_ptr&lt;RenderOptions&gt; <span class="anchor" id="renderOptions"></span>renderOptions;</div><p>
+
+
+</p>
+<p>When <a href="#pbrtInit"><tt>pbrtInit()</tt></a> is called, it allocates a <a href="#RenderOptions"><tt>RenderOptions</tt></a> structure
+that initially holds default values for all of its options:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIInitialization-1"></span><div class="fragmentname">&lt;&lt;API Initialization&gt;&gt;+=&nbsp;<a href="#fragment-APIInitialization-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Scene_Definition.html#fragment-APIInitialization-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">renderOptions.reset(new RenderOptions);</div><p>
+
+
+</p>
+<p>The <a href="#renderOptions"><tt>renderOptions</tt></a> variable is freed by <tt>pbrtCleanup()</tt>:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APICleanup-1"></span><div class="fragmentname">&lt;&lt;API Cleanup&gt;&gt;+=&nbsp;<a href="#fragment-APICleanup-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">renderOptions.reset(nullptr);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A few calls are available to set which of the CTMs should be active.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-6"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-5"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-7"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtActiveTransformAll"></span>pbrtActiveTransformAll() {
+    activeTransformBits = <a href="#AllTransformsBits" class="code">AllTransformsBits</a>;
+}
+void <span class="anchor" id="pbrtActiveTransformEndTime"></span>pbrtActiveTransformEndTime() {
+    activeTransformBits = <a href="#EndTransformBits" class="code">EndTransformBits</a>;
+}
+void <span class="anchor" id="pbrtActiveTransformStartTime"></span>pbrtActiveTransformStartTime() {
+    activeTransformBits = <a href="#StartTransformBits" class="code">StartTransformBits</a>;
+}</div><p>
+
+
+</p>
+<p>The two times at which the two CTMs are defined can be provided by a calling
+the function <a href="#pbrtTransformTimes"><tt>pbrtTransformTimes()</tt></a>.  By default, the start time is&nbsp;0 and the
+end time is&nbsp;1.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-7"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-6"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-8"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtTransformTimes"></span>pbrtTransformTimes(Float start, Float end) {
+    VERIFY_OPTIONS("TransformTimes");
+    renderOptions-&gt;transformStartTime = start;
+    renderOptions-&gt;transformEndTime = end;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RenderOptionsPublicData-0"></span><div class="fragmentname">&lt;&lt;RenderOptions Public Data&gt;&gt;=&nbsp;<a href="#fragment-RenderOptionsPublicData-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="RenderOptions::transformStartTime"></span>transformStartTime = 0, <span class="anchor" id="RenderOptions::transformEndTime"></span>transformEndTime = 1;</div><p>
+
+
+</p>
+<p>The API functions for setting the rest of the rendering options are mostly
+similar in both their interface and their implementation.  For example,
+<tt>pbrtPixelFilter()</tt> specifies the kind of <a href="../Sampling_and_Reconstruction/Image_Reconstruction.html#Filter"><tt>Filter</tt></a> to be used for
+filtering image samples.  It takes two parameters: a string giving the name
+of the filter to use and a <a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet"><tt>ParamSet</tt></a> giving the parameters to the
+filter.
+
+</p>
+<p>Note that an instance of the <a href="../Sampling_and_Reconstruction/Image_Reconstruction.html#Filter"><tt>Filter</tt></a> class isn&rsquo;t created immediately
+upon a call to <tt>pbrtPixelFilter()</tt>; instead, that function just stores the name
+of the filter and its parameters in <a href="#renderOptions"><tt>renderOptions</tt></a>. There are two
+reasons for this approach: first, there may be a subsequent call to
+<tt>pbrtPixelFilter()</tt> before the start of the world block, specifying a
+different filter; the (small) cost of creating the first <tt>Filter</tt>
+would be wasted in this case.
+
+</p>
+<p>Second, and more importantly, there are various object creation ordering
+dependencies imposed by the parameters taken by various constructors.  For
+example, the <a href="../Sampling_and_Reconstruction/Film_and_the_Imaging_Pipeline.html#Film"><tt>Film</tt></a> constructor expects a pointer to the <tt>Filter</tt>
+being used, and the <a href="../Camera_Models/Camera_Model.html#Camera"><tt>Camera</tt></a> constructor expects a pointer to the
+<tt>Film</tt>. Thus, the camera can&rsquo;t be created before the film, and the
+film can&rsquo;t be created before the filter. We don&rsquo;t want to require the user
+to specify the scene options in an order dictated by these internal
+details, so instead always just store object names and parameter sets until
+the end of the options block.  (The <tt>Filter</tt> here could actually be created
+immediately, since it doesn&rsquo;t depend on other objects, but we follow the
+same approach to it for consistency.)
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-8"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-7"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-9"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtPixelFilter"></span>pbrtPixelFilter(const std::string &amp;name, const ParamSet &amp;params) {
+    VERIFY_OPTIONS("PixelFilter");
+    renderOptions-&gt;<a href="#RenderOptions::FilterName" class="code">FilterName</a> = name;
+    renderOptions-&gt;<a href="#RenderOptions::FilterParams" class="code">FilterParams</a> = params;
+}</div><p>
+
+
+</p>
+<p>The default filter is set to the box filter.  If no specific filter is
+specified in the scene description file, then because the default
+<a href="../Scene_Description_Interface/Parameter_Sets.html#ParamSet"><tt>ParamSet</tt></a> has no parameter values, the filter will be created based on
+its default parameter settings.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RenderOptionsPublicData-1"></span><div class="fragmentname">&lt;&lt;RenderOptions Public Data&gt;&gt;+=&nbsp;<a href="#fragment-RenderOptionsPublicData-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-RenderOptionsPublicData-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::string <span class="anchor" id="RenderOptions::FilterName"></span>FilterName = "box";
+ParamSet <span class="anchor" id="RenderOptions::FilterParams"></span>FilterParams;</div><p>
+
+
+</p>
+<p>Most of the rest of the rendering-option-setting API calls are similar; they
+simply store their arguments in <a href="#renderOptions"><tt>renderOptions</tt></a>.  Therefore, we will only
+include the declarations of these functions here.  The options controlled by
+each function should be apparent from its name; more information about the
+legal parameters to each of these routines can be found in
+the documentation of <tt>pbrt</tt>&rsquo;s input file format.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDeclarations-1"></span><div class="fragmentname">&lt;&lt;API Function Declarations&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtFilm"></span>pbrtFilm(const std::string &amp;type, const ParamSet &amp;params);
+void <span class="anchor" id="pbrtSampler"></span>pbrtSampler(const std::string &amp;name, const ParamSet &amp;params);
+void <span class="anchor" id="pbrtAccelerator"></span>pbrtAccelerator(const std::string &amp;name, const ParamSet &amp;params);
+void <span class="anchor" id="pbrtIntegrator"></span>pbrtIntegrator(const std::string &amp;name, const ParamSet &amp;params);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+
+</p>
+<p><a href="#pbrtCamera"><tt>pbrtCamera()</tt></a> is slightly different from the other options, since the
+camera-to-world transformation needs to be recorded.   The CTM is used by
+<a href="#pbrtCamera"><tt>pbrtCamera()</tt></a> to initialize this value, and the camera coordinate
+system transformation is also stored for possible future use by
+<a href="#pbrtCoordSysTransform"><tt>pbrtCoordSysTransform()</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-9"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-8"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-APIFunctionDefinitions-10"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtCamera"></span>pbrtCamera(const std::string &amp;name, const ParamSet &amp;params) {
+    VERIFY_OPTIONS("<a href="../Camera_Models/Camera_Model.html#Camera" class="code">Camera</a>");
+    renderOptions-&gt;<a href="#RenderOptions::CameraName" class="code">CameraName</a> = name;
+    renderOptions-&gt;<a href="#RenderOptions::CameraParams" class="code">CameraParams</a> = params;
+    renderOptions-&gt;<a href="#RenderOptions::CameraToWorld" class="code">CameraToWorld</a> = <a href="../Utilities/Mathematical_Routines.html#Inverse" class="code">Inverse</a>(curTransform);
+    namedCoordinateSystems["camera"] = renderOptions-&gt;<a href="#RenderOptions::CameraToWorld" class="code">CameraToWorld</a>;
+}</div><p>
+
+
+</p>
+<p>The default camera uses a perspective projection.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RenderOptionsPublicData-2"></span><div class="fragmentname">&lt;&lt;RenderOptions Public Data&gt;&gt;+=&nbsp;<a href="#fragment-RenderOptionsPublicData-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-RenderOptionsPublicData-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::string <span class="anchor" id="RenderOptions::CameraName"></span>CameraName = "perspective";
+ParamSet <span class="anchor" id="RenderOptions::CameraParams"></span>CameraParams;
+TransformSet <span class="anchor" id="RenderOptions::CameraToWorld"></span>CameraToWorld;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#MediaDescription"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="MediaDescription"></span><h3>B.2.4  Media Description</h3><p>
+
+
+</p>
+<p>Definitions of participating media in the scene are specified by
+<tt>pbrtMakeNamedMedium()</tt>.  This function allows the user to associate a
+specific type of participation media (from Section&nbsp;<a href="../Volume_Scattering/Media.html#sec:media">11.3</a>) with an
+arbitrary name.  For example,
+</p>
+<div class="fragmentcode">MakeNamedMedium "highAlbedo" "string type" "homogeneous"
+    "color sigma_s" [5.0 5.0 5.0] "color sigma_a" [0.1 0.1 0.1]</div><p>
+
+
+</p>
+<p>creates a <a href="../Volume_Scattering/Media.html#HomogeneousMedium"><tt>HomogeneousMedium</tt></a> instance with the name <tt>highAlbedo</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDeclarations-2"></span><div class="fragmentname">&lt;&lt;API Function Declarations&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDeclarations-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Scene_Definition.html#fragment-APIFunctionDeclarations-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtMakeNamedMedium"></span>pbrtMakeNamedMedium(const std::string &amp;name, const ParamSet &amp;params);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The corresponding <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> instances are stored in an associative array
+for access later.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RenderOptionsPublicData-3"></span><div class="fragmentname">&lt;&lt;RenderOptions Public Data&gt;&gt;+=&nbsp;<a href="#fragment-RenderOptionsPublicData-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Scene_Definition.html#fragment-RenderOptionsPublicData-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::map&lt;std::string, std::shared_ptr&lt;<a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt;&gt; <span class="anchor" id="RenderOptions::namedMedia"></span>namedMedia;</div><p>
+
+
+</p>
+<p>Once named media have been created, <a href="#pbrtMediumInterface"><tt>pbrtMediumInterface()</tt></a> allows
+specifying the current &ldquo;inside&rdquo; and &ldquo;outside&rdquo; media.  For shapes, these
+specify the media inside and outside the shape&rsquo;s surface, where the side of
+the shape where the surface normal is oriented outward is &ldquo;outside.&rdquo;  For
+the camera and for light sources that don&rsquo;t have geometry associated with
+them, the &ldquo;inside&rdquo; medium is ignored and &ldquo;outside&rdquo; gives the medium
+containing the object. The current medium is stored in the
+<a href="../Scene_Description_Interface/Scene_Definition.html#GraphicsState"><tt>GraphicsState</tt></a> class, which will be introduced shortly.
+
+</p>
+<p>Like the transformation-related API functions, both of these functions can be called
+from both the options and the world blocks; the former so that media can be
+specified for the camera and the latter so that media can be specified for
+the lights and shapes in the scene.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-APIFunctionDefinitions-10"></span><div class="fragmentname">&lt;&lt;API Function Definitions&gt;&gt;+=&nbsp;<a href="#fragment-APIFunctionDefinitions-9"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Scene_Definition.html#fragment-APIFunctionDefinitions-11"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="pbrtMediumInterface"></span>pbrtMediumInterface(const std::string &amp;insideName,
+        const std::string &amp;outsideName) {
+    VERIFY_INITIALIZED("MediumInterface");
+    graphicsState.<a href="#GraphicsState::currentInsideMedium" class="code">currentInsideMedium</a> = insideName;
+    graphicsState.<a href="#GraphicsState::currentOutsideMedium" class="code">currentOutsideMedium</a> = outsideName;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsState-0"></span><div class="fragmentname">&lt;&lt;Graphics State&gt;&gt;=&nbsp;<a href="Scene_Definition.html#fragment-GraphicsState-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::string <span class="anchor" id="GraphicsState::currentInsideMedium"></span>currentInsideMedium, <span class="anchor" id="GraphicsState::currentOutsideMedium"></span>currentOutsideMedium;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Denis A. Gladkiy and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Scene_Description_Interface/Scene_Definition.html">Scene Description Interface / Scene Definition</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

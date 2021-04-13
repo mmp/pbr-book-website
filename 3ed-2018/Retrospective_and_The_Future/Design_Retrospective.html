@@ -1,0 +1,458 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Design Retrospective</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Retrospective_and_The_Future.html">Retrospective and The Future</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Design Retrospective</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Retrospective_and_The_Future.html">(Previous: Retrospective and The Future)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>17.1 Design Retrospective</h2><p>
+
+
+</p>
+<p>One of the basic assumptions in <tt>pbrt</tt>&rsquo;s design was that the most
+interesting types of images to render are images with complex geometry and
+lighting and that supporting a wide variety of shapes, materials, light
+sources, and light transport algorithms was important.  We also assumed
+that rendering these images well&mdash;with good sampling patterns, ray
+differentials, and antialiased textures&mdash;is worth the computational
+expense.  One result of these assumptions is that <tt>pbrt</tt> is relatively
+inefficient at rendering simple scenes, where a more specialized
+system could do much better.
+
+</p>
+<p>For example, a performance implication of our design priorities is that
+finding the BSDF at a ray intersection is more computationally expensive
+than it is in renderers that don&rsquo;t expend as much effort filtering textures
+and computing ray differentials.  We believe that this effort pays off
+overall by reducing the need to trace more camera rays to address texture
+aliasing, although, again, for simple scenes, texture aliasing is often not
+a problem. 
+On the other hand, most of the integrators in <tt>pbrt</tt> assume that hundreds
+or even thousands of samples will be taken in each pixel for high-quality
+global illumination; the benefits of high quality filtering are reduced in
+this case, since the high pixel sampling rate ends up sampling textures at
+a high rate as well.
+
+</p>
+<p>The simplicity of some of the interfaces in the system can lead to
+unnecessary work being done.  For example, the <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> always
+computes lens and time samples, even if they aren&rsquo;t needed by the
+<a href="../Camera_Models/Camera_Model.html#Camera"><tt>Camera</tt></a>; there&rsquo;s no way for the <a href="../Camera_Models/Camera_Model.html#Camera"><tt>Camera</tt></a> to communicate its
+sampling needs.  Similarly, if an <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a> doesn&rsquo;t use all of the
+array samples from its earlier calls to
+<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Request1DArray"><tt>Request1DArray()</tt></a> and
+<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Request2DArray"><tt>Request2DArray()</tt></a> for some ray,
+then the <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>&rsquo;s work for generating those samples is wasted.  (This
+case can occur, for example, if the ray doesn&rsquo;t intersect any geometry.)
+For cases like these, we believe that the benefits to readers of making the
+system easier to understand outweigh the relatively small efficiency
+losses.
+
+</p>
+<p>Throughout the book, we have tried to always add an exercise at the end of
+the chapter when we&rsquo;ve known that there was an important design alternative
+or where we made an implementation trade-off that would likely be made
+differently in a production rendering system.  (For example,
+Exercise&nbsp;7.2 discusses the first issue with <tt>Sampler</tt>s in the previous
+paragraph.)  It&rsquo;s worth reading the exercises even if you don&rsquo;t plan to do
+them.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TrianglesOnly"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:tris-only"></span><span id="TrianglesOnly"></span><h3>17.1.1  Triangles Only</h3><p>
+
+
+
+</p>
+<p>Another instance where the chosen abstractions in <tt>pbrt</tt> impact the overall
+system efficiency is the range of geometric primitives that the renderer
+supports.  While ray tracing&rsquo;s ability to handle a wide variety of shapes
+is elegant, this property is not as useful in practice as one might
+initially expect.  Most real-world scenes are either modeled directly with
+polygons or with smooth surfaces like spline patches and subdivision
+surfaces that either have difficult-to-implement or relatively inefficient
+ray&ndash;shape intersection algorithms.  As such, they are usually tessellated
+into triangles for ray intersection tests in practice.  Not many shapes
+that are commonly encountered in real-world scenes can be represented
+accurately with spheres and cones!
+
+</p>
+<p>There are some advantages to designing a ray tracer around a single
+low-level shape representation like triangles and only operating on this
+representation throughout much of the pipeline.  Such a renderer could
+still support a variety of primitives in the scene description but would
+always tessellate them at some point before performing intersection tests.
+Advantages of this design include:
+</p>
+<ul>
+<li> The renderer can depend on the fact that the triangle vertices can be
+transformed into world or camera space in advance, so no transformations of rays
+into object space are necessary (except when object instancing is used).
+
+<li> The acceleration structures can be specialized so that their nodes
+directly store the triangles that overlap them.  This improves the locality
+of the geometry in memory and enables ray&ndash;primitive intersection tests to
+be performed directly in the traversal routine, without needing to pass
+through two levels of virtual function calls to do so, as is currently the
+case in <tt>pbrt</tt>.
+
+<li> Displacement mapping, where geometry is subdivided into small
+triangles, which can then have their vertices perturbed procedurally or with
+texture maps, can be more easily implemented if all primitives are able to
+tessellate themselves.
+</ul><p>
+
+
+</p>
+<p>These advantages are substantial, for both increased performance and the
+complexity that they remove from many parts of the system.  For a production
+renderer, rather than one with pedagogical goals like <tt>pbrt</tt>, this
+alternative is worth considering carefully. (Alternatively,
+triangles alone could be given special treatment&mdash;stored directly in
+acceleration structures and so forth&ndash;while other shapes were handled with
+a less efficient general purpose code path.)
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#IncreasedSceneComplexity"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:increased-scene-complexity"></span><span id="IncreasedSceneComplexity"></span><h3>17.1.2  Increased Scene Complexity</h3><p>
+
+
+
+</p>
+<p>Given well-built acceleration structures, a strength of ray tracing is that
+the time spent on ray&ndash;primitive intersections grows slowly with added scene
+complexity.  As such, the maximum complexity that a ray tracer can handle may
+be limited more by memory than by computation.  Because rays may pass through
+many different regions of the scene during a short period of time, virtual
+memory often performs poorly when ray tracing complex scenes due to the
+resulting incoherent memory access patterns.
+
+</p>
+<p>One way to increase the potential complexity that a renderer is capable of
+handling is to reduce the memory used to store the scene.  For example,
+<tt>pbrt</tt> currently uses approximately 4&nbsp;GB of memory for the 24 million
+triangles in the landscape scene on the cover and in
+Figure&nbsp;<a href="../Primitives_and_Intersection_Acceleration.html#fig:ecosys-instancing">4.1</a>.  This works out to an average of 167
+bytes per triangle.  We have previously written ray tracers that managed an
+average of 40 bytes per triangle for scenes like these&mdash;at least a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.971ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1279 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">4 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="500" y="0"></use>
+</g>
+</svg> reduction is possible.
+
+</p>
+<p>Reducing memory overhead requires careful attention to memory use
+throughout the system. For example, in the aforementioned system, we provided three
+different <a href="../Shapes/Triangle_Meshes.html#Triangle"><tt>Triangle</tt></a> implementations, one using 8-bit <tt>uint8_t</tt>s
+to store vertex indices, one using 16-bit <tt>uint16_t</tt>s, and one using
+32-bit <tt>uint32_t</tt>s.  The smallest index size that was sufficient for the
+range of vertex indices in the mesh was chosen at run time.  Deering&rsquo;s
+paper on geometry compression (<a href="Further_Reading.html#cite:Deering95">Deering 1995</a>) and Ward&rsquo;s packed color
+format (<a href="Further_Reading.html#cite:Ward92">Ward 1992</a>) are both good inspirations for thinking along
+these lines.  See the &ldquo;Further Reading&rdquo; section in Chapter&nbsp;<a href="../Primitives_and_Intersection_Acceleration.html#chap:acceleration">4</a> for
+information about more memory-efficient acceleration structure
+representations.
+
+</p>
+<p>A more complex approach to implement is geometry caching (<a href="Further_Reading.html#cite:Pharr96">Pharr and Hanrahan 1996</a>),
+where the renderer holds a fixed amount of geometry in memory and discards
+geometry that hasn&rsquo;t been accessed recently.  This approach is useful for
+scenes with a lot of tessellated geometry, where a compact higher level
+shape representation like a subdivision surface can explode into a large
+number of triangles.  When available memory is low, some of this geometry
+can be discarded and regenerated later if needed.
+Geometry stored on
+disk can also be loaded into geometry caches; with the advent of economical
+flash storage offering hundreds of megabytes per second of read bandwidth,
+this approach is even more attractive.
+
+</p>
+<p>The performance of such a cache can be substantially improved by reordering
+the rays that are traced in order to improve their spatial and thus memory
+coherence (Pharr et al. <a href="Further_Reading.html#cite:Pharr97">1997</a>).  An easier-to-implement and
+more effective approach to improving the cache&rsquo;s behavior was described by
+Christensen et al. (<a href="Further_Reading.html#cite:Christensen03">2003</a>), who wrote a ray tracer that uses simplified
+representations of the scene geometry in a geometry cache.  More recently,
+Yoon et&nbsp;al. (<a href="Further_Reading.html#cite:yoonrlod">2006</a>), Budge et&nbsp;al. (<a href="Further_Reading.html#cite:Budge09">2009</a>), Moon et&nbsp;al. (<a href="Further_Reading.html#cite:Moon2010">2010</a>), and Hanika et&nbsp;al. (<a href="Further_Reading.html#cite:Hanika2010">2010</a>) have developed improved approaches to this problem.  See
+Rushmeier, Patterson, and Veerasamy (<a href="Further_Reading.html#cite:Rushmeier:1993:GSF">1993</a>) for an
+early example of how to use simplified scene representations when computing
+indirect illumination.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ProductionRendering"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ProductionRendering"></span><h3>17.1.3  Production Rendering</h3><p>
+
+
+</p>
+<p>Rendering high-quality imagery for film introduces a host of challenges
+beyond the topics discussed in this book.  Being able to render
+highly complex scenes&mdash;with both geometric and texture complexity&mdash;is a
+requirement.  Most production renderers have deferred loading and caching of
+texture and geometry at the hearts of their implementations.  Programmable
+surface shaders are also critical for allowing users to specify complex
+material appearances.
+
+</p>
+<p>Another practical challenge is integrating with interactive modeling and
+shading tools: it&rsquo;s important that artists be able to quickly see the
+effect of changes that they make to models, surfaces, and lights.  Deep
+integration with tools is necessary for this to work well&mdash;communicating
+the scene description from scratch with a text file each time the
+scene is rendered, as is done in <tt>pbrt</tt>, is not a viable approach.
+
+</p>
+<p>Unfortunately, the developers of most of the current crop of production rendering systems
+haven&rsquo;t yet followed the lead of Cook et&nbsp;al. (<a href="Further_Reading.html#cite:Cook87">1987</a>), who described Reyes and
+its design in great detail.  Exceptions include PantaRay, which was used by
+Weta Digital and is described by Pantaleoni et&nbsp;al. (<a href="Further_Reading.html#cite:Pantaleoni2010">2010</a>), and Disney&rsquo;s
+Hyperion renderer (Eisenacher et&nbsp;al.&nbsp;<a href="Further_Reading.html#cite:Eisenacher2013">2013</a>).
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SpecializedCompilation"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="SpecializedCompilation"></span><h3>17.1.4  Specialized Compilation</h3><p>
+
+
+</p>
+<p>The OptiX ray-tracing system, which is described by Parker et&nbsp;al. (<a href="Further_Reading.html#cite:Parker2010">2010</a>),
+has a very interesting system structure: it&rsquo;s a combination of built-in
+functionality (e.g., for building acceleration structures and traversing
+rays through them) that can be extended by user-supplied code (for
+primitive implementations, surface shading functions, etc.). Many renderers
+over the years have allowed user extensibility of this sort, usually
+through some kind of plug-in architecture. OptiX is distinctive in that
+it is built using a run-time compilation system that compiles all of this
+code together.
+
+</p>
+<p>Because the compiler has a view of the entire system when generating code,
+the resulting custom renderer can be automatically specialized in a variety
+of ways. For example, if the surface shading code never uses the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg>
+texture coordinates, the code that computes them in the triangle shape
+intersection test can be optimized out as dead code.  Or, if the ray&rsquo;s time
+field is never accessed, both the code that sets it and even the structure
+member itself can be eliminated.  Thus, this approach allows a degree of
+specialization (and resulting performance) that would be difficult to
+achieve manually, at least for more than a single system variant.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Retrospective_and_The_Future/Alternative_Hardware_Architectures.html">Retrospective and The Future / Alternative Hardware Architectures</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

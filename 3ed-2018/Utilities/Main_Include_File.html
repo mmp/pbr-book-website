@@ -1,0 +1,930 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Main Include File</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Main Include File</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">(Previous: Utilities)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:main-include"></span><h2>A.1 Main Include File</h2><p>
+
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="https://github.com/mmp/pbrt-v3/tree/master/src/core/pbrt.h"><tt>core/pbrt.h</tt></a> file is included by all other source files in the
+system.  It contains all global function declarations and inline functions,
+a few macros and numeric constants, and other globally accessible data.
+All files that include <tt>pbrt.h</tt> get a number of other included header
+files from <tt>pbrt.h</tt>.  This simplifies creation of new source files,
+almost all of which will want access to these extra headers.  However, in
+the interest of compile time efficiency, we keep the number of these
+automatically included files to a minimum; the ones here are necessary for
+almost all modules.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalIncludeFiles-0"></span><div class="fragmentname">&lt;&lt;Global Include Files&gt;&gt;=&nbsp;<a href="Communicating_with_the_User.html#fragment-GlobalIncludeFiles-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">#include &lt;algorithm&gt;
+#include &lt;cinttypes&gt;
+#include &lt;cmath&gt;
+#include &lt;iostream&gt;
+#include &lt;limits&gt;
+#include &lt;memory&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;</div><p>
+
+
+</p>
+<p>Almost all floating-point values in <tt>pbrt</tt> are declared as
+<span class="anchor" id="Float"></span><tt>Float</tt>s.  (The only exception is a few cases where
+a 32-bit <tt>float</tt> or a 64-bit <tt>double</tt> is specifically needed
+(e.g., when saving binary values to files).  Whether a <tt>Float</tt> is
+actually a <tt>float</tt> or a <tt>double</tt> is determined at compile time
+with the <tt>PBRT_FLOAT_AS_DOUBLE</tt> macro; this makes it possible to
+build versions of <tt>pbrt</tt> using either representation.  32-bit <tt>float</tt>s
+almost always have sufficient precision for ray tracing, but it&rsquo;s helpful
+to be able to switch to <tt>double</tt> for numerically tricky situations as
+well as to verify that rounding error with <tt>float</tt>s isn&rsquo;t causing
+errors for a given scene.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalForwardDeclarations-1"></span><div class="fragmentname">&lt;&lt;Global Forward Declarations&gt;&gt;+=&nbsp;<a href="../Color_and_Radiometry/Spectral_Representation.html#fragment-GlobalForwardDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Scene_Description_Interface/Initialization_and_Rendering_Options.html#fragment-GlobalForwardDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">#ifdef PBRT_FLOAT_AS_DOUBLE
+typedef double Float;
+#else
+typedef float Float;
+#endif // PBRT_FLOAT_AS_DOUBLE</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#UtilityFunctions"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="UtilityFunctions"></span><h3>A.1.1  Utility Functions</h3><p>
+
+
+</p>
+<p>A few short mathematical functions are useful throughout <tt>pbrt</tt>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x1-Clamping"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x1-Clamping"></span><h4>Clamping</h4><p>
+
+
+</p>
+<p><a href="#Clamp"><tt>Clamp()</tt></a> clamps the given value <tt>val</tt> to lie between the values 
+<tt>low</tt> and <tt>high</tt>.  For convenience <tt>Clamp()</tt> allows the
+types of the values giving the extent to be different than the type being
+clamped (but its implementation requires that implicit conversion is legal
+to the type being clamped).  By being implemented this way, the
+implementation allows calls like <tt>Clamp(floatValue, 0, 1)</tt> which would
+otherwise be disallowed by C++&rsquo;s template type resolution rules.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-6"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="../Texture/Image_Texture.html#fragment-GlobalInlineFunctions-5"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GlobalInlineFunctions-7"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T, typename U, typename V&gt;
+inline T <span class="anchor" id="Clamp"></span><a href="#Clamp" class="code">Clamp</a>(T val, U low, V high) {
+    if (val &lt; low) return low;
+    else if (val &gt; high) return high;
+    else return val;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x1-Modulus"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x1-Modulus"></span><h4>Modulus</h4><p>
+
+
+</p>
+<p><a href="#Mod"><tt>Mod()</tt></a> computes the remainder of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.39ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 1459.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">a slash b</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44E" d="M498 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-48 0 -83 33 -91 75c-60 -71 -110 -75 -130 -75c-78 0 -133 66 -133 160c0 146 124 293 241 293c45 0 74 -27 92 -64c3 22 18 44 42 44c17 0 29 -10 29 -27c0 -4 0 -6 -7 -34l-36 -140l-22 -90 c-11 -44 -13 -52 -13 -74c0 -20 3 -46 30 -46c41 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10zM361 332c0 6 -14 88 -79 88c-40 0 -85 -37 -116 -96c-23 -46 -55 -169 -55 -219c0 -39 14 -94 64 -94c28 0 69 16 113 71c15 17 15 19 20 37l50 196c1 5 3 11 3 17Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44F" d="M415 282c0 -144 -123 -293 -241 -293c-74 0 -127 62 -127 157c0 35 4 51 16 101l82 326c5 21 14 55 14 62c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-74 -301c30 31 71 60 117 60c80 0 133 -69 133 -160zM343 326 c0 64 -27 94 -63 94c-26 0 -71 -15 -120 -80c-9 -11 -9 -13 -15 -35l-22 -92c-16 -63 -16 -82 -16 -101c0 -74 33 -101 67 -101c39 0 85 36 118 103c18 38 51 153 51 212Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44E" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="529" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44F" x="1030" y="0"></use>
+</g>
+</svg>.  <tt>pbrt</tt> has its own version of
+this (rather than using&nbsp;<tt>%</tt>) in order to provide the behavior that
+the modulus of a negative number is always positive or zero.  Starting with C++11,
+the behavior of <tt>%</tt> has been specified to return a negative value or
+zero in this case, so that the identity <tt>(a/b)*b + a%b == a</tt> holds.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-7"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GlobalInlineFunctions-6"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GlobalInlineFunctions-8"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; inline T <span class="anchor" id="Mod"></span>Mod(T a, T b) {
+    T result = a - (a/b) * b;
+    return (T)((result &lt; 0) ? result + b : result);
+}</div><p>
+
+
+</p>
+<p>A specialization for
+<tt>Float</tt>s calls out to the corresponding standard library function.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-8"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GlobalInlineFunctions-7"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GlobalInlineFunctions-9"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;&gt; inline Float Mod(Float a, Float b) {
+    return std::fmod(a, b);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x1-UsefulConstants"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x1-UsefulConstants"></span><h4>Useful Constants</h4><p>
+
+
+</p>
+<p>A number of constants, most of them related to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.325ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 570.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">pi</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="0" y="0"></use>
+</g>
+</svg>, are used enough that it&rsquo;s worth
+having them easily available.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalConstants-3"></span><div class="fragmentname">&lt;&lt;Global Constants&gt;&gt;+=&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#fragment-GlobalConstants-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Memory_Management.html#fragment-GlobalConstants-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static const Float <span class="anchor" id="Pi"></span>Pi      = 3.14159265358979323846;
+static const Float <span class="anchor" id="InvPi"></span>InvPi   = 0.31830988618379067154;
+static const Float <span class="anchor" id="Inv2Pi"></span>Inv2Pi  = 0.15915494309189533577;
+static const Float <span class="anchor" id="Inv4Pi"></span>Inv4Pi  = 0.07957747154594766788;
+static const Float <span class="anchor" id="PiOver2"></span>PiOver2 = 1.57079632679489661923;
+static const Float <span class="anchor" id="PiOver4"></span>PiOver4 = 0.78539816339744830961;
+static const Float <span class="anchor" id="Sqrt2"></span>Sqrt2   = 1.41421356237309504880;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x1-ConvertingbetweenAngleMeasures"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x1-ConvertingbetweenAngleMeasures"></span><h4>Converting between Angle Measures</h4><p>
+
+
+</p>
+<p>Two simple functions convert from angles expressed in degrees to radians,
+and vice versa:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-9"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GlobalInlineFunctions-8"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GlobalInlineFunctions-10"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">inline Float <span class="anchor" id="Radians"></span>Radians(Float deg) { 
+    return (Pi / 180) * deg; 
+}
+inline Float <span class="anchor" id="Degrees"></span>Degrees(Float rad) { 
+    return (180 / Pi) * rad; 
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x1-Base-2Operations"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x1-Base-2Operations"></span><h4>Base-2 Operations</h4><p>
+
+
+</p>
+<p>Because the math library doesn&rsquo;t provide a base-2 logarithm function, we
+provide one here, using the identity <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="20.636ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 8884.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">log Subscript 2 Baseline left-parenthesis x right-parenthesis equals log x slash log 2</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6C" d="M255 0l-111 3l-111 -3v31c67 0 78 0 78 45v520c0 49 -8 56 -78 56v31l144 11v-618c0 -45 11 -45 78 -45v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-67" d="M485 404c0 -23 -19 -30 -29 -30c-16 0 -29 12 -29 29c0 12 5 23 16 27c-3 1 -10 1 -10 1c-18 0 -54 -5 -90 -39c25 -23 41 -60 41 -97c0 -77 -69 -146 -162 -146c-19 0 -60 3 -99 31c-17 -20 -17 -43 -17 -47c0 -32 21 -63 53 -67c7 -1 50 -1 75 -1c61 0 119 0 172 -28 c51 -28 65 -79 65 -114c0 -78 -104 -129 -222 -129c-122 0 -221 55 -221 127c0 40 32 83 92 100c-31 20 -44 58 -44 89c0 35 18 68 31 83c-25 21 -47 59 -47 103c0 77 69 146 162 146c22 0 64 -3 106 -36c42 41 86 47 106 47c39 0 51 -32 51 -49zM309 296 c0 23 0 123 -87 123c-40 0 -63 -28 -71 -40c-15 -25 -16 -57 -16 -84c0 -23 0 -123 87 -123c40 0 63 28 71 40c15 25 16 57 16 84zM419 -79c0 86 -112 86 -198 86h-59c-44 -3 -82 -40 -82 -86c0 -53 69 -104 170 -104c98 0 169 50 169 104Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-6C"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-67" x="779" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="1809" y="-343"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1733" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="2122" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2695" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="3362" y="0"></use>
+<g transform="translate(4418,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-6C"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-67" x="779" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="5865" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="6437" y="0"></use>
+<g transform="translate(6938,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-6C"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-67" x="779" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="8384" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-10"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GlobalInlineFunctions-9"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GlobalInlineFunctions-11"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">inline Float <span class="anchor" id="Log2"></span>Log2(Float x) {
+    const Float invLog2 = 1.442695040888963387004650940071;
+    return std::log(x) * invLog2;
+}</div><p>
+
+
+</p>
+<p>It&rsquo;s also useful to be able to compute an integer base-2 logarithm.  Rather
+than computing an (expensive) floating-point logarithm and converting to an
+integer, it&rsquo;s much more efficient to count the number of leading zeros up
+to the first one in the 32-bit binary representation of the value and then
+subtract this value from 31, which gives the index of the first bit set, which is
+in turn the integer base-2 logarithm.  (This efficiency comes in part from
+the fact that most CPUs have an instruction to count these zeros.)
+
+</p>
+<p>The code here uses the <tt>__builtin_clz()</tt> intrinsic, which is
+available in the <tt>g++</tt> and <tt>clang</tt> compilers;
+<tt>_BitScanReverse()</tt> is used to implement similar functionality with
+MSVC in code that isn&rsquo;t shown here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-11"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GlobalInlineFunctions-10"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GlobalInlineFunctions-12"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">inline int <span class="anchor" id="Log2Int"></span>Log2Int(uint32_t v) {
+    return 31 - __builtin_clz(v);
+}</div><p>
+
+
+</p>
+<p>There are clever tricks that can be used to efficiently determine if a
+given integer is an exact power of&nbsp;2, or round an integer up to the next
+higher (or equal) power of&nbsp;2.  (It&rsquo;s worthwhile to take a minute and work
+through for yourself how these two functions work.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-12"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GlobalInlineFunctions-11"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GlobalInlineFunctions-13"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; inline bool <span class="anchor" id="IsPowerOf2"></span>IsPowerOf2(T v) {
+    return v &amp;&amp; !(v &amp; (v - 1));
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-13"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GlobalInlineFunctions-12"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GlobalInlineFunctions-14"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">inline int32_t <span class="anchor" id="RoundUpPow2"></span>RoundUpPow2(int32_t v) {
+    v--;
+    v |= v &gt;&gt; 1;    v |= v &gt;&gt; 2;
+    v |= v &gt;&gt; 4;    v |= v &gt;&gt; 8;
+    v |= v &gt;&gt; 16;
+    return v+1;
+}</div><p>
+
+
+</p>
+<p>A variant of <tt>RoundUpPow2()</tt> for <tt>int64_t</tt> is also provided but
+isn&rsquo;t included in the text here.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>Some of the low-discrepancy sampling code in
+Chapter&nbsp;<a href="../Sampling_and_Reconstruction.html#chap:sampling-reconstruction">7</a> needs to efficiently count the
+number of trailing zeros in the binary representation of a value;
+<tt>CountTrailingZeros()</tt> is a wrapper around a compiler-specific
+intrinsic that maps to a single instruction on most architectures.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-14"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GlobalInlineFunctions-13"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GlobalInlineFunctions-15"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">inline int <span class="anchor" id="CountTrailingZeros"></span>CountTrailingZeros(uint32_t v) {
+    return __builtin_ctz(v);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x1-IntervalSearch"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x1-IntervalSearch"></span><h4>Interval Search</h4><p>
+
+
+</p>
+<p><tt>FindInterval()</tt> is a helper function that emulates the behavior of
+<tt>std::upper_bound()</tt>, but uses a function object to get values at various
+indices instead of requiring access to an actual array. This way, it
+becomes possible to bisect arrays that are procedurally generated, such as
+those interpolated from point samples.  The implementation here
+also adds some bounds checking for corner cases (e.g., making sure
+that a valid interval is selected even in the case the predicate evaluates
+to <tt>true</tt> or <tt>false</tt> for all entries), which would normally have
+to follow a call to <tt>std::upper_bound()</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GlobalInlineFunctions-15"></span><div class="fragmentname">&lt;&lt;Global Inline Functions&gt;&gt;+=&nbsp;<a href="#fragment-GlobalInlineFunctions-14"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Communicating_with_the_User.html#fragment-GlobalInlineFunctions-16"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename Predicate&gt; int <span class="anchor" id="FindInterval"></span>FindInterval(int size,
+        const Predicate &amp;pred) {
+    int first = 0, len = size;
+    while (len &gt; 0) {
+        int half = len &gt;&gt; 1, middle = first + half;
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Bisectrangebasedonvalueofmonopredatmonomiddle-0">Bisect range based on value of <tt>pred</tt> at <tt>middle</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1875" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1875"><i></i></a><div id="fragbit-1875" class="collapse"><div class="fragmentcode">           if (pred(middle)) {
+               first = middle + 1;
+               len -= half + 1;
+           } else
+               len = half;</div></div>
+    }
+    return <a href="#Clamp" class="code">Clamp</a>(first - 1, 0, size - 2);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Bisectrangebasedonvalueofmonopredatmonomiddle-0"></span><div class="fragmentname">&lt;&lt;Bisect range based on value of <tt>pred</tt> at <tt>middle</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (pred(middle)) {
+    first = middle + 1;
+    len -= half + 1;
+} else
+    len = half;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Pseudo-RandomNumbers"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Pseudo-RandomNumbers"></span><h3>A.1.2  Pseudo-Random Numbers</h3><p>
+
+
+</p>
+<p><tt>pbrt</tt> uses an implementation of the PCG pseudo-random number generator
+(O&rsquo;Neill&nbsp;<a href="Further_Reading.html#cite:ONeill2014">2014</a>) to generate pseudo-random numbers.  This generator is one of
+the best random number generators currently known.  Not only does it pass a
+variety of rigorous statistical tests that have been the bane of earlier
+pseudo-random number generators, but its implementation is also extremely
+efficient.
+
+</p>
+<p>We wrap its implementation in a small random number generator class,
+<tt>RNG</tt><span class="anchor" id="RNG"></span>.  Doing so allows us to use it with slightly
+less verbose calls throughout the rest of the system. Random number
+generator implementation is an esoteric art; therefore, we will not include
+or discuss the implementation here but will describe the APIs provided.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>The <tt>RNG</tt> class provides two constructors. The first, which takes no
+arguments, sets the internal state to reasonable defaults.  The second
+takes a single argument that selects a sequence of pseudo-random values.
+
+</p>
+<p>The PCG random number generator actually allows the user to provide two
+64-bit values to configure its operation: one chooses from one of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.039ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 1308.3 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript 63</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-33" x="500" y="0"></use>
+</g>
+</g>
+</svg>
+different sequences of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.039ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 1308.3 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript 64</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-34" x="500" y="0"></use>
+</g>
+</g>
+</svg> random numbers, while the second effectively
+selects a starting point within such a sequence.  Many pseudo-random
+number generators only allow this second form of configuration, which alone
+isn&rsquo;t as good: having independent non-overlapping sequences of values
+rather than different starting points in a single sequence provides greater
+non-uniformity in the generated values.
+
+</p>
+<p>For <tt>pbrt</tt>&rsquo;s needs, selecting different sequences is sufficient, so the
+<tt>RNG</tt> implementation doesn&rsquo;t provide a mechanism to also select the
+starting point within a sequence.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RNGPublicMethods-0"></span><div class="fragmentname">&lt;&lt;RNG Public Methods&gt;&gt;=&nbsp;<a href="#fragment-RNGPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#RNG" class="code">RNG</a>();
+<a href="#RNG" class="code">RNG</a>(uint64_t sequenceIndex) { <a href="#RNG::SetSequence" class="code">SetSequence</a>(sequenceIndex); }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>RNG</tt>s shouldn&rsquo;t be used in <tt>pbrt</tt> without either providing an initial
+sequence index via the constructor or a call to the <tt>SetSequence()</tt>
+method; otherwise there&rsquo;s risk that different parts of the system will
+inadvertently use correlated sequences of pseudo-random values, which in
+turn could cause surprising errors.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RNGPublicMethods-1"></span><div class="fragmentname">&lt;&lt;RNG Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-RNGPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-RNGPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="RNG::SetSequence"></span>SetSequence(uint64_t sequenceIndex);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>There are two variants of the <tt>UniformUInt32()</tt> method. The first
+returns a pseudo-random number in the range <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="10.532ex" height="3.176ex" style="vertical-align: -0.838ex;" viewBox="0 -1006.6 4534.4 1367.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 2 Superscript 32 Baseline minus 1 right-bracket</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+<g transform="translate(1224,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2754" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="3755" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="4255" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RNGPublicMethods-2"></span><div class="fragmentname">&lt;&lt;RNG Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-RNGPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-RNGPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">uint32_t <span class="anchor" id="RNG::UniformUInt32"></span>UniformUInt32();</div><p>
+
+
+</p>
+<p>The second returns a value uniformly distributed in the range <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="8.49ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3655.6 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma b minus 1 right-bracket</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44F" d="M415 282c0 -144 -123 -293 -241 -293c-74 0 -127 62 -127 157c0 35 4 51 16 101l82 326c5 21 14 55 14 62c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-74 -301c30 31 71 60 117 60c80 0 133 -69 133 -160zM343 326 c0 64 -27 94 -63 94c-26 0 -71 -15 -120 -80c-9 -11 -9 -13 -15 -35l-22 -92c-16 -63 -16 -82 -16 -101c0 -74 33 -101 67 -101c39 0 85 36 118 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44F" x="1224" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="1875" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2876" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="3377" y="0"></use>
+</g>
+</svg> given a bound <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.998ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 429.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">b</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44F" d="M415 282c0 -144 -123 -293 -241 -293c-74 0 -127 62 -127 157c0 35 4 51 16 101l82 326c5 21 14 55 14 62c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-74 -301c30 31 71 60 117 60c80 0 133 -69 133 -160zM343 326 c0 64 -27 94 -63 94c-26 0 -71 -15 -120 -80c-9 -11 -9 -13 -15 -35l-22 -92c-16 -63 -16 -82 -16 -101c0 -74 33 -101 67 -101c39 0 85 36 118 103c18 38 51 153 51 212Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44F" x="0" y="0"></use>
+</g>
+</svg>.  The last two versions of <tt>pbrt</tt> effectively used
+<tt>UniformUInt32() % b</tt> for this second computation. That approach
+is subtly flawed&mdash;in the case that <tt>b</tt> doesn&rsquo;t evenly divide
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.039ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 1308.3 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript 32</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+</g>
+</g>
+</svg>, then there is higher probability of choosing any given value in
+the sub-range <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="16.694ex" height="3.176ex" style="vertical-align: -0.838ex;" viewBox="0 -1006.6 7187.8 1367.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 2 Superscript 32 Baseline normal m normal o normal d b minus 1 right-bracket</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6D" d="M813 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31 c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c45 0 119 -11 133 -98c17 38 61 98 145 98c58 0 91 -20 105 -37c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44F" d="M415 282c0 -144 -123 -293 -241 -293c-74 0 -127 62 -127 157c0 35 4 51 16 101l82 326c5 21 14 55 14 62c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-74 -301c30 31 71 60 117 60c80 0 133 -69 133 -160zM343 326 c0 64 -27 94 -63 94c-26 0 -71 -15 -120 -80c-9 -11 -9 -13 -15 -35l-22 -92c-16 -63 -16 -82 -16 -101c0 -74 33 -101 67 -101c39 0 85 36 118 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+<g transform="translate(1224,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+</g>
+</g>
+<g transform="translate(2699,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-6D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="833" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="1334" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44F" x="4756" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="5408" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="6408" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="6909" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p>The implementation here first computes the above remainder <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="9.201ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 3961.6 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript 32 Baseline normal m normal o normal d b</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6D" d="M813 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31 c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c45 0 119 -11 133 -98c17 38 61 98 145 98c58 0 91 -20 105 -37c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D44F" d="M415 282c0 -144 -123 -293 -241 -293c-74 0 -127 62 -127 157c0 35 4 51 16 101l82 326c5 21 14 55 14 62c0 10 -2 17 -50 17c-15 0 -24 0 -24 12c0 18 11 19 19 20c26 2 99 10 122 10c13 0 13 -11 13 -11l-74 -301c30 31 71 60 117 60c80 0 133 -69 133 -160zM343 326 c0 64 -27 94 -63 94c-26 0 -71 -15 -120 -80c-9 -11 -9 -13 -15 -35l-22 -92c-16 -63 -16 -82 -16 -101c0 -74 33 -101 67 -101c39 0 85 36 118 103c18 38 51 153 51 212Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+</g>
+<g transform="translate(1474,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-6D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="833" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="1334" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D44F" x="3532" y="0"></use>
+</g>
+</svg>
+efficiently using only 32 bit arithmetic and stores it in the variable
+<tt>threshold</tt>. Then, if the pseudo-random value returned by
+<tt>UniformUInt32()</tt> is less than <tt>threshold</tt>,
+it is discarded and a
+new value is generated. The resulting distribution of values has a uniform
+distribution after the modulus operation, giving a uniformly distributed sample value.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RNGPublicMethods-3"></span><div class="fragmentname">&lt;&lt;RNG Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-RNGPublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-RNGPublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">uint32_t <a href="#RNG::UniformUInt32" class="code">UniformUInt32</a>(uint32_t b) {
+    uint32_t threshold = (~b + 1u) % b;
+    while (true) {
+        uint32_t r = <a href="#RNG::UniformUInt32" class="code">UniformUInt32</a>();
+        if (r &gt;= threshold)
+            return r % b;
+    }
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>UniformFloat()</tt> generates a pseudo-random floating-point number in the
+half-open interval <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.91ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2114.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1724" y="0"></use>
+</g>
+</svg>. 
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RNGPublicMethods-4"></span><div class="fragmentname">&lt;&lt;RNG Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-RNGPublicMethods-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="RNG::UniformFloat"></span>UniformFloat() {
+    return std::min(<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#OneMinusEpsilon" class="code">OneMinusEpsilon</a>, <a href="#RNG::UniformUInt32" class="code">UniformUInt32</a>() * 0x1p-32f);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Aras Pranckevicius and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Image_File_Input_and_Output.html">Utilities / Image File Input and Output</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

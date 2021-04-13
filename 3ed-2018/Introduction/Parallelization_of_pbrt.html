@@ -1,0 +1,672 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link href="https://fonts.googleapis.com/css?family=Domine|Roboto+Mono" rel="stylesheet">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.6.1/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <title>Parallelization of pbrt</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Introduction.html">Introduction</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Parallelization of pbrt</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Introduction/pbrt_System_Overview.html">(Previous: pbrt: System Overview)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:parallel-principles"></span><h2>1.4 Parallelization of pbrt</h2><p>
+
+
+
+</p>
+<p> It&rsquo;s now nearly impossible to buy a new laptop or desktop
+computer with only one processing core.  (The same even holds for mobile
+phones, for that matter.) The computer systems of today and of the future
+will increasingly feature multiple processing cores, both on CPUs and on
+highly parallel throughput processors like GPUs. At the same time, the
+computational capabilities of their cores are only improving slowly; as
+such, significant increases in performance over time are now only available
+to programs that can run in parallel, with many separate threads of
+execution performing computation simultaneously on multiple cores.
+
+</p>
+<p>Writing a parallel program is more difficult than writing a serial program.
+When two computations that the programmer believes are independent are
+executing simultaneously but then interact unexpectedly, the program may
+crash or generate unexpected results.  However, such a bug may not manifest
+itself again if the program is run again, perhaps due to those particular
+computations not running simultaneously during the next run.  Fortunately,
+increasingly good tools to help developers find these sorts of interactions
+are increasingly available.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="We found the open-source tool
+<tt>helgrind</tt>, part of the <tt>valgrind</tt> suite of tools, instrumental
+for helping to find bugs in <tt>pbrt</tt>&rsquo;s parallel code as we were developing it.
+&ldquo;Thread sanitizer&rdquo; is also well regarded.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p>For a parallel program to scale well to many processors, it needs to be
+able to provide a substantial amount of independent computation: any
+computation dependent on results of prior computation can&rsquo;t be run
+concurrently with the computation it depends on.  Fortunately, most
+rendering algorithms based on ray tracing have abundant parallelism; for
+the <a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator"><tt>SamplerIntegrator</tt></a>, each image sample is independent of all of the
+other ones, and many millions of samples may be used for high-quality
+images.
+
+</p>
+<p>One of the biggest challenges with parallel ray tracing is the impact of
+non-parallel phases of computation.  For example, it&rsquo;s not as easy to
+effectively parallelize the construction of many acceleration structures
+while the scene is being constructed as it is to parallelize rendering.
+While this may seem like a minor issue, <em>Amdahl&rsquo;s law</em>, which
+describes the speedup of a workload that has both serial and parallel phases,
+points to the challenge.   Given <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> cores performing computation and a
+workload where the fraction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 469.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">s</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="0" y="0"></use>
+</g>
+</svg> of its overall computation is inherently
+serial, then the maximum speedup possible is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="14.139ex" height="6.509ex" style="vertical-align: -3.171ex;" viewBox="0 -1437.2 6087.5 2802.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartStartFraction 1 OverOver s plus StartFraction 1 Over n EndFraction left-parenthesis 1 minus s right-parenthesis EndEndFraction period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(120,0)">
+<rect stroke="none" width="5569" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2534" y="676"></use>
+<g transform="translate(60,-937)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="691" y="0"></use>
+<g transform="translate(1470,0)">
+<g transform="translate(342,0)">
+<rect stroke="none" width="544" height="60" x="0" y="220"></rect>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="134" y="629"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="84" y="-488"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="2477" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2866" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3589" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="4590" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="5059" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="5809" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+Thus, even with an infinite number of cores, the maximum speedup is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.415ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 1470.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1 slash s</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="1001" y="0"></use>
+</g>
+</svg>.
+If, for example, a seemingly innocuous <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.098ex" height="2.343ex" style="vertical-align: -0.338ex;" viewBox="0 -863.1 1334 1008.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">5 percent-sign</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-25" d="M693 730c0 -6 -2 -9 -8 -18l-506 -753c-8 -11 -10 -15 -20 -15s-20 9 -20 20c0 0 0 7 9 20l449 669l-1 1c-6 -4 -57 -35 -133 -35c-36 0 -86 5 -151 42c21 -52 21 -99 21 -113c0 -112 -57 -201 -130 -201c-75 0 -147 81 -147 202c0 117 71 201 147 201 c32 0 53 -15 72 -32c55 -52 117 -77 187 -77c73 0 140 27 190 95c6 7 11 14 21 14c11 0 20 -9 20 -20zM776 145c0 -112 -57 -201 -130 -201c-75 0 -147 81 -147 202c0 117 71 201 147 201c71 0 130 -87 130 -202zM308 549c0 105 -51 179 -104 179c-21 0 -86 -13 -86 -180 c0 -166 66 -179 86 -179c52 0 104 72 104 180zM751 146c0 105 -51 179 -104 179c-21 0 -86 -13 -86 -180c0 -166 66 -179 86 -179c52 0 104 72 104 180Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-25" x="500" y="0"></use>
+</g>
+</svg> of the run time is spent in a
+serial phase of parsing the scene file and building acceleration
+structures, the maximum speedup possible is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="13.691ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 5894.6 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1 slash 0.05 equals 20 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="500" y="0"></use>
+<g transform="translate(1001,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-30"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="1279" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="3058" y="0"></use>
+<g transform="translate(4115,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="5116" y="0"></use>
+</g>
+</svg>, no matter
+how quickly the parallel phase executes.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#DataRacesandCoordination"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="DataRacesandCoordination"></span><h3>1.4.1  Data Races and Coordination</h3><p>
+
+
+</p>
+<p>In <tt>pbrt</tt>, we assume that the computation is running on processors that
+provide <em>coherent shared memory</em>.  The main idea of coherent shared
+memory is that all threads can read and write to a common set of memory
+locations and that changes to memory made by one thread will eventually be
+seen by other threads.  These properties greatly simplify the
+implementation of the system as there&rsquo;s no need to explicitly communicate
+data between cores. (Coherent shared memory is generally available on
+today&rsquo;s CPUs and is likely to continue to be on future CPUs. On the other
+hand, if one is running a computation across multiple computers in a
+cluster, coherent shared memory is generally not available.)
+
+</p>
+<p>Although coherent shared memory relieves the need for separate threads to explicitly
+communicate data with each other, they still need to <em>coordinate</em>
+their access to shared data; a danger of coherent shared memory is
+<em>data races</em>.  If two threads modify the same memory location
+without coordination between the two of them, the program will
+almost certainly compute incorrect results or even crash.  Consider the
+example of two processors simultaneously running the following
+innocuous-looking code, where <tt>globalCounter</tt> starts with a value of
+two:
+
+</p>
+<p>
+
+</p>
+<p></p>
+<div class="fragmentcode">extern int globalCounter;
+if (--globalCounter == 0)
+    printf("done!\n");</div><p>
+ 
+
+</p>
+<p>Because the two threads don&rsquo;t coordinate their reading and writing of
+<tt>globalCounter</tt>, it is possible that &ldquo;done&rdquo; will be printed zero, one,
+or even two times!  The assembly instructions generated by the compiler are
+likely to correspond to steps something like the following:
+
+</p>
+<p></p>
+<div class="fragmentcode">extern int globalCounter;
+int temp = globalCounter;
+temp = temp - 1;
+globalCounter = temp;
+if (globalCounter == 0)
+    printf("done!\n");</div><p>
+ 
+
+</p>
+<p>Now, consider different ways this code could be executed on two processors.
+For example, the second processor could start executing slightly after the
+first one, but the first one could go idle for a few cycles after executing
+the first few instructions:
+</p>
+<div class="fragmentcode">Thread A                        Thread B
+int temp = globalCounter;
+temp = temp - 1;                (idle)
+globalCounter = temp;
+                                int temp = globalCounter;
+// (idle)                       temp = temp - 1;
+                                globalCounter = temp;
+if (globalCounter == 0)         if (globalCounter == 0)
+    printf("done!\n");             printf("done!\n");</div><p>
+ 
+(Many unpredictable events can cause these sorts of execution bubbles, ranging from
+the OS interrupting the thread to cache misses.)
+In this ordering, both threads read the value of zero from
+<tt>globalCounter</tt>,
+and both execute the <tt>printf()</tt> call.  In this case, the error is not
+fatal, but if instead the system was freeing resources in the <tt>if</tt>
+block, then it would attempt to free the same resources twice, which would
+very likely cause a crash.  Consider now this potential execution order:
+</p>
+<div class="fragmentcode">Thread A                        Thread B
+int temp = globalCounter;       int temp = globalCounter;
+temp = temp - 1;                temp = temp - 1;
+globalCounter = temp;           // (idle)
+// (idle)                       globalCounter = temp;
+if (globalCounter == 0)         if (globalCounter == 0)
+    printf("done!\n");             printf("done!\n");</div><p>
+ 
+
+</p>
+<p>In this case, <tt>globalCounter</tt> ends up with a value of one, and neither
+thread executes the <tt>if</tt> block.  These examples illustrate the
+principle that when multiple threads of execution are accessing shared
+modified data, they must somehow synchronize their access.
+
+</p>
+<p>Two main mechanisms are available today for doing this type of
+synchronization: mutual exclusion and atomic operations.
+Mutual exclusion is implemented with <tt>std::mutex</tt> objects in <tt>pbrt</tt>.  A
+<tt>std::mutex</tt> can be used to protect access to some resource, ensuring
+that only one thread can access it at a time.  Consider the following
+updated version of the previous computation; here a <tt>std::lock_guard</tt>
+object acquires a lock on the mutex and releases it when it goes out of
+scope at the final brace.
+
+</p>
+<p></p>
+<div class="fragmentcode">extern int globalCounter;
+extern std::mutex globalCounterMutex;
+{ std::lock_guard&lt;std::mutex&gt; lock(globalCounterMutex);
+  int temp = globalCounter;
+  temp = temp - 1;
+  globalCounter = temp;
+  if (globalCounter == 0)
+      printf("done!\n");
+}</div><p>
+ 
+
+</p>
+<p>If two threads are executing this code and try to acquire the mutex at the
+same time, then the mutex will allow only one of them to proceed, stalling
+the other one in the <tt>std::lock_guard</tt> constructor.  Only when the
+first thread has finished the computation and its <tt>std::lock_guard</tt>
+goes out of scope, releasing the lock on the mutex, is the second thread
+able to acquire the mutex itself and continue the computation.
+
+</p>
+<p>
+</p>
+<div class="fragmentcode">Thread A                                 Thread B
+{ std::lock_guard&lt;std::mutex&gt; lock(     { std::lock_guard&lt;std::mutex&gt; lock(
+        globalCounterMutex);                    globalCounterMutex);   
+  int temp = globalCounter;                 // (stalled by mutex)
+  //  &hellip;
+} // (mutex released)
+                                            // (mutex acquired)                   
+                                            int temp = globalCounter;
+                                            //  &hellip;
+                                         } // (mutex released)</div><p>
+ 
+
+</p>
+<p>With correct mutual exclusion here, the <tt>printf()</tt> will only be
+executed once, no matter what the ordering of execution between the two
+threads is.
+
+</p>
+<p><em>Atomic memory operations</em> (or <em>atomics</em>) are the other option
+for correctly performing this type of memory update with multiple threads.
+Atomics are machine instructions that guarantee that their respective
+memory updates will be performed in a single transaction.  (<em>Atomic</em> in
+this case refers to the notion that the memory updates are indivisible.)
+The implementations of atomic operations in <tt>pbrt</tt> are from the C++11
+standard library and are further discussed in
+Appendix&nbsp;<a href="../Utilities/Parallelism.html#sec:atomic-ops">A.6.2</a>.  Using atomics, the computation above could
+be written to use the <tt>std::atomic&lt;int&gt;</tt> type, which has overloaded
+add, subtract, increment, and decrement operations, as below:
+</p>
+<div class="fragmentcode">extern std::atomic&lt;int&gt; globalCounter;
+if (--globalCounter == 0)
+    printf("done!\n");</div><p>
+
+
+</p>
+<p>The <tt>std::atomic</tt> <tt>&ndash;</tt> operator subtracts&nbsp;1 from the given
+variable, <tt>globalCounter</tt>, and returns the new value of the variable.
+Using an atomic operation ensures that if two threads simultaneously try to
+update the variable then not only will the final value of the variable be
+the expected value but each thread will be returned the value of the
+variable after its update alone.  In this example, then,
+<tt>globalCounter</tt> will end up with a value of zero, as expected, with
+one thread guaranteed to have the value one returned from the atomic
+subtraction and the other thread guaranteed to have zero returned.
+
+</p>
+<p>An additional option, <em>transactional memory</em>, is just starting to
+become available in CPUs as of this writing.  With transactional memory, a
+set of memory writes are bundled as a transaction; if no other threads
+access those memory locations while the transaction is executing, then all
+of the writes are committed in a single atomic operation.  Otherwise, it is
+rolled back and none of the writes reach memory, and thus the computation
+has had no effect; the transaction must then be tried again.  Transactional
+memory helps bridge the fine-grained operation of atomics and the higher
+overhead of mutexes.  However, because it isn&rsquo;t yet widely available,
+transactional memory isn&rsquo;t currently used in <tt>pbrt</tt>.
+
+</p>
+<p>Section&nbsp;<a href="../Utilities/Parallelism.html#sec:parallelism">A.6</a> in Appendix A has more information about
+parallel programming, with additional details on performance issues and
+pitfalls, as well as the various routines used in the parallel
+implementation of <tt>pbrt</tt>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Conventionsinttpbrttt"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Conventionsinttpbrttt"></span><h3>1.4.2  Conventions in <tt>pbrt</tt></h3><p>
+
+
+</p>
+<p>In <tt>pbrt</tt> (as is the case for most ray tracers) the vast majority of data
+at render time is read only (e.g., the scene description and texture
+maps).  Almost all of the parsing of the scene file and creation of the
+scene representation in memory is done with a single thread of execution,
+so there are no synchronization issues during that phase of
+execution.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="The two exceptions are some image resampling performed on
+image texture maps, and construction of one variant of the <tt>BVHAccel</tt>,
+though both of these are highly localized.">
+      <sup>&dagger;</sup>
+    </button>
+		 During rendering,
+concurrent read access to all of the read-only data by multiple threads
+works with no problems; we only need to be concerned with situations where
+data in memory is being modified.
+
+</p>
+<p>When adding new code to <tt>pbrt</tt>, it&rsquo;s important to make sure to not
+inadvertently add code that modifies shared data without proper
+synchronization.  This is usually straightforward; for example, when adding
+a new <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> implementation, the <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> will normally only
+perform read accesses to its member variables after it has been created.
+Sometimes, however, shared data may be inadvertently introduced.  Consider
+the following code idiom, often seen in single-threaded code:
+
+</p>
+<p></p>
+<div class="fragmentcode">static bool firstCall = true;
+if (firstCall) {
+    // additional initialization &hellip;
+    firstCall = false;
+}</div><p>
+
+
+</p>
+<p>This code is unsafe with multiple threads of execution, as multiple threads
+may see the value of <tt>firstCall</tt> as <tt>true</tt> and all execute the
+initialization code.  Writing this safely requires either atomic operations
+or mutexes.  (This particular idiom can also be implemented safely using the
+<tt>std::call_once()</tt> function.)
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ThreadSafetyExpectationsinttpbrttt"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ThreadSafetyExpectationsinttpbrttt"></span><h3>1.4.3  Thread Safety Expectations in <tt>pbrt</tt></h3><p>
+
+
+</p>
+<p>Many class methods in <tt>pbrt</tt> are required to be safe for multiple concurrent
+threads of execution. Particular instances of these methods must either be safe
+naturally due to not updating shared global data or due to using mutexes or
+atomic operations to safely perform any updates that are needed.  
+
+</p>
+<p>As a general rule, the low-level classes and structures in the
+system are not thread-safe.  For example, the <a href="../Geometry_and_Transformations/Points.html#Point3f"><tt>Point3f</tt></a> class, which stores
+three <tt>float</tt> values to represent a point in 3D space, is not safe for
+multiple threads to call methods that modify it at the same time.
+(Multiple threads can use <tt>Point3f</tt>s as read-only data simultaneously,
+of course.)  The run-time overhead to make <a href="../Geometry_and_Transformations/Points.html#Point3f"><tt>Point3f</tt></a> thread-safe would
+have a substantial effect on performance with little benefit in return.
+
+</p>
+<p>The same is true for classes like <a href="../Geometry_and_Transformations/Vectors.html#Vector3f"><tt>Vector3f</tt></a>, <a href="../Geometry_and_Transformations/Normals.html#Normal3f"><tt>Normal3f</tt></a>,
+<a href="../Color_and_Radiometry/Spectral_Representation.html#Spectrum"><tt>Spectrum</tt></a>, <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>,
+<a href="../Geometry_and_Transformations/Animating_Transformations.html#Quaternion"><tt>Quaternion</tt></a>, and <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a>.  These classes are
+usually either created at scene construction time and then used as
+read-only data or allocated on the stack during rendering and used
+only by a single thread. 
+
+</p>
+<p>The utility classes <a href="../Utilities/Memory_Management.html#MemoryArena"><tt>MemoryArena</tt></a> (used for high-performance temporary
+memory allocation) and <a href="../Utilities/Main_Include_File.html#RNG"><tt>RNG</tt></a> (pseudo-random number generation) are also
+not safe for use by multiple threads; these classes store state that is
+modified when their methods are called, and the overhead from protecting
+modification to their state with mutual exclusion would be excessive
+relative to the amount of computation they perform.  Consequently, in code
+like the <a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator::Render"><tt>SamplerIntegrator::Render()</tt></a> method above, the implementation
+allocates per-thread instances of these classes on the stack.
+
+</p>
+<p>With two exceptions, implementations of the higher level abstract base
+classes listed in Table&nbsp;<a href="../Introduction/pbrt_System_Overview.html#fig:plug-in-types">1.1</a> are all expected to be safe
+for multiple threads to use simultaneously.  With a little care, it is
+usually straightforward to implement specific instances of these base
+classes so they don&rsquo;t modify any shared state in their methods.  
+
+</p>
+<p>The first exceptions are the <a href="../Introduction/pbrt_System_Overview.html#SamplerIntegrator"><tt>SamplerIntegrator</tt></a> and <a href="../Light_Sources/Light_Interface.html#Light"><tt>Light</tt></a>
+<tt>Preprocess()</tt> methods.  These are called by the system during scene
+construction, and implementations of them generally modify shared state in
+their implementations&mdash;for example, by building data
+structures that represent the distribution of illumination in the scene.
+Therefore, it&rsquo;s helpful to allow the implementer to assume that only a
+single thread will call into these methods.  (This is a separate issue from
+the consideration that implementations of these methods that are
+computationally intensive may use <a href="../Utilities/Parallelism.html#ParallelFor"><tt>ParallelFor()</tt></a> to parallelize their
+computation.)
+
+</p>
+<p>The second exception is the <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>; its methods are also not
+expected to be thread safe.  This is another instance where this
+requirement would impose an excessive performance and scalability impact;
+many threads simultaneously trying to get samples from a single
+<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> would limit the system&rsquo;s overall performance.  Therefore, as
+described in Section&nbsp;<a href="../Introduction/pbrt_System_Overview.html#sec:rendering-loop">1.3.4</a>, a unique <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> is
+created for each image tile using <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Clone"><tt>Sampler::Clone()</tt></a>; this sampler can
+then be used for just the one tile, without any mutual exclusion overhead.
+
+</p>
+<p>All stand-alone functions in <tt>pbrt</tt> are thread-safe (as long as
+multiple threads don&rsquo;t pass pointers to the same data to them).
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <div class="container-fluid-nav">
+    <!--  <ul class="nav navbar-nav navbar-center"> -->
+      <span class="navbar-text" style="text-align: center;">
+        Thanks to Jay Patel and 43 others for generously supporting <i>Physically
+        Based Rendering</i> online
+        through <a href="https://patreon.com/pbrbook">Patreon</a>.
+    </span>
+  </div>
+</nav>
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>, &copy; 2004-2019 Matt Pharr, Wenzel Jakob, and Greg Humphreys</span>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Introduction/How_to_Proceed_through_This_Book.html">Introduction / How to Proceed through This Book</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>
