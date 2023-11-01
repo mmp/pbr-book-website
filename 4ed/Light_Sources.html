@@ -1,0 +1,207 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="/4ed/pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Light Sources</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="/4ed/contents.html"><img src="/4ed/pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="contents.html">Physically Based Rendering: </a></li>
+    <li class="nav-item"><a class="nav-link" href="#">Light Sources</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="/4ed/Volume_Scattering/Exercises.html">(Previous: Exercises)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="jumbotron jumbotron-fluid bg-cover-100 opener-image" style="background-image: url('openers/dragon-projection.jpg'); background-position: center;">
+</div>
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="chap:lights"></span><h1>12 Light Sources</h1><p>
+
+
+
+</p>
+<p>In order for objects in a scene to be visible, there must be a source of
+illumination so that some light is reflected from them to the camera
+sensor.  To that end, this chapter first presents the <a href="Light_Sources/Light_Interface.html#Light"><tt>Light</tt></a> interface,
+which allows specification of a variety of types of light sources.  (Before
+reading this chapter, you may wish to review Section&nbsp;<a href="Radiometry,_Spectra,_and_Color/Light_Emission.html#sec:emission">4.4</a>,
+which describes the physical processes underlying light emission.)
+
+</p>
+<p>The implementations of a number of useful light sources follow.  Because
+the implementations of different types of lights are all hidden behind a
+carefully designed interface, the light transport routines in
+Chapters&nbsp;<a href="Light_Transport_I_Surface_Reflection.html#chap:light-transport">13</a> through&nbsp;<a href="Wavefront_Rendering_on_GPUs.html#chap:gpu">15</a> can generally
+operate without knowing which particular types of lights are in the scene,
+similar to how acceleration structures can hold collections of different
+types of primitives without needing to know the details of their actual
+representations.
+
+</p>
+<p>A wide variety of light source models are introduced in this chapter,
+although the variety is slightly limited by <tt>pbrt</tt>&rsquo;s physically based
+design.  Many non-physical light source models have been developed for
+computer graphics, incorporating control over properties like the rate at
+which the light falls off with distance, which objects are illuminated by
+the light, which objects cast shadows from the light, and so on.  These
+sorts of controls are incompatible with physically based light transport
+algorithms and thus cannot be provided in the models here.
+
+</p>
+<p>As an example of the problems such lighting controls pose, consider a light
+that does not cast shadows: the total energy arriving at surfaces in the
+scene increases without bound as more surfaces are added.  Consider a
+series of concentric shells of spheres around such a light; if occlusion is
+ignored, each added shell increases the total received energy.  This
+directly violates the principle that the total energy arriving at surfaces
+illuminated by the light cannot be greater than the total energy emitted by
+the light.
+
+</p>
+<p>In scenes with many lights, it is impractical to account for the
+illumination from all of them at each point being shaded.  Fortunately,
+this issue is yet another that can be handled stochastically.  Given a
+suitable weighting factor, an unbiased estimate of the effect of
+illumination from all the lights can be computed by considering just a
+few of them, or even just one.  The last section of this chapter therefore
+introduces the <a href="Light_Sources/Light_Sampling.html#LightSampler"><tt>LightSampler</tt></a>, which defines an interface for
+choosing such light sources as well as a number of implementations of it.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="Light_Sources/Light_Interface.html">Light Sources / Light Interface</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,856 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Primitive Interface and Geometric Primitives</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Primitives_and_Intersection_Acceleration.html">Primitives and Intersection Acceleration</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Primitive Interface and Geometric Primitives</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Primitives_and_Intersection_Acceleration.html">(Previous: Primitives and Intersection Acceleration)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:primitives"></span><h2>7.1 Primitive Interface and Geometric Primitives</h2><p>
+
+
+
+
+</p>
+<p>The <a href="#Primitive"><tt>Primitive</tt></a> class defines the <tt>Primitive</tt> interface.  It
+and the <tt>Primitive</tt> implementations that are described in this
+section are defined in the files <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/cpu/primitive.h"><tt>cpu/primitive.h</tt></a> and
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/cpu/primitive.cpp"><tt>cpu/primitive.cpp</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PrimitiveDefinition-0"></span><div class="fragmentname">&lt;&lt;Primitive Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="Primitive"></span>Primitive
+    : public <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer" class="code">TaggedPointer</a>&lt;<a href="#SimplePrimitive" class="code">SimplePrimitive</a>, <a href="#GeometricPrimitive" class="code">GeometricPrimitive</a>,
+                           <a href="#TransformedPrimitive" class="code">TransformedPrimitive</a>, <a href="#AnimatedPrimitive" class="code">AnimatedPrimitive</a>,
+                           <a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAggregate" class="code">BVHAggregate</a>, <a href="../Primitives_and_Intersection_Acceleration/Aggregates.html#KdTreeAggregate" class="code">KdTreeAggregate</a>&gt; {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PrimitiveInterface-0">Primitive Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-965" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-965"><i></i></a><div id="fragbit-965" class="collapse"><div class="fragmentcode">       using <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer" class="code">TaggedPointer</a>::<a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer" class="code">TaggedPointer</a>;
+       <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> Bounds() const;
+       pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; Intersect(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r,
+                                                   Float tMax = <a href="../Shapes/Managing_Rounding_Error.html#Infinity" class="code">Infinity</a>) const;
+       bool IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax = <a href="../Shapes/Managing_Rounding_Error.html#Infinity" class="code">Infinity</a>) const;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>Primitive</tt> interface is composed of only three methods, each of which
+corresponds to a <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> method.  The first, <tt>Bounds()</tt>, returns a
+bounding box that encloses the primitive&rsquo;s geometry in rendering space.  There
+are many uses for such a bound; one of the most important is to place the
+<a href="#Primitive"><tt>Primitive</tt></a> in the acceleration data structures.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PrimitiveInterface-0"></span><div class="fragmentname">&lt;&lt;Primitive Interface&gt;&gt;=&nbsp;<a href="#fragment-PrimitiveInterface-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> <span class="anchor" id="Primitive::Bounds"></span>Bounds() const;</div><p>
+
+
+</p>
+<p>The other two methods provide the two types of ray intersection tests.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PrimitiveInterface-1"></span><div class="fragmentname">&lt;&lt;Primitive Interface&gt;&gt;+=&nbsp;<a href="#fragment-PrimitiveInterface-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; <span class="anchor" id="Primitive::Intersect"></span>Intersect(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r,
+                                            Float tMax = <a href="../Shapes/Managing_Rounding_Error.html#Infinity" class="code">Infinity</a>) const;
+bool <span class="anchor" id="Primitive::IntersectP"></span>IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax = <a href="../Shapes/Managing_Rounding_Error.html#Infinity" class="code">Infinity</a>) const;</div><p>
+
+
+</p>
+<p>Upon finding an intersection, a <tt>Primitive</tt>&rsquo;s <tt>Intersect()</tt>
+method is also responsible for initializing a few member variables in the
+<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> in the <a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection"><tt>ShapeIntersection</tt></a> that it returns.  The
+first two are representations of the shape&rsquo;s material and its
+emissive properties, if it is itself an emitter. For
+convenience, <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> provides a method to set these, which
+reduces the risk of inadvertently not setting all of them.  The second two
+are related
+to medium scattering properties and the fragment that initializes them will
+be described later, in Section&nbsp;<a href="../Volume_Scattering/Media.html#sec:media">11.4</a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SurfaceInteractionPublicMethods-2"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Public Methods&gt;&gt;+=&nbsp;<a href="../Geometry_and_Transformations/Interactions.html#fragment-SurfaceInteractionPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="SurfaceInteraction::SetIntersectionProperties"></span>SetIntersectionProperties(<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> mtl, <a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a> area,
+        const <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> *primMediumInterface, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> rayMedium) {
+    material = mtl;
+    areaLight = area;
+    &lt;&lt;<span class="fragmentname"><a href="../Volume_Scattering/Media.html#fragment-Setmediumpropertiesatsurfaceintersection-0">Set medium properties at surface intersection</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-966" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-966"><i></i></a><div id="fragbit-966" class="collapse"><div class="fragmentcode">       if (primMediumInterface &amp;&amp; primMediumInterface-&gt;<a href="../Volume_Scattering/Media.html#MediumInterface::IsMediumTransition" class="code">IsMediumTransition</a>())
+           <a href="../Geometry_and_Transformations/Interactions.html#Interaction::mediumInterface" class="code">mediumInterface</a> = primMediumInterface;
+       else
+           <a href="../Geometry_and_Transformations/Interactions.html#Interaction::medium" class="code">medium</a> = rayMedium;</div></div> 
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SurfaceInteractionPublicMembers-3"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Public Members&gt;&gt;+=&nbsp;<a href="../Geometry_and_Transformations/Interactions.html#fragment-SurfaceInteractionPublicMembers-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#fragment-SurfaceInteractionPublicMembers-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> <span class="anchor" id="SurfaceInteraction::material"></span>material;
+<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a> <span class="anchor" id="SurfaceInteraction::areaLight"></span>areaLight;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#GeometricPrimitives"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:gprim"></span><span id="GeometricPrimitives"></span><h3>7.1.1  Geometric Primitives</h3><p>
+
+
+
+</p>
+<p>The <a href="#GeometricPrimitive"><tt>GeometricPrimitive</tt></a> class provides a basic implementation of the
+<tt>Primitive</tt> interface that stores a variety of properties that may be associated
+with a shape.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometricPrimitiveDefinition-0"></span><div class="fragmentname">&lt;&lt;GeometricPrimitive Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="GeometricPrimitive"></span>GeometricPrimitive {
+  public:
+    &lt;&lt;<span class="fragmentname">GeometricPrimitive Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-967" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-967"><i></i></a><div id="fragbit-967" class="collapse"><div class="fragmentcode">       GeometricPrimitive(<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a> shape, <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> material, <a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a> areaLight,
+                          const <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> &amp;mediumInterface,
+                          <a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#FloatTexture" class="code">FloatTexture</a> alpha = nullptr);
+       <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> Bounds() const;
+       pstd::optional&lt;ShapeIntersection&gt; Intersect(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const;
+       bool IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-GeometricPrimitivePrivateMembers-0">GeometricPrimitive Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-968" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-968"><i></i></a><div id="fragbit-968" class="collapse"><div class="fragmentcode">       <a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a> shape;
+       <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> material;
+       <a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a> areaLight;
+       <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> mediumInterface;
+       <a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#FloatTexture" class="code">FloatTexture</a> alpha;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Each <a href="#GeometricPrimitive"><tt>GeometricPrimitive</tt></a> holds a <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> with a description
+of its appearance properties, including its material, its emissive
+properties if it is a light source, the participating media on each side of
+its surface, and an optional <em>alpha texture</em>, which can be used to
+make some parts of a shape&rsquo;s surface disappear.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometricPrimitivePrivateMembers-0"></span><div class="fragmentname">&lt;&lt;GeometricPrimitive Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a> <span class="anchor" id="GeometricPrimitive::shape"></span>shape;
+<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> <span class="anchor" id="GeometricPrimitive::material"></span>material;
+<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a> <span class="anchor" id="GeometricPrimitive::areaLight"></span>areaLight;
+<a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> <span class="anchor" id="GeometricPrimitive::mediumInterface"></span>mediumInterface;
+<a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#FloatTexture" class="code">FloatTexture</a> <span class="anchor" id="GeometricPrimitive::alpha"></span>alpha;</div><p>
+
+
+</p>
+<p>The <tt>GeometricPrimitive</tt> constructor initializes these variables from
+the parameters passed to it. It is straightforward, so we do not include it
+here.
+
+</p>
+<p>
+
+</p>
+<p>Most of the methods of the <a href="#Primitive"><tt>Primitive</tt></a> interface start out with a call
+to the corresponding <tt>Shape</tt> method.  For example, its <tt>Bounds()</tt>
+method directly returns the bounds from the <tt>Shape</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometricPrimitiveMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;GeometricPrimitive Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-GeometricPrimitiveMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> <span class="anchor" id="GeometricPrimitive::Bounds"></span>GeometricPrimitive::<a href="../Shapes/Basic_Shape_Interface.html#Shape::Bounds" class="code">Bounds</a>() const {
+    return <a href="#GeometricPrimitive::shape" class="code">shape</a>.<a href="../Shapes/Basic_Shape_Interface.html#Shape::Bounds" class="code">Bounds</a>();
+}</div><p>
+
+
+</p>
+<p><a href="#GeometricPrimitive::Intersect"><tt>GeometricPrimitive::Intersect()</tt></a> calls the <tt>Intersect()</tt> method
+of its <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> to do the actual intersection test and to initialize a
+<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection"><tt>ShapeIntersection</tt></a> to describe the intersection, if any.  If an
+intersection is found, then additional processing specific to the
+<tt>GeometricPrimitive</tt> is performed.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometricPrimitiveMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;GeometricPrimitive Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-GeometricPrimitiveMethodDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GeometricPrimitiveMethodDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt;
+<span class="anchor" id="GeometricPrimitive::Intersect"></span>GeometricPrimitive::<a href="../Shapes/Basic_Shape_Interface.html#Shape::Intersect" class="code">Intersect</a>(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const {
+    pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; si = shape.<a href="../Shapes/Basic_Shape_Interface.html#Shape::Intersect" class="code">Intersect</a>(r, tMax);
+    if (!si) return {};
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Testintersectionagainstalphatextureifpresent-0">Test intersection against alpha texture, if present</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-969" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-969"><i></i></a><div id="fragbit-969" class="collapse"><div class="fragmentcode">       if (<a href="#GeometricPrimitive::alpha" class="code">alpha</a>) {
+           if (Float a = <a href="#GeometricPrimitive::alpha" class="code">alpha</a>.<a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#FloatTexture::Evaluate" class="code">Evaluate</a>(si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>); a &lt; 1) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Possiblyignoreintersectionbasedonstochasticalphatest-0">Possibly ignore intersection based on stochastic alpha test</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-970" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-970"><i></i></a><div id="fragbit-970" class="collapse"><div class="fragmentcode">                  Float u = (a &lt;= 0) ? 1.f : <a href="../Utilities/Mathematical_Infrastructure.html#HashFloat" class="code">HashFloat</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>, r.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>);
+                  if (u &gt; a) {
+                      &lt;&lt;<span class="fragmentname"><a href="#fragment-Ignorethisintersectionandtraceanewray-0">Ignore this intersection and trace a new ray</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-971" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-971"><i></i></a><div id="fragbit-971" class="collapse"><div class="fragmentcode">                         <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> rNext = si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SpawnRay" class="code">SpawnRay</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>);
+                         pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; siNext = <a href="#GeometricPrimitive::Intersect" class="code">Intersect</a>(rNext, tMax - si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>);
+                         if (siNext)
+                             siNext-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a> += si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>;
+                         return siNext;</div></div>
+                  }</div></div>
+          }
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-InitializemonoSurfaceInteractionaftermonoShapeintersection-0">Initialize <tt>SurfaceInteraction</tt> after <tt>Shape</tt> intersection</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-972" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-972"><i></i></a><div id="fragbit-972" class="collapse"><div class="fragmentcode">       si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>.<a href="#SurfaceInteraction::SetIntersectionProperties" class="code">SetIntersectionProperties</a>(<a href="#GeometricPrimitive::material" class="code">material</a>, <a href="#GeometricPrimitive::areaLight" class="code">areaLight</a>, &amp;<a href="#GeometricPrimitive::mediumInterface" class="code">mediumInterface</a>,
+                                          r.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>);</div></div>
+    return si;
+}</div><p>
+
+
+</p>
+<p>If an alpha texture is associated with the shape, then the intersection point
+is tested against the alpha texture before a successful intersection is
+reported.  (The definition of the texture interface and a number of
+implementations are in Chapter&nbsp;<a href="../Textures_and_Materials.html#chap:texture">10</a>.)  The alpha texture can
+be thought of as a scalar function over the shape&rsquo;s surface that indicates
+whether the surface is actually present at each point.  An alpha value of&nbsp;0
+indicates that it is not, and&nbsp;1 that it is.  Alpha textures are useful for
+representing objects like leaves: a leaf might be modeled as a single
+triangle or bilinear patch, with an alpha texture cutting out the edges
+so that a detailed outline of a leaf remains.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Testintersectionagainstalphatextureifpresent-0"></span><div class="fragmentname">&lt;&lt;Test intersection against alpha texture, if present&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="#GeometricPrimitive::alpha" class="code">alpha</a>) {
+    if (Float a = <a href="#GeometricPrimitive::alpha" class="code">alpha</a>.<a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#FloatTexture::Evaluate" class="code">Evaluate</a>(si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>); a &lt; 1) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Possiblyignoreintersectionbasedonstochasticalphatest-0">Possibly ignore intersection based on stochastic alpha test</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-973" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-973"><i></i></a><div id="fragbit-973" class="collapse"><div class="fragmentcode">           Float u = (a &lt;= 0) ? 1.f : <a href="../Utilities/Mathematical_Infrastructure.html#HashFloat" class="code">HashFloat</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>, r.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>);
+           if (u &gt; a) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-Ignorethisintersectionandtraceanewray-0">Ignore this intersection and trace a new ray</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-974" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-974"><i></i></a><div id="fragbit-974" class="collapse"><div class="fragmentcode">                  <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> rNext = si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SpawnRay" class="code">SpawnRay</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>);
+                  pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; siNext = <a href="#GeometricPrimitive::Intersect" class="code">Intersect</a>(rNext, tMax - si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>);
+                  if (siNext)
+                      siNext-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a> += si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>;
+                  return siNext;</div></div>
+           }</div></div>
+   }
+}</div><p>
+
+
+</p>
+<p>If the alpha texture has a value of&nbsp;0 or&nbsp;1 at the intersection point, then
+it is easy to decide whether or not the intersection reported by the shape
+is valid.  For intermediate alpha values, the correct answer is less clear.
+
+</p>
+<p>One possibility would be to use a fixed threshold&mdash;for example, accepting
+all intersections with an alpha of 1 and ignoring them otherwise.  However,
+this approach leads to hard transitions at the resulting boundary.  Another
+option would be to return the alpha from the intersection method and leave
+calling code to handle it, effectively treating the surface as partially
+transparent at such points.  However, that approach would not only make the
+<tt>Primitive</tt> intersection interfaces more complex, but it would place a
+new burden on integrators, requiring them to compute the shading at
+such intersection points as well as to trace an additional ray to find what
+was visible behind them.
+
+</p>
+<p>A <em>stochastic alpha test</em> addresses these issues.  With it,
+intersections with the shape are randomly reported with probability
+proportional to the value of the alpha texture.  This approach is easy to
+implement, gives the expected results for an alpha of&nbsp;0 or&nbsp;1, and with a
+sufficient number of samples gives a better result than using a fixed
+threshold.  Figure&nbsp;<a href="#fig:fixed-vs-stochastic-alpha">7.1</a> compares the
+approaches.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:fixed-vs-stochastic-alpha"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+<div class="figure-row">
+  <a href="pha07f01.svg" title=""><img src="pha07f01.svg" width=672 height=868 style="max-width: 100%;"></a>
+</div>
+<p>
+
+</p>
+<figcaption class="caption">Figure 7.1: Comparison of Stochastic Alpha Testing to Using a Fixed
+Threshold. <span class="legend">
+(a)&nbsp;Example scene: the two fir branches are modeled using a single
+quadrilateral with an alpha texture.
+(b)&nbsp;If a fixed threshold is used for the alpha test, the
+shape is not faithfully reproduced.  Here a threshold of&nbsp;1 was used,
+leading to shrinkage and jagged edges.
+(c)&nbsp;If a stochastic alpha test is used, the result is a smoother and more
+realistic transition.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+One challenge in performing the stochastic alpha test is generating a
+uniform random number to apply it.  For a given ray and shape, we would
+like this number to be the same across multiple runs of the system; doing
+so is a part of making the set of computations performed by <tt>pbrt</tt> be
+deterministic, which is a great help for debugging.  If a different random
+number was used on different runs of the system, then we might hit a
+runtime error on some runs but not others.  However, it is important that
+different random numbers be used for different rays; otherwise, the
+approach could devolve into the same as using a fixed threshold.
+
+</p>
+<p>The <a href="../Utilities/Mathematical_Infrastructure.html#HashFloat"><tt>HashFloat()</tt></a> utility function provides a solution to this problem.
+Here it is used to compute a random floating-point value between&nbsp;0 and&nbsp;1
+for the alpha test; this value is determined by the ray&rsquo;s origin and direction.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Possiblyignoreintersectionbasedonstochasticalphatest-0"></span><div class="fragmentname">&lt;&lt;Possibly ignore intersection based on stochastic alpha test&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float u = (a &lt;= 0) ? 1.f : <a href="../Utilities/Mathematical_Infrastructure.html#HashFloat" class="code">HashFloat</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>, r.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>);
+if (u &gt; a) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Ignorethisintersectionandtraceanewray-0">Ignore this intersection and trace a new ray</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-975" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-975"><i></i></a><div id="fragbit-975" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> rNext = si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SpawnRay" class="code">SpawnRay</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>);
+       pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; siNext = <a href="#GeometricPrimitive::Intersect" class="code">Intersect</a>(rNext, tMax - si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>);
+       if (siNext)
+           siNext-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a> += si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>;
+       return siNext;</div></div>
+}</div><p>
+
+
+</p>
+<p>If the alpha test indicates that the intersection should be ignored, then
+another intersection test is performed with the current
+<tt>GeometricPrimitive</tt>, with a recursive call to <tt>Intersect()</tt>.
+This additional test is important for shapes like spheres, where we may
+reject the closest intersection but then intersect the shape again further
+along the ray.  This recursive call requires adjustment of the <tt>tMax</tt>
+value passed to it to account for the distance along the ray to the initial
+alpha tested intersection point.  Then, if it reports an intersection, the
+reported <tt>tHit</tt> value should account for that segment as well.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Ignorethisintersectionandtraceanewray-0"></span><div class="fragmentname">&lt;&lt;Ignore this intersection and trace a new ray&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> rNext = si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SpawnRay" class="code">SpawnRay</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>);
+pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; siNext = <a href="#GeometricPrimitive::Intersect" class="code">Intersect</a>(rNext, tMax - si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>);
+if (siNext)
+    siNext-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a> += si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>;
+return siNext;</div><p>
+
+
+</p>
+<p>Given a valid intersection, the <tt>GeometricPrimitive</tt> can go ahead and
+finalize the <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a>&rsquo;s representation of the intersection.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InitializemonoSurfaceInteractionaftermonoShapeintersection-0"></span><div class="fragmentname">&lt;&lt;Initialize <tt>SurfaceInteraction</tt> after <tt>Shape</tt> intersection&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>.<a href="#SurfaceInteraction::SetIntersectionProperties" class="code">SetIntersectionProperties</a>(<a href="#GeometricPrimitive::material" class="code">material</a>, <a href="#GeometricPrimitive::areaLight" class="code">areaLight</a>, &amp;<a href="#GeometricPrimitive::mediumInterface" class="code">mediumInterface</a>,
+                                   r.<a href="../Geometry_and_Transformations/Rays.html#Ray::medium" class="code">medium</a>);</div><p>
+
+
+</p>
+<p>The <tt>IntersectP()</tt> method must also handle the case of the
+<tt>GeometricPrimitive</tt> having an alpha texture associated with it.  In
+that case, it may be necessary to consider all the intersections of the
+ray with the shape in order to determine if there is a valid intersection.
+Because <tt>IntersectP()</tt> implementations in shapes return early when
+they find any intersection and because they do not return the geometric
+information associated with an intersection, a full intersection test is
+performed in this case.  In the more common case of no alpha texture,
+<a href="../Shapes/Basic_Shape_Interface.html#Shape::IntersectP"><tt>Shape::IntersectP()</tt></a> can be called directly.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GeometricPrimitiveMethodDefinitions-2"></span><div class="fragmentname">&lt;&lt;GeometricPrimitive Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-GeometricPrimitiveMethodDefinitions-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="GeometricPrimitive::IntersectP"></span>GeometricPrimitive::<a href="../Shapes/Basic_Shape_Interface.html#Shape::IntersectP" class="code">IntersectP</a>(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const {
+    if (<a href="#GeometricPrimitive::alpha" class="code">alpha</a>)
+        return <a href="#GeometricPrimitive::Intersect" class="code">Intersect</a>(r, tMax).has_value();
+    else
+        return <a href="#GeometricPrimitive::shape" class="code">shape</a>.<a href="../Shapes/Basic_Shape_Interface.html#Shape::IntersectP" class="code">IntersectP</a>(r, tMax);
+}</div><p>
+
+
+</p>
+<p>Most objects in a scene are neither emissive nor have alpha textures.
+Further, only a few of them typically represent the boundary between two
+different types of participating media.  It is wasteful to store
+<tt>nullptr</tt> values for the corresponding member variables of
+<a href="#GeometricPrimitive"><tt>GeometricPrimitive</tt></a> in that common case.  Therefore, <tt>pbrt</tt> also
+provides <tt>SimplePrimitive</tt>, which also implements the <tt>Primitive</tt>
+interface but does not store those values.  The code that converts the
+parsed scene representation into the scene for rendering uses a
+<a href="#SimplePrimitive"><tt>SimplePrimitive</tt></a> in place of a <a href="#GeometricPrimitive"><tt>GeometricPrimitive</tt></a> when it is
+possible to do so.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SimplePrimitiveDefinition-0"></span><div class="fragmentname">&lt;&lt;SimplePrimitive Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="SimplePrimitive"></span>SimplePrimitive {
+  public:
+    &lt;&lt;<span class="fragmentname">SimplePrimitive Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-976" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-976"><i></i></a><div id="fragbit-976" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> Bounds() const;
+       pstd::optional&lt;ShapeIntersection&gt; Intersect(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const;
+       bool IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const;
+       SimplePrimitive(<a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a> shape, <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> material);</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SimplePrimitivePrivateMembers-0">SimplePrimitive Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-977" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-977"><i></i></a><div id="fragbit-977" class="collapse"><div class="fragmentcode">       <a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a> shape;
+       <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> material;</div></div>
+};</div><p>
+
+
+</p>
+<p>Because <tt>SimplePrimitive</tt> only stores a shape and a material, it saves
+32 bytes of memory.  For scenes with millions of primitives, the overall
+savings can be meaningful.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SimplePrimitivePrivateMembers-0"></span><div class="fragmentname">&lt;&lt;SimplePrimitive Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a> <span class="anchor" id="SimplePrimitive::shape"></span>shape;
+<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> <span class="anchor" id="SimplePrimitive::material"></span>material;</div><p>
+
+
+</p>
+<p>We will not include the remainder of the <a href="#SimplePrimitive"><tt>SimplePrimitive</tt></a>
+implementation here; it is effectively a simplified subset of
+<a href="#GeometricPrimitive"><tt>GeometricPrimitive</tt></a>&rsquo;s.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ObjectInstancingandPrimitivesinMotion"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:prim-instance-animated"></span><span id="ObjectInstancingandPrimitivesinMotion"></span><h3>7.1.2  Object Instancing and Primitives in Motion</h3><p>
+
+
+
+</p>
+<p></p>
+<span class="anchor" id="fig:ecosys-instancing"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 56.288%; position:relative;">
+<div id="landscape-above.png20" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('landscape-above.png20'), { image: 'landscape-above.png' });
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 7.2: <span class="legend"> This outdoor scene 
+ makes heavy use of instancing as a mechanism
+for compressing the scene&rsquo;s description.  There are only 24 million unique
+triangles in the scene, although, thanks to object reuse through instancing,
+the total geometric complexity is 3.1 billion triangles.
+<em>(Scene courtesy of Laubwerk.)</em></span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Object instancing is a classic technique in rendering that reuses
+transformed copies of a single collection of geometry at multiple positions
+in a scene.  For example, in a model of a concert hall with thousands of
+identical seats, the scene description can be compressed substantially if
+all the seats refer to a shared geometric representation of a single
+seat.  The ecosystem scene in Figure&nbsp;<a href="#fig:ecosys-instancing">7.2</a> has 23,241
+individual plants of various types, although only 31 unique plant models.
+Because each plant model is instanced multiple times with a different
+transformation for each instance, the complete scene has a total of 3.1
+billion triangles.  However, only 24 million triangles are stored in memory
+thanks to primitive reuse through object instancing. <tt>pbrt</tt> uses just over
+4&nbsp;GB of memory when rendering this scene with object instancing (1.7&nbsp;GB for
+BVHs, 707&nbsp;MB for <tt>Primitive</tt>s, 877&nbsp;MB for triangle meshes, and 846&nbsp;MB
+for texture images), but would need upward of 516&nbsp;GB to render it without
+instancing.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="The previous version of <tt>pbrt</tt> used 7&nbsp;GB of memory
+when rendering this scene, with most of that difference due to less
+memory-efficient <tt>Primitive</tt> representations, virtual function pointers
+stored with each <tt>Shape</tt> and each <tt>Primitive</tt>, and the use of
+32-bit floats for image texture pixels even for textures that were
+originally stored with 8-bit values.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p>The <a href="#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> implementation of the <tt>Primitive</tt>
+interface makes object instancing possible in <tt>pbrt</tt>.  Rather than holding a
+shape, it stores a single <a href="#Primitive"><tt>Primitive</tt></a> as well as a <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>
+that is injected in between the underlying primitive and its representation
+in the scene.  This extra transformation enables object instancing.
+
+</p>
+<p>Recall that the <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a>s of Chapter&nbsp;<a href="../Shapes.html#chap:shapes">6</a> themselves had
+rendering from object space transformations applied to them to place them in
+the scene.  If a shape is held by a <a href="#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>, then the
+shape&rsquo;s notion of rendering space is not the actual scene rendering
+space&mdash;only after the <a href="#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>&rsquo;s transformation is also
+applied is the shape actually in rendering space.  For this application
+here, it makes sense for the shape to not be at all aware of the additional
+transformation being applied.  For instanced primitives, letting
+<a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a>s know all the instance transforms is of limited utility: we
+would not want the <a href="../Shapes/Triangle_Meshes.html#TriangleMesh"><tt>TriangleMesh</tt></a> to make a copy of its vertex
+positions for each instance transformation and transform them all the way
+to rendering space, since this would negate the memory savings of object
+instancing.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TransformedPrimitiveDefinition-0"></span><div class="fragmentname">&lt;&lt;TransformedPrimitive Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="TransformedPrimitive"></span>TransformedPrimitive {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-TransformedPrimitivePublicMethods-0">TransformedPrimitive Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-978" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-978"><i></i></a><div id="fragbit-978" class="collapse"><div class="fragmentcode">       TransformedPrimitive(<a href="#Primitive" class="code">Primitive</a> primitive,
+                            const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *<a href="#TransformedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>)
+           : primitive(primitive), <a href="#TransformedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>(<a href="#TransformedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>) { }
+       pstd::optional&lt;ShapeIntersection&gt; Intersect(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const;
+       bool IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const;
+       <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> <a href="#Primitive::Bounds" class="code">Bounds</a>() const {
+           return (*<a href="#TransformedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>)(primitive.<a href="#Primitive::Bounds" class="code">Bounds</a>());
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-TransformedPrimitivePrivateMembers-0">TransformedPrimitive Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-979" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-979"><i></i></a><div id="fragbit-979" class="collapse"><div class="fragmentcode">       <a href="#Primitive" class="code">Primitive</a> primitive;
+       const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *renderFromPrimitive;</div></div>
+};</div><p>
+
+
+</p>
+<p>The <a href="#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> constructor takes a <a href="#Primitive"><tt>Primitive</tt></a>
+that represents the model and the transformation that places it in the
+scene.  If the instanced geometry is described by multiple
+<a href="#Primitive"><tt>Primitive</tt></a>s, the calling code is responsible for placing them in an
+aggregate so that only a single <a href="#Primitive"><tt>Primitive</tt></a> needs to be stored
+here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TransformedPrimitivePublicMethods-0"></span><div class="fragmentname">&lt;&lt;TransformedPrimitive Public Methods&gt;&gt;=&nbsp;<a href="#fragment-TransformedPrimitivePublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">TransformedPrimitive(<a href="#Primitive" class="code">Primitive</a> primitive,
+                     const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *renderFromPrimitive)
+    : primitive(primitive), renderFromPrimitive(renderFromPrimitive) { }</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TransformedPrimitivePrivateMembers-0"></span><div class="fragmentname">&lt;&lt;TransformedPrimitive Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#Primitive" class="code">Primitive</a> <span class="anchor" id="TransformedPrimitive::primitive"></span>primitive;
+const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> *<span class="anchor" id="TransformedPrimitive::renderFromPrimitive"></span>renderFromPrimitive;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The key task of <a href="#TransformedPrimitive"><tt>TransformedPrimitive</tt></a> is to bridge between the
+<tt>Primitive</tt> interface that it implements and the <a href="#Primitive"><tt>Primitive</tt></a>
+that it holds, accounting for the effects of the rendering from primitive
+space transformation.  If the <tt>primitive</tt> member has its own
+transformation, that should be interpreted as the transformation from
+object space to the <a href="#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>&rsquo;s coordinate system.  The
+complete transformation to rendering space requires both of these
+transformations together.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TransformedPrimitivePublicMethods-1"></span><div class="fragmentname">&lt;&lt;TransformedPrimitive Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-TransformedPrimitivePublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> <span class="anchor" id="TransformedPrimitive::Bounds"></span><a href="#Primitive::Bounds" class="code">Bounds</a>() const {
+    return (*<a href="#TransformedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>)(primitive.<a href="#Primitive::Bounds" class="code">Bounds</a>());
+}</div><p>
+
+
+</p>
+<p>The <tt>Intersect()</tt> method also must account for the
+transformation, both for the ray passed to the held primitive and
+for any intersection information it returns.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TransformedPrimitiveMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;TransformedPrimitive Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt;
+<span class="anchor" id="TransformedPrimitive::Intersect"></span>TransformedPrimitive::Intersect(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Transformraytoprimitive-spaceandintersectwithprimitive-0">Transform ray to primitive-space and intersect with primitive</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-980" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-980"><i></i></a><div id="fragbit-980" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ray = <a href="#TransformedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>-&gt;<a href="../Geometry_and_Transformations/Applying_Transformations.html#Transform::ApplyInverse" class="code">ApplyInverse</a>(r, &amp;tMax);
+       pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; si = <a href="#TransformedPrimitive::primitive" class="code">primitive</a>.<a href="#Primitive::Intersect" class="code">Intersect</a>(ray, tMax);
+       if (!si) return {};
+       </div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Returntransformedinstancesintersectioninformation-0">Return transformed instance&rsquo;s intersection information</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-981" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-981"><i></i></a><div id="fragbit-981" class="collapse"><div class="fragmentcode">       si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a> = (*<a href="#TransformedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>)(si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>);
+       return si;</div></div>
+}</div><p>
+
+
+</p>
+<p>The method first transforms the
+given ray to the primitive&rsquo;s coordinate system and passes the transformed
+ray to its <tt>Intersect()</tt> routine.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Transformraytoprimitive-spaceandintersectwithprimitive-0"></span><div class="fragmentname">&lt;&lt;Transform ray to primitive-space and intersect with primitive&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ray = <a href="#TransformedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>-&gt;<a href="../Geometry_and_Transformations/Applying_Transformations.html#Transform::ApplyInverse" class="code">ApplyInverse</a>(r, &amp;tMax);
+pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; si = <a href="#TransformedPrimitive::primitive" class="code">primitive</a>.<a href="#Primitive::Intersect" class="code">Intersect</a>(ray, tMax);
+if (!si) return {};
+</div><p>
+
+
+</p>
+<p>Given an intersection, the <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> needs to be transformed
+to rendering space; the <tt>primitive</tt>&rsquo;s intersection method will already
+have transformed the <tt>SurfaceInteraction</tt> to its notion of rendering
+space, so here we only need to apply the effect of the additional
+transformation held by <a href="#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>.
+
+</p>
+<p>Note that any returned <a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit"><tt>ShapeIntersection::tHit</tt></a> value from the
+primitive can be returned to the caller as is; recall the discussion of
+intersection coordinate spaces and ray <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.84ex" height="2.009ex" style="vertical-align: -0.338ex;" viewBox="0 -719.6 361.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">t</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D461" d="M330 420c0 -20 -10 -20 -30 -20h-94l-74 -295c-4 -17 -6 -24 -6 -48c0 -33 10 -46 31 -46c34 0 87 24 130 128c5 11 6 14 15 14c4 0 12 0 12 -10c0 -8 -57 -154 -159 -154c-54 0 -92 38 -92 92c0 18 4 35 76 319h-88c-20 0 -28 0 -28 12c0 19 10 19 30 19h94l39 159 c9 35 37 36 40 36c17 0 29 -10 29 -27c0 -6 -5 -26 -41 -168h88c18 0 28 0 28 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D461" x="0" y="0"></use>
+</g>
+</svg> values in
+Section&nbsp;<a href="../Shapes/Basic_Shape_Interface.html#sec:isect-coordinate-spaces">6.1.4</a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Returntransformedinstancesintersectioninformation-0"></span><div class="fragmentname">&lt;&lt;Return transformed instance&rsquo;s intersection information&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a> = (*<a href="#TransformedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>)(si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>);
+return si;</div><p>
+
+
+</p>
+<p>The <tt>IntersectP()</tt><span class="anchor" id="TransformedPrimitive::IntersectP"></span>
+method is similar and is therefore elided.
+
+</p>
+<p>
+
+</p>
+<p>The <a href="#AnimatedPrimitive"><tt>AnimatedPrimitive</tt></a> class uses an <tt>AnimatedTransform</tt> in place
+of the <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a> stored by <a href="#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>s.  It thus
+enables rigid-body animation of primitives in the scene.  See
+Figure&nbsp;fig:spinning-spheres for an image that exhibits motion blur
+due to animated transformations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AnimatedPrimitiveDefinition-0"></span><div class="fragmentname">&lt;&lt;AnimatedPrimitive Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="AnimatedPrimitive"></span>AnimatedPrimitive {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AnimatedPrimitivePublicMethods-0">AnimatedPrimitive Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-982" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-982"><i></i></a><div id="fragbit-982" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> <a href="#Primitive::Bounds" class="code">Bounds</a>() const {
+           return <a href="#AnimatedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>.MotionBounds(primitive.<a href="#Primitive::Bounds" class="code">Bounds</a>());
+       }
+       AnimatedPrimitive(<a href="#Primitive" class="code">Primitive</a> primitive,
+                         const AnimatedTransform &amp;<a href="#AnimatedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>);
+       pstd::optional&lt;ShapeIntersection&gt; Intersect(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const;
+       bool IntersectP(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r, Float tMax) const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AnimatedPrimitivePrivateMembers-0">AnimatedPrimitive Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-983" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-983"><i></i></a><div id="fragbit-983" class="collapse"><div class="fragmentcode">       <a href="#Primitive" class="code">Primitive</a> primitive;
+       AnimatedTransform renderFromPrimitive;</div></div>
+};</div><p>
+
+
+</p>
+<p>The <tt>AnimatedTransform</tt> class uses substantially more memory than
+<a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>.  On the system used to develop <tt>pbrt</tt>, the former uses 696
+bytes of memory, while the latter uses 128.  Thus, just as was the case
+with <a href="#GeometricPrimitive"><tt>GeometricPrimitive</tt></a> and <a href="#SimplePrimitive"><tt>SimplePrimitive</tt></a>, it is worthwhile
+to only use <a href="#AnimatedPrimitive"><tt>AnimatedPrimitive</tt></a> for shapes that actually are animated.
+Making this distinction is the task of the code that constructs the scene
+specification used for rendering.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AnimatedPrimitivePrivateMembers-0"></span><div class="fragmentname">&lt;&lt;AnimatedPrimitive Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#Primitive" class="code">Primitive</a> <span class="anchor" id="AnimatedPrimitive::primitive"></span>primitive;
+AnimatedTransform <span class="anchor" id="AnimatedPrimitive::renderFromPrimitive"></span>renderFromPrimitive;</div><p>
+
+
+</p>
+<p>A bounding box of the primitive over the frame&rsquo;s time range is found via
+the <tt>AnimatedTransform::MotionBounds()</tt> method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AnimatedPrimitivePublicMethods-0"></span><div class="fragmentname">&lt;&lt;AnimatedPrimitive Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> <span class="anchor" id="AnimatedPrimitive::Bounds"></span><a href="#Primitive::Bounds" class="code">Bounds</a>() const {
+    return <a href="#AnimatedPrimitive::renderFromPrimitive" class="code">renderFromPrimitive</a>.MotionBounds(primitive.<a href="#Primitive::Bounds" class="code">Bounds</a>());
+}</div><p>
+
+
+</p>
+<p>We will also skip past the rest of the implementations of the
+<a href="#AnimatedPrimitive"><tt>AnimatedPrimitive</tt></a> intersection methods; they parallel those of
+<a href="#TransformedPrimitive"><tt>TransformedPrimitive</tt></a>, just using an <tt>AnimatedTransform</tt>.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Primitives_and_Intersection_Acceleration/Aggregates.html">Primitives and Intersection Acceleration / Aggregates</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

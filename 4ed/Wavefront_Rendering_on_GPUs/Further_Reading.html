@@ -1,0 +1,557 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Further Reading</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Wavefront_Rendering_on_GPUs.html">Wavefront Rendering on GPUs</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Further Reading</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Wavefront_Rendering_on_GPUs/Path_Tracer_Implementation.html">(Previous: Path Tracer Implementation)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>Further Reading</h2><p>
+
+
+</p>
+<p>Purcell et al. (<a href="#cite:Purcell:2002:RTO">2002</a>, <a href="#cite:Purcell:2003:PMO">2003</a>)
+and Carr, Hall, and Hart (<a href="#cite:Carr2002">2002</a>) were the first to map
+general-purpose ray tracers to graphics processors.
+
+</p>
+<p>A classic paper by Aila and Laine (<a href="#cite:Aila09">2009</a>) carefully analyzed
+the performance of ray tracing on contemporary GPUs and developed improved
+traversal algorithms based on their insights.  Follow-on work by Laine
+et&nbsp;al. (<a href="#cite:Laine2013">2013</a>) discussed the benefits of the wavefront
+architecture for rendering systems that support a wide variety of
+materials, textures, and lights.  (The use of a wavefront approach for the
+path tracer described in this chapter is motivated by Laine et&nbsp;al.&rsquo;s
+insights.)
+
+</p>
+<p>Most work in performance optimization for GPU ray tracers analyzes the balance
+between improving thread execution and memory convergence versus the cost
+of reordering work to do so.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Similar issues apply with packet or
+stream tracing on the CPU; see Section&nbsp;<a href="../Retrospective_and_the_Future/Design_Alternatives.html#sec:packet-tracing">16.2.3</a> for
+discussion of work on that topic.">
+      <sup>&dagger;</sup>
+    </button>
+		  Influential early work includes
+Hoberock et&nbsp;al. (<a href="#cite:Hoberock09">2009</a>), who re-sorted a large number of
+intersection points to create coherent collections of work before executing
+their surface shaders.  Nov&aacute;k et&nbsp;al. (<a href="#cite:Novak2010">2010</a>) introduced
+<em>path regeneration</em> to start tracing new ray paths in threads that are
+otherwise idle due to ray termination.  Wald (<a href="#cite:Wald2011">2011</a>) and van
+Antwerpen (<a href="#cite:vanAntwerpen2011">2011</a>) both applied compaction, densely
+packing the active threads in thread groups.
+
+</p>
+<p>Lier et&nbsp;al. (<a href="#cite:Lier2018:simd">2018b</a>) considered the unconventional approach
+of distributing the work for a single ray across multiple GPU threads and
+showed performance benefits for incoherent rays.  (This approach 
+parallels how computation is often mapped to CPU SIMD units for
+high-performance ray tracing.)
+
+</p>
+<p>Reordering the rays to be traced can also improve performance by improving
+the coherence of memory accesses performed during intersection tests.
+Early work in this area was done by Garanzha and Loop
+(<a href="#cite:Garanzha2010">2010</a>) and Costa et&nbsp;al. (<a href="#cite:Costa2015">2015</a>).  Meister
+et&nbsp;al. (<a href="#cite:Meister2020">2020</a>) have recently examined ray reordering in the context of a GPU with
+hardware-accelerated intersection testing and found benefits from using it.
+
+</p>
+<p>An alternative to taking an arbitrary set of rays and finding structure in
+them is to generate rays that are inherently coherent in the first place.
+Examples include the algorithms of Szirmay-Kalos and Purgathofer
+(<a href="#cite:SzirmayKalos1998">1998</a>) and Hachisuka (<a href="#cite:Hachisuka05">2005</a>), which
+select a single direction for all indirect rays at each level, allowing
+the use of a rasterizer with parallel projection to trace them.
+More generally, adding structure to
+the sample values used for importance sampling can lead to coherence in the
+rays that are traced.  Keller and Heidrich (<a href="#cite:Keller2001:interleaved">2001</a>) developed interleaved sampling
+patterns that reuse sample values at separated pixels in order to
+trade off sample coherence and variation,
+and Sadeghi et&nbsp;al. (<a href="#cite:Sadeghi2009">2009</a>) investigated the combination of
+interleaved sampling and using the same pseudo-random sequence at nearby pixels
+to increase ray coherence.  Dufay
+et&nbsp;al. (<a href="#cite:Dufay2016">2016</a>) randomized samples using small random offsets
+so that nearby pixels still have similar sample values.
+
+</p>
+<p>Efficient GPU-based construction of acceleration structures is challenging due to the
+degree of parallelism required; there has been much research on this topic.
+See Zhou et&nbsp;al. (<a href="#cite:Zhou08">2008</a>),
+Lauterbach et&nbsp;al. (<a href="#cite:Lauterbach09">2009</a>), Pantaleoni and Luebke
+(<a href="#cite:Pantaleoni2010a">2010</a>), Garanzha et&nbsp;al. (<a href="#cite:Garanzha2011">2011</a>),
+Karras and Aila (<a href="#cite:Karras2013">2013</a>), Domingues and Pedrini
+(<a href="#cite:Domingues2015">2015</a>), and Vinkler et&nbsp;al. (<a href="#cite:Vinkler2016">2016</a>) for
+techniques for building kd-trees and BVHs on GPUs.
+See also the &ldquo;Further Reading&rdquo; section in Chapter&nbsp;<a href="../Primitives_and_Intersection_Acceleration.html#chap:acceleration">7</a> for
+additional discussion of algorithms for constructing and traversing
+acceleration structures on the GPU.
+
+</p>
+<p>The relatively limited amount of on-chip memory that GPUs have
+can make it challenging to efficiently implement light transport algorithms that require
+more than a small amount of storage for each ray.  (For example, even
+storing all the vertices of a pair of subpaths for a bidirectional
+path-tracing algorithm is much more than a thread could
+ask to keep on-chip.)  The paper by Davidovi<span>&#269;</span>
+et&nbsp;al. (<a href="#cite:Davidovic2014">2014</a>) gives a thorough overview of these issues
+and previous work and includes a discussion of implementations of a number
+of sophisticated light transport algorithms on the GPU.
+
+</p>
+<p>Zellmann and Lang used compile time polymorphism in C++ to improve the
+performance of a GPU ray tracer (<a href="#cite:Zellmann2017">Zellmann and Lang 2017</a>); our implementation
+in this chapter is based on similar ideas.  Zhang
+et&nbsp;al. (<a href="#cite:Zhang2021">2021</a>) compared a number of approaches for dynamic
+function dispatch on GPUs and evaluated their performance.
+
+</p>
+<p>Fewer papers have been written about the design of full ray-tracing&ndash;based
+rendering systems on the GPU than on the CPU.  Notable papers in this area
+include Pantaleoni et&nbsp;al.&rsquo;s (<a href="#cite:Pantaleoni2010">2010</a>) description of <em>PantaRay</em>, which was used
+to compute occlusion and lighting by Weta Digital, 
+and Keller et al.&rsquo;s  (<a href="#cite:Keller2017">2017</a>) discussion of the architecture of the <em>Iray</em>
+rendering system.  Bikker and van Schijndel
+(<a href="#cite:Bikker2013">2013</a>) described <em>Brigade</em>, which targets path-traced
+games, balancing work between the CPU and GPU and adapting the workload to
+maintain the desired frame rate.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x11-Ray-TracingHardware"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x11-Ray-TracingHardware"></span><h4>Ray-Tracing Hardware</h4><p>
+
+
+</p>
+<p>While all the stages of ray-tracing calculations&mdash;construction
+of the acceleration hierarchy, traversal of the hierarchy, and ray&ndash;primitive
+intersections, as well as shading, lighting, and integration calculations&mdash;can be
+implemented in software on GPUs, there has long been interest in designing
+specialized hardware for ray&ndash;primitive intersection tests and construction
+and traversal of the acceleration hierarchy for better performance.  Deng
+et&nbsp;al.&rsquo;s survey article has thorough coverage of hardware acceleration of
+ray tracing through 2017 (<a href="#cite:Deng2017">Deng et&nbsp;al. 2017</a>); here, we will focus on early
+work and more recent developments.
+
+</p>
+<p>Early published work in this area includes a paper by Woop
+et&nbsp;al. (<a href="#cite:Woop2005">2005</a>), who described the design of a &ldquo;ray
+processing unit&rdquo; (RPU).  Aila and Karras (<a href="#cite:Aila2010">2010</a>) described
+general architectural issues related to handling incoherent rays, as are
+common with global illumination algorithms.  More recently, Shkurko
+et&nbsp;al. (<a href="#cite:Shkurko2017">2017</a>) and Vasiou et&nbsp;al. (<a href="#cite:Vasiou2019">2019</a>)
+have described a hardware architecture that is based on reordering ray
+intersection computation so that it exhibits predictable streaming memory
+accesses.
+
+</p>
+<p>Doyle et&nbsp;al. (<a href="#cite:Doyle2013">2013</a>) did early work on SAH BVH construction
+using specialized hardware.  Viitanen et&nbsp;al. (<a href="#cite:Viitanen2017">2017</a>,
+<a href="#cite:Viitanen2018">2018</a>) have done additional work in
+this area, designing architectures for efficient HLBVH construction for
+animated scenes and for high-quality SAH-based BVH construction.
+
+</p>
+<p>Imagination Technologies announced a mobile GPU that would use a
+ray-tracing architecture from Caustic (McCombe&nbsp;<a href="#cite:McCombe2013">2013</a>),
+though it never shipped in volume.  The NVIDIA Turing architecture
+(<a href="#cite:NVIDIA2018">NVIDIA 2018</a>) is the first GPU with hardware-accelerated ray tracing
+that has seen widespread adoption.  The details of its ray-tracing hardware
+architecture are not publicly documented, though Sanzharov
+et&nbsp;al. (<a href="#cite:Sanzharov2020">2020</a>) have applied targeted benchmarks to
+measure its performance characteristics in order to develop hypotheses
+about its implementation. 
+
+</p>
+<p></p>
+<h3>References</h3>
+<ol style="list-style: none;">
+<li class="bibitem" id="cite:Aila09">Aila, T., and S.&nbsp;Laine. 2009.
+Understanding the efficiency of ray traversal on GPUs. 
+In <em>Proceedings of High Performance Graphics 2009</em>, 145&ndash;50.
+</li>
+
+<li class="bibitem" id="cite:Aila2010">Aila, T., and T.&nbsp;Karras. 2010.
+Architecture considerations for tracing incoherent rays.
+In <em>Proceedings of High Performance Graphics 2010</em>, 113&ndash;22.
+</li>
+
+<li class="bibitem" id="cite:AkenineMoller2019">Akenine-M&ouml;ller,&nbsp;T., J.&nbsp;Nilsson., M.&nbsp;Andersson, C.&nbsp;Barr&eacute;-Brisebois,
+R.&nbsp;Toth, and T.&nbsp;Karras. 2019.
+Texture level of detail strategies for real-time ray tracing.
+In E.&nbsp;Haines and T.&nbsp;Akenine-M&ouml;ller (ed.), <em>Ray Tracing
+Gems,</em> 321&ndash;45. Berkeley: Apress.
+</li>
+
+<li class="bibitem" id="cite:Bikker2013">Bikker, J., and J.&nbsp;van Schijndel. 2013.
+The Brigade renderer: A path tracer for real-time games.
+<em>International Journal of Computer Games Technology</em>, Volume&nbsp;8.
+</li>
+
+<li class="bibitem" id="cite:Carr2002">Carr, N., J. D. Hall, and J. Hart. 2002.
+The ray engine.
+In <em>Proceedings of ACM SIGGRAPH Workshop on Graphics Hardware 2002</em>,
+37&ndash;46.
+</li>
+
+<li class="bibitem" id="cite:Costa2015">Costa, V., J.&nbsp;M.&nbsp;Pereira, and J.&nbsp;A.&nbsp;Jorge. 2015.
+Accelerating occlusion rendering on a GPU via ray classification.
+<em>International Journal of Creative Interfaces and Computer
+Graphics</em>&nbsp;<em>6</em>&thinsp;(2), 1&ndash;17.
+</li>
+
+<li class="bibitem" id="cite:Davidovic2014">Davidovi<span>&#269;</span>, T., J.&nbsp;K<span>&#345;</span>iv&aacute;nek, M.&nbsp;Ha<span>&#353;</span>an, and P.&nbsp;Slusallek. 2014.
+Progressive light transport simulation on the GPU: Survey and improvements.
+<em>ACM Transactions on Graphics</em>&nbsp;<em>33</em>&thinsp;(3), 29:1&ndash;19.
+</li>
+
+<li class="bibitem" id="cite:Deng2017">Deng, Y., Y.&nbsp;Ni, Z.&nbsp;Li, S.&nbsp;Mu, and W.&nbsp;Zhang. 2017.
+Toward real-time ray tracing: A survey on hardware
+acceleration and microarchitecture techniques.
+<em>ACM Computing Surveys</em>&nbsp;<em>50</em>&thinsp;(4), 58:1&ndash;41.
+</li>
+
+<li class="bibitem" id="cite:Domingues2015">Domingues, L.&nbsp;R., and H.&nbsp;Pedrini. 2015.
+Bounding volume hierarchy optimization through agglomerative treelet restructuring.
+<em>Proceedings of High Performance Graphics (HPG &rsquo;15)</em>, 13&ndash;20.
+</li>
+
+<li class="bibitem" id="cite:Doyle2013">Doyle, M.&nbsp;J., C.&nbsp;Fowler, and M.&nbsp;Manzke. 2013.
+A hardware unit for fast SAH-optimised BVH construction.
+<em>ACM Transactions on Graphics (Proceedings of SIGGRAPH
+2013)</em>&nbsp;<em>32</em>&thinsp;(4), 139:1&ndash;10.
+</li>
+
+<li class="bibitem" id="cite:Dufay2016">Dufay, D., P.&nbsp;Lecocq, R.&nbsp;Pacanowski, J.-E.&nbsp;Marvie, and X.&nbsp;Granier. 2016.
+Cache-friendly micro-jittered sampling.
+<em>SIGGRAPH 2016 Talks</em>, 36:1&ndash;2.
+</li>
+
+<li class="bibitem" id="cite:Garanzha2010">Garanzha, K., and C.&nbsp;Loop. 2010.
+Fast ray sorting and breadth-first packet traversal for GPU ray tracing.
+<em>Computer Graphics Forum</em>&nbsp;<em>29</em>&thinsp;(2), 289&ndash;98.
+</li>
+
+<li class="bibitem" id="cite:Garanzha2011">Garanzha, K., J.&nbsp;Pantaleoni, D.&nbsp;McAllister. 2011.
+Simpler and faster HLBVH with work queues. 
+<em>Proceedings of High Performance Graphics 2011</em>, 59&ndash;64.
+</li>
+
+<li class="bibitem" id="cite:Hachisuka05">Hachisuka, T. 2005.
+High-quality global illumination rendering using rasterization.
+In M.&nbsp;Pharr (ed.), <em>GPU Gems II: Programming Techniques for
+High-Performance Graphics and General-Purpose Computation</em>, 615&ndash;34.
+Reading, Massachusetts: Addison-Wesley.
+</li>
+
+<li class="bibitem" id="cite:Hoberock09">Hoberock, J., V.&nbsp;Lu, Y.&nbsp;Jia, J.&nbsp;Hart. 2009.
+Stream compaction for deferred shading.
+In <em>Proceedings of High Performance Graphics 2009</em>, 173&ndash;80.
+</li>
+
+<li class="bibitem" id="cite:Karras2013">Karras, T., and T.&nbsp;Aila. 2013.
+Fast parallel construction of high-quality bounding volume hierarchies.
+In <em>Proceedings of High Performance Graphics 2013</em>, 89&ndash;99.
+</li>
+
+<li class="bibitem" id="cite:Keller2001:interleaved">Keller, A., and W.&nbsp;Heidrich. 2001.
+Interleaved sampling.
+<em>Proceedings of the 12th Eurographics Workshop on Rendering Techniques</em>, 269&ndash;76.
+</li>
+
+<li class="bibitem" id="cite:Keller2017">Keller, A., C.&nbsp;W&auml;chter, M.&nbsp;Raab, D.&nbsp;Seibert, D.&nbsp;van Antwerpen,
+J.&nbsp;Kornd&ouml;rfer, and L.&nbsp;Kettner. 2017.
+The Iray light transport simulation and rendering system.
+arXiv:1705.01263 [cs.GR].
+</li>
+
+<li class="bibitem" id="cite:Laine2013">Laine, S., T.&nbsp;Karras, and T.&nbsp;Aila. 2013.
+Megakernels considered harmful: Wavefront path tracing on GPUs.
+In <em>Proceedings of the Fifth High-Performance Graphics Conference (HPG
+&rsquo;13)</em>, 137&ndash;43.
+</li>
+
+<li class="bibitem" id="cite:Lauterbach09">Lauterbach, C., M.&nbsp;Garland, S.&nbsp;Sengupta, D.&nbsp;Luebke, and D.&nbsp;Manocha. 2009.
+Fast BVH construction on GPUs.
+<em>Computer Graphics Forum (Eurographics 2009 Conference
+  Proceedings)</em>&nbsp;<em>28</em>&thinsp;(2), 422&ndash;30.
+</li>
+
+<li class="bibitem" id="cite:Lier2018:simd">Lier, A., M.&nbsp;Stamminger, and K.&nbsp;Selgrad. 2018b.
+CPU-style SIMD ray traversal on GPUs.
+<em>Proceedings of High Performance Graphics (HPG &rsquo;18)</em>, 7:1&ndash;4.
+</li>
+
+<li class="bibitem" id="cite:McCombe2013">McCombe, J. 2013.
+Low power consumption ray tracing.
+<em>SIGGRAPH 2013 Course: Ray Tracing Is the Future and Ever Will Be</em>.
+</li>
+
+<li class="bibitem" id="cite:Meister2020">Meister, D., J.&nbsp;Boksansky, M.&nbsp;Guthe, and J.&nbsp;Bittner. 2020.
+On ray reordering techniques for faster GPU ray tracing.
+<em>Symposium on Interactive 3D Graphics and Games (I3D &rsquo;20)</em>, 13:1&ndash;9.
+</li>
+
+<li class="bibitem" id="cite:Novak2010">Nov&aacute;k, J., V.&nbsp;Havran, and C.&nbsp;Daschbacher. 2010.
+Path regeneration for interactive path tracing.
+<em>Eurographics 2010 Short Papers</em>, 61&ndash;64.
+</li>
+
+<li class="bibitem" id="cite:NVIDIA2018">NVIDIA, Inc. 2018.
+NVIDIA Turing GPU Architecture.
+<em>NVIDIA Whitepaper</em>.
+</li>
+
+<li class="bibitem" id="cite:Pantaleoni2010a">Pantaleoni, J., and D.&nbsp;Luebke. 2010.
+HLBVH: Hierarchical LBVH construction for real-time ray tracing of dynamic geometry. 
+In <em>Proceedings of the Conference on High Performance Graphics 2010</em>, 87&ndash;95.
+</li>
+
+<li class="bibitem" id="cite:Pantaleoni2010">Pantaleoni, J., L.&nbsp;Fascione, M.&nbsp;Hill, and T.&nbsp;Aila. 2010.
+PantaRay: Fast ray-traced occlusion caching of massive scenes.
+<em>ACM Transactions on Graphics (Proceedings of SIGGRAPH
+2010)</em>&nbsp;<em>29</em>&thinsp;(4), 37:1&ndash;10.
+</li>
+
+<li class="bibitem" id="cite:Pharr2012">Pharr, M., and W.&nbsp;R.&nbsp;Mark. 2012.
+ispc: A SPMD compiler for high-performance CPU programming.
+In <em>Proceedings of Innovative Parallel Computing (InPar)</em>, 1&ndash;13.
+</li>
+
+<li class="bibitem" id="cite:Purcell:2003:PMO">Purcell, T.&nbsp;J., C.&nbsp;Donner, M.&nbsp;Cammarano, H.&nbsp;W. Jensen, and P.&nbsp;Hanrahan.
+2003.
+Photon mapping on programmable graphics hardware.
+In <em>Graphics Hardware 2003</em>, 41&ndash;50.
+</li>
+
+<li class="bibitem" id="cite:Purcell:2002:RTO">Purcell, T.&nbsp;J., I.&nbsp;Buck, W.&nbsp;R. Mark, and P.&nbsp;Hanrahan. 2002.
+Ray tracing on programmable graphics hardware.
+<em>ACM Transactions on Graphics</em>&nbsp;<em>21</em>&thinsp;(3), 703&ndash;12.
+</li>
+
+<li class="bibitem" id="cite:Sadeghi2009">Sadeghi, I., B.&nbsp;Chen, and H.&nbsp;W.&nbsp;Jensen. 2009.
+Coherent path tracing.
+<em>Journal of Graphics, GPU &amp; Game Tools</em>&nbsp;<em>14</em>&thinsp;(2), 33&ndash;43.
+</li>
+
+<li class="bibitem" id="cite:Sanzharov2020">Sanzharov, V.&nbsp;V., V.&nbsp;A.&nbsp;Frolov, and V.&nbsp;A.&nbsp;Galaktionov. 2020.
+Survey of NVIDIA RTX Technology.
+<em>Programming and Computer Software</em>&nbsp;<em>46</em>&thinsp;(4), 297&ndash;304.
+</li>
+
+<li class="bibitem" id="cite:Shkurko2017">Shkurko, K., T.&nbsp;Grant, D.&nbsp;Kopta, I.&nbsp;Mallett, C.&nbsp;Yuksel, and E.&nbsp;Brunvand. 2017.
+Dual streaming for hardware-accelerated ray tracing.
+<em>Proceedings of High Performance Graphics (HPG &rsquo;17)</em>, 12:1&ndash;11.
+</li>
+
+<li class="bibitem" id="cite:SzirmayKalos1998">Szirmay-Kalos, L., and W.&nbsp;Purgathofer. 1998.
+Global ray-bundle tracing with hardware acceleration.
+<em>Rendering Techniques &rsquo;98: 9th Eurographics Workshop on Rendering</em>, 247&ndash;58.
+</li>
+
+<li class="bibitem" id="cite:vanAntwerpen2011">van Antwerpen, D. 2011.
+Improving SIMD efficiency for parallel Monte Carlo light transport on the GPU.
+<em>Proceedings of the High Performance Graphics (HPG &rsquo;11)</em>, 41&ndash;50.
+</li>
+
+<li class="bibitem" id="cite:Vasiou2019">Vasiou, E., K.&nbsp;Shkurko, E.&nbsp;Brunvand, and C.&nbsp;Yuksel. 2019.
+Mach-RT: A many chip architecture for ray tracing.
+<em>High Performance Graphics&mdash;Short Papers</em>, 1&ndash;6.
+</li>
+
+<li class="bibitem" id="cite:Viitanen2018">Viitanen, T., M.&nbsp;Koskela, P.&nbsp;J&auml;&auml;skel&auml;inen, A.&nbsp;Tervo, and J.&nbsp;Takala. 2018.
+PLOCTree: A fast, high-quality hardware BVH builder.
+<em>Proceedings of the ACM on Computer Graphics and Interactive
+Techniques</em>&nbsp;<em>1</em>&thinsp;(2), 35:1&ndash;19.
+</li>
+
+<li class="bibitem" id="cite:Viitanen2017">Viitanen, T., M.&nbsp;Koskela, P.&nbsp;J&auml;&auml;skel&auml;inen, H.&nbsp;Kultala, and J.&nbsp;Takala. 2017. 
+MergeTree: A fast hardware HLBVH constructor for animated ray tracing.
+<em>ACM Transactions on Graphics</em>&nbsp;<em>36</em>&thinsp;(5), 169:1&ndash;14.
+</li>
+
+<li class="bibitem" id="cite:Vinkler2016">Vinkler, M., V.&nbsp;Havran, J.&nbsp;Bittner, and J.&nbsp;Sochor. 2016.
+Parallel on-demand hierarchy construction on contemporary GPUs.
+<em>IEEE Transactions on Visualization and Computer
+Graphics</em>&nbsp;<em>22</em>&thinsp;(7), 1886&ndash;98.
+</li>
+
+<li class="bibitem" id="cite:Wald2011">Wald, I. 2011.
+Active thread compaction for GPU path tracing.
+<em>Proceedings of High Performance Graphics (HPG &rsquo;11)</em>, 51&ndash;58.
+</li>
+
+<li class="bibitem" id="cite:Woop2005">Woop, S., J.&nbsp;Schmittler, and P.&nbsp;Slusallek. 2005.
+RPU: A programmable ray processing unit for realtime ray tracing.
+In <em>ACM SIGGRAPH 2005 Papers</em>, 434&ndash;44.
+</li>
+
+<li class="bibitem" id="cite:Zellmann2017">Zellmann, S., and U.&nbsp;Lang. 2017.
+C++ compile time polymorphism for ray tracing.
+<em>Proceedings of the Conference on Vision, Modeling and Visualization
+(VMV &rsquo;17)</em>, 129&ndash;36.
+</li>
+
+<li class="bibitem" id="cite:Zhang2021">Zhang, M., A.&nbsp;Alawneh, and T.&nbsp;G.&nbsp;Rogers. 2021.
+Judging a type by its pointer: Optimizing GPU virtual functions.
+<em>Proceedings of the 26th ACM International Conference on Architectural
+Support for Programming Languages and Operating Systems (ASPLOS 2021)</em>, 241&ndash;54.
+</li>
+
+<li class="bibitem" id="cite:Zhou08">Zhou, K., Q.&nbsp;Hou, R.&nbsp;Wang, and B.&nbsp;Guo. 2008.
+Real-time kd-tree construction on graphics hardware.
+<em>ACM Transactions on Graphics (Proceedings of SIGGRAPH Asia 2008)</em>&nbsp;<em>27</em>&thinsp;(5),
+126:1&ndash;11.
+</li>
+
+</ol>
+<p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Wavefront_Rendering_on_GPUs/Exercises.html">Wavefront Rendering on GPUs / Exercises</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

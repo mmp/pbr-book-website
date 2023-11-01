@@ -1,0 +1,400 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Statistics</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Statistics</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities/Parallelism.html">(Previous: Parallelism)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:stats"></span><h2>B.7 Statistics</h2><p>
+
+
+
+</p>
+<p>Collecting data about the runtime behavior of the system can provide a
+substantial amount of insight into its behavior and opportunities for
+improving its performance.  For example, we might want to track the average
+number of primitive intersection tests performed for all the rays; if
+this number is surprisingly high, then there may be a latent bug somewhere
+in the system. <tt>pbrt</tt>&rsquo;s statistics system makes it possible to measure and
+aggregate this sort of data in a variety of ways.  The statistics system is
+only available with the CPU renderer; an exercise at the end of this
+appendix discusses how it might be brought to the GPU.
+
+</p>
+<p>It is important to make it as easy as possible to add new measurements to
+track the system&rsquo;s runtime behavior; the easier it is to do this, the more
+measurements end up being added to the system, and the more likely that
+&ldquo;interesting&rdquo; data will be discovered, leading to new insights and
+improvements. Therefore, it is fairly easy to add new measurements to <tt>pbrt</tt>.
+For example, the following lines declare two counters
+that can be used to record how many times the corresponding events happen.
+
+</p>
+<p></p>
+<div class="fragmentcode">STAT_COUNTER("Integrator/Regular ray intersection tests", nIsectTests);
+STAT_COUNTER("Integrator/Shadow ray intersection tests", nShadowTests);</div><p>
+
+
+</p>
+<p>As appropriate, counters can be incremented with simple statements like
+</p>
+<div class="fragmentcode">  ++nIsectTests;</div><p>
+
+With no further intervention from the
+developer, the preceding is enough for the statistics system to be able to
+automatically print out nicely formatted results like the following when
+rendering completes:
+
+</p>
+<p></p>
+<div class="fragmentcode">  Integrator
+    Regular ray intersection tests                752982
+    Shadow ray intersection tests                4237165</div><p>
+
+
+</p>
+<p>The statistics system supports the following aggregate measurements:
+
+</p>
+<p></p>
+<ul>
+<li> <tt>STAT_COUNTER("name", var)</tt>:
+A count of the number of instances of an event.  The counter
+variable <tt>var</tt> can be updated as if it was a regular integer
+variable; for example, <tt>++var</tt> and <tt>var += 10</tt> are both valid.
+
+<li> <tt>STAT_MEMORY_COUNTER("name", var)</tt>:
+A specialized counter for recording memory usage.  In particular, the
+values reported at the end of rendering are in terms of kilobytes,
+megabytes, or gigabytes, as appropriate.  The counter is updated the same
+way as a regular counter: <tt>var += count * sizeof(MyStruct)</tt> and so forth.
+
+<li> <tt>STAT_INT_DISTRIBUTION("name", dist)</tt>:
+Tracks the distribution of some value; at the end of rendering, the
+minimum, maximum, and average of the supplied values are reported.
+Call <tt>dist &lt;&lt; value</tt> to include <tt>value</tt> in the distribution.
+
+<li> <tt>STAT_PERCENT("name", num, denom)</tt>:
+Tracks how often a given event happens; the aggregate value is reported as
+the percentage <tt>num/denom</tt> when statistics are printed.  Both
+<tt>num</tt> and <tt>denom</tt> can be incremented as if they were
+integers&mdash;for example, one might write <tt>if (event) ++num;</tt> or <tt>++denom</tt>.
+
+<li> <tt>STAT_RATIO("name", num, denom)</tt>:
+This tracks how often an event happens but reports the result as a ratio
+<tt>num/denom</tt> rather than a percentage.  This is often a more useful
+presentation if <tt>num</tt> is often greater than <tt>denom</tt>.  (For
+example, we might record the percentage of ray&ndash;triangle intersection tests
+that resulted in an intersection but the ratio of triangle intersection
+tests to the total number of rays traced.)
+</ul><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fig:stat-pixel-counter"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="phabbf08.svg" title=""><img src="phabbf08.svg" width=502 height=337 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure A.8: Visualization of Average Path Length at Each Pixel.  <span class="legend"> Each pixel&rsquo;s
+value is based on the number of rays traced to compute the pixel&rsquo;s shaded
+value.  Not only it is evident that longer paths are traced at pixels with specular
+surfaces like the glasses on the tables, but it is also possible to see the
+effect of Russian roulette terminating paths more quickly at darker
+surfaces.  This image was generated using
+<tt>STAT_PIXEL_COUNTER</tt> and only required adding two lines of code to
+an integrator.
+<em>(Scene courtesy of Guillermo M. Leal Llaguno.)</em>
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>In addition to statistics that are aggregated over the entire rendering,
+<tt>pbrt</tt> can also measure statistics at each pixel and generate images with
+their values.  Two variants are supported: <tt>STAT_PIXEL_COUNTER</tt> and
+<tt>STAT_PIXEL_RATIO</tt>, which are used in the same way as the
+corresponding aggregate statistics.  Per-pixel statistics are only measured
+if the <tt>&ndash;pixelstats</tt> command line option is provided to <tt>pbrt</tt>.
+Figure&nbsp;<a href="#fig:stat-pixel-counter">A.8</a> shows an image generated using
+<tt>STAT_PIXEL_COUNTER</tt>.
+
+</p>
+<p>All the macros to define statistics trackers can only be used at file
+scope and should only be used in <tt>*.cpp</tt> files (for reasons that will
+become apparent as we dig into their implementations).  They specifically
+should not be used in header files or function or class definitions.
+
+</p>
+<p>Note also that the string names provided for each measurement should be of
+the form &ldquo;category/statistic.&rdquo;  When values are reported, everything
+under the same category is reported together (as in the preceding example).
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Implementation"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:stats-implementation"></span><span id="Implementation"></span><h3>B.7.1  Implementation</h3><p>
+
+
+
+</p>
+<p>There are a number of challenges in making the statistics system both
+efficient and easy to use.  The efficiency challenges stem from <tt>pbrt</tt> being multi-threaded: if there was not any parallelism, we could associate
+regular integer or floating-point variables with each measurement and just
+update them like regular variables.  In the presence of multiple concurrent
+threads of execution, however, we need to ensure that two threads do not
+try to modify these variables at the same time (recall the discussion of
+mutual exclusion in Section&nbsp;<a href="../Utilities/Parallelism.html#sec:atomic-ops">A.6.1</a>).
+
+</p>
+<p>While atomic operations like those described in
+Section&nbsp;<a href="../Utilities/Parallelism.html#sec:atomic-ops">A.6.1</a> could be used to safely increment counters
+without using a mutex, there would still be a performance impact from
+multiple threads modifying the same location in memory.  Recall from
+Section&nbsp;<a href="../Utilities/Parallelism.html#sec:multi-thread-memory-perf">A.6.3</a> that the cache coherence
+protocols can introduce substantial overhead in this case.  Because the
+statistics measurements are updated so frequently during the course of
+rendering, we found that an atomics-based implementation caused the
+renderer to be 10&ndash;15% slower than the following implementation, which avoids
+the overhead of multiple threads frequently modifying the same memory
+location.
+
+</p>
+<p>The implementation here is based on having separate counters for each
+running thread, allowing the counters to be updated without atomics and
+without cache coherence overhead (since each thread increments its own
+counters).  This approach means that in order to report statistics, it is
+necessary to merge all of these per-thread counters into final aggregate
+values, which we will see is possible with a bit of trickiness.
+
+</p>
+<p>To see how this all works, we will dig into the implementation for regular
+counters; the other types of measurements are all along similar lines.
+First, here is the <tt>STAT_COUNTER</tt> macro, which packs three different
+things into its definition.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StatisticsMacros-0"></span><div class="fragmentname">&lt;&lt;Statistics Macros&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">#define <span class="anchor" id="STAT_COUNTER"></span>STAT_COUNTER(title, var)                                       \
+    static thread_local int64_t var;                                   \
+    static StatRegisterer STATS_REG##var([](StatsAccumulator &amp;accum) { \
+        accum.ReportCounter(title, var);                               \
+        var = 0;                                                       \
+    });</div><p>
+
+
+</p>
+<p>First, and most obviously, the macro defines a 64-bit integer variable
+named <tt>var</tt>, the second argument passed to the macro.  The variable
+definition has the <tt>thread_local</tt> qualifier, which indicates that
+there should be a separate copy of the variable for each executing thread.
+This variable can then be incremented directly as appropriate to report
+results.  However, given these per-thread instances, we need to be able to
+sum together the per-thread values and to aggregate all the individual
+counters into the final program output.
+
+</p>
+<p>To this end, the macro next defines a static variable of type
+<tt>StatRegisterer</tt>, giving it a (we hope!) unique name derived from
+<tt>var</tt>.  A lambda function is passed to the <tt>StatRegisterer</tt>
+constructor, which stores a copy of it.  When called, the lambda passes the
+current thread&rsquo;s counter value to a <tt>ReportCounter()</tt> method and then
+resets the counter.  Evidently, all that is required is for this lambda to
+be called by each thread and for <tt>ReportCounter()</tt> to sum up the
+values provided and then report them.  (We will gloss over the
+implementation of the <tt>StatsAccumulator</tt> class and methods like
+<tt>ReportCounter()</tt>, as there is nothing very interesting about them.)
+
+</p>
+<p>
+
+</p>
+<p>Recall that in C++, constructors of global <tt>static</tt> objects run when
+program execution starts; thus, each <tt>static</tt> instance of the
+<tt>StatRegisterer</tt> class runs its constructor before <tt>main()</tt>
+starts running.  This constructor, which is not included here, adds the
+lambda passed to it to a <tt>std::vector</tt> that holds all such lambdas for
+all the statistics.
+
+</p>
+<p>
+
+</p>
+<p>At the end of rendering, the <a href="../Utilities/Parallelism.html#ForEachThread"><tt>ForEachThread()</tt></a> function is used to
+cause each thread to loop over the registered lambdas and call each of
+them.  In turn, the <tt>StatsAccumulator</tt> will have all the aggregate
+values when they are done.  The
+<tt>PrintStats()</tt><span class="anchor" id="PrintStats"></span> function can then be called to
+print all the statistics that have been accumulated in
+<tt>StatsAccumulator</tt>.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Further_Reading.html">Utilities / Further Reading</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

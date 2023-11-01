@@ -1,0 +1,420 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>pbrt over the Years</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Retrospective_and_the_Future.html">Retrospective and the Future</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">pbrt over the Years</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Retrospective_and_the_Future.html">(Previous: Retrospective and the Future)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>16.1 pbrt over the Years</h2><p>
+
+
+</p>
+<p>Over four editions of this book and the four versions of <tt>pbrt</tt> that have
+accompanied them, much has changed: while path tracing has been present
+since the start, it was not the default integration technique until the
+third edition.  Furthermore, the first two editions devoted many pages to techniques
+like irradiance caching that reuse indirect lighting computation across
+nearby points in order to reduce rendering time.  All of those techniques
+but for photon mapping are gone now,
+as sampling algorithms have improved and computers have become much
+faster, making path tracing and related approaches the most appropriate
+focus today.
+
+</p>
+<p>There have been numerous improvements throughout the system over time&mdash;we have
+adopted more effective algorithms as they have been developed and as we
+ourselves have learned more about how to write a good renderer; notably, the
+techniques used for generating sampling patterns and for importance
+sampling BSDFs and light sources are substantially better now than they
+were at the start.  Those improvements have brought added complexity:
+<tt>pbrt-v1</tt>, the first version of the system, was roughly 20,000 lines
+of code, excluding tabularized data and automatically generated source
+files for parsing.  This version is just over 60,000 lines of code measured
+the same way, though some of the increase is due to the addition of a
+variety of new features, like subsurface scattering, volumetric light
+transport, the
+<tt>RealisticCamera</tt>, and the <a href="../Shapes/Curves.html#Curve"><tt>Curve</tt></a> and <a href="../Shapes/Bilinear_Patches.html#BilinearPatch"><tt>BilinearPatch</tt></a> shapes.
+
+</p>
+<p>
+
+
+</p>
+<p>Through all the improvements to the underlying algorithms, the bones of
+the system have not changed very much&mdash;<tt>Integrator</tt>s have always been
+at the core of solving the light transport equation, and many of the core
+interface types like <tt>Shape</tt>s, <tt>Light</tt>s, <tt>Camera</tt>s,
+<tt>Filter</tt>s, and <tt>Sampler</tt>s have all been there throughout with the
+same responsibilities, though there have been changes to their interfaces
+and operation along the way.  Looking back at <tt>pbrt-v1</tt> now, we can
+find plenty of snippets of code that are still present, unchanged
+since the start.
+
+</p>
+<p>To quantify the algorithmic improvements to <tt>pbrt</tt>, we resurrected
+<tt>pbrt-v1</tt> and compared it to the version of <tt>pbrt</tt> described in this
+book, rendering the scene shown in Figure&nbsp;<a href="#fig:tt-pbrt-v1-v4">16.1</a>.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="This is
+an inexact comparison for many reasons. Among them: <tt>pbrt</tt> is now a
+spectral renderer, while before it used RGB for lighting calculations;
+materials like <tt>CoatedDiffuseMaterial</tt> now require stochastic
+evaluation; its sampling algorithms are much better, but more
+computationally intensive; and improvements to the geometric robustness of
+ray intersection computations have imposed some performance cost
+(Section&nbsp;6.8.8). Nevertheless, we believe
+that the results are directionally valid.">
+      <sup>&dagger;</sup>
+    </button>
+		  The latest version of <tt>pbrt</tt> takes <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.942ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2558.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1.47 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-37" d="M485 644c0 -21 0 -23 -9 -35l-135 -190c-44 -62 -58 -148 -62 -171c-8 -54 -11 -109 -11 -164v-51c0 -10 0 -55 -46 -55s-46 45 -46 55c0 102 33 241 123 376l112 158h-207c-13 0 -91 0 -98 -6c-13 -12 -22 -75 -25 -91h-25l33 206h25c4 -19 6 -32 128 -32h243Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-37" x="1279" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1780" y="0"></use>
+</g>
+</svg> longer than <tt>pbrt-v1</tt> to render this scene using
+path tracing, but mean squared error (MSE) with
+respect to reference images is improved by over
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.942ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2558.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">4.42 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-34"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="1279" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1780" y="0"></use>
+</g>
+</svg>.  The net is a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.942ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2558.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">3.05 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="1279" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1780" y="0"></use>
+</g>
+</svg> improvement in Monte Carlo
+efficiency purely due to algorithmic improvements.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:tt-pbrt-v1-v4"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 58.400%;  position:relative;">
+<div id="xa_pbrt-v1_reference61" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('xa_pbrt-v1_reference61'), {
+  title: '(a)_pbrt-v1_reference61', children: [
+ { title: '(a) pbrt-v1 reference', image: 'tt-v1-ref.png' },  { title: '(b) pbrt-v1', image: 'tt-v1.png' },  { title: '(c) pbrt-v4 reference', image: 'tt-v4-ref.png' },  { title: '(d) pbrt-v4', image: 'tt-v4.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 16.1: Audi TT Car Model Lit by an Environment Map. <span class="legend">
+(a)&nbsp;Reference image, rendered with <tt>pbrt-v1</tt> with 64k samples per pixel.
+(b)&nbsp;Rendered with <tt>pbrt-v1</tt> with 16 samples per pixel.
+(c)&nbsp;Reference image, rendered with <tt>pbrt-v4</tt> with 64k samples per
+pixel.
+(d)&nbsp;Rendered with <tt>pbrt-v4</tt> with 16 samples per pixel. (Some image differences due
+to changes in material models since <tt>pbrt-v1</tt> are expected.)
+The reduction in noise from&nbsp;(b) to&nbsp;(d) is notable; all of it is due to
+improvements in sampling and Monte Carlo integration algorithms over
+<tt>pbrt</tt>&rsquo;s lifetime.
+<em>(Car model courtesy of Marko Dabrovic and Mihovil Odak.)</em>
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>The changes in computers&rsquo; computational capabilities since <tt>pbrt-v1</tt>
+have had even more of an impact on rendering performance.  Much of the early
+development of <tt>pbrt</tt> in the late 1990s was on laptop computers that had a
+single-core 366&nbsp;MHz Pentium II CPU.  Some of the development of the latest
+version has been on a system that has 32 CPU cores, each one running at ten
+times the clock rate, 3.7&nbsp;GHz.
+
+</p>
+<p>A tenfold increase in processor clock speed does not tell the whole story
+about a CPU core&rsquo;s performance: there have been many microarchitectural
+improvements over the years such as better branch predictors, more
+aggressive out-of-order execution, and multi-issue pipelines.  Caches have
+grown larger and compilers have improved as well.  Data gathered by Rupp
+(<a href="Further_Reading.html#cite:Rupp2020">2020</a>) provides one measure of the aggregate improvement:
+from 1999 to late 2019, single-thread CPU performance as measured by the
+SPECInt benchmark (<a href="Further_Reading.html#cite:Spec06">Standard Performance Evaluation Corporation 2006</a>) has improved by over <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.133ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1779.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">40 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-34"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1001" y="0"></use>
+</g>
+</svg>.  Though
+SPECInt and <tt>pbrt</tt> are not the same, we still estimate that, between
+improvements in single-thread performance and having <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.133ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1779.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">32 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1001" y="0"></use>
+</g>
+</svg> more cores
+available, the overall difference in performance between the two
+computers is well over a factor of 1,000.
+
+</p>
+<p>The impact of a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.105ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 3059 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1,000 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1279" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1780" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="2280" y="0"></use>
+</g>
+</svg> speedup is immense.  It means that what
+took an hour to render on that laptop we can now render in around three
+seconds.  Conversely, a painfully slow hour-long rendering computation on
+the 32-core system today would take an intolerable 42 days on the laptop.  Lest
+the reader feel sympathy for our having suffered with such slow hardware at
+the start, consider the IBM 4341 that Kajiya used for the first path-traced
+images: its floating-point performance was roughly <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.296ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2280 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">250 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1001" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1501" y="0"></use>
+</g>
+</svg> slower than
+that of our laptop&rsquo;s CPU: around 0.2 MFLOPS for the 4341
+(<a href="Further_Reading.html#cite:Dongarra1984">Dongarra 1984</a>) versus around 50 for the Pentium II
+(<a href="Further_Reading.html#cite:Longbottom2017">Longbottom 2017</a>).  If we consider ray tracing on the GPU, where
+<tt>pbrt</tt> is generally 10&ndash;20<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.808ex" height="1.509ex" style="vertical-align: 0.019ex; margin-bottom: -0.19ex;" viewBox="0 -576.1 778.5 649.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="0" y="0"></use>
+</g>
+</svg> faster than on the 32-core CPU, we
+could estimate that we are now able to path trace images around
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="11.239ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 4839 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2,500,000 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1279" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1780" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="2559" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="3059" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="3560" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="4060" y="0"></use>
+</g>
+</svg> faster than Kajiya could&mdash;in other words, that
+<tt>pbrt</tt> on the GPU today can render in roughly ten seconds what his computer
+could do over the course of a year.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Retrospective_and_the_Future/Design_Alternatives.html">Retrospective and the Future / Design Alternatives</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

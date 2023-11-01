@@ -1,0 +1,611 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>n-Tuple Base Classes</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations.html">Geometry and Transformations</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">n-Tuple Base Classes</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations/Coordinate_Systems.html">(Previous: Coordinate Systems)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:ntuple"></span><h2>3.2 n-Tuple Base Classes</h2><p>
+
+
+
+</p>
+<p><tt>pbrt</tt>&rsquo;s classes that represent two- and three-dimensional points, vectors,
+and surface normals are all based on general <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg>-tuple classes, whose
+definitions we will start with.  The definitions of these classes as well
+as the types that inherit from them are defined in the files
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/util/vecmath.h"><tt>util/vecmath.h</tt></a> and <a href="https://github.com/mmp/pbrt-v4/tree/master/src/util/vecmath.cpp"><tt>util/vecmath.cpp</tt></a> under the main <tt>pbrt</tt> source directory. 
+
+</p>
+<p>Although this and the following few sections define classes that have 
+simple logic in most of their method implementations, they make more
+use of advanced C++ programming techniques than we generally use in <tt>pbrt</tt>.
+Doing so reduces the amount of redundant code needed to implement the
+point, vector, and normal classes and makes them extensible in ways that
+will be useful later. If you are not a C++ expert, it is fine to gloss over
+these details and to focus on
+understanding the functionality that these classes provide.  Alternatively,
+you could use this as an opportunity to learn more corners of the language.
+
+</p>
+<p>Both <tt>Tuple2</tt> and <a href="#Tuple3"><tt>Tuple3</tt></a> are template classes.  They are
+templated not just on a type used for storing each coordinate&rsquo;s value but
+also on the type of the class that inherits from it to define a specific
+two- or three-dimensional type.  If one has not seen it before, this is a
+strange construction: normally, inheritance is sufficient, and the base
+class has no need to know the type of the subclass.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="This form of
+inheritance is often referred to as the <em>curiously recurring template
+pattern</em> (CRTP) in C++.">
+      <sup>&dagger;</sup>
+    </button>
+		  In this case, having the base class know the
+child class&rsquo;s type makes it possible to write generic methods that operate
+on and return values of the child type, as we will see shortly.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Tuple2Definition-0"></span><div class="fragmentname">&lt;&lt;Tuple2 Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;template &lt;typename&gt; class Child, typename T&gt;
+class <span class="anchor" id="Tuple2"></span>Tuple2 {
+  public:
+    &lt;&lt;<span class="fragmentname">Tuple2 Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-73" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-73"><i></i></a><div id="fragbit-73" class="collapse"><div class="fragmentcode">       static const int nDimensions = 2;
+       
+       Tuple2() = default;
+       PBRT_CPU_GPU
+       Tuple2(T x, T y) : x(x), y(y) { DCHECK(!HasNaN()); }
+       PBRT_CPU_GPU
+       bool HasNaN() const { return IsNaN(x) || IsNaN(y); }
+       #ifdef PBRT_DEBUG_BUILD
+       // The default versions of these are fine for release builds; for debug
+       // we define them so that we can add the Assert checks.
+       PBRT_CPU_GPU
+       Tuple2(Child&lt;T&gt; c) {
+           DCHECK(!c.HasNaN());
+           x = c.x;
+           y = c.y;
+       }
+       PBRT_CPU_GPU
+       Child&lt;T&gt; &amp;operator=(Child&lt;T&gt; c) {
+           DCHECK(!c.HasNaN());
+           x = c.x;
+           y = c.y;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       #endif
+       
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU auto operator+(Child&lt;U&gt; c) const -&gt; Child&lt;decltype(T{} + U{})&gt; {
+           DCHECK(!c.HasNaN());
+           return {x + c.x, y + c.y};
+       }
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU Child&lt;T&gt; &amp;operator+=(Child&lt;U&gt; c) {
+           DCHECK(!c.HasNaN());
+           x += c.x;
+           y += c.y;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU auto operator-(Child&lt;U&gt; c) const -&gt; Child&lt;decltype(T{} - U{})&gt; {
+           DCHECK(!c.HasNaN());
+           return {x - c.x, y - c.y};
+       }
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU Child&lt;T&gt; &amp;operator-=(Child&lt;U&gt; c) {
+           DCHECK(!c.HasNaN());
+           x -= c.x;
+           y -= c.y;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       
+       PBRT_CPU_GPU
+       bool operator==(Child&lt;T&gt; c) const { return x == c.x &amp;&amp; y == c.y; }
+       PBRT_CPU_GPU
+       bool operator!=(Child&lt;T&gt; c) const { return x != c.x || y != c.y; }
+       
+       
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU auto operator*(U s) const -&gt; Child&lt;decltype(T{} * U{})&gt; {
+           return {s * x, s * y};
+       }
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU Child&lt;T&gt; &amp;operator*=(U s) {
+           DCHECK(!IsNaN(s));
+           x *= s;
+           y *= s;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU auto operator/(U d) const -&gt; Child&lt;decltype(T{} / U{})&gt; {
+           DCHECK(d != 0 &amp;&amp; !IsNaN(d));
+           return {x / d, y / d};
+       }
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU Child&lt;T&gt; &amp;operator/=(U d) {
+           DCHECK_NE(d, 0);
+           DCHECK(!IsNaN(d));
+           x /= d;
+           y /= d;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       
+       PBRT_CPU_GPU
+       Child&lt;T&gt; operator-() const { return {-x, -y}; }
+       
+       PBRT_CPU_GPU
+       T operator[](int i) const {
+           DCHECK(i &gt;= 0 &amp;&amp; i &lt;= 1);
+           return (i == 0) ? x : y;
+       }
+       
+       PBRT_CPU_GPU
+       T &amp;operator[](int i) {
+           DCHECK(i &gt;= 0 &amp;&amp; i &lt;= 1);
+           return (i == 0) ? x : y;
+       }
+       
+       std::string ToString() const { return internal::ToString2(x, y); }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Tuple2PublicMembers-0">Tuple2 Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-74" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-74"><i></i></a><div id="fragbit-74" class="collapse"><div class="fragmentcode">       T x{}, y{};</div></div>
+};</div><p>
+
+
+</p>
+<p>The two-dimensional tuple stores its values as <tt>x</tt> and <tt>y</tt> and
+makes them available as public member variables.  The pair of curly braces
+after each one ensures that the member variables are <em>default
+initialized</em>; for numeric types, this initializes them to&nbsp;0.
+ 
+</p>
+<span class="anchor" id="fragment-Tuple2PublicMembers-0"></span><div class="fragmentname">&lt;&lt;Tuple2 Public Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">T <span class="anchor" id="Tuple2::x"></span>x{}, <span class="anchor" id="Tuple2::y"></span>y{};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>We will focus on the <tt>Tuple3</tt> implementation for the remainder of this
+section.  <tt>Tuple2</tt> is almost entirely the same but with one
+fewer coordinate.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Tuple3Definition-0"></span><div class="fragmentname">&lt;&lt;Tuple3 Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;template &lt;typename&gt; class Child, typename T&gt;
+class <span class="anchor" id="Tuple3"></span>Tuple3 {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Tuple3PublicMethods-0">Tuple3 Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-75" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-75"><i></i></a><div id="fragbit-75" class="collapse"><div class="fragmentcode">       Tuple3(T x, T y, T z) : x(x), y(y), z(z) { <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(!HasNaN()); }
+       bool HasNaN() const { return <a href="../Shapes/Managing_Rounding_Error.html#IsNaN" class="code">IsNaN</a>(x) || <a href="../Shapes/Managing_Rounding_Error.html#IsNaN" class="code">IsNaN</a>(y) || <a href="../Shapes/Managing_Rounding_Error.html#IsNaN" class="code">IsNaN</a>(z); }
+       T operator[](int i) const {
+           if (i == 0) return x;
+           if (i == 1) return y;
+           return z;
+       }
+       T &amp;operator[](int i) {
+           if (i == 0) return x;
+           if (i == 1) return y;
+           return z;
+       }
+       template &lt;typename U&gt;
+       auto operator+(Child&lt;U&gt; c) const -&gt; Child&lt;decltype(T{} + U{})&gt; {
+           return {x + c.x, y + c.y, z + c.z};
+       }
+       static const int nDimensions = 3;
+       
+       #ifdef PBRT_DEBUG_BUILD
+       // The default versions of these are fine for release builds; for debug
+       // we define them so that we can add the Assert checks.
+       PBRT_CPU_GPU
+       Tuple3(Child&lt;T&gt; c) {
+           <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(!c.HasNaN());
+           x = c.x;
+           y = c.y;
+           z = c.z;
+       }
+       
+       PBRT_CPU_GPU
+       Child&lt;T&gt; &amp;operator=(Child&lt;T&gt; c) {
+           <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(!c.HasNaN());
+           x = c.x;
+           y = c.y;
+           z = c.z;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       #endif
+       
+       
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU Child&lt;T&gt; &amp;operator+=(Child&lt;U&gt; c) {
+           <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(!c.HasNaN());
+           x += c.x;
+           y += c.y;
+           z += c.z;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU auto operator-(Child&lt;U&gt; c) const -&gt; Child&lt;decltype(T{} - U{})&gt; {
+           <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(!c.HasNaN());
+           return {x - c.x, y - c.y, z - c.z};
+       }
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU Child&lt;T&gt; &amp;operator-=(Child&lt;U&gt; c) {
+           <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(!c.HasNaN());
+           x -= c.x;
+           y -= c.y;
+           z -= c.z;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       
+       PBRT_CPU_GPU
+       bool operator==(Child&lt;T&gt; c) const { return x == c.x &amp;&amp; y == c.y &amp;&amp; z == c.z; }
+       PBRT_CPU_GPU
+       bool operator!=(Child&lt;T&gt; c) const { return x != c.x || y != c.y || z != c.z; }
+       
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU auto operator*(U s) const -&gt; Child&lt;decltype(T{} * U{})&gt; {
+           return {s * x, s * y, s * z};
+       }
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU Child&lt;T&gt; &amp;operator*=(U s) {
+           <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(!<a href="../Shapes/Managing_Rounding_Error.html#IsNaN" class="code">IsNaN</a>(s));
+           x *= s;
+           y *= s;
+           z *= s;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU auto operator/(U d) const -&gt; Child&lt;decltype(T{} / U{})&gt; {
+           DCHECK_NE(d, 0);
+           return {x / d, y / d, z / d};
+       }
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU Child&lt;T&gt; &amp;operator/=(U d) {
+           DCHECK_NE(d, 0);
+           x /= d;
+           y /= d;
+           z /= d;
+           return static_cast&lt;Child&lt;T&gt; &amp;&gt;(*this);
+       }
+       PBRT_CPU_GPU
+       Child&lt;T&gt; operator-() const { return {-x, -y, -z}; }
+       
+       std::string ToString() const { return internal::ToString3(x, y, z); }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Tuple3PublicMembers-0">Tuple3 Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-76" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-76"><i></i></a><div id="fragbit-76" class="collapse"><div class="fragmentcode">       T x{}, y{}, z{};</div></div>
+};</div><p>
+
+
+</p>
+<p>By default, the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.432ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3199.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis x comma y comma z right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1897" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="2342" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2810" y="0"></use>
+</g>
+</svg> values are set to zero, although the user of the
+class can optionally supply values for each of the components.  If the user
+does supply values, the constructor checks that none of them has the
+floating-point &ldquo;not a number&rdquo; (NaN)
+value using the <a href="../Utilities/User_Interaction.html#DCHECK"><tt>DCHECK()</tt></a> macro.
+When compiled in optimized mode, this macro disappears from the compiled
+code, saving the expense of verifying this case.  NaNs almost certainly
+indicate a bug in the system; if a NaN is generated by some computation, we
+would like to catch it as soon as possible in order to make isolating its
+source easier. (See Section&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#sec:ieee-fp">6.8.1</a> for more discussion of NaN
+values.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Tuple3PublicMethods-0"></span><div class="fragmentname">&lt;&lt;Tuple3 Public Methods&gt;&gt;=&nbsp;<a href="#fragment-Tuple3PublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Tuple3(T x, T y, T z) : x(x), y(y), z(z) { <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(!HasNaN()); }</div><p>
+
+
+</p>
+<p>Readers who have been exposed to object-oriented design may question our
+decision to make the tuple component values publicly accessible.
+Typically, member variables are only accessible inside their class, and
+external code that wishes to access or modify the contents of a class must
+do so through a well-defined API that may include selector and mutator
+functions.  Although we are sympathetic to the principle of encapsulation,
+it is not appropriate here.  The purpose of selector and mutator functions
+is to hide the class&rsquo;s internal implementation details.  In the case of
+three-dimensional tuples, hiding this basic part of their design gains
+nothing and adds bulk to code that uses them.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Tuple3PublicMembers-0"></span><div class="fragmentname">&lt;&lt;Tuple3 Public Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">T <span class="anchor" id="Tuple3::x"></span>x{}, <span class="anchor" id="Tuple3::y"></span>y{}, <span class="anchor" id="Tuple3::z"></span>z{};</div><p>
+
+
+</p>
+<p>The <tt>HasNaN()</tt> test checks each component individually.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Tuple3PublicMethods-1"></span><div class="fragmentname">&lt;&lt;Tuple3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Tuple3PublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Tuple3PublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="Tuple3::HasNaN"></span>HasNaN() const { return <a href="../Shapes/Managing_Rounding_Error.html#IsNaN" class="code">IsNaN</a>(x) || <a href="../Shapes/Managing_Rounding_Error.html#IsNaN" class="code">IsNaN</a>(y) || <a href="../Shapes/Managing_Rounding_Error.html#IsNaN" class="code">IsNaN</a>(z); }</div><p>
+
+
+</p>
+<p>An alternate implementation of these two tuple classes would be to have a
+single template class that is also parameterized with an integer number of
+dimensions and to represent the coordinates with an array of that many
+<tt>T</tt> values.  While this approach would reduce the total amount of code
+by eliminating the need for separate two- and three-dimensional tuple
+types, individual components of the vector could not be accessed as
+<tt>v.x</tt> and so forth.  We believe that, in this case, a bit more code in
+the vector implementations is worthwhile in return for more transparent
+access to components.
+However, some routines do find it useful to be able to easily loop over the
+components of vectors; the tuple classes also provide a C++ operator to
+index into the components so that, given an instance <tt>v</tt>, <tt>v[0]
+== v.x</tt> and so forth.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Tuple3PublicMethods-2"></span><div class="fragmentname">&lt;&lt;Tuple3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Tuple3PublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Tuple3PublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">T operator[](int i) const {
+    if (i == 0) return x;
+    if (i == 1) return y;
+    return z;
+}</div><p>
+
+
+</p>
+<p>If the tuple type is non-<tt>const</tt>, then indexing returns a reference,
+allowing components of the tuple to be set.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Tuple3PublicMethods-3"></span><div class="fragmentname">&lt;&lt;Tuple3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Tuple3PublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Tuple3PublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">T &amp;operator[](int i) {
+    if (i == 0) return x;
+    if (i == 1) return y;
+    return z;
+}</div><p>
+
+
+</p>
+<p>We can now turn to the implementation of arithmetic operations that operate
+on the values stored in a tuple.  Their code is fairly dense.  For example,
+here is the method that adds together two three-tuples of some type (for
+example, <tt>Child</tt> might be <tt>Vector3</tt>, the forthcoming
+three-dimensional vector type).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Tuple3PublicMethods-4"></span><div class="fragmentname">&lt;&lt;Tuple3 Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Tuple3PublicMethods-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">template &lt;typename U&gt;
+auto operator+(Child&lt;U&gt; c) const -&gt; Child&lt;decltype(T{} + U{})&gt; {
+    return {x + c.x, y + c.y, z + c.z};
+}</div><p>
+
+
+</p>
+<p>There are a few things to note in the implementation of <tt>operator+</tt>.
+By virtue of being a template method based on another type <tt>U</tt>, it
+supports adding two elements of the same <tt>Child</tt> template type, though they may use
+different types for storing their components (<tt>T</tt> and <tt>U</tt> in the
+code here).  However, because the base type of the method&rsquo;s parameter is
+<tt>Child</tt>, it is only possible to add two values of the same child type
+using this method.  If this method instead took a <tt>Tuple3</tt> for the
+parameter, then it would silently allow addition with any type that
+inherited from <tt>Tuple3</tt>, which might not be intended.
+
+</p>
+<p>There are two interesting things in the declaration of the return
+type, to the right of the <tt>-&gt;</tt> operator after the method&rsquo;s parameter
+list.  First, the base return type is <tt>Child</tt>; thus, if one adds two
+<tt>Vector3</tt> values, the returned value will be of <tt>Vector3</tt> type.
+This, too, eliminates a class of potential errors: if a <tt>Tuple3</tt> was
+returned, then it would for example be possible to add two <tt>Vector3</tt>s
+and assign the result to a <tt>Point3</tt>, which is nonsensical.  Finally,
+the component type of the returned type is determined based on the type of
+an expression adding values of types <tt>T</tt> and <tt>U</tt>.  Thus, this
+method follows C++&rsquo;s standard type promotion rules: if a <tt>Vector3</tt>
+that stored integer values is added to one that stores <tt>Float</tt>s, the
+result is a <tt>Vector3</tt> storing <tt>Float</tt>s.
+
+</p>
+<p>In the interests of space, we will not include the
+other <tt>Tuple3</tt> arithmetic operators here, nor
+will we include the various other utility functions that perform
+component-wise operations on them.  The full list of capabilities provided by
+<a href="#Tuple2"><tt>Tuple2</tt></a> and <a href="#Tuple3"><tt>Tuple3</tt></a> is:
+</p>
+<ul>
+<li> The basic arithmetic operators of per-component addition, subtraction,
+and negation, including the &ldquo;in place&rdquo; (e.g., <tt>operator+=</tt>) forms of them.
+<li> Component-wise multiplication and division by a scalar value,
+including &ldquo;in place&rdquo; variants.
+<li> <span class="anchor" id="Tuple3::Abs"></span><tt>Abs(a)</tt>, which returns a value where the absolute
+value of each component of the tuple type has been taken.
+<li> <span class="anchor" id="Tuple3::Ceil"></span><tt>Ceil(a)</tt> and
+<span class="anchor" id="Tuple3::Floor"></span><tt>Floor(a)</tt>, which return a value where the
+components have been rounded up or down to the nearest integer value, respectively.
+<li> <span class="anchor" id="Tuple3::Lerp"></span><tt>Lerp(t, a, b)</tt>, which returns the
+result of the linear interpolation <tt>(1-t)*a + t*b</tt>. 
+<li> <span class="anchor" id="Tuple3::FMA"></span><tt>FMA(a, b, c)</tt>, which takes three
+tuples and returns the result of a component-wise fused multiply-add <tt>a*b + c</tt>.
+<li> <span class="anchor" id="Tuple3::Min"></span><tt>Min(a, b)</tt> and
+<span class="anchor" id="Tuple3::Max"></span><tt>Max(a, b)</tt>, which respectively return the component-wise
+minimum and maximum of the two given tuples.
+<li> <span class="anchor" id="Tuple3::MinComponentValue"></span><tt>MinComponentValue(a)</tt>
+and <span class="anchor" id="Tuple3::MaxComponentValue"></span><tt>MaxComponentValue(a)</tt>,
+which respectively return the minimum and maximum value of the tuple&rsquo;s
+components.
+<li> <span class="anchor" id="Tuple3::MinComponentIndex"></span><tt>MinComponentIndex(a)</tt>
+and <span class="anchor" id="Tuple3::MaxComponentIndex"></span><tt>MaxComponentIndex(a)</tt>,
+which respectively return the zero-based index of the tuple element with minimum or maximum value.
+<li> <span class="anchor" id="Tuple3::Permute"></span><tt>Permute(a, perm)</tt>, which returns the
+permutation of the tuple according to an array of indices.
+<li> <span class="anchor" id="Tuple3::HProd"></span><tt>HProd(a)</tt>, which returns the horizontal
+product&mdash;the component values multiplied together.
+</ul><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Geometry_and_Transformations/Vectors.html">Geometry and Transformations / Vectors</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

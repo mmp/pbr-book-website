@@ -1,0 +1,1569 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Managing the Scene Description</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Processing_the_Scene_Description.html">Processing the Scene Description</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Managing the Scene Description</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html">(Previous: Tokenizing and Parsing)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:basic-scene-builder"></span><h2>C.2 Managing the Scene Description</h2><p>
+
+
+
+</p>
+<p><tt>pbrt</tt>&rsquo;s scene description files allow the user to specify various
+properties that then apply to the definition of subsequent objects in the
+scene.  One example is a current material.  Once the current material is
+set, all subsequent shapes are assigned that material until it is changed.
+In addition to the material, the current transformation matrix, RGB color
+space, an area light specification, and the current media are similarly
+maintained.  We will call this collective information the <em>graphics
+state</em>.  Tracking graphics state provides the advantage that it is not
+necessary to specify a material with every shape in the scene description,
+but it imposes the requirement that the scene processing code keep track of
+the current graphics state while the scene description is being parsed.
+
+</p>
+<p>Managing this graphics state is the primary task of the
+<tt>BasicSceneBuilder</tt>, which implements the interface defined by
+<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParserTarget"><tt>ParserTarget</tt></a>.  Its implementation is in the files
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/scene.h"><tt>scene.h</tt></a> and <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/scene.cpp"><tt>scene.cpp</tt></a>.  An initial
+<a href="#BasicSceneBuilder"><tt>BasicSceneBuilder</tt></a> is allocated at the start of parsing the scene
+description.  Typically, it handles graphics state management for the
+provided scene description files.  However, <tt>pbrt</tt>&rsquo;s scene description
+format supports an <tt>Import</tt> directive that indicates that a file can
+be parsed in parallel with the file that contains it. (<tt>Import</tt>
+effectively discards any changes to the graphics state at the end of an
+imported file, which allows parsing of the current file to continue
+concurrently without needing to wait for the imported file.)  A new
+<a href="#BasicSceneBuilder"><tt>BasicSceneBuilder</tt></a> is allocated for each imported file; it makes a
+copy of the current graphics state before parsing begins.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderDefinition-0"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="BasicSceneBuilder"></span>BasicSceneBuilder : public <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParserTarget" class="code">ParserTarget</a> {
+  public:
+    &lt;&lt;<span class="fragmentname">BasicSceneBuilder Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2859" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2859"><i></i></a><div id="fragbit-2859" class="collapse"><div class="fragmentcode">       BasicSceneBuilder(BasicScene *scene);
+       void Option(const std::string &amp;name, const std::string &amp;value, FileLoc loc);
+       void Identity(FileLoc loc);
+       void Translate(Float dx, Float dy, Float dz, FileLoc loc);
+       void Rotate(Float angle, Float ax, Float ay, Float az, FileLoc loc);
+       void Scale(Float sx, Float sy, Float sz, FileLoc loc);
+       void LookAt(Float ex, Float ey, Float ez, Float lx, Float ly, Float lz, Float ux,
+                   Float uy, Float uz, FileLoc loc);
+       void ConcatTransform(Float transform[16], FileLoc loc);
+       void <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>(Float transform[16], FileLoc loc);
+       void CoordinateSystem(const std::string &amp;, FileLoc loc);
+       void CoordSysTransform(const std::string &amp;, FileLoc loc);
+       void ActiveTransformAll(FileLoc loc);
+       void ActiveTransformEndTime(FileLoc loc);
+       void ActiveTransformStartTime(FileLoc loc);
+       void TransformTimes(Float start, Float end, FileLoc loc);
+       void ColorSpace(const std::string &amp;n, FileLoc loc);
+       void PixelFilter(const std::string &amp;name, ParsedParameterVector params, FileLoc loc);
+       void <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a>(const std::string &amp;type, ParsedParameterVector params, FileLoc loc);
+       void <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>(const std::string &amp;name, ParsedParameterVector params, FileLoc loc);
+       void Accelerator(const std::string &amp;name, ParsedParameterVector params, FileLoc loc);
+       void <a href="../Introduction/pbrt_System_Overview.html#Integrator" class="code">Integrator</a>(const std::string &amp;name, ParsedParameterVector params, FileLoc loc);
+       void <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a>(const std::string &amp;, ParsedParameterVector params, FileLoc loc);
+       void MakeNamedMedium(const std::string &amp;name, ParsedParameterVector params,
+                            FileLoc loc);
+       void <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a>(const std::string &amp;insideName, const std::string &amp;outsideName,
+                            FileLoc loc);
+       void WorldBegin(FileLoc loc);
+       void AttributeBegin(FileLoc loc);
+       void AttributeEnd(FileLoc loc);
+       void Attribute(const std::string &amp;target, ParsedParameterVector params, FileLoc loc);
+       void Texture(const std::string &amp;name, const std::string &amp;type,
+                    const std::string &amp;texname, ParsedParameterVector params, FileLoc loc);
+       void <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>(const std::string &amp;name, ParsedParameterVector params, FileLoc loc);
+       void MakeNamedMaterial(const std::string &amp;name, ParsedParameterVector params,
+                              FileLoc loc);
+       void NamedMaterial(const std::string &amp;name, FileLoc loc);
+       void LightSource(const std::string &amp;name, ParsedParameterVector params, FileLoc loc);
+       void AreaLightSource(const std::string &amp;name, ParsedParameterVector params,
+                            FileLoc loc);
+       void <a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>(const std::string &amp;name, ParsedParameterVector params, FileLoc loc);
+       void ReverseOrientation(FileLoc loc);
+       void ObjectBegin(const std::string &amp;name, FileLoc loc);
+       void ObjectEnd(FileLoc loc);
+       void ObjectInstance(const std::string &amp;name, FileLoc loc);
+       
+       void EndOfFiles();
+       
+       BasicSceneBuilder *CopyForImport();
+       void MergeImported(BasicSceneBuilder *);
+       std::string ToString() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BasicSceneBuilder::GraphicsStateDefinition-0">BasicSceneBuilder::GraphicsState Definition</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2860" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2860"><i></i></a><div id="fragbit-2860" class="collapse"><div class="fragmentcode">       struct GraphicsState {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-GraphicsStatePublicMethods-0">GraphicsState Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2861" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2861"><i></i></a><div id="fragbit-2861" class="collapse"><div class="fragmentcode">              GraphicsState();
+              template &lt;typename F&gt;
+              void ForActiveTransforms(F func) {
+                  for (int i = 0; i &lt; MaxTransforms; ++i)
+                      if (<a href="#GraphicsState::activeTransformBits" class="code">activeTransformBits</a> &amp; (1 &lt;&lt; i)) <a href="#GraphicsState::ctm" class="code">ctm</a>[i] = func(<a href="#GraphicsState::ctm" class="code">ctm</a>[i]);
+              }</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-GraphicsStatePublicMembers-0">GraphicsState Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2862" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2862"><i></i></a><div id="fragbit-2862" class="collapse"><div class="fragmentcode">              std::string currentInsideMedium, currentOutsideMedium;
+              
+              int currentMaterialIndex = 0;
+              std::string currentMaterialName;
+              
+              std::string areaLightName;
+              ParameterDictionary areaLightParams;
+              FileLoc areaLightLoc;
+              
+              ParsedParameterVector shapeAttributes;
+              ParsedParameterVector lightAttributes;
+              ParsedParameterVector materialAttributes;
+              ParsedParameterVector mediumAttributes;
+              ParsedParameterVector textureAttributes;
+              bool reverseOrientation = false;
+              const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace = <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a>::sRGB;
+              TransformSet ctm;
+              uint32_t activeTransformBits = AllTransformsBits;
+              Float transformStartTime = 0, transformEndTime = 1;</div></div>
+       };</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BasicSceneBuilderPrivateMethods-0">BasicSceneBuilder Private Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2863" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2863"><i></i></a><div id="fragbit-2863" class="collapse"><div class="fragmentcode">       class <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> <a href="#BasicSceneBuilder::RenderFromObject" class="code">RenderFromObject</a>(int index) const {
+           return pbrt::<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>((<a href="#BasicSceneBuilder::renderFromWorld" class="code">renderFromWorld</a> *
+                                   <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.ctm[index]).<a href="../Geometry_and_Transformations/Transformations.html#Transform::GetMatrix" class="code">GetMatrix</a>());
+       }
+       AnimatedTransform <a href="#BasicSceneBuilder::RenderFromObject" class="code">RenderFromObject</a>() const {
+           return {<a href="#BasicSceneBuilder::RenderFromObject" class="code">RenderFromObject</a>(0), <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::transformStartTime" class="code">transformStartTime</a>,
+                   <a href="#BasicSceneBuilder::RenderFromObject" class="code">RenderFromObject</a>(1), <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::transformEndTime" class="code">transformEndTime</a>};
+       }
+       bool CTMIsAnimated() const { return <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.ctm.IsAnimated(); }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BasicSceneBuilderPrivateMembers-0">BasicSceneBuilder Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2864" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2864"><i></i></a><div id="fragbit-2864" class="collapse"><div class="fragmentcode">       <a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene" class="code">BasicScene</a> *scene;
+       enum class BlockState { OptionsBlock, WorldBlock };
+       BlockState currentBlock = BlockState::OptionsBlock;
+       <a href="#BasicSceneBuilder::GraphicsState" class="code">GraphicsState</a> graphicsState;
+       static constexpr int StartTransformBits = 1 &lt;&lt; 0;
+       static constexpr int EndTransformBits = 1 &lt;&lt; 1;
+       static constexpr int AllTransformsBits = (1 &lt;&lt; MaxTransforms) - 1;
+       std::map&lt;std::string, TransformSet&gt; namedCoordinateSystems;
+       class <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> renderFromWorld;
+       <a href="../Utilities/Containers_and_Memory_Management.html#InternCache" class="code">InternCache</a>&lt;class <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>&gt; transformCache;
+       std::vector&lt;<a href="#BasicSceneBuilder::GraphicsState" class="code">GraphicsState</a>&gt; pushedGraphicsStates;
+       struct ActiveInstanceDefinition {
+           ActiveInstanceDefinition(std::string name, FileLoc loc) : entity(name, loc){}
+       
+           std::mutex mutex;
+           std::atomic&lt;int&gt; activeImports{1};
+           InstanceDefinitionSceneEntity entity;
+           ActiveInstanceDefinition *parent = nullptr;
+       };
+       ActiveInstanceDefinition *activeInstanceDefinition = nullptr;
+       
+       // Buffer these both to avoid mutex contention and so that they are
+       // consistently ordered across runs.
+       std::vector&lt;ShapeSceneEntity&gt; shapes;
+       std::vector&lt;InstanceSceneEntity&gt; instanceUses;
+       
+       std::set&lt;std::string&gt; namedMaterialNames, mediumNames;
+       std::set&lt;std::string&gt; floatTextureNames, spectrumTextureNames, instanceNames;
+       int currentMaterialIndex = 0, currentLightIndex = -1;
+       <a href="#SceneEntity" class="code">SceneEntity</a> sampler;
+       <a href="#SceneEntity" class="code">SceneEntity</a> film, integrator, filter, accelerator;
+       CameraSceneEntity camera;</div></div>
+};</div><p>
+
+
+</p>
+<p>As the entities in the scene are fully specified, they are passed along to
+an instance of the <a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene"><tt>BasicScene</tt></a> class, which will be described in the
+next section.  When parsing is being performed in parallel with multiple
+<a href="#BasicSceneBuilder"><tt>BasicSceneBuilder</tt></a>s, all share a single <a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene"><tt>BasicScene</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Members&gt;&gt;=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene" class="code">BasicScene</a> *<span class="anchor" id="BasicSceneBuilder::scene"></span>scene;</div><p>
+
+
+</p>
+<p>In addition to storing a pointer to a <tt>BasicScene</tt>, the
+<tt>BasicSceneBuilder</tt> constructor sets a few default values so that if,
+for example, no camera is specified in the scene description, a basic 90
+degree perspective camera is used.  The fragment that sets these values is
+not included here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">BasicSceneBuilder::BasicSceneBuilder(<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene" class="code">BasicScene</a> *scene)
+    : scene(scene) {
+    &lt;&lt;<span class="fragmentname">Set scene defaults</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2865" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2865"><i></i></a><div id="fragbit-2865" class="collapse"><div class="fragmentcode">       camera.name = SceneEntity::internedStrings.Lookup("perspective");
+       sampler.name = SceneEntity::internedStrings.Lookup("zsobol");
+       filter.name = SceneEntity::internedStrings.Lookup("gaussian");
+       integrator.name = SceneEntity::internedStrings.Lookup("volpath");
+       accelerator.name = SceneEntity::internedStrings.Lookup("bvh");
+       
+       film.name = SceneEntity::internedStrings.Lookup("rgb");
+       film.parameters = ParameterDictionary({}, <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a>::sRGB);
+       
+       ParameterDictionary dict({}, <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a>::sRGB);
+       currentMaterialIndex = scene-&gt;AddMaterial(SceneEntity("diffuse", dict, {}));</div></div>
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>pbrt</tt> scene descriptions are split into sections by the <tt>WorldBegin</tt>
+statement.  Before <tt>WorldBegin</tt> is encountered, it is legal to specify
+global rendering options including the camera, film, sampler, and
+integrator, but shapes, lights, textures, and materials cannot yet be
+specified.  After <tt>WorldBegin</tt>, all of that flips: things like the
+camera specification are fixed, and the rest of the scene can be specified.
+Some scene description statements, like those that modify the current
+transformation or specify participating media, are allowed in both
+contexts.
+
+</p>
+<p>This separation of information can help simplify the implementation of the
+renderer.  For example, consider a spline patch shape that tessellates
+itself into triangles.  This shape might compute the size of its triangles
+based on the area of the screen that it covers.  If the camera&rsquo;s position
+and the image resolution are fixed when the shape is created, then the
+shape can tessellate itself immediately at creation time.
+
+</p>
+<p>An enumeration records which part of the scene description is currently being
+specified.  Two macros that are not included here,
+<tt>VERIFY_OPTIONS()</tt><span class="anchor" id="VERIFY_OPTIONS"></span> and
+<tt>VERIFY_WORLD()</tt><span class="anchor" id="VERIFY_WORLD"></span>, check the current block
+against the one that is expected and issue an error if there is a mismatch.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMembers-1"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">enum class <span class="anchor" id="BlockState"></span>BlockState { <span class="anchor" id="BlockState::OptionsBlock"></span>OptionsBlock, <span class="anchor" id="BlockState::WorldBlock"></span>WorldBlock };
+BlockState <span class="anchor" id="BasicSceneBuilder::currentBlock"></span>currentBlock = BlockState::OptionsBlock;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SceneEntities"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:scene-entities"></span><span id="SceneEntities"></span><h3>C.2.1  Scene Entities</h3><p>
+
+
+
+</p>
+<p>Before further describing the <tt>BasicSceneBuilder</tt>&rsquo;s operation, we will
+start by describing the form of its output, which is a high-level
+representation of the parsed scene.  In this representation, all the
+objects in the scene are represented by various <tt>*Entity</tt> classes.
+
+</p>
+<p><tt>SceneEntity</tt> is the simplest of them; it records the
+name of the entity (e.g., &ldquo;rgb&rdquo; or &ldquo;gbuffer&rdquo; for the film),
+the file location of the associated statement in the scene description, and
+any user-provided parameters.  It is used for the film, sampler,
+integrator, pixel filter, and accelerator, and is also used as a base class
+for some of the other scene entity types.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SceneEntityDefinition-0"></span><div class="fragmentname">&lt;&lt;SceneEntity Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct <span class="anchor" id="SceneEntity"></span>SceneEntity {
+    &lt;&lt;<span class="fragmentname">SceneEntity Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2866" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2866"><i></i></a><div id="fragbit-2866" class="collapse"><div class="fragmentcode">       SceneEntity() = default;
+       SceneEntity(const std::string &amp;name, ParameterDictionary parameters, FileLoc loc)
+           : name(internedStrings.Lookup(name)), parameters(parameters), loc(loc) {}
+       
+       std::string ToString() const {
+           return StringPrintf("[ SceneEntity name: %s parameters: %s loc: %s ]", name,
+                               parameters, loc);
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SceneEntityPublicMembers-0">SceneEntity Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2867" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2867"><i></i></a><div id="fragbit-2867" class="collapse"><div class="fragmentcode">       <a href="../Utilities/Containers_and_Memory_Management.html#InternedString" class="code">InternedString</a> name;
+       FileLoc loc;
+       <a href="#ParameterDictionary" class="code">ParameterDictionary</a> parameters;
+       static <a href="../Utilities/Containers_and_Memory_Management.html#InternCache" class="code">InternCache</a>&lt;std::string&gt; internedStrings;</div></div>
+};</div><p>
+
+
+</p>
+<p>All the scene entity objects use <a href="../Utilities/Containers_and_Memory_Management.html#InternedString"><tt>InternedString</tt></a>s for any string
+member variables to
+save memory when strings are repeated.  (Often many are, including
+frequently used shape names like &ldquo;trianglemesh&rdquo; and the names of object
+instances that are used repeatedly.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SceneEntityPublicMembers-0"></span><div class="fragmentname">&lt;&lt;SceneEntity Public Members&gt;&gt;=&nbsp;<a href="#fragment-SceneEntityPublicMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Utilities/Containers_and_Memory_Management.html#InternedString" class="code">InternedString</a> <span class="anchor" id="SceneEntity::name"></span>name;
+FileLoc <span class="anchor" id="SceneEntity::loc"></span>loc;
+<a href="#ParameterDictionary" class="code">ParameterDictionary</a> <span class="anchor" id="SceneEntity::parameters"></span>parameters;</div><p>
+
+
+</p>
+<p>A single <a href="../Utilities/Containers_and_Memory_Management.html#InternCache"><tt>InternCache</tt></a> defined as a public static member in
+<tt>SceneEntity</tt> is used for all string interning in this part of the
+system.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SceneEntityPublicMembers-1"></span><div class="fragmentname">&lt;&lt;SceneEntity Public Members&gt;&gt;+=&nbsp;<a href="#fragment-SceneEntityPublicMembers-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">static <a href="../Utilities/Containers_and_Memory_Management.html#InternCache" class="code">InternCache</a>&lt;std::string&gt; <span class="anchor" id="SceneEntity::internedStrings"></span>internedStrings;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Other entity types include the <tt>CameraSceneEntity</tt><span class="anchor" id="CameraSceneEntity"></span>,
+<tt>LightSceneEntity</tt><span class="anchor" id="LightSceneEntity"></span>,
+<tt>TextureSceneEntity</tt><span class="anchor" id="TextureSceneEntity"></span>,
+<tt>MediumSceneEntity</tt><span class="anchor" id="MediumSceneEntity"></span>,
+<tt>ShapeSceneEntity</tt><span class="anchor" id="ShapeSceneEntity"></span>, and
+<tt>AnimatedShapeSceneEntity</tt><span class="anchor" id="AnimatedShapeSceneEntity"></span>.  All
+have the obvious roles.  There is furthermore an
+<tt>InstanceDefinitionSceneEntity</tt><span class="anchor" id="InstanceDefinitionSceneEntity"></span>,
+which represents an instance definition, and
+<tt>InstanceSceneEntity</tt><span class="anchor" id="InstanceSceneEntity"></span>, which
+represents the use of an instance definition.  We will not include the
+definitions of these classes in the text as they are all easily understood
+from their definitions in the source code.
+
+</p>
+<p>
+
+</p>
+<p>
+
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ParameterDictionaries"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:param-set"></span><span id="ParameterDictionaries"></span><h3>C.2.2  Parameter Dictionaries</h3><p>
+
+
+
+</p>
+<p>Most of the scene entity objects store lists of associated parameters from
+the scene description file.
+While the <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter"><tt>ParsedParameter</tt></a> is a convenient representation for the
+parser to generate, it does not provide capabilities for checking the
+validity of parameters or for easily extracting parameter values.  To that
+end, <a href="#ParameterDictionary"><tt>ParameterDictionary</tt></a> adds both semantics and convenience to
+vectors of <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter"><tt>ParsedParameter</tt></a>s.  Thus, it is the class that is used for
+<a href="#SceneEntity::parameters"><tt>SceneEntity::parameters</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterDictionaryDefinition-0"></span><div class="fragmentname">&lt;&lt;ParameterDictionary Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="ParameterDictionary"></span>ParameterDictionary {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParameterDictionaryPublicMethods-0">ParameterDictionary Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2868" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2868"><i></i></a><div id="fragbit-2868" class="collapse"><div class="fragmentcode">       ParameterDictionary(<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                           const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace);
+       ParameterDictionary(<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector" class="code">ParsedParameterVector</a> params0,
+                           const <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector" class="code">ParsedParameterVector</a> &amp;params1,
+                           const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace);
+       
+       std::string GetTexture(const std::string &amp;name) const;
+       
+       std::vector&lt;<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGB" class="code">RGB</a>&gt; GetRGBArray(const std::string &amp;name) const;
+       
+       // For --upgrade only
+       pstd::optional&lt;<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGB" class="code">RGB</a>&gt; GetOneRGB(const std::string &amp;name) const;
+       // Unfortunately, this is most easily done here...
+       Float UpgradeBlackbody(const std::string &amp;name);
+       void RemoveFloat(const std::string &amp;);
+       void RemoveInt(const std::string &amp;);
+       void RemoveBool(const std::string &amp;);
+       void RemovePoint2f(const std::string &amp;);
+       void RemoveVector2f(const std::string &amp;);
+       void RemovePoint3f(const std::string &amp;);
+       void RemoveVector3f(const std::string &amp;);
+       void RemoveNormal3f(const std::string &amp;);
+       void RemoveString(const std::string &amp;);
+       void RemoveTexture(const std::string &amp;);
+       void RemoveSpectrum(const std::string &amp;);
+       
+       void RenameParameter(const std::string &amp;before, const std::string &amp;after);
+       void RenameUsedTextures(const std::map&lt;std::string, std::string&gt; &amp;m);
+       
+       const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *ColorSpace() const { return colorSpace; }
+       
+       std::string ToParameterList(int indent = 0) const;
+       std::string ToParameterDefinition(const std::string &amp;) const;
+       std::string ToString() const;
+       
+       const FileLoc *loc(const std::string &amp;) const;
+       
+       const <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector" class="code">ParsedParameterVector</a> &amp;GetParameterVector() const { return params; }
+       
+       void FreeParameters();
+       Float GetOneFloat(const std::string &amp;name, Float def) const;
+       int GetOneInt(const std::string &amp;name, int def) const;
+       bool GetOneBool(const std::string &amp;name, bool def) const;
+       std::string GetOneString(const std::string &amp;name, 
+                                const std::string &amp;def) const;
+       <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> GetOnePoint2f(const std::string &amp;name, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> def) const;
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a> GetOneVector2f(const std::string &amp;name, <a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a> def) const;
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> GetOnePoint3f(const std::string &amp;name, <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> def) const;
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> GetOneVector3f(const std::string &amp;name, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> def) const;
+       <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> GetOneNormal3f(const std::string &amp;name, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> def) const;
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> GetOneSpectrum(const std::string &amp;name,
+           <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> def, <a href="#SpectrumType" class="code">SpectrumType</a> spectrumType, Allocator alloc) const;
+       std::vector&lt;Float&gt; GetFloatArray(const std::string &amp;name) const;
+       std::vector&lt;int&gt; GetIntArray(const std::string &amp;name) const;
+       std::vector&lt;uint8_t&gt; GetBoolArray(const std::string &amp;name) const;
+       std::vector&lt;<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>&gt; GetPoint2fArray(const std::string &amp;name) const;
+       std::vector&lt;<a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a>&gt; GetVector2fArray(const std::string &amp;name) const;
+       std::vector&lt;<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>&gt; GetPoint3fArray(const std::string &amp;name) const;
+       std::vector&lt;<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>&gt; GetVector3fArray(const std::string &amp;name) const;
+       std::vector&lt;<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a>&gt; GetNormal3fArray(const std::string &amp;name) const;
+       std::vector&lt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a>&gt; GetSpectrumArray(const std::string &amp;name,
+           <a href="#SpectrumType" class="code">SpectrumType</a> spectrumType, Allocator alloc) const;
+       std::vector&lt;std::string&gt; GetStringArray(const std::string &amp;name) const;
+       void ReportUnused() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname">ParameterDictionary Private Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2869" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2869"><i></i></a><div id="fragbit-2869" class="collapse"><div class="fragmentcode">       template &lt;ParameterType PT&gt;
+       typename ParameterTypeTraits&lt;PT&gt;::ReturnType lookupSingle(
+           const std::string &amp;name,
+           typename ParameterTypeTraits&lt;PT&gt;::ReturnType defaultValue) const;
+       
+       template &lt;ParameterType PT&gt;
+       std::vector&lt;typename ParameterTypeTraits&lt;PT&gt;::ReturnType&gt; lookupArray(
+           const std::string &amp;name) const;
+       
+       template &lt;typename ReturnType, typename G, typename C&gt;
+       std::vector&lt;ReturnType&gt; lookupArray(const std::string &amp;name, ParameterType type,
+                                           const char *typeName, int nPerItem, G getValues,
+                                           C convert) const;
+       
+       std::vector&lt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a>&gt; extractSpectrumArray(const ParsedParameter &amp;param,
+                                                        SpectrumType spectrumType,
+                                                        Allocator alloc) const;
+       
+       void remove(const std::string &amp;name, const char *typeName);
+       void checkParameterTypes();
+       static std::string ToParameterDefinition(const ParsedParameter *p, int indentCount);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParameterDictionaryPrivateMembers-0">ParameterDictionary Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2870" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2870"><i></i></a><div id="fragbit-2870" class="collapse"><div class="fragmentcode">       <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector" class="code">ParsedParameterVector</a> params;
+       const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace = nullptr;
+       int nOwnedParams;</div></div>
+};</div><p>
+
+
+</p>
+<p>Its constructor takes both a <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector"><tt>ParsedParameterVector</tt></a> and an
+<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace"><tt>RGBColorSpace</tt></a> that defines the color space of any RGB-valued
+parameters.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterDictionaryPublicMethods-0"></span><div class="fragmentname">&lt;&lt;ParameterDictionary Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ParameterDictionaryPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">ParameterDictionary(<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                    const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>It directly stores the provided <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector"><tt>ParsedParameterVector</tt></a>; no preprocessing of it
+is performed in the constructor&mdash;for example, to sort the parameters by name or to
+validate that the parameters are valid.  An implication of this is that the
+following methods that look up parameter values have <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.977ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2143 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper O left-parenthesis n right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D442" d="M740 436c0 -239 -223 -458 -435 -458c-144 0 -256 101 -256 267c0 233 220 460 436 460c149 0 255 -108 255 -269zM651 475c0 149 -90 205 -172 205c-79 0 -177 -52 -246 -156c-77 -117 -91 -263 -91 -307c0 -132 70 -213 169 -213c84 0 166 59 214 120 c99 123 126 279 126 351Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D442" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="763" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="1153" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1753" y="0"></use>
+</g>
+</svg> time
+complexity in the total number of parameters.  For the small numbers of
+parameters that are provided in practice, this inefficiency is not a
+concern.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterDictionaryPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;ParameterDictionary Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector" class="code">ParsedParameterVector</a> <span class="anchor" id="ParameterDictionary::params"></span>params;
+const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *<span class="anchor" id="ParameterDictionary::colorSpace"></span>colorSpace = nullptr;</div><p>
+
+
+</p>
+<p>A <a href="#ParameterDictionary"><tt>ParameterDictionary</tt></a> can hold eleven types of parameters: Booleans,
+integers, floating-point values, points (2D and 3D), vectors (2D and 3D),
+normals, spectra, strings, and the names of <a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#Texture"><tt>Texture</tt></a>s that are 
+used as parameters for <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a>s and other <a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#Texture"><tt>Texture</tt></a>s.  An
+enumeration of these types will be useful in the following.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterTypeDefinition-0"></span><div class="fragmentname">&lt;&lt;ParameterType Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">enum class <span class="anchor" id="ParameterType"></span>ParameterType {
+    <span class="anchor" id="ParameterType::Boolean"></span>Boolean,  <span class="anchor" id="ParameterType::Float"></span>Float,    <span class="anchor" id="ParameterType::Integer"></span>Integer,  <span class="anchor" id="ParameterType::Point2f"></span><a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>, <span class="anchor" id="ParameterType::Vector2f"></span><a href="../Geometry_and_Transformations/Vectors.html#Vector2f" class="code">Vector2f</a>, <span class="anchor" id="ParameterType::Point3f"></span><a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>,
+    <span class="anchor" id="ParameterType::Vector3f"></span><a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>, <span class="anchor" id="ParameterType::Normal3f"></span><a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a>, <span class="anchor" id="ParameterType::Spectrum"></span><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a>, <span class="anchor" id="ParameterType::String"></span>String,  <span class="anchor" id="ParameterType::Texture"></span>Texture
+};</div><p>
+
+
+</p>
+<p>For each parameter type, there is a method for looking up parameters that
+have a single data value.  Here are the declarations of a few:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterDictionaryPublicMethods-1"></span><div class="fragmentname">&lt;&lt;ParameterDictionary Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParameterDictionaryPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParameterDictionaryPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="ParameterDictionary::GetOneFloat"></span>GetOneFloat(const std::string &amp;name, Float def) const;
+int <span class="anchor" id="ParameterDictionary::GetOneInt"></span>GetOneInt(const std::string &amp;name, int def) const;
+bool <span class="anchor" id="ParameterDictionary::GetOneBool"></span>GetOneBool(const std::string &amp;name, bool def) const;
+std::string <span class="anchor" id="ParameterDictionary::GetOneString"></span>GetOneString(const std::string &amp;name, 
+                         const std::string &amp;def) const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>These methods all take the name of the parameter and a default value.  If
+the parameter is not found, the default value is returned.  This makes it
+easy to write initialization code like:
+</p>
+<div class="fragmentcode">    Point3f center = params.GetOnePoint3f("center", Point3f(0, 0, 0));</div><p>
+
+
+</p>
+<p>The single value lookup methods for the other types follow the same form
+and so their declarations are not included here.
+
+</p>
+<p>In contrast, if calling code wants to detect a missing parameter and issue an
+error, it should instead use the corresponding parameter array lookup
+method, which returns an empty vector if the parameter is not present.
+(Those methods will be described in a few pages.)
+
+</p>
+<p>For parameters that represent spectral distributions, it is necessary to
+specify if the spectrum represents an illuminant, a reflectance that is
+bounded between&nbsp;0 and&nbsp;1, or is an arbitrary spectral distribution (e.g., a
+scattering coefficient).  In turn, if a parameter has been specified using RGB color,
+the appropriate one of <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum"><tt>RGBIlluminantSpectrum</tt></a>, <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBAlbedoSpectrum"><tt>RGBAlbedoSpectrum</tt></a>,
+or <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBUnboundedSpectrum"><tt>RGBUnboundedSpectrum</tt></a> is used for the returned <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum"><tt>Spectrum</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterDictionaryPublicMethods-2"></span><div class="fragmentname">&lt;&lt;ParameterDictionary Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParameterDictionaryPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParameterDictionaryPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> <span class="anchor" id="ParameterDictionary::GetOneSpectrum"></span>GetOneSpectrum(const std::string &amp;name,
+    <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> def, <a href="#SpectrumType" class="code">SpectrumType</a> spectrumType, Allocator alloc) const;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumTypeDefinition-0"></span><div class="fragmentname">&lt;&lt;SpectrumType Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">enum class <span class="anchor" id="SpectrumType"></span>SpectrumType { <span class="anchor" id="SpectrumType::Illuminant"></span>Illuminant, <span class="anchor" id="SpectrumType::Albedo"></span>Albedo, <span class="anchor" id="SpectrumType::Unbounded"></span>Unbounded };</div><p>
+
+
+</p>
+<p>The parameter lookup methods make use of C++ type traits, which make it
+possible to associate additional information with specific types that can
+then be accessed at compile time via templates.  This approach allows succinct
+implementations of the lookup methods.  Here we will discuss the
+corresponding implementation for <tt>Point3f</tt>-valued parameters; the
+other types are analogous.
+
+</p>
+<p>The implementation of <tt>GetOnePoint3f()</tt> requires a single line of
+code to forward the request on to the <tt>lookupSingle()</tt> method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterDictionaryMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;ParameterDictionary Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-ParameterDictionaryMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <span class="anchor" id="ParameterDictionary::GetOnePoint3f"></span>ParameterDictionary::GetOnePoint3f(const std::string &amp;name,
+                                           <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> def) const {
+    return <a href="#ParameterDictionary::lookupSingle" class="code">lookupSingle</a>&lt;<a href="#ParameterType::Point3f" class="code">ParameterType</a>::<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>&gt;(name, def);
+}</div><p>
+
+
+</p>
+<p>The following signature of the <tt>lookupSingle()</tt> method alone has
+brought us into the realm of template-based type information.
+<tt>lookupSingle()</tt> is itself a template method, parameterized by an
+instance of the <a href="#ParameterType"><tt>ParameterType</tt></a> enumeration.  In turn, we can see that
+another template class, <a href="#ParameterTypeTraits"><tt>ParameterTypeTraits</tt></a>, not yet defined, is
+expected to provide the type <tt>ReturnType</tt>, which is used for
+both <tt>lookupSingle</tt>&rsquo;s return type and the provided default value.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterDictionaryMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;ParameterDictionary Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ParameterDictionaryMethodDefinitions-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">template &lt;ParameterType PT&gt;
+typename ParameterTypeTraits&lt;PT&gt;::ReturnType
+<span class="anchor" id="ParameterDictionary::lookupSingle"></span>ParameterDictionary::lookupSingle(const std::string &amp;name,
+        typename ParameterTypeTraits&lt;PT&gt;::ReturnType defaultValue) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Searchmonoparamsforparametermononame-0">Search <tt>params</tt> for parameter <tt>name</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2871" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2871"><i></i></a><div id="fragbit-2871" class="collapse"><div class="fragmentcode">       using traits = ParameterTypeTraits&lt;PT&gt;;
+       for (const <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter" class="code">ParsedParameter</a> *p : params) {
+           if (p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::name" class="code">name</a> != <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::name" class="code">name</a> || p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::type" class="code">type</a> != traits::typeName)
+               continue;
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Extractparametervaluesfrommonop-0">Extract parameter values from <tt>p</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2872" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2872"><i></i></a><div id="fragbit-2872" class="collapse"><div class="fragmentcode">              const auto &amp;values = traits::GetValues(*p);</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Issueerrorifanincorrectnumberofparametervalueswereprovided-0">Issue error if an incorrect number of parameter values were provided</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2873" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2873"><i></i></a><div id="fragbit-2873" class="collapse"><div class="fragmentcode">              if (values.empty())
+                  <a href="../Utilities/User_Interaction.html#ErrorExit" class="code">ErrorExit</a>(&amp;p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::loc" class="code">loc</a>, "No values provided for parameter \"%s\".", name);
+              if (values.size() != traits::nPerItem)
+                  <a href="../Utilities/User_Interaction.html#ErrorExit" class="code">ErrorExit</a>(&amp;p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::loc" class="code">loc</a>, "Expected %d values for parameter \"%s\".",
+                            traits::nPerItem, name);</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-ReturnparametervaluesasmonoReturnType-0">Return parameter values as <tt>ReturnType</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2874" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2874"><i></i></a><div id="fragbit-2874" class="collapse"><div class="fragmentcode">              p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::lookedUp" class="code">lookedUp</a> = true;
+              return traits::Convert(values.data(), &amp;p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::loc" class="code">loc</a>);</div></div>
+       }</div></div>
+    return defaultValue;
+}</div><p>
+
+
+</p>
+<p>Each of the parameter types in the <a href="#ParameterType"><tt>ParameterType</tt></a> enumeration has a
+<tt>ParameterTypeTraits</tt> template specialization.  Here is the one for
+<tt>Point3f</tt>:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Point3fParameterTypeTraitsDefinition-0"></span><div class="fragmentname">&lt;&lt;Point3f ParameterTypeTraits Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;&gt;
+struct <span class="anchor" id="ParameterTypeTraits"></span>ParameterTypeTraits&lt;<a href="#ParameterType::Point3f" class="code">ParameterType</a>::<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>&gt; {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParameterType::Point3fTypeTraits-0">ParameterType::Point3f Type Traits</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2875" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2875"><i></i></a><div id="fragbit-2875" class="collapse"><div class="fragmentcode">       using ReturnType = <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>;
+       static constexpr char typeName[] = "point3";
+       static const auto &amp;GetValues(const <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter" class="code">ParsedParameter</a> &amp;param) {
+           return param.<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::floats" class="code">floats</a>;
+       }
+       static constexpr int nPerItem = 3;
+       static <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> Convert(const Float *f, const FileLoc *loc) {
+           return <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(f[0], f[1], f[2]);
+       }</div></div>
+};</div><p>
+
+
+</p>
+<p>All the specializations provide a type definition for <tt>ReturnType</tt>.
+Naturally, the <tt>ParameterType::Point3f</tt>
+specialization uses <a href="../Geometry_and_Transformations/Points.html#Point3f"><tt>Point3f</tt></a> for <tt>ReturnType</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterType::Point3fTypeTraits-0"></span><div class="fragmentname">&lt;&lt;ParameterType::Point3f Type Traits&gt;&gt;=&nbsp;<a href="#fragment-ParameterType::Point3fTypeTraits-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">using ReturnType = <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>;</div><p>
+
+
+</p>
+<p>Type traits also provide the string name for each type.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterType::Point3fTypeTraits-1"></span><div class="fragmentname">&lt;&lt;ParameterType::Point3f Type Traits&gt;&gt;+=&nbsp;<a href="#fragment-ParameterType::Point3fTypeTraits-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParameterType::Point3fTypeTraits-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static constexpr char typeName[] = "point3";</div><p>
+
+
+</p>
+<p>In turn, the search for a parameter checks not only for the specified
+parameter name but also for a matching type string.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Searchmonoparamsforparametermononame-0"></span><div class="fragmentname">&lt;&lt;Search <tt>params</tt> for parameter <tt>name</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">using traits = ParameterTypeTraits&lt;PT&gt;;
+for (const <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter" class="code">ParsedParameter</a> *p : params) {
+    if (p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::name" class="code">name</a> != <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::name" class="code">name</a> || p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::type" class="code">type</a> != traits::typeName)
+        continue;
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Extractparametervaluesfrommonop-0">Extract parameter values from <tt>p</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2876" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2876"><i></i></a><div id="fragbit-2876" class="collapse"><div class="fragmentcode">       const auto &amp;values = traits::GetValues(*p);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Issueerrorifanincorrectnumberofparametervalueswereprovided-0">Issue error if an incorrect number of parameter values were provided</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2877" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2877"><i></i></a><div id="fragbit-2877" class="collapse"><div class="fragmentcode">       if (values.empty())
+           <a href="../Utilities/User_Interaction.html#ErrorExit" class="code">ErrorExit</a>(&amp;p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::loc" class="code">loc</a>, "No values provided for parameter \"%s\".", name);
+       if (values.size() != traits::nPerItem)
+           <a href="../Utilities/User_Interaction.html#ErrorExit" class="code">ErrorExit</a>(&amp;p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::loc" class="code">loc</a>, "Expected %d values for parameter \"%s\".",
+                     traits::nPerItem, name);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ReturnparametervaluesasmonoReturnType-0">Return parameter values as <tt>ReturnType</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2878" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2878"><i></i></a><div id="fragbit-2878" class="collapse"><div class="fragmentcode">       p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::lookedUp" class="code">lookedUp</a> = true;
+       return traits::Convert(values.data(), &amp;p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::loc" class="code">loc</a>);</div></div>
+}</div><p>
+
+
+</p>
+<p>A <tt>static</tt> <tt>GetValues()</tt> method in each type traits template
+specialization returns a reference to one of the <tt>floats</tt>,
+<tt>ints</tt>, <tt>strings</tt>, or <tt>bools</tt> <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter"><tt>ParsedParameter</tt></a> member
+variables.  Note that using <tt>auto</tt> for the declaration of
+<tt>values</tt> makes it possible for this code in <tt>lookupSingle()</tt> to
+work with any of those.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Extractparametervaluesfrommonop-0"></span><div class="fragmentname">&lt;&lt;Extract parameter values from <tt>p</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const auto &amp;values = traits::GetValues(*p);</div><p>
+
+
+</p>
+<p>For <tt>Point3f</tt> parameters, the parameter values are floating-point.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterType::Point3fTypeTraits-2"></span><div class="fragmentname">&lt;&lt;ParameterType::Point3f Type Traits&gt;&gt;+=&nbsp;<a href="#fragment-ParameterType::Point3fTypeTraits-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParameterType::Point3fTypeTraits-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static const auto &amp;GetValues(const <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter" class="code">ParsedParameter</a> &amp;param) {
+    return param.<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::floats" class="code">floats</a>;
+}</div><p>
+
+
+</p>
+<p>Another trait, <tt>nPerItem</tt>, provides the number of individual values
+associated with each parameter.  In addition to making it possible to check
+that the right number of values were provided in the <tt>GetOne*()</tt>
+methods, this value is also used when parsing arrays of parameter values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Issueerrorifanincorrectnumberofparametervalueswereprovided-0"></span><div class="fragmentname">&lt;&lt;Issue error if an incorrect number of parameter values were provided&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (values.empty())
+    <a href="../Utilities/User_Interaction.html#ErrorExit" class="code">ErrorExit</a>(&amp;p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::loc" class="code">loc</a>, "No values provided for parameter \"%s\".", name);
+if (values.size() != traits::nPerItem)
+    <a href="../Utilities/User_Interaction.html#ErrorExit" class="code">ErrorExit</a>(&amp;p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::loc" class="code">loc</a>, "Expected %d values for parameter \"%s\".",
+              traits::nPerItem, name);</div><p>
+
+
+</p>
+<p>For each <a href="../Geometry_and_Transformations/Points.html#Point3f"><tt>Point3f</tt></a>, three values are expected.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterType::Point3fTypeTraits-3"></span><div class="fragmentname">&lt;&lt;ParameterType::Point3f Type Traits&gt;&gt;+=&nbsp;<a href="#fragment-ParameterType::Point3fTypeTraits-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParameterType::Point3fTypeTraits-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static constexpr int nPerItem = 3;</div><p>
+
+
+</p>
+<p>Finally, a <tt>static</tt> <tt>Convert()</tt> method in the type traits
+specialization takes
+care of converting from the raw values to the returned parameter type.  At
+this point, the fact that the parameter was in fact used is also recorded.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ReturnparametervaluesasmonoReturnType-0"></span><div class="fragmentname">&lt;&lt;Return parameter values as <tt>ReturnType</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::lookedUp" class="code">lookedUp</a> = true;
+return traits::Convert(values.data(), &amp;p-&gt;<a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::loc" class="code">loc</a>);</div><p>
+
+
+</p>
+<p>The <tt>Convert()</tt> method converts the parameter values, starting at a given
+location, to the return type.  When arrays of values are returned, this
+method is called once per returned array element, with the pointer
+incremented after each one by the type traits
+<tt>nPerItem</tt> value.  The
+current <tt>FileLoc</tt> is passed along to this method in case any errors
+need to be reported.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterType::Point3fTypeTraits-4"></span><div class="fragmentname">&lt;&lt;ParameterType::Point3f Type Traits&gt;&gt;+=&nbsp;<a href="#fragment-ParameterType::Point3fTypeTraits-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">static <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> Convert(const Float *f, const FileLoc *loc) {
+    return <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(f[0], f[1], f[2]);
+}</div><p>
+
+
+</p>
+<p>Implementing the parameter lookup methods via type traits is
+more complex than implementing each one directly would
+be.  However, this approach has the advantage that each additional parameter type
+effectively only requires defining an appropriate <a href="#ParameterTypeTraits"><tt>ParameterTypeTraits</tt></a>
+specialization, which is just a few lines of code.  Further, that
+additional code is mostly declarative, which in turn is easier to verify as
+correct than multiple independent implementations of parameter processing logic.
+
+</p>
+<p>The second set of parameter lookup functions returns an array of values.
+An empty vector is returned if the parameter is not found, so no default
+value need be provided by the caller.  Here are the declarations of a
+few of them.  The rest are equivalent, though <tt>GetSpectrumArray()</tt>
+also takes a <a href="#SpectrumType"><tt>SpectrumType</tt></a> and an <a href="../Introduction/Using_and_Understanding_the_Code.html#Allocator"><tt>Allocator</tt></a> to use for
+allocating any returned <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum"><tt>Spectrum</tt></a> values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterDictionaryPublicMethods-3"></span><div class="fragmentname">&lt;&lt;ParameterDictionary Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParameterDictionaryPublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParameterDictionaryPublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::vector&lt;Float&gt; GetFloatArray(const std::string &amp;name) const;
+std::vector&lt;int&gt; GetIntArray(const std::string &amp;name) const;
+std::vector&lt;uint8_t&gt; GetBoolArray(const std::string &amp;name) const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>We will not include the implementations of any of the array lookup methods
+or the type traits for the other parameter types here.  We also
+note that the methods corresponding to <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum"><tt>Spectrum</tt></a> parameters are
+more complex than the other ones, since spectral distributions may be
+specified in a number of different ways, including as RGB colors, blackbody
+emission temperatures, and spectral distributions stored in files; see the
+source code for details.
+
+</p>
+<p>Finally, because the user may misspell parameter names in the scene
+description file, the <a href="#ParameterDictionary"><tt>ParameterDictionary</tt></a> also provides a
+<tt>ReportUnused()</tt> function that issues an error if any of the
+parameters present were never looked up; the assumption is that in that
+case the user has provided an incorrect parameter.  (This check is based on
+the values of the <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameter::lookedUp"><tt>ParsedParameter::lookedUp</tt></a> member variables.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParameterDictionaryPublicMethods-4"></span><div class="fragmentname">&lt;&lt;ParameterDictionary Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParameterDictionaryPublicMethods-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ParameterDictionary::ReportUnused"></span>ReportUnused() const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TrackingGraphicsState"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:managing-xforms"></span><span id="TrackingGraphicsState"></span><h3>C.2.3  Tracking Graphics State</h3><p>
+
+
+
+</p>
+<p>All the graphics state managed by the <a href="#BasicSceneBuilder"><tt>BasicSceneBuilder</tt></a> is stored
+in an instance of the <tt>GraphicsState</tt> class.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilder::GraphicsStateDefinition-0"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder::GraphicsState Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct <span class="anchor" id="BasicSceneBuilder::GraphicsState"></span>GraphicsState {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-GraphicsStatePublicMethods-0">GraphicsState Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2879" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2879"><i></i></a><div id="fragbit-2879" class="collapse"><div class="fragmentcode">       GraphicsState();
+       template &lt;typename F&gt;
+       void ForActiveTransforms(F func) {
+           for (int i = 0; i &lt; MaxTransforms; ++i)
+               if (<a href="#GraphicsState::activeTransformBits" class="code">activeTransformBits</a> &amp; (1 &lt;&lt; i)) <a href="#GraphicsState::ctm" class="code">ctm</a>[i] = func(<a href="#GraphicsState::ctm" class="code">ctm</a>[i]);
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-GraphicsStatePublicMembers-0">GraphicsState Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2880" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2880"><i></i></a><div id="fragbit-2880" class="collapse"><div class="fragmentcode">       std::string currentInsideMedium, currentOutsideMedium;
+       
+       int currentMaterialIndex = 0;
+       std::string currentMaterialName;
+       
+       std::string areaLightName;
+       ParameterDictionary areaLightParams;
+       FileLoc areaLightLoc;
+       
+       ParsedParameterVector shapeAttributes;
+       ParsedParameterVector lightAttributes;
+       ParsedParameterVector materialAttributes;
+       ParsedParameterVector mediumAttributes;
+       ParsedParameterVector textureAttributes;
+       bool reverseOrientation = false;
+       const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace = <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a>::sRGB;
+       TransformSet ctm;
+       uint32_t activeTransformBits = AllTransformsBits;
+       Float transformStartTime = 0, transformEndTime = 1;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A <tt>GraphicsState</tt> instance is maintained in a member variable.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMembers-2"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">GraphicsState <span class="anchor" id="BasicSceneBuilder::graphicsState"></span>graphicsState;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>There is usually not much to do when a statement that modifies the graphics
+state is encountered in a scene description file.  Here, for example, is the
+implementation of the method that is called when the
+<tt>ReverseOrientation</tt> statement is parsed.  This statement is only
+valid in the world block, so that state is checked before the graphics
+state&rsquo;s corresponding variable is updated.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicSceneBuilder::ReverseOrientation"></span>BasicSceneBuilder::ReverseOrientation(FileLoc loc) {
+    <a href="#VERIFY_WORLD" class="code">VERIFY_WORLD</a>("ReverseOrientation");
+    <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::reverseOrientation" class="code">reverseOrientation</a> = !<a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::reverseOrientation" class="code">reverseOrientation</a>;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsStatePublicMembers-0"></span><div class="fragmentname">&lt;&lt;GraphicsState Public Members&gt;&gt;=&nbsp;<a href="#fragment-GraphicsStatePublicMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="GraphicsState::reverseOrientation"></span>reverseOrientation = false;</div><p>
+
+
+</p>
+<p>The current RGB color space can be specified in both the world and options
+blocks, so there is no need to check the value of <tt>currentBlock</tt> in the
+corresponding method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-2"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicSceneBuilder::ColorSpace"></span>BasicSceneBuilder::ColorSpace(const std::string &amp;name, FileLoc loc) {
+    if (const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *cs = <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a>::GetNamed(name))
+        <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::colorSpace" class="code">colorSpace</a> = cs;
+    else
+        <a href="../Utilities/User_Interaction.html#Error" class="code">Error</a>(&amp;loc, "%s: color space unknown", name);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsStatePublicMembers-1"></span><div class="fragmentname">&lt;&lt;GraphicsState Public Members&gt;&gt;+=&nbsp;<a href="#fragment-GraphicsStatePublicMembers-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GraphicsStatePublicMembers-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *<span class="anchor" id="GraphicsState::colorSpace"></span>colorSpace = <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a>::sRGB;</div><p>
+
+
+</p>
+<p>Many of the other method implementations related to graphics state
+management are similarly simple, so we will only include a few of the
+interesting ones in the following.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x3-ManagingTransformations"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x3-ManagingTransformations"></span><h4>Managing Transformations</h4><p>
+
+
+
+</p>
+<p>The <em>current transformation matrix</em> (CTM) is a widely used part of the
+graphics state.  Initially the identity matrix, the CTM is modified by
+statements like <tt>Translate</tt> and <tt>Scale</tt> in scene description files.
+When objects like shapes and lights are defined, the CTM gives the
+transformation between their object coordinate system and world space.
+
+</p>
+<p>The current transformation matrix is actually a pair of transformation
+matrices, each one specifying a transformation at a specific time.  If the
+transformations are different, then they describe an animated
+transformation.  A number of methods are available to modify one or both
+of the CTMs as well as to specify the time associated with each one.
+
+</p>
+<p><tt>GraphicsState</tt> stores these two CTMs in a <tt>ctm</tt> member
+variable. They are represented by a
+<tt>TransformSet</tt><span class="anchor" id="TransformSet"></span>, which is a simple utility
+class that stores an array of transformations and provides some
+routines for managing them.  Its methods include an <tt>operator[]</tt> for
+indexing into the <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>s, an
+<tt>Inverse()</tt><span class="anchor" id="TransformSet::Inverse"></span> method that returns a
+<tt>TransformSet</tt> that is the inverse, and
+<tt>IsAnimated()</tt><span class="anchor" id="TransformSet::IsAnimated"></span>, which indicates
+whether the two <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>s differ from each other.
+
+</p>
+<p>The <tt>activeTransformBits</tt> member variable is a bit-vector indicating
+which of the CTMs are active; the active <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>s are updated when
+the transformation-related API calls are made, while the others are
+unchanged.  This mechanism allows the user to selectively modify the CTMs
+in order to define animated transformations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsStatePublicMembers-2"></span><div class="fragmentname">&lt;&lt;GraphicsState Public Members&gt;&gt;+=&nbsp;<a href="#fragment-GraphicsStatePublicMembers-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-GraphicsStatePublicMembers-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">TransformSet <span class="anchor" id="GraphicsState::ctm"></span>ctm;
+uint32_t <span class="anchor" id="GraphicsState::activeTransformBits"></span>activeTransformBits = AllTransformsBits;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMembers-3"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static constexpr int <span class="anchor" id="BasicSceneBuilder::StartTransformBits"></span>StartTransformBits = 1 &lt;&lt; 0;
+static constexpr int <span class="anchor" id="BasicSceneBuilder::EndTransformBits"></span>EndTransformBits = 1 &lt;&lt; 1;
+static constexpr int <span class="anchor" id="BasicSceneBuilder::AllTransformsBits"></span>AllTransformsBits = (1 &lt;&lt; MaxTransforms) - 1;</div><p>
+
+
+</p>
+<p>Only two transformations are currently supported.  An exercise at the end
+of this appendix is based on relaxing this constraint.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MaxTransformsDefinition-0"></span><div class="fragmentname">&lt;&lt;MaxTransforms Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">constexpr int <span class="anchor" id="MaxTransforms"></span>MaxTransforms = 2;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The methods that are called when a change to the
+current transformation is specified in the scene description are
+all simple.  Because the CTM is used for both the rendering options
+and the scene description sections, there is no
+need to check the value of <tt>currentBlock</tt> in them.  Here is the method
+called for the <tt>Identity</tt> statement, which sets the CTM to the
+identity transform.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-3"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicSceneBuilder::Identity"></span>BasicSceneBuilder::Identity(FileLoc loc) {
+    <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::ForActiveTransforms" class="code">ForActiveTransforms</a>(
+        [](auto t) { return pbrt::<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>(); });
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>ForActiveTransforms()</tt> is a convenience method that encapsulates the
+logic for determining which of the CTMs is active and for passing their current
+value to a provided function that returns the updated transformation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsStatePublicMethods-0"></span><div class="fragmentname">&lt;&lt;GraphicsState Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename F&gt;
+void <span class="anchor" id="GraphicsState::ForActiveTransforms"></span>ForActiveTransforms(F func) {
+    for (int i = 0; i &lt; MaxTransforms; ++i)
+        if (<a href="#GraphicsState::activeTransformBits" class="code">activeTransformBits</a> &amp; (1 &lt;&lt; i)) <a href="#GraphicsState::ctm" class="code">ctm</a>[i] = func(<a href="#GraphicsState::ctm" class="code">ctm</a>[i]);
+}</div><p>
+
+
+</p>
+<p><tt>Translate()</tt> postmultiplies the active CTMs with specified translation transformation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-4"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicSceneBuilder::Translate"></span>BasicSceneBuilder::<a href="../Geometry_and_Transformations/Transformations.html#Translate" class="code">Translate</a>(Float dx, Float dy, Float dz,
+                                  FileLoc loc) {
+    <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::ForActiveTransforms" class="code">ForActiveTransforms</a>(
+        [=](auto t) { return t * pbrt::<a href="../Geometry_and_Transformations/Transformations.html#Translate" class="code">Translate</a>(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(dx, dy, dz)); });
+}</div><p>
+
+
+</p>
+<p>The rest of the transformation methods are similarly defined, so
+we will not show their definitions here.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p><tt>RenderFromObject()</tt> is a convenience method that returns the
+rendering-from-object transformation for the specified transformation
+index.  It is called, for example, when a shape is specified.  In the world
+specification block, the CTM specifies the world-from-object
+transformation, but because <tt>pbrt</tt> performs rendering computation in
+a separately defined rendering coordinate system (recall
+Section&nbsp;<a href="../Cameras_and_Film/Camera_Interface.html#sec:camera-coordinate-spaces">5.1.1</a>), the rendering-from-world
+transformation must be included to get the full transformation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMethods-0"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Methods&gt;&gt;=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> <span class="anchor" id="BasicSceneBuilder::RenderFromObject"></span>RenderFromObject(int index) const {
+    return pbrt::<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>((<a href="#BasicSceneBuilder::renderFromWorld" class="code">renderFromWorld</a> *
+                            <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.ctm[index]).<a href="../Geometry_and_Transformations/Transformations.html#Transform::GetMatrix" class="code">GetMatrix</a>());
+}</div><p>
+
+
+</p>
+<p>The camera-from-world transformation is given by the CTM when the camera is
+specified in the scene description.  <tt>renderFromWorld</tt> is therefore
+set in the <tt>BasicSceneBuilder::Camera()</tt> method (not included here), via a call to the
+<a href="../Cameras_and_Film/Camera_Interface.html#CameraTransform::RenderFromWorld"><tt>CameraTransform::RenderFromWorld()</tt></a> method with the
+<a href="../Cameras_and_Film/Camera_Interface.html#CameraTransform"><tt>CameraTransform</tt></a> for the camera.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMembers-4"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> <span class="anchor" id="BasicSceneBuilder::renderFromWorld"></span>renderFromWorld;</div><p>
+
+
+</p>
+<p>A second version of <tt>RenderFromObject</tt> returns an
+<tt>AnimatedTransform</tt> that includes both transformations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMethods-1"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Methods&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">AnimatedTransform <a href="#BasicSceneBuilder::RenderFromObject" class="code">RenderFromObject</a>() const {
+    return {<a href="#BasicSceneBuilder::RenderFromObject" class="code">RenderFromObject</a>(0), <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::transformStartTime" class="code">transformStartTime</a>,
+            <a href="#BasicSceneBuilder::RenderFromObject" class="code">RenderFromObject</a>(1), <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::transformEndTime" class="code">transformEndTime</a>};
+}</div><p>
+
+
+</p>
+<p><tt>GraphicsState</tt> also maintains the starting and ending times for the
+specified transformations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GraphicsStatePublicMembers-3"></span><div class="fragmentname">&lt;&lt;GraphicsState Public Members&gt;&gt;+=&nbsp;<a href="#fragment-GraphicsStatePublicMembers-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="GraphicsState::transformStartTime"></span>transformStartTime = 0, <span class="anchor" id="GraphicsState::transformEndTime"></span>transformEndTime = 1;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A final issue related to <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>s is minimizing their storage
+costs.  In the usual case of using 32-bit <tt>float</tt>s for <tt>pbrt</tt>&rsquo;s
+<a href="../Introduction/pbrt_System_Overview.html#Float"><tt>Float</tt></a> type, each <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a> class instance uses 128 bytes of
+memory.  Because the same transformation may be applied to many objects in
+the scene, it is worthwhile to reuse the same <tt>Transform</tt> for all of
+them when possible.  The <a href="../Utilities/Containers_and_Memory_Management.html#InternCache"><tt>InternCache</tt></a> class helps with
+this task, allocating and storing a single <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a> for each unique
+transformation that is passed to its <tt>Lookup()</tt> method.  In turn,
+classes like <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> implementations are able to save memory by storing
+just a <tt>const Transform *</tt> rather than a full <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMembers-5"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Utilities/Containers_and_Memory_Management.html#InternCache" class="code">InternCache</a>&lt;class <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>&gt; <span class="anchor" id="BasicSceneBuilder::transformCache"></span>transformCache;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x3-HierarchicalGraphicsState"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x3-HierarchicalGraphicsState"></span><h4>Hierarchical Graphics State</h4><p>
+
+
+</p>
+<p>When specifying the scene, it is useful to be able to make a set of changes
+to the graphics state, instantiate some scene objects, and then roll back
+to an earlier graphics state.  For example, one might want
+to specify a base transformation to position a car model in a scene and
+then to use additional transformations relative to the initial one to place
+the wheels, the seats, and so forth.  A convenient way to do this is via a
+stack of saved <tt>GraphicsState</tt> objects: the user can specify that the
+current graphics state should be copied and pushed on the stack and then later
+specify that the current state should be replaced with the state on the top
+of the stack.
+
+</p>
+<p>This stack is managed by the <tt>AttributeBegin</tt> and <tt>AttributeEnd</tt>
+statements in <tt>pbrt</tt>&rsquo;s scene description files.  The former saves the current
+graphics state and the latter restores the most recent saved state.
+Thus, a scene description file might contain the following:
+
+</p>
+<p>
+
+</p>
+<p></p>
+<div class="fragmentcode">Material "diffuse"
+AttributeBegin
+  Material "dielectric"
+  Translate 5 0 0
+  Shape "sphere" "float radius" [ 1 ]
+AttributeEnd
+Shape "sphere" "float radius" [ 1 ]</div><p>
+
+The first sphere is affected by the translation and is bound to the dielectric
+material, while the second sphere is diffuse and is not translated.
+
+</p>
+<p><a href="#BasicSceneBuilder"><tt>BasicSceneBuilder</tt></a> maintains a <tt>vector</tt> of <tt>GraphicsState</tt>s for
+this stack.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-5"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicSceneBuilder::AttributeBegin"></span>BasicSceneBuilder::AttributeBegin(FileLoc loc) {
+    VERIFY_WORLD("AttributeBegin");
+    <a href="#BasicSceneBuilder::pushedGraphicsStates" class="code">pushedGraphicsStates</a>.push_back(graphicsState);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMembers-6"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-5"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-7"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::vector&lt;<a href="#BasicSceneBuilder::GraphicsState" class="code">GraphicsState</a>&gt; <span class="anchor" id="BasicSceneBuilder::pushedGraphicsStates"></span>pushedGraphicsStates;
+</div><p>
+
+
+</p>
+<p>The <tt>AttributeEnd()</tt> method also checks to see if the stack is empty
+and issues an error if there was no matching <tt>AttributeBegin()</tt> call
+earlier.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-6"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-5"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-7"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicSceneBuilder::AttributeEnd"></span>BasicSceneBuilder::AttributeEnd(FileLoc loc) {
+    VERIFY_WORLD("AttributeEnd");
+    &lt;&lt;<span class="fragmentname">Issue error on unmatched <tt>AttributeEnd</tt></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2881" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2881"><i></i></a><div id="fragbit-2881" class="collapse"><div class="fragmentcode">       if (pushedGraphicsStates.empty()) {
+           Error(&amp;loc, "Unmatched AttributeEnd encountered. Ignoring it.");
+           return;
+       }</div></div>
+    <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a> = std::move(<a href="#BasicSceneBuilder::pushedGraphicsStates" class="code">pushedGraphicsStates</a>.back());
+    <a href="#BasicSceneBuilder::pushedGraphicsStates" class="code">pushedGraphicsStates</a>.pop_back();
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#CreatingSceneElements"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:specifying-scene-elements"></span><span id="CreatingSceneElements"></span><h3>C.2.4  Creating Scene Elements</h3><p>
+
+
+
+</p>
+<p>As soon as an entity in the scene is fully specified,
+<a href="#BasicSceneBuilder"><tt>BasicSceneBuilder</tt></a> passes its specification on to the
+<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene"><tt>BasicScene</tt></a>.  It is thus possible to immediately begin construction of the
+associated object that is used for rendering even as parsing the
+rest of the scene description continues.  For brevity, in this section and in
+Section&nbsp;<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#sec:basic-scene">A.3</a> we will only discuss how this process works
+for <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>s and for the <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> objects that represent participating
+media.  (Those two are representative of how the rest of the scene objects
+are handled.)
+
+</p>
+<p>When a <tt>Sampler</tt> statement is parsed in the scene description, the
+following <tt>Sampler()</tt> method is called by the parser.  All that needs
+to be done is to record the sampler&rsquo;s name and parameters; because the
+sampler may be changed by a subsequent <tt>Sampler</tt> statement in the
+scene description, it should not immediately be passed along to the
+<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene"><tt>BasicScene</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-7"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-6"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-8"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicSceneBuilder::Sampler"></span>BasicSceneBuilder::<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>(const std::string &amp;name,
+        <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector" class="code">ParsedParameterVector</a> params, FileLoc loc) {
+    <a href="#ParameterDictionary" class="code">ParameterDictionary</a> dict(std::move(params), <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::colorSpace" class="code">colorSpace</a>);
+    VERIFY_OPTIONS("<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>");
+    sampler = <a href="#SceneEntity" class="code">SceneEntity</a>(name, std::move(dict), loc);
+}</div><p>
+
+
+</p>
+<p><tt>BasicSceneBuilder</tt> holds on to a <a href="#SceneEntity"><tt>SceneEntity</tt></a> for the sampler in
+a member variable until its value is known to be final.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderPrivateMembers-7"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderPrivateMembers-6"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode"><a href="#SceneEntity" class="code">SceneEntity</a> <span class="anchor" id="BasicSceneBuilder::sampler"></span>sampler;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Once the <tt>WorldBegin</tt> statement is parsed, the sampler, camera, film,
+pixel filter, accelerator, and integrator are all set; they cannot be
+subsequently changed.  Thus, when the parser calls the <tt>WorldBegin()</tt>
+method of <tt>BasicSceneBuilder</tt>, each corresponding <tt>SceneEntity</tt>
+can be passed along to the <a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene"><tt>BasicScene</tt></a>.  (This method also does some
+maintenance of the graphics state, resetting the CTM to the identity
+transformation and handling other details; that code is not included here.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-8"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-7"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-9"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicSceneBuilder::WorldBegin"></span>BasicSceneBuilder::WorldBegin(FileLoc loc) {
+    VERIFY_OPTIONS("WorldBegin");
+    &lt;&lt;<span class="fragmentname">Reset graphics state for <tt>WorldBegin</tt></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2882" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2882"><i></i></a><div id="fragbit-2882" class="collapse"><div class="fragmentcode">       currentBlock = BlockState::WorldBlock;
+       for (int i = 0; i &lt; MaxTransforms; ++i)
+           graphicsState.ctm[i] = pbrt::<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>();
+       graphicsState.activeTransformBits = AllTransformsBits;
+       namedCoordinateSystems["world"] = graphicsState.ctm;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Passpre-monoWorldBeginentitiestomonoscene-0">Pass pre-<tt>WorldBegin</tt> entities to <tt>scene</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2883" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2883"><i></i></a><div id="fragbit-2883" class="collapse"><div class="fragmentcode">       <a href="#BasicSceneBuilder::scene" class="code">scene</a>-&gt;<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene::SetOptions" class="code">SetOptions</a>(filter, film, camera, sampler, integrator, accelerator);</div></div>
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>All the entities are passed with a single method call; as we will see in
+the implementation of the <tt>SetOptions()</tt> method, having all of them at
+hand simultaneously makes it easier to start creating the corresponding
+objects for rendering.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Passpre-monoWorldBeginentitiestomonoscene-0"></span><div class="fragmentname">&lt;&lt;Pass pre-<tt>WorldBegin</tt> entities to <tt>scene</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#BasicSceneBuilder::scene" class="code">scene</a>-&gt;<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene::SetOptions" class="code">SetOptions</a>(filter, film, camera, sampler, integrator, accelerator);</div><p>
+
+
+</p>
+<p>There is not much more to do for media.  <tt>MakeNamedMedium()</tt> begins with a
+check to make sure that a medium with the given name has not already been
+specified.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneBuilderMethodDefinitions-9"></span><div class="fragmentname">&lt;&lt;BasicSceneBuilder Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneBuilderMethodDefinitions-8"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicSceneBuilder::MakeNamedMedium"></span>BasicSceneBuilder::MakeNamedMedium(const std::string &amp;name,
+        <a href="../Processing_the_Scene_Description/Tokenizing_and_Parsing.html#ParsedParameterVector" class="code">ParsedParameterVector</a> params, FileLoc loc) {
+    &lt;&lt;<span class="fragmentname">Issue error if medium <tt>name</tt> is multiply defined</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2884" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2884"><i></i></a><div id="fragbit-2884" class="collapse"><div class="fragmentcode">       if (mediumNames.find(name) != mediumNames.end()) {
+           ErrorExitDeferred(&amp;loc, "Named medium \"%s\" redefined.", name);
+           return;
+       }
+       mediumNames.insert(name);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CreatemonoParameterDictionaryformediumandcallmonoAddMedium-0">Create <tt>ParameterDictionary</tt> for medium and call <tt>AddMedium()</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2885" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2885"><i></i></a><div id="fragbit-2885" class="collapse"><div class="fragmentcode">       ParameterDictionary dict(std::move(params), <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.mediumAttributes,
+                                <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::colorSpace" class="code">colorSpace</a>);
+       <a href="#BasicSceneBuilder::scene" class="code">scene</a>-&gt;<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene::AddMedium" class="code">AddMedium</a>(MediumSceneEntity(name, std::move(dict), loc,
+                                          <a href="#BasicSceneBuilder::RenderFromObject" class="code">RenderFromObject</a>()));</div></div>
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Assuming the medium is not multiply defined, all that is to be done is to
+pass along a <a href="#MediumSceneEntity"><tt>MediumSceneEntity</tt></a> to the <a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene"><tt>BasicScene</tt></a>.  This can be done
+immediately in this case, as there is no way for it to be
+subsequently changed during parsing.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CreatemonoParameterDictionaryformediumandcallmonoAddMedium-0"></span><div class="fragmentname">&lt;&lt;Create <tt>ParameterDictionary</tt> for medium and call <tt>AddMedium()</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">ParameterDictionary dict(std::move(params), <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.mediumAttributes,
+                         <a href="#BasicSceneBuilder::graphicsState" class="code">graphicsState</a>.<a href="#GraphicsState::colorSpace" class="code">colorSpace</a>);
+<a href="#BasicSceneBuilder::scene" class="code">scene</a>-&gt;<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene::AddMedium" class="code">AddMedium</a>(MediumSceneEntity(name, std::move(dict), loc,
+                                   <a href="#BasicSceneBuilder::RenderFromObject" class="code">RenderFromObject</a>()));</div><p>
+
+
+
+</p>
+<p>The other object specification methods follow the same general form, though
+the
+<tt>BasicSceneBuilder::Shape()</tt><span class="anchor" id="BasicSceneBuilder::Shape"></span>
+method is more complex than the others.  Not only does it need to check to
+see if an <tt>AreaLight</tt> specification is active and call
+<tt>BasicScene::AddAreaLight()</tt> if so, but it also needs to distinguish
+between shapes with animated transformations and those without, creating an
+<a href="#AnimatedShapeSceneEntity"><tt>AnimatedShapeSceneEntity</tt></a> or a <a href="#ShapeSceneEntity"><tt>ShapeSceneEntity</tt></a> as appropriate.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html">Processing the Scene Description / BasicScene and Final Object Creation</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

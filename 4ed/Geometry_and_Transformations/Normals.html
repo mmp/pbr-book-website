@@ -1,0 +1,250 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Normals</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations.html">Geometry and Transformations</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Normals</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations/Points.html">(Previous: Points)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>3.5 Normals</h2><p>
+
+
+</p>
+<p> A <em>surface normal</em> (or just <em>normal</em>) is a vector that is
+perpendicular to a surface at a particular position.  It can be defined as the
+cross product of any two nonparallel vectors that are tangent to the surface
+at a point.  Although normals are superficially similar to vectors, it is
+important to distinguish between the two of them: because normals are defined
+in terms of their relationship to a particular surface, they behave differently
+than vectors in some situations, particularly when applying transformations.
+(That difference is discussed in Section&nbsp;<a href="../Geometry_and_Transformations/Applying_Transformations.html#sec:applying-transforms">3.10</a>.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Normal3Definition-0"></span><div class="fragmentname">&lt;&lt;Normal3 Definition&gt;&gt;=&nbsp;<a href="#fragment-Normal3Definition-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+class <span class="anchor" id="Normal3"></span>Normal3 : public <a href="../Geometry_and_Transformations/n-Tuple_Base_Classes.html#Tuple3" class="code">Tuple3</a>&lt;Normal3, T&gt; {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Normal3PublicMethods-0">Normal3 Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-80" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-80"><i></i></a><div id="fragbit-80" class="collapse"><div class="fragmentcode">       using Tuple3&lt;Normal3, T&gt;::x;
+       using Tuple3&lt;Normal3, T&gt;::y;
+       using Tuple3&lt;Normal3, T&gt;::z;
+       using Tuple3&lt;Normal3, T&gt;::HasNaN;
+       using Tuple3&lt;Normal3, T&gt;::operator+;
+       using Tuple3&lt;Normal3, T&gt;::operator*;
+       using Tuple3&lt;Normal3, T&gt;::operator*=;
+       
+       Normal3() = default;
+       PBRT_CPU_GPU
+       Normal3(T x, T y, T z) : Tuple3&lt;pbrt::Normal3, T&gt;(x, y, z) {}
+       template &lt;typename U&gt;
+       PBRT_CPU_GPU explicit Normal3&lt;T&gt;(Normal3&lt;U&gt; v)
+           : Tuple3&lt;pbrt::Normal3, T&gt;(T(v.x), T(v.y), T(v.z)) {}
+       template &lt;typename U&gt;
+       explicit Normal3&lt;T&gt;(Vector3&lt;U&gt; v)
+           : Tuple3&lt;pbrt::Normal3, T&gt;(T(v.x), T(v.y), T(v.z)) {}</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Normal3Definition-1"></span><div class="fragmentname">&lt;&lt;Normal3 Definition&gt;&gt;+=&nbsp;<a href="#fragment-Normal3Definition-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">using <span class="anchor" id="Normal3f"></span>Normal3f = <a href="#Normal3" class="code">Normal3</a>&lt;Float&gt;;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The implementations of <a href="#Normal3"><tt>Normal3</tt></a>s and <a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a>s are very similar.
+Like vectors, normals are represented by three components
+<tt>x</tt>,&nbsp;<tt>y</tt>, and&nbsp;<tt>z</tt>; they can be added and subtracted to
+compute new normals; and they can be scaled and
+normalized<span class="anchor" id="Normal3::Normalize"></span>.  However, a normal cannot be
+added to a point, and one cannot take the cross product of two normals.
+Note that, in an unfortunate turn of terminology, normals are <em>not</em>
+necessarily normalized.
+
+</p>
+<p>In addition to the usual constructors (not included here), <tt>Normal3</tt>
+allows conversion from <a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a> values given an explicit typecast,
+similarly to the other <a href="../Geometry_and_Transformations/n-Tuple_Base_Classes.html#Tuple2"><tt>Tuple2</tt></a>- and <a href="../Geometry_and_Transformations/n-Tuple_Base_Classes.html#Tuple3"><tt>Tuple3</tt></a>-based classes.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Normal3PublicMethods-0"></span><div class="fragmentname">&lt;&lt;Normal3 Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename U&gt;
+explicit Normal3&lt;T&gt;(Vector3&lt;U&gt; v)
+    : Tuple3&lt;pbrt::Normal3, T&gt;(T(v.x), T(v.y), T(v.z)) {}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="../Geometry_and_Transformations/Vectors.html#Dot"><tt>Dot()</tt></a> and <a href="../Geometry_and_Transformations/Vectors.html#AbsDot"><tt>AbsDot()</tt></a> functions are also overloaded to compute
+dot products between the various possible combinations of normals and
+vectors.  This code will not be included in the text here.  We also will
+not include implementations of all the various other <a href="#Normal3"><tt>Normal3</tt></a>
+methods here, since they are similar to those for vectors.
+
+</p>
+<p>One new operation to implement comes from the fact that it is often necessary to
+flip a surface normal so it lies in the same hemisphere as a given
+vector&mdash;for example, the surface normal that lies in the same hemisphere
+as a ray leaving a surface is frequently needed.  The <tt>FaceForward()</tt> utility
+function encapsulates this small computation.  (<tt>pbrt</tt> also provides
+variants of this function for the other three combinations of
+<a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a>s and <a href="#Normal3"><tt>Normal3</tt></a>s as parameters.)  Be careful when using
+the other instances, though: when using the version that takes two
+<a href="../Geometry_and_Transformations/Vectors.html#Vector3"><tt>Vector3</tt></a>s, for example, ensure that the first parameter is the one
+that should be returned (possibly flipped) and the second is the one to
+test against.  Reversing the two parameters will give unexpected results.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Normal3InlineFunctions-0"></span><div class="fragmentname">&lt;&lt;Normal3 Inline Functions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T&gt;
+Normal3&lt;T&gt; <span class="anchor" id="FaceForward"></span>FaceForward(Normal3&lt;T&gt; n, Vector3&lt;T&gt; v) {
+    return (<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(n, v) &lt; 0.f) ? -n : n;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Geometry_and_Transformations/Rays.html">Geometry and Transformations / Rays</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

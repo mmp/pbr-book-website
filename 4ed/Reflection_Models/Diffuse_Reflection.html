@@ -1,0 +1,514 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Diffuse Reflection</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Reflection_Models.html">Reflection Models</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Diffuse Reflection</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Reflection_Models/BSDF_Representation.html">(Previous: BSDF Representation)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>9.2 Diffuse Reflection</h2><p>
+
+
+</p>
+<p>One of the simplest BRDFs is the Lambertian model, which describes a perfect
+diffuse surface that scatters incident illumination equally in all directions.
+It is a reasonable approximation to many real-world surfaces such as paper or
+matte paint. The Lambertian model captures the behavior of such diffuse
+materials relatively well, though the approximation tends to perform worse for
+light arriving at a grazing angle, where specular reflection causes a
+noticeable deviation from uniformity. (Microfacet models such as those presented in
+Section&nbsp;<a href="../Reflection_Models/Roughness_Using_Microfacet_Theory.html#sec:microfacet">9.6</a> can account for such effects.)
+
+</p>
+<p>It is interesting to note that surfaces created from polytetrafluoroethylene
+(PTFE) powder are known to be particularly good Lambertian reflectors. They are
+commonly used to calibrate laboratory equipment for this reason.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DiffuseBxDFDefinition-0"></span><div class="fragmentname">&lt;&lt;DiffuseBxDF Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="DiffuseBxDF"></span>DiffuseBxDF {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-DiffuseBxDFPublicMethods-0">DiffuseBxDF Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1230" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1230"><i></i></a><div id="fragbit-1230" class="collapse"><div class="fragmentcode">       DiffuseBxDF(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <a href="#DiffuseBxDF::R" class="code">R</a>) : <a href="#DiffuseBxDF::R" class="code">R</a>(<a href="#DiffuseBxDF::R" class="code">R</a>) {}
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> f(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi, <a href="../Reflection_Models/Dielectric_BSDF.html#TransportMode" class="code">TransportMode</a> mode) const {
+           if (!<a href="../Reflection_Models/BSDF_Representation.html#SameHemisphere" class="code">SameHemisphere</a>(wo, wi))
+               return <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a>(0.f);
+           return <a href="#DiffuseBxDF::R" class="code">R</a> * <a href="../Utilities/Mathematical_Infrastructure.html#InvPi" class="code">InvPi</a>;
+       }
+       pstd::optional&lt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample" class="code">BSDFSample</a>&gt; Sample_f(
+               <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, Float uc, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u, <a href="../Reflection_Models/Dielectric_BSDF.html#TransportMode" class="code">TransportMode</a> mode,
+               <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a> sampleFlags = <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a>::All) const {
+           if (!(sampleFlags &amp; <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a>::Reflection))
+               return {};
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Samplecosine-weightedhemispheretocomputemonowiandmonopdf-0">Sample cosine-weighted hemisphere to compute <tt>wi</tt> and <tt>pdf</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1231" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1231"><i></i></a><div id="fragbit-1231" class="collapse"><div class="fragmentcode">              <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi = <a href="../Sampling_Algorithms/Sampling_Multidimensional_Functions.html#SampleCosineHemisphere" class="code">SampleCosineHemisphere</a>(u);
+              if (wo.z &lt; 0) wi.z *= -1;
+              Float pdf = <a href="../Sampling_Algorithms/Sampling_Multidimensional_Functions.html#CosineHemispherePDF" class="code">CosineHemispherePDF</a>(<a href="../Geometry_and_Transformations/Spherical_Geometry.html#AbsCosTheta" class="code">AbsCosTheta</a>(wi));</div></div>
+           return <a href="../Reflection_Models/BSDF_Representation.html#BSDFSample" class="code">BSDFSample</a>(<a href="#DiffuseBxDF::R" class="code">R</a> * <a href="../Utilities/Mathematical_Infrastructure.html#InvPi" class="code">InvPi</a>, wi, pdf, <a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a>::DiffuseReflection);
+       }
+       Float PDF(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi, <a href="../Reflection_Models/Dielectric_BSDF.html#TransportMode" class="code">TransportMode</a> mode,
+                 <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a> sampleFlags = <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a>::All) const {
+           if (!(sampleFlags &amp; <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a>::Reflection) ||
+               !<a href="../Reflection_Models/BSDF_Representation.html#SameHemisphere" class="code">SameHemisphere</a>(wo, wi))
+               return 0;
+           return <a href="../Sampling_Algorithms/Sampling_Multidimensional_Functions.html#CosineHemispherePDF" class="code">CosineHemispherePDF</a>(<a href="../Geometry_and_Transformations/Spherical_Geometry.html#AbsCosTheta" class="code">AbsCosTheta</a>(wi));
+       }
+       PBRT_CPU_GPU
+       static constexpr const char *Name() { return "DiffuseBxDF"; }
+       
+       std::string ToString() const;
+       
+       PBRT_CPU_GPU
+       void Regularize() {}
+       
+       PBRT_CPU_GPU
+       <a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a> Flags() const {
+           return <a href="#DiffuseBxDF::R" class="code">R</a> ? <a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a>::DiffuseReflection : <a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a>::Unset;
+       }</div></div>
+  private:
+    <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="DiffuseBxDF::R"></span>R;
+};</div><p>
+
+
+</p>
+<p>The constructor takes a reflectance spectrum <tt>R</tt> with values in the range
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.653ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2003.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-bracket</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="1724" y="0"></use>
+</g>
+</svg> that specify the fraction of incident light that is scattered.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DiffuseBxDFPublicMethods-0"></span><div class="fragmentname">&lt;&lt;DiffuseBxDF Public Methods&gt;&gt;=&nbsp;<a href="#fragment-DiffuseBxDFPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">DiffuseBxDF(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <a href="#DiffuseBxDF::R" class="code">R</a>) : <a href="#DiffuseBxDF::R" class="code">R</a>(<a href="#DiffuseBxDF::R" class="code">R</a>) {}</div><p>
+
+
+</p>
+<p>The reflection distribution function is
+just a constant, though it requires
+a normalization
+factor equal to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.773ex" height="3.343ex" style="vertical-align: -1.005ex;" viewBox="0 -1006.6 763.4 1439.2" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartFraction 1 Over pi EndFraction</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(120,0)">
+<rect stroke="none" width="523" height="60" x="0" y="220"></rect>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="119" y="629"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="84" y="-488"></use>
+</g>
+</g>
+</svg> so that
+the total integrated reflectance equals <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.764ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 759.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper R</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D445" d="M646 553c0 99 -111 99 -182 99c-20 0 -52 0 -61 -1c-19 -3 -22 -13 -28 -37l-65 -261h112c90 0 143 32 169 58c39 39 55 108 55 142zM755 93c0 -14 -35 -115 -120 -115c-13 0 -133 0 -133 108c0 20 9 57 16 85c6 23 14 54 14 69c0 35 -18 91 -109 91h-119l-66 -265 c-1 -6 -3 -11 -3 -17c0 -18 28 -18 65 -18c19 0 28 0 28 -11c0 -20 -12 -20 -20 -20l-127 3l-126 -3s-14 0 -14 11c0 20 9 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 9 20 29 20h285 c131 0 221 -64 221 -150c0 -101 -119 -171 -220 -193c27 -10 94 -41 94 -118c0 -14 -2 -33 -4 -47c-4 -32 -10 -83 -10 -114c0 -39 7 -61 40 -61c23 0 66 17 91 91c2 7 4 14 13 14c0 0 12 0 12 -12Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D445" x="0" y="0"></use>
+</g>
+</svg>.
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="68.121ex" height="6.843ex" style="vertical-align: -2.671ex;" viewBox="0 -1796 29330 2946.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">integral Underscript script upper H squared left-parenthesis bold n Subscript Baseline right-parenthesis Endscripts f Subscript normal r Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript normal o Baseline comma omega prime Subscript Baseline right-parenthesis cosine theta prime normal d omega Subscript Baseline Superscript prime Baseline equals integral Subscript 0 Superscript 2 pi Baseline integral Subscript 0 Superscript StartFraction pi Over 2 EndFraction Baseline StartFraction upper R Over pi EndFraction cosine theta Superscript prime Baseline sine theta prime normal d theta prime normal d phi Superscript prime Baseline equals upper R period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-48" d="M716 0c-35 3 -110 3 -148 3s-112 0 -147 -3v31h24c77 0 79 11 79 47v262h-299v-262c0 -36 2 -47 79 -47h24v-31c-35 3 -110 3 -148 3s-112 0 -147 -3v31h24c77 0 79 11 79 47v527c0 36 -2 47 -79 47h-24v31c35 -3 110 -3 148 -3s112 0 147 3v-31h-24 c-77 0 -79 -11 -79 -47v-234h299v234c0 36 -2 47 -79 47h-24v31c35 -3 110 -3 148 -3s112 0 147 3v-31h-24c-77 0 -79 -11 -79 -47v-527c0 -36 2 -47 79 -47h24v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D445" d="M646 553c0 99 -111 99 -182 99c-20 0 -52 0 -61 -1c-19 -3 -22 -13 -28 -37l-65 -261h112c90 0 143 32 169 58c39 39 55 108 55 142zM755 93c0 -14 -35 -115 -120 -115c-13 0 -133 0 -133 108c0 20 9 57 16 85c6 23 14 54 14 69c0 35 -18 91 -109 91h-119l-66 -265 c-1 -6 -3 -11 -3 -17c0 -18 28 -18 65 -18c19 0 28 0 28 -11c0 -20 -12 -20 -20 -20l-127 3l-126 -3s-14 0 -14 11c0 20 9 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 9 20 29 20h285 c131 0 221 -64 221 -150c0 -101 -119 -171 -220 -193c27 -10 94 -41 94 -118c0 -14 -2 -33 -4 -47c-4 -32 -10 -83 -10 -114c0 -39 7 -61 40 -61c23 0 66 17 91 91c2 7 4 14 13 14c0 0 12 0 12 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6E" d="M535 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c58 0 91 -20 105 -37 c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D719" d="M573 262c0 -134 -145 -269 -306 -274l-38 -149c-3 -14 -9 -38 -11 -40c-3 -3 -5 -4 -10 -4s-12 1 -12 11c0 3 10 41 22 88l23 94c-122 7 -192 86 -192 181c0 136 147 269 306 274l58 231c4 17 5 20 15 20c12 0 12 -10 12 -10l-3 -14l-56 -227c139 -10 192 -102 192 -181z M349 421c-149 -13 -235 -153 -235 -273c0 -100 72 -135 132 -138zM508 283c0 88 -57 134 -133 138l-103 -411c150 12 236 155 236 273Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-48" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="924" y="456"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-28" x="1256" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D427" x="1646" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-29" x="2285" y="0"></use>
+</g>
+<g transform="translate(2732,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="693" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="3600" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="3990" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="4546" y="0"></use>
+<g transform="translate(4992,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="6068" y="0"></use>
+<g transform="translate(6513,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="880" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="7524" y="0"></use>
+<g transform="translate(8247,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(9753,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="663" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="10777" y="0"></use>
+<g transform="translate(11334,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="880" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="12622" y="0"></use>
+<g transform="translate(13678,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(1054,1088)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="500" y="0"></use>
+</g>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30" x="812" y="-1270"></use>
+</g>
+<g transform="translate(15757,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(1054,1088)">
+<g transform="translate(120,0)">
+<rect stroke="none" width="447" height="60" x="0" y="146"></rect>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="104" y="658"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="139" y="-698"></use>
+</g>
+</g>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30" x="812" y="-1270"></use>
+</g>
+<g transform="translate(17598,0)">
+<g transform="translate(286,0)">
+<rect stroke="none" width="879" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D445" x="60" y="676"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="154" y="-686"></use>
+</g>
+</g>
+<g transform="translate(18885,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(20391,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="663" y="583"></use>
+</g>
+<g transform="translate(21415,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-73"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-69" x="394" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6E" x="673" y="0"></use>
+</g>
+<g transform="translate(22811,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="663" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="23835" y="0"></use>
+<g transform="translate(24392,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="663" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="25416" y="0"></use>
+<g transform="translate(25973,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D719" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="843" y="583"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="27235" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D445" x="28291" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="29051" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+
+</p>
+<p>With this correction, the <tt>f()</tt> implementation is given by
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DiffuseBxDFPublicMethods-1"></span><div class="fragmentname">&lt;&lt;DiffuseBxDF Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-DiffuseBxDFPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-DiffuseBxDFPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="DiffuseBxDF::f"></span>f(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi, TransportMode mode) const {
+    if (!<a href="../Reflection_Models/BSDF_Representation.html#SameHemisphere" class="code">SameHemisphere</a>(wo, wi))
+        return <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a>(0.f);
+    return <a href="#DiffuseBxDF::R" class="code">R</a> * <a href="../Utilities/Mathematical_Infrastructure.html#InvPi" class="code">InvPi</a>;
+}</div><p>
+
+
+</p>
+<p>The sampling function returns an invalid sample if the caller specified that
+reflection components of the BSDF should not be sampled. Otherwise, it draws a
+direction from a suitable distribution and returns all the sample-related
+information via a <a href="../Reflection_Models/BSDF_Representation.html#BSDFSample"><tt>BSDFSample</tt></a> instance.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DiffuseBxDFPublicMethods-2"></span><div class="fragmentname">&lt;&lt;DiffuseBxDF Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-DiffuseBxDFPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-DiffuseBxDFPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">pstd::optional&lt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample" class="code">BSDFSample</a>&gt; <span class="anchor" id="DiffuseBxDF::Sample_f"></span>Sample_f(
+        <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, Float uc, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u, <a href="../Reflection_Models/Dielectric_BSDF.html#TransportMode" class="code">TransportMode</a> mode,
+        <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a> sampleFlags = <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a>::All) const {
+    if (!(sampleFlags &amp; <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a>::Reflection))
+        return {};
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Samplecosine-weightedhemispheretocomputemonowiandmonopdf-0">Sample cosine-weighted hemisphere to compute <tt>wi</tt> and <tt>pdf</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1232" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1232"><i></i></a><div id="fragbit-1232" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi = <a href="../Sampling_Algorithms/Sampling_Multidimensional_Functions.html#SampleCosineHemisphere" class="code">SampleCosineHemisphere</a>(u);
+       if (wo.z &lt; 0) wi.z *= -1;
+       Float pdf = <a href="../Sampling_Algorithms/Sampling_Multidimensional_Functions.html#CosineHemispherePDF" class="code">CosineHemispherePDF</a>(<a href="../Geometry_and_Transformations/Spherical_Geometry.html#AbsCosTheta" class="code">AbsCosTheta</a>(wi));</div></div>
+    return <a href="../Reflection_Models/BSDF_Representation.html#BSDFSample" class="code">BSDFSample</a>(<a href="#DiffuseBxDF::R" class="code">R</a> * <a href="../Utilities/Mathematical_Infrastructure.html#InvPi" class="code">InvPi</a>, wi, pdf, <a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a>::DiffuseReflection);
+}</div><p>
+
+
+</p>
+<p>Working in a canonical reflection coordinate system greatly simplifies the
+central sampling step: in particular, a direction generated by
+<a href="../Sampling_Algorithms/Sampling_Multidimensional_Functions.html#SampleCosineHemisphere"><tt>SampleCosineHemisphere()</tt></a> can be directly used, and we must only pay
+attention that <tt>wo</tt> and <tt>wi</tt> lie in the same hemisphere, as indicated by
+<tt>wo.z</tt> and <tt>wi.z</tt>.
+
+</p>
+<p>Although the Lambertian BRDF is uniform over the hemisphere, BSDFs are sampled
+in the context of the light transport equation,
+(<a href="../Introduction/Photorealistic_Rendering_and_the_Ray-Tracing_Algorithm.html#eq:rendering-equation">1.1</a>),
+where the BSDF is multiplied by the incident radiance and a cosine factor.  It
+is worthwhile for <tt>BxDF</tt>s to include the cosine factor in their sampling
+distribution if possible; see Figure&nbsp;<a href="#fig:lambertian-unif-vs-cosine">9.4</a>, which
+compares uniform and cosine-weighted hemisphere sampling for the
+<tt>DiffuseBxDF</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:lambertian-unif-vs-cosine"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 99.200%;  position:relative;">
+<div id="xa_Uniform_hemisphere26" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('xa_Uniform_hemisphere26'), {
+  title: '(a)_Uniform_hemisphere26', children: [
+ { title: '(a) Uniform hemisphere', image: 'dragon-lambertian-uniform.png' },  { title: '(b) Cosine hemisphere', image: 'dragon-lambertian-cosine.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 9.4: Comparison of Sampling Methods for a Lambertian BSDF. <span class="legend">
+Both images are rendered using&nbsp;4 samples per pixel.
+(a)&nbsp;Uniform hemisphere sampling.
+(b)&nbsp;Cosine-weighted hemisphere sampling.
+By incorporating the cosine factor in the light transport equation&rsquo;s
+integrand, cosine-weighted hemisphere sampling improves mean squared error
+(MSE) by a factor of
+2.34 for this test scene, without additional computational cost.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Samplecosine-weightedhemispheretocomputemonowiandmonopdf-0"></span><div class="fragmentname">&lt;&lt;Sample cosine-weighted hemisphere to compute <tt>wi</tt> and <tt>pdf</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi = <a href="../Sampling_Algorithms/Sampling_Multidimensional_Functions.html#SampleCosineHemisphere" class="code">SampleCosineHemisphere</a>(u);
+if (wo.z &lt; 0) wi.z *= -1;
+Float pdf = <a href="../Sampling_Algorithms/Sampling_Multidimensional_Functions.html#CosineHemispherePDF" class="code">CosineHemispherePDF</a>(<a href="../Geometry_and_Transformations/Spherical_Geometry.html#AbsCosTheta" class="code">AbsCosTheta</a>(wi));</div><p>
+
+
+</p>
+<p>The <tt>PDF()</tt> method just needs to ensure that the caller has included
+reflection in the types of scattering that it is interested in and that the
+two directions both lie in the same hemisphere.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DiffuseBxDFPublicMethods-3"></span><div class="fragmentname">&lt;&lt;DiffuseBxDF Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-DiffuseBxDFPublicMethods-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="DiffuseBxDF::PDF"></span>PDF(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi, <a href="../Reflection_Models/Dielectric_BSDF.html#TransportMode" class="code">TransportMode</a> mode,
+          <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a> sampleFlags = <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a>::All) const {
+    if (!(sampleFlags &amp; <a href="../Reflection_Models/BSDF_Representation.html#BxDFReflTransFlags::Reflection" class="code">BxDFReflTransFlags</a>::Reflection) ||
+        !<a href="../Reflection_Models/BSDF_Representation.html#SameHemisphere" class="code">SameHemisphere</a>(wo, wi))
+        return 0;
+    return <a href="../Sampling_Algorithms/Sampling_Multidimensional_Functions.html#CosineHemispherePDF" class="code">CosineHemispherePDF</a>(<a href="../Geometry_and_Transformations/Spherical_Geometry.html#AbsCosTheta" class="code">AbsCosTheta</a>(wi));
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Reflection_Models/Specular_Reflection_and_Transmission.html">Reflection Models / Specular Reflection and Transmission</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1267 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Camera Interface</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Cameras_and_Film.html">Cameras and Film</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Camera Interface</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Cameras_and_Film.html">(Previous: Cameras and Film)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:camera-model"></span><h2>5.1 Camera Interface</h2><p>
+
+
+
+</p>
+<p>The <a href="#Camera"><tt>Camera</tt></a> class uses the usual <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer"><tt>TaggedPointer</tt></a>-based
+approach to dynamically dispatch interface method calls to the
+correct implementation based on the actual type of the camera.  (As usual, we will
+not include the implementations of those methods in the book
+here.)  <tt>Camera</tt> is defined in the file
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/base/camera.h"><tt>base/camera.h</tt></a><span class="anchor" id="basecamera.h"></span>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraDefinition-0"></span><div class="fragmentname">&lt;&lt;Camera Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="Camera"></span>Camera : public <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer" class="code">TaggedPointer</a>&lt;<a href="../Cameras_and_Film/Projective_Camera_Models.html#PerspectiveCamera" class="code">PerspectiveCamera</a>, <a href="../Cameras_and_Film/Projective_Camera_Models.html#OrthographicCamera" class="code">OrthographicCamera</a>,
+                                    <a href="../Cameras_and_Film/Spherical_Camera.html#SphericalCamera" class="code">SphericalCamera</a>, RealisticCamera&gt; {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CameraInterface-0">Camera Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-196" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-196"><i></i></a><div id="fragbit-196" class="collapse"><div class="fragmentcode">       using <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer" class="code">TaggedPointer</a>::<a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer" class="code">TaggedPointer</a>;
+       
+       static <a href="#Camera" class="code">Camera</a> Create(const std::string &amp;name,
+                                  const ParameterDictionary &amp;parameters, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium,
+                                  const <a href="#CameraTransform" class="code">CameraTransform</a> &amp;cameraTransform, <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> film,
+                                  const FileLoc *loc, Allocator alloc);
+       
+       std::string ToString() const;
+       pstd::optional&lt;<a href="#CameraRay" class="code">CameraRay</a>&gt; GenerateRay(<a href="#CameraSample" class="code">CameraSample</a> sample,
+                                             <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;
+       pstd::optional&lt;<a href="#CameraRayDifferential" class="code">CameraRayDifferential</a>&gt; GenerateRayDifferential(
+           <a href="#CameraSample" class="code">CameraSample</a> sample, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;
+       <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> GetFilm() const;
+       Float SampleTime(Float u) const;
+       void InitMetadata(<a href="../Utilities/Images.html#ImageMetadata" class="code">ImageMetadata</a> *metadata) const;
+       const <a href="#CameraTransform" class="code">CameraTransform</a> &amp;GetCameraTransform() const;
+       void Approximate_dp_dxy(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> n, Float time,
+           int samplesPerPixel, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *dpdx, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *dpdy) const;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>The first method that cameras must implement is <tt>GenerateRay()</tt>, which
+computes the ray corresponding to a given image sample.  It is important
+that the direction component of the returned ray be normalized&mdash;many other
+parts of the system will depend on this behavior.  If for some reason there
+is no valid ray for the given <a href="#CameraSample"><tt>CameraSample</tt></a>, then the
+<tt>pstd::optional</tt> return value should be unset.  The
+<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths"><tt>SampledWavelengths</tt></a> for the ray are passed as a non-<tt>const</tt>
+reference so that cameras can model dispersion in their lenses, in
+which case only a single wavelength of light is tracked by the ray and the
+<tt>GenerateRay()</tt> method will call
+<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths::TerminateSecondary"><tt>SampledWavelengths::TerminateSecondary()</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraInterface-0"></span><div class="fragmentname">&lt;&lt;Camera Interface&gt;&gt;=&nbsp;<a href="#fragment-CameraInterface-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">pstd::optional&lt;<a href="#CameraRay" class="code">CameraRay</a>&gt; <span class="anchor" id="Camera::GenerateRay"></span>GenerateRay(<a href="#CameraSample" class="code">CameraSample</a> sample,
+                                      <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;</div><p>
+
+
+</p>
+<p>The <a href="#CameraSample"><tt>CameraSample</tt></a> structure that is passed to <tt>GenerateRay()</tt>
+holds all the sample values needed to specify a camera ray. Its
+<tt>pFilm</tt> member gives the point on the film to which the generated ray
+should carry radiance. The point on the lens the ray passes through is in
+<tt>pLens</tt> (for cameras that include the notion of lenses), and
+<tt>time</tt> gives the time at which the ray should sample the scene.
+If the camera itself is in motion, the <tt>time</tt> value determines what
+camera position to use when generating the ray.
+
+</p>
+<p>Finally, the <tt>filterWeight</tt> member variable is an additional scale factor
+that is applied when the ray&rsquo;s radiance is added to the image stored
+by the film; it accounts for the reconstruction filter used to filter image
+samples at each pixel.  This topic is discussed in
+Sections&nbsp;<a href="../Cameras_and_Film/Film_and_Imaging.html#sec:film-filtering-samples">5.4.3</a> and&nbsp;<a href="../Sampling_and_Reconstruction/Image_Reconstruction.html#sec:image-reconstruction">8.8</a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraSampleDefinition-0"></span><div class="fragmentname">&lt;&lt;CameraSample Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct <span class="anchor" id="CameraSample"></span>CameraSample {
+    <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> <span class="anchor" id="CameraSample::pFilm"></span>pFilm;
+    <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> <span class="anchor" id="CameraSample::pLens"></span>pLens;
+    Float <span class="anchor" id="CameraSample::time"></span>time = 0;
+    Float <span class="anchor" id="CameraSample::filterWeight"></span>filterWeight = 1;
+};</div><p>
+
+
+</p>
+<p>The <tt>CameraRay</tt> structure that is returned by <tt>GenerateRay()</tt>
+includes both a ray and a spectral weight associated with it.  Simple
+camera models leave the weight at the default value of one, while more
+sophisticated ones like <tt>RealisticCamera</tt> return a weight that is used
+in modeling the radiometry of image formation.
+(Section&nbsp;<a href="../Cameras_and_Film/Film_and_Imaging.html#sec:camera-measurement-equation">5.4.1</a> contains more information
+about how exactly this weight is computed and used in the latter case.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraRayDefinition-0"></span><div class="fragmentname">&lt;&lt;CameraRay Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct <span class="anchor" id="CameraRay"></span>CameraRay {
+    <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> <span class="anchor" id="CameraRay::ray"></span>ray;
+    <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="CameraRay::weight"></span>weight = <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a>(1);
+};</div><p>
+
+
+</p>
+<p>Cameras must also provide an implementation of
+<tt>GenerateRayDifferential()</tt>, which computes a main ray like
+<tt>GenerateRay()</tt> but also computes the corresponding rays for pixels
+shifted one pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> directions on the film plane.  This
+information about how camera rays change as a function of position on the
+film helps give other parts of the system a notion of how much of the film
+area a particular camera ray&rsquo;s sample represents, which is useful for
+antialiasing texture lookups.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraInterface-1"></span><div class="fragmentname">&lt;&lt;Camera Interface&gt;&gt;+=&nbsp;<a href="#fragment-CameraInterface-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CameraInterface-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">pstd::optional&lt;<a href="#CameraRayDifferential" class="code">CameraRayDifferential</a>&gt; <span class="anchor" id="Camera::GenerateRayDifferential"></span>GenerateRayDifferential(
+    <a href="#CameraSample" class="code">CameraSample</a> sample, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;</div><p>
+
+
+</p>
+<p><tt>GenerateRayDifferential()</tt> returns an instance of the
+<a href="#CameraRayDifferential"><tt>CameraRayDifferential</tt></a> structure, which is equivalent to
+<a href="#CameraRay"><tt>CameraRay</tt></a>, except it stores a <a href="../Geometry_and_Transformations/Rays.html#RayDifferential"><tt>RayDifferential</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraRayDifferentialDefinition-0"></span><div class="fragmentname">&lt;&lt;CameraRayDifferential Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct <span class="anchor" id="CameraRayDifferential"></span>CameraRayDifferential {
+    <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> <span class="anchor" id="CameraRayDifferential::ray"></span>ray;
+    <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="CameraRayDifferential::weight"></span>weight = <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a>(1);
+};</div><p>
+
+
+</p>
+<p>Camera implementations must provide access to their <a href="../Cameras_and_Film/Film_and_Imaging.html#Film"><tt>Film</tt></a>, which
+allows other parts of the system to determine things such as the resolution
+of the output image.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraInterface-2"></span><div class="fragmentname">&lt;&lt;Camera Interface&gt;&gt;+=&nbsp;<a href="#fragment-CameraInterface-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CameraInterface-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> <span class="anchor" id="Camera::GetFilm"></span>GetFilm() const;</div><p>
+
+
+</p>
+<p>Just like real-world cameras, <tt>pbrt</tt>&rsquo;s camera models
+include the notion of a shutter that opens for a short period of time
+to expose the film to light.  One result of this nonzero exposure time is
+<em>motion blur</em>: objects that are in motion relative to the camera
+during the exposure are blurred.  Time is yet another thing that is
+amenable to point sampling and Monte Carlo integration: given an
+appropriate distribution of ray times between the shutter open time and the
+shutter close time, it is possible to compute images that exhibit motion
+blur.
+
+</p>
+<p>The <tt>SampleTime()</tt> interface method should therefore map a uniform
+random sample <tt>u</tt> in the range <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.91ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2114.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1724" y="0"></use>
+</g>
+</svg> to a time when the camera&rsquo;s
+shutter is open.  Normally, it is just used to linearly interpolate between
+the shutter open and close times.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraInterface-3"></span><div class="fragmentname">&lt;&lt;Camera Interface&gt;&gt;+=&nbsp;<a href="#fragment-CameraInterface-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CameraInterface-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="Camera::SampleTime"></span>SampleTime(Float u) const;</div><p>
+
+
+</p>
+<p>The last interface method allows camera implementations to set fields in
+the <a href="../Utilities/Images.html#ImageMetadata"><tt>ImageMetadata</tt></a> class to specify transformation matrices related to
+the camera.  If the output image format has support for storing this sort of
+auxiliary information,  it will be included in the final image that is
+written to disk.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraInterface-4"></span><div class="fragmentname">&lt;&lt;Camera Interface&gt;&gt;+=&nbsp;<a href="#fragment-CameraInterface-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-CameraInterface-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="Camera::InitMetadata"></span>InitMetadata(<a href="../Utilities/Images.html#ImageMetadata" class="code">ImageMetadata</a> *metadata) const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#CameraCoordinateSpaces"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:camera-coordinate-spaces"></span><span id="CameraCoordinateSpaces"></span><h3>5.1.1  Camera Coordinate Spaces</h3><p>
+
+
+
+</p>
+<p>Before we start to describe the implementation of <tt>pbrt</tt>&rsquo;s camera models, we
+will define some of the coordinate spaces that they use. In addition to
+world space, which was introduced in Section&nbsp;<a href="../Geometry_and_Transformations/Coordinate_Systems.html#sec:coordinate-spaces">3.1</a>, 
+we will now introduce four additional coordinate spaces,
+<em>object space</em>, <em>camera space</em>, <em>camera-world space</em>, and <em>rendering
+space</em>.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="&ldquo;Camera-world space&rdquo; and &ldquo;rendering space&rdquo; are
+non-standard names, though we are unaware of generally accepted names for
+those coordinate spaces.">
+      <sup>&dagger;</sup>
+    </button>
+		  In sum, we have:
+
+</p>
+<p></p>
+<ul>
+<li> <em>Object space:</em> This is the coordinate system in which
+geometric primitives are defined.  For example, spheres in <tt>pbrt</tt> are defined
+to be centered at the origin of their object space.
+
+<li> <em>World space:</em> While each primitive may have its own object
+space, all objects in the scene are placed in relation to a single world
+space.  A world-from-object transformation determines where each object is
+located in world space.  World space is the standard frame that all other
+spaces are defined in terms of.
+
+<li> <em>Camera space:</em> A camera is placed in the scene at some
+world space point with a particular viewing direction and orientation.
+This camera defines a new coordinate system with its origin at
+the camera&rsquo;s location. The <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> axis of this coordinate system is mapped to
+the viewing direction, and the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> axis is mapped to the up direction.
+
+<li> <em>Camera-world space:</em> Like camera space, the origin of this
+coordinate system is the camera&rsquo;s position, but it maintains the
+orientation of world space (i.e., unlike camera space, the camera is not
+necessarily looking down the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> axis).
+
+<li> <em>Rendering space:</em> This is the coordinate system into which the scene is
+transformed for the purposes of rendering. In <tt>pbrt</tt>, it may be world
+space, camera space, or camera-world space.
+</ul><p>
+
+
+</p>
+<p>Renderers based on rasterization traditionally do most of their
+computations in camera space: triangle vertices are transformed all the way
+from object space to camera space before being projected onto the screen
+and rasterized.  In that context, camera space is a handy space for
+reasoning about which objects are potentially visible to the camera.  For
+example, if an object&rsquo;s camera space bounding box is entirely behind the
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.347ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2302.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z equals 0</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="745" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1801" y="0"></use>
+</g>
+</svg> plane (and the camera does not have a field of view wider than 180
+degrees), the object will not be visible.
+
+</p>
+<p>Conversely, many ray tracers (including all versions of <tt>pbrt</tt> prior to
+this one) render in world space. Camera implementations may start out in
+camera space when generating rays, but they transform those rays to world
+space where all subsequent ray intersection and shading calculations are
+performed.  A problem with that approach stems from the fact that
+floating-point numbers have more precision close to the origin than far
+away from it.  If
+the camera is placed far from the origin, there may be insufficient
+precision to accurately represent the part of the scene that it is looking
+at.
+
+</p>
+<p>Figure&nbsp;<a href="#fig:fp-precision-loss-far-from-origin">5.1</a> illustrates the
+precision problem with rendering in world space.
+In Figure&nbsp;<a href="#fig:fp-precision-loss-far-from-origin">5.1</a>(a), the scene is
+rendered with the camera and objects as
+they were provided in the original scene specification, which happened to
+be in the range of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.133ex" height="2.343ex" style="vertical-align: -0.505ex;" viewBox="0 -791.3 1779.5 1008.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">plus-or-minus 10</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-B1" d="M722 -64c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h293v274h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20s-9 -20 -20 -20h-293v-274h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-B1" x="0" y="0"></use>
+<g transform="translate(778,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+</g>
+</g>
+</svg> in each coordinate in world space.  In 
+Figure&nbsp;<a href="#fig:fp-precision-loss-far-from-origin">5.1</a>(b), both the camera and
+the scene have been translated 1,000,000
+units in each dimension.  In principle, both images should be the same, but
+much less precision is available for the second viewpoint, to the
+extent that the discretization of floating-point numbers is visible in the
+geometric model.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:fp-precision-loss-far-from-origin"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 48.125%;  position:relative;">
+<div id="xa_Original3" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('xa_Original3'), {
+  title: '(a)_Original3', children: [
+ { title: '(a) Original', image: 'sportscar-original.png' },  { title: '(b) Translated, world space', image: 'sportscar-1m-world.png' },  { title: '(c) Translated, camera-world space', image: 'sportscar-1m-cameraworld.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 5.1: Effect of the Loss of Floating-Point Precision Far from the
+Origin. <span class="legend">
+(a)&nbsp;As originally specified, this scene is within 10 units of the origin.
+Rendering the scene in world space produces the expected image. 
+(b)&nbsp;If both the scene and the camera are translated 1,000,000 units from the
+origin and the scene is rendered in world space, there is significantly
+less floating-point precision to represent
+the scene, giving this poor result.
+(c)&nbsp;If the translated scene is rendered in camera-world space, much more
+precision is available and the geometric detail is preserved.  However, the
+viewpoint has shifted slightly due to a loss of accuracy in the
+representation of the camera position.
+<em>(Model courtesy of Yasutoshi Mori.)</em>
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Rendering in camera space naturally provides the most floating-point
+precision for the objects closest to the camera.  If the scene in
+Figure&nbsp;<a href="#fig:fp-precision-loss-far-from-origin">5.1</a> is rendered in camera
+space, translating both the camera and the
+scene geometry by 1,000,000 units has no effect&mdash;the translations cancel.
+However, there is a problem with using camera space with ray tracing.
+Scenes are often modeled with major features aligned to the coordinate axes
+(e.g., consider an architectural model, where the floor and ceiling might
+be aligned with <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> planes).  Axis-aligned bounding boxes of such features
+are degenerate in one dimension, which reduces their surface area.
+Acceleration structures like the BVH
+
+that will be introduced
+in Chapter&nbsp;<a href="../Primitives_and_Intersection_Acceleration.html#chap:acceleration">7</a> are particularly effective with such
+bounding boxes.  In turn, if the camera is rotated with respect to the
+scene, axis-aligned bounding boxes are less effective at bounding such
+features and rendering performance is affected: for the scene in
+Figure&nbsp;<a href="#fig:fp-precision-loss-far-from-origin">5.1</a>, rendering time increases by 27%.
+
+</p>
+<p>Rendering using camera-world space gives the best of both worlds: the
+camera is at the origin and the scene is translated accordingly.  However,
+the rotation is not applied to the scene geometry, thus preserving good
+bounding boxes for the acceleration structures.  With camera-world space,
+there is no increase in rendering time and higher precision is maintained,
+as is shown in Figure&nbsp;<a href="#fig:fp-precision-loss-far-from-origin">5.1</a>(c).
+  
+The <a href="#CameraTransform"><tt>CameraTransform</tt></a> class abstracts the choice of which particular
+coordinate system is used for rendering by handling the details of
+transforming among the various spaces.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraTransformDefinition-0"></span><div class="fragmentname">&lt;&lt;CameraTransform Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="CameraTransform"></span>CameraTransform {
+  public:
+    &lt;&lt;<span class="fragmentname">CameraTransform Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-197" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-197"><i></i></a><div id="fragbit-197" class="collapse"><div class="fragmentcode">       <a href="#CameraTransform" class="code">CameraTransform</a>() = default;
+       explicit <a href="#CameraTransform" class="code">CameraTransform</a>(const AnimatedTransform &amp;worldFromCamera);
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> RenderFromCamera(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, Float time) const {
+           return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>(p, time);
+       }
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> CameraFromRender(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, Float time) const {
+           return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>.<a href="../Geometry_and_Transformations/Applying_Transformations.html#Transform::ApplyInverse" class="code">ApplyInverse</a>(p, time);
+       }
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> RenderFromWorld(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p) const {
+           return <a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a>.<a href="../Geometry_and_Transformations/Applying_Transformations.html#Transform::ApplyInverse" class="code">ApplyInverse</a>(p);
+       }
+       <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> RenderFromWorld() const { return <a href="../Geometry_and_Transformations/Transformations.html#Transform::Inverse" class="code">Inverse</a>(<a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a>); }
+       <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> CameraFromRender(Float time) const {
+           return <a href="../Geometry_and_Transformations/Transformations.html#Transform::Inverse" class="code">Inverse</a>(<a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>.Interpolate(time));
+       }
+       <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> CameraFromWorld(Float time) const {
+           return <a href="../Geometry_and_Transformations/Transformations.html#Transform::Inverse" class="code">Inverse</a>(<a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a> * <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>.Interpolate(time));
+       }
+       PBRT_CPU_GPU
+       bool CameraFromRenderHasScale() const { return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>.HasScale(); }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> RenderFromCamera(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> v, Float time) const {
+           return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>(v, time);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> RenderFromCamera(<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> n, Float time) const {
+           return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>(n, time);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> RenderFromCamera(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r) const { return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>(r); }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> RenderFromCamera(const <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> &amp;r) const {
+           return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>(r);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> CameraFromRender(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> v, Float time) const {
+           return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>.<a href="../Geometry_and_Transformations/Applying_Transformations.html#Transform::ApplyInverse" class="code">ApplyInverse</a>(v, time);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> CameraFromRender(<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> v, Float time) const {
+           return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>.<a href="../Geometry_and_Transformations/Applying_Transformations.html#Transform::ApplyInverse" class="code">ApplyInverse</a>(v, time);
+       }
+       
+       PBRT_CPU_GPU
+       const AnimatedTransform &amp;RenderFromCamera() const { return <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a>; }
+       
+       PBRT_CPU_GPU
+       const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;WorldFromRender() const { return <a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a>; }
+       
+       std::string ToString() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CameraTransformPrivateMembers-0">CameraTransform Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-198" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-198"><i></i></a><div id="fragbit-198" class="collapse"><div class="fragmentcode">       AnimatedTransform renderFromCamera;
+       <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> worldFromRender;</div></div>
+};</div><p>
+
+
+</p>
+<p>Camera implementations must make their <a href="#CameraTransform"><tt>CameraTransform</tt></a> available to
+other parts of the system, so we will add one more method to the
+<tt>Camera</tt> interface.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraInterface-5"></span><div class="fragmentname">&lt;&lt;Camera Interface&gt;&gt;+=&nbsp;<a href="#fragment-CameraInterface-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#fragment-CameraInterface-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">const <a href="#CameraTransform" class="code">CameraTransform</a> &amp;<span class="anchor" id="Camera::GetCameraTransform"></span>GetCameraTransform() const;</div><p>
+
+
+</p>
+<p><tt>CameraTransform</tt> maintains two transformations: one from camera space
+to the rendering space, and one from the rendering space to world space.
+In <tt>pbrt</tt>, the latter transformation cannot be animated; any animation in
+the camera transformation is kept in the first transformation.  This
+ensures that a moving camera does not cause static geometry in the scene to
+become animated, which in turn would harm performance.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="A moving
+camera generally does not affect ray tracing performance, as rendering with
+one just causes different camera rays to be traced.  Moving geometry
+requires larger bounding boxes to bound the motion of objects, which in
+turn reduces the effectiveness of acceleration structures.  Thus, it is
+undesirable to make objects move that do not need to be in motion.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraTransformPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;CameraTransform Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">AnimatedTransform <span class="anchor" id="CameraTransform::renderFromCamera"></span>renderFromCamera;
+<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> <span class="anchor" id="CameraTransform::worldFromRender"></span>worldFromRender;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>CameraTransform</tt> constructor takes the world-from-camera
+transformation as specified in the scene description and decomposes it into
+the two transformations described earlier.  The default rendering space is
+camera-world, though this choice can be overridden using a command-line
+option.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraTransformMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;CameraTransform Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#CameraTransform" class="code">CameraTransform</a>::<a href="#CameraTransform" class="code">CameraTransform</a>(const AnimatedTransform &amp;worldFromCamera) {
+    switch (<a href="../Utilities/System_Startup,_Cleanup,_and_Options.html#Options" class="code">Options</a>-&gt;<a href="../Utilities/System_Startup,_Cleanup,_and_Options.html#BasicPBRTOptions::renderingSpace" class="code">renderingSpace</a>) {
+    case RenderingCoordinateSystem::<a href="#Camera" class="code">Camera</a>: {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputemonoworldFromRenderforcamera-spacerendering-0">Compute <tt>worldFromRender</tt> for camera-space rendering</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-199" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-199"><i></i></a><div id="fragbit-199" class="collapse"><div class="fragmentcode">           Float tMid = (worldFromCamera.startTime + worldFromCamera.endTime) / 2;
+           <a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a> = worldFromCamera.Interpolate(tMid);
+           break;</div></div>
+    } case RenderingCoordinateSystem::CameraWorld: {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputemonoworldFromRenderforcamera-worldspacerendering-0">Compute <tt>worldFromRender</tt> for camera-world space rendering</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-200" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-200"><i></i></a><div id="fragbit-200" class="collapse"><div class="fragmentcode">           Float tMid = (worldFromCamera.startTime + worldFromCamera.endTime) / 2;
+           <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pCamera = worldFromCamera(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(0, 0, 0), tMid);
+           <a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a> = <a href="../Geometry_and_Transformations/Transformations.html#Translate" class="code">Translate</a>(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(pCamera));
+           break;</div></div>
+    } case RenderingCoordinateSystem::World: {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputemonoworldFromRenderforworld-spacerendering-0">Compute <tt>worldFromRender</tt> for world-space rendering</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-201" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-201"><i></i></a><div id="fragbit-201" class="collapse"><div class="fragmentcode">           <a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a> = <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>();
+           break;</div></div>
+    }
+    }
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputemonorenderFromCameratransformation-0">Compute <tt>renderFromCamera</tt> transformation</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-202" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-202"><i></i></a><div id="fragbit-202" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> renderFromWorld = <a href="../Geometry_and_Transformations/Transformations.html#Transform::Inverse" class="code">Inverse</a>(worldFromRender);
+       <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> rfc[2] = { renderFromWorld * worldFromCamera.startTransform,
+                            renderFromWorld * worldFromCamera.endTransform };
+       <a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a> = AnimatedTransform(rfc[0], worldFromCamera.startTime,
+                                            rfc[1], worldFromCamera.endTime);</div></div>
+}</div><p>
+
+
+</p>
+<p>For camera-space rendering, the world-from-camera transformation should be
+used for <tt>worldFromRender</tt> and an identity transformation for the
+render-from-camera transformation, since those two coordinate systems are
+equivalent.  However, because <tt>worldFromRender</tt> cannot be animated,
+the implementation takes the world-from-camera transformation at the
+midpoint of the frame and then folds the effect of any animation in the
+camera transformation into <tt>renderFromCamera</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputemonoworldFromRenderforcamera-spacerendering-0"></span><div class="fragmentname">&lt;&lt;Compute <tt>worldFromRender</tt> for camera-space rendering&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float tMid = (worldFromCamera.startTime + worldFromCamera.endTime) / 2;
+<a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a> = worldFromCamera.Interpolate(tMid);
+break;</div><p>
+
+
+</p>
+<p>For the default case of rendering in camera-world space, the
+world-from-render transformation is given by translating to the camera&rsquo;s position at
+the midpoint of the frame.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputemonoworldFromRenderforcamera-worldspacerendering-0"></span><div class="fragmentname">&lt;&lt;Compute <tt>worldFromRender</tt> for camera-world space rendering&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float tMid = (worldFromCamera.startTime + worldFromCamera.endTime) / 2;
+<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pCamera = worldFromCamera(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(0, 0, 0), tMid);
+<a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a> = <a href="../Geometry_and_Transformations/Transformations.html#Translate" class="code">Translate</a>(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(pCamera));
+break;</div><p>
+
+
+</p>
+<p>For world-space rendering, <tt>worldFromRender</tt> is the identity transformation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputemonoworldFromRenderforworld-spacerendering-0"></span><div class="fragmentname">&lt;&lt;Compute <tt>worldFromRender</tt> for world-space rendering&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#CameraTransform::worldFromRender" class="code">worldFromRender</a> = <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>();
+break;</div><p>
+
+
+</p>
+<p>Once <tt>worldFromRender</tt> has been set, whatever transformation remains
+in <tt>worldFromCamera</tt> is extracted and stored in
+<tt>renderFromCamera</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputemonorenderFromCameratransformation-0"></span><div class="fragmentname">&lt;&lt;Compute <tt>renderFromCamera</tt> transformation&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> renderFromWorld = <a href="../Geometry_and_Transformations/Transformations.html#Transform::Inverse" class="code">Inverse</a>(worldFromRender);
+<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> rfc[2] = { renderFromWorld * worldFromCamera.startTransform,
+                     renderFromWorld * worldFromCamera.endTransform };
+<a href="#CameraTransform::renderFromCamera" class="code">renderFromCamera</a> = AnimatedTransform(rfc[0], worldFromCamera.startTime,
+                                     rfc[1], worldFromCamera.endTime);</div><p>
+
+
+</p>
+<p>The <a href="#CameraTransform"><tt>CameraTransform</tt></a> class provides a variety of overloaded methods
+named
+<tt>RenderFromCamera()</tt><span class="anchor" id="CameraTransform::RenderFromCamera"></span>,
+<tt>CameraFromRender()</tt><span class="anchor" id="CameraTransform::CameraFromRender"></span>,
+and <tt>RenderFromWorld()</tt><span class="anchor" id="CameraTransform::RenderFromWorld"></span>
+that transform points, vectors, normals, and rays among the coordinate
+systems it manages.  Other methods return the corresponding transformations directly.
+Their straightforward implementations are not included here.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TheCameraBaseClass"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="TheCameraBaseClass"></span><h3>5.1.2  The CameraBase Class</h3><p>
+
+
+</p>
+<p>All of the camera implementations in this chapter share some common
+functionality that we have factored into a single class, <a href="#CameraBase"><tt>CameraBase</tt></a>,
+from which all of them inherit.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="One inconvenience with <tt>pbrt</tt>&rsquo;s
+custom dynamic dispatch approach is that the interface class cannot provide
+such functionality via default method implementations.  It is not too much
+work to do so with an explicitly shared base class as is done here,
+however.">
+      <sup>&dagger;</sup>
+    </button>
+		  <a href="#CameraBase"><tt>CameraBase</tt></a>, as well as all the camera implementations,
+is defined in the files <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/cameras.h"><tt>cameras.h</tt></a> and
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/cameras.cpp"><tt>cameras.cpp</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraBaseDefinition-0"></span><div class="fragmentname">&lt;&lt;CameraBase Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="CameraBase"></span>CameraBase {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CameraBasePublicMethods-0">CameraBase Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-203" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-203"><i></i></a><div id="fragbit-203" class="collapse"><div class="fragmentcode">       <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> GetFilm() const { return <a href="#CameraBase::film" class="code">film</a>; }
+       const <a href="#CameraTransform" class="code">CameraTransform</a> &amp;GetCameraTransform() const {
+           return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>;
+       }
+       Float SampleTime(Float u) const {
+           return <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(u, <a href="#CameraBase::shutterOpen" class="code">shutterOpen</a>, <a href="#CameraBase::shutterClose" class="code">shutterClose</a>);
+       }
+       void InitMetadata(ImageMetadata *metadata) const;
+       std::string ToString() const;
+       void Approximate_dp_dxy(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> n, Float time,
+               int samplesPerPixel, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *dpdx, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> *dpdy) const {
+           &lt;&lt;<span class="fragmentname"><a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#fragment-Computetangentplaneequationforraydifferentialintersections-0">Compute tangent plane equation for ray differential intersections</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-204" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-204"><i></i></a><div id="fragbit-204" class="collapse"><div class="fragmentcode">              <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pCamera = <a href="#CameraBase::CameraFromRender" class="code">CameraFromRender</a>(p, time);
+              <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> DownZFromCamera =
+                  <a href="../Geometry_and_Transformations/Transformations.html#RotateFromTo" class="code">RotateFromTo</a>(Normalize(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(pCamera)), <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(0, 0, 1));
+              <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pDownZ = DownZFromCamera(pCamera);
+              <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> nDownZ = DownZFromCamera(<a href="#CameraBase::CameraFromRender" class="code">CameraFromRender</a>(n, time));
+              Float d = nDownZ.z * pDownZ.z;</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#fragment-Findintersectionpointsforapproximatedcameradifferentialrays-0">Find intersection points for approximated camera differential rays</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-205" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-205"><i></i></a><div id="fragbit-205" class="collapse"><div class="fragmentcode">              <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> xRay(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(0,0,0) + <a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#CameraBase::minPosDifferentialX" class="code">minPosDifferentialX</a>,
+                       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(0,0,1) + <a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#CameraBase::minDirDifferentialX" class="code">minDirDifferentialX</a>);
+              Float tx = -(<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(nDownZ, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(xRay.o)) - d) / <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(nDownZ, xRay.d);
+              <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> yRay(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(0,0,0) + <a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#CameraBase::minPosDifferentialY" class="code">minPosDifferentialY</a>,
+                       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(0,0,1) + <a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#CameraBase::minDirDifferentialY" class="code">minDirDifferentialY</a>);
+              Float ty = -(<a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(nDownZ, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(yRay.o)) - d) / <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(nDownZ, yRay.d);
+              <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> px = xRay(tx), py = yRay(ty);</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#fragment-Estimatedpdxanddpdyintangentplaneatintersectionpoint-0">Estimate <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.509ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2802.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential normal p slash partial-differential x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1143" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1643" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="2230" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.319ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2720.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential normal p slash partial-differential y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1143" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1643" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="2230" y="0"></use>
+</g>
+</svg> in tangent plane at intersection point</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-206" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-206"><i></i></a><div id="fragbit-206" class="collapse"><div class="fragmentcode">              Float sppScale = <a href="../Utilities/System_Startup,_Cleanup,_and_Options.html#GetOptions" class="code">GetOptions</a>().<a href="../Utilities/System_Startup,_Cleanup,_and_Options.html#BasicPBRTOptions::disablePixelJitter" class="code">disablePixelJitter</a> ? 1 :
+                  std::max&lt;Float&gt;(.125, 1 / std::sqrt((Float)samplesPerPixel));
+              *dpdx = sppScale *
+                  <a href="#CameraBase::RenderFromCamera" class="code">RenderFromCamera</a>(DownZFromCamera.<a href="../Geometry_and_Transformations/Applying_Transformations.html#Transform::ApplyInverse" class="code">ApplyInverse</a>(px - pDownZ), time);
+              *dpdy = sppScale *
+                  <a href="#CameraBase::RenderFromCamera" class="code">RenderFromCamera</a>(DownZFromCamera.<a href="../Geometry_and_Transformations/Applying_Transformations.html#Transform::ApplyInverse" class="code">ApplyInverse</a>(py - pDownZ), time);</div></div>
+       }</div></div>
+  protected:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CameraBaseProtectedMembers-0">CameraBase Protected Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-207" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-207"><i></i></a><div id="fragbit-207" class="collapse"><div class="fragmentcode">       <a href="#CameraTransform" class="code">CameraTransform</a> cameraTransform;
+       Float shutterOpen, shutterClose;
+       <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> film;
+       <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium;
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> minPosDifferentialX, minPosDifferentialY;
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> minDirDifferentialX, minDirDifferentialY;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CameraBaseProtectedMethods-0">CameraBase Protected Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-208" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-208"><i></i></a><div id="fragbit-208" class="collapse"><div class="fragmentcode">       <a href="#CameraBase" class="code">CameraBase</a>(CameraBaseParameters p);
+       PBRT_CPU_GPU
+       static pstd::optional&lt;<a href="#CameraRayDifferential" class="code">CameraRayDifferential</a>&gt; GenerateRayDifferential(
+           <a href="#Camera" class="code">Camera</a> camera, <a href="#CameraSample" class="code">CameraSample</a> sample, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda);
+       <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> <a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r) const {
+           return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>.<a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(r);
+       }
+       <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> <a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(const <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> &amp;r) const {
+           return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>.<a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(r);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> v, Float time) const {
+           return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>.<a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(v, time);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> <a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> v, Float time) const {
+           return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>.<a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(v, time);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, Float time) const {
+           return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>.<a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(p, time);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> CameraFromRender(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> v, Float time) const {
+           return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>.CameraFromRender(v, time);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> CameraFromRender(<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> v, Float time) const {
+           return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>.CameraFromRender(v, time);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> CameraFromRender(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, Float time) const {
+           return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>.CameraFromRender(p, time);
+       }
+       void FindMinimumDifferentials(<a href="#Camera" class="code">Camera</a> camera);</div></div>
+};</div><p>
+
+
+</p>
+<p>The <a href="#CameraBase"><tt>CameraBase</tt></a> constructor takes a variety of parameters that are
+applicable to all of <tt>pbrt</tt>&rsquo;s cameras:
+</p>
+<ul>
+<li> One of the most important is the transformation that places the
+camera in the scene, which is represented by a <a href="#CameraTransform"><tt>CameraTransform</tt></a> and is
+stored in the <tt>cameraTransform</tt> member variable.
+<li> Next is a pair of floating-point values that give the times at which the camera&rsquo;s
+shutter opens and closes.
+<li> A <a href="../Cameras_and_Film/Film_and_Imaging.html#Film"><tt>Film</tt></a> instance
+stores the final image and models the film sensor.
+<li> Last is a <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> instance that represents the scattering medium
+that the camera lies in, if any (<a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> is described in
+Section&nbsp;<a href="../Volume_Scattering/Media.html#sec:media">11.4</a>).
+</ul><p>
+
+A small structure bundles them together and helps shorten the length of the
+parameter lists for <tt>Camera</tt> constructors.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraBaseParametersDefinition-0"></span><div class="fragmentname">&lt;&lt;CameraBaseParameters Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct <span class="anchor" id="CameraBaseParameters"></span>CameraBaseParameters {
+    <a href="#CameraTransform" class="code">CameraTransform</a> <span class="anchor" id="CameraBaseParameters::cameraTransform"></span>cameraTransform;
+    Float <span class="anchor" id="CameraBaseParameters::shutterOpen"></span>shutterOpen = 0, <span class="anchor" id="CameraBaseParameters::shutterClose"></span>shutterClose = 1;
+    <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> <span class="anchor" id="CameraBaseParameters::film"></span>film;
+    <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> <span class="anchor" id="CameraBaseParameters::medium"></span>medium;
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>We will only include the constructor&rsquo;s prototype here because its
+implementation does no more than assign the parameters to the corresponding member
+variables.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraBaseProtectedMethods-0"></span><div class="fragmentname">&lt;&lt;CameraBase Protected Methods&gt;&gt;=&nbsp;<a href="#fragment-CameraBaseProtectedMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#CameraBase" class="code">CameraBase</a>(CameraBaseParameters p);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraBaseProtectedMembers-0"></span><div class="fragmentname">&lt;&lt;CameraBase Protected Members&gt;&gt;=&nbsp;<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#fragment-CameraBaseProtectedMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#CameraTransform" class="code">CameraTransform</a> <span class="anchor" id="CameraBase::cameraTransform"></span>cameraTransform;
+Float <span class="anchor" id="CameraBase::shutterOpen"></span>shutterOpen, <span class="anchor" id="CameraBase::shutterClose"></span>shutterClose;
+<a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> <span class="anchor" id="CameraBase::film"></span>film;
+<a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> <span class="anchor" id="CameraBase::medium"></span>medium;</div><p>
+
+
+</p>
+<p><a href="#CameraBase"><tt>CameraBase</tt></a> can implement a number of the methods required by
+the <tt>Camera</tt> interface directly, thus saving the trouble of needing to
+redundantly implement them in the camera implementations that inherit from it.
+
+</p>
+<p>For example, accessor methods make the <a href="../Cameras_and_Film/Film_and_Imaging.html#Film"><tt>Film</tt></a> and <a href="#CameraTransform"><tt>CameraTransform</tt></a>
+available.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraBasePublicMethods-0"></span><div class="fragmentname">&lt;&lt;CameraBase Public Methods&gt;&gt;=&nbsp;<a href="#fragment-CameraBasePublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> <span class="anchor" id="CameraBase::GetFilm"></span>GetFilm() const { return <a href="#CameraBase::film" class="code">film</a>; }
+const <a href="#CameraTransform" class="code">CameraTransform</a> &amp;<span class="anchor" id="CameraBase::GetCameraTransform"></span>GetCameraTransform() const {
+    return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>;
+}</div><p>
+
+
+</p>
+<p>The <tt>SampleTime()</tt> method is implemented by linearly interpolating
+between the shutter open and close times using the sample <tt>u</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraBasePublicMethods-1"></span><div class="fragmentname">&lt;&lt;CameraBase Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-CameraBasePublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#fragment-CameraBasePublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="CameraBase::SampleTime"></span>SampleTime(Float u) const {
+    return <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(u, <a href="#CameraBase::shutterOpen" class="code">shutterOpen</a>, <a href="#CameraBase::shutterClose" class="code">shutterClose</a>);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><a href="#CameraBase"><tt>CameraBase</tt></a> provides a <tt>GenerateRayDifferential()</tt> method that
+computes a ray differential via multiple calls to a camera&rsquo;s
+<tt>GenerateRay()</tt> method.  One subtlety is that camera implementations
+that use this method still must implement a <tt>Camera</tt>
+<tt>GenerateRayDifferential()</tt> method themselves, but then call this
+method from theirs. (Note that this method&rsquo;s signature is different than
+that one.)  Cameras pass their <tt>this</tt> pointer as a <a href="#Camera"><tt>Camera</tt></a>
+parameter, which allows it to call the camera&rsquo;s <tt>GenerateRay()</tt>
+method.  This additional complexity stems from our not using virtual
+functions for the camera interface, which means that the <tt>CameraBase</tt>
+class does not on its own have the ability to call that method unless a
+<tt>Camera</tt> is provided to it.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraBaseMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;CameraBase Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::optional&lt;<a href="#CameraRayDifferential" class="code">CameraRayDifferential</a>&gt;
+<span class="anchor" id="CameraBase::GenerateRayDifferential"></span><a href="#CameraBase" class="code">CameraBase</a>::GenerateRayDifferential(<a href="#Camera" class="code">Camera</a> camera,
+        <a href="#CameraSample" class="code">CameraSample</a> sample, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Generateregularcameraraymonocrforraydifferential-0">Generate regular camera ray <tt>cr</tt> for ray differential</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-209" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-209"><i></i></a><div id="fragbit-209" class="collapse"><div class="fragmentcode">       pstd::optional&lt;<a href="#CameraRay" class="code">CameraRay</a>&gt; cr = camera.<a href="#Camera::GenerateRay" class="code">GenerateRay</a>(sample, lambda);
+       if (!cr) return {};
+       <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> rd(cr-&gt;<a href="#CameraRay::ray" class="code">ray</a>);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Findcamerarayaftershiftingonepixelinthexdirection-0">Find camera ray after shifting one pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> direction</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-210" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-210"><i></i></a><div id="fragbit-210" class="collapse"><div class="fragmentcode">       pstd::optional&lt;<a href="#CameraRay" class="code">CameraRay</a>&gt; rx;
+       for (Float eps : {.05f, -.05f}) {
+           <a href="#CameraSample" class="code">CameraSample</a> sshift = sample;
+           sshift.<a href="#CameraSample::pFilm" class="code">pFilm</a>.x += eps;
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Trytogenerateraywithmonosshiftandcomputexdifferential-0">Try to generate ray with <tt>sshift</tt> and compute <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> differential</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-211" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-211"><i></i></a><div id="fragbit-211" class="collapse"><div class="fragmentcode">              if (rx = camera.<a href="#Camera::GenerateRay" class="code">GenerateRay</a>(sshift, lambda); rx) {
+                  rd.<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxOrigin" class="code">rxOrigin</a> = rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a> + (rx-&gt;<a href="#CameraRay::ray" class="code">ray</a>.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a> - rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>) / eps;
+                  rd.<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxDirection" class="code">rxDirection</a> = rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a> + (rx-&gt;<a href="#CameraRay::ray" class="code">ray</a>.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a> - rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>) / eps;
+                  break;
+              }</div></div>
+       }</div></div>
+    &lt;&lt;<span class="fragmentname">Find camera ray after shifting one pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> direction</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-212" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-212"><i></i></a><div id="fragbit-212" class="collapse"><div class="fragmentcode">       pstd::optional&lt;<a href="#CameraRay" class="code">CameraRay</a>&gt; ry;
+       for (Float eps : {.05f, -.05f}) {
+           <a href="#CameraSample" class="code">CameraSample</a> sshift = sample;
+           sshift.pFilm.y += eps;
+           if (ry = camera.GenerateRay(sshift, lambda); ry) {
+               rd.ryOrigin = rd.o + (ry-&gt;ray.o - rd.o) / eps;
+               rd.ryDirection = rd.d + (ry-&gt;ray.d - rd.d) / eps;
+               break;
+           }
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Returnapproximateraydifferentialandweight-0">Return approximate ray differential and weight</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-213" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-213"><i></i></a><div id="fragbit-213" class="collapse"><div class="fragmentcode">       rd.<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::hasDifferentials" class="code">hasDifferentials</a> = rx &amp;&amp; ry;
+       return <a href="#CameraRayDifferential" class="code">CameraRayDifferential</a>{rd, cr-&gt;<a href="#CameraRay::weight" class="code">weight</a>};</div></div>
+}</div><p>
+
+
+</p>
+<p>The primary ray is found via a first call to <tt>GenerateRay()</tt>.  If
+there is no valid ray for the given sample, then there can be no ray
+differential either.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Generateregularcameraraymonocrforraydifferential-0"></span><div class="fragmentname">&lt;&lt;Generate regular camera ray <tt>cr</tt> for ray differential&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::optional&lt;<a href="#CameraRay" class="code">CameraRay</a>&gt; cr = camera.<a href="#Camera::GenerateRay" class="code">GenerateRay</a>(sample, lambda);
+if (!cr) return {};
+<a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> rd(cr-&gt;<a href="#CameraRay::ray" class="code">ray</a>);</div><p>
+
+
+</p>
+<p>Two attempts are made to find the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> ray differential: one using forward
+differencing and one using backward differencing by a fraction of a pixel.
+It is important to try both of these due to vignetting at the edges of
+images formed by realistic camera models&mdash;sometimes the main ray is valid
+but shifting in one direction moves past the image formed by the lens
+system.  In that case, trying the other direction may successfully generate
+a ray.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Findcamerarayaftershiftingonepixelinthexdirection-0"></span><div class="fragmentname">&lt;&lt;Find camera ray after shifting one pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> direction&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::optional&lt;<a href="#CameraRay" class="code">CameraRay</a>&gt; rx;
+for (Float eps : {.05f, -.05f}) {
+    <a href="#CameraSample" class="code">CameraSample</a> sshift = sample;
+    sshift.<a href="#CameraSample::pFilm" class="code">pFilm</a>.x += eps;
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Trytogenerateraywithmonosshiftandcomputexdifferential-0">Try to generate ray with <tt>sshift</tt> and compute <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> differential</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-214" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-214"><i></i></a><div id="fragbit-214" class="collapse"><div class="fragmentcode">       if (rx = camera.<a href="#Camera::GenerateRay" class="code">GenerateRay</a>(sshift, lambda); rx) {
+           rd.<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxOrigin" class="code">rxOrigin</a> = rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a> + (rx-&gt;<a href="#CameraRay::ray" class="code">ray</a>.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a> - rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>) / eps;
+           rd.<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxDirection" class="code">rxDirection</a> = rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a> + (rx-&gt;<a href="#CameraRay::ray" class="code">ray</a>.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a> - rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>) / eps;
+           break;
+       }</div></div>
+}</div><p>
+
+
+</p>
+<p>If it was possible to generate the auxiliary <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> ray, then the
+corresponding pixel-wide differential is initialized via differencing.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Trytogenerateraywithmonosshiftandcomputexdifferential-0"></span><div class="fragmentname">&lt;&lt;Try to generate ray with <tt>sshift</tt> and compute <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> differential&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (rx = camera.<a href="#Camera::GenerateRay" class="code">GenerateRay</a>(sshift, lambda); rx) {
+    rd.<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxOrigin" class="code">rxOrigin</a> = rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a> + (rx-&gt;<a href="#CameraRay::ray" class="code">ray</a>.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a> - rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::o" class="code">o</a>) / eps;
+    rd.<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::rxDirection" class="code">rxDirection</a> = rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a> + (rx-&gt;<a href="#CameraRay::ray" class="code">ray</a>.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a> - rd.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>) / eps;
+    break;
+}</div><p>
+
+
+</p>
+<p>The implementation of the fragment &lt;&lt;<span class="fragmentname">Find camera ray after shifting one
+pixel in the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> direction</span>&gt;&gt; follows similarly and is not included here.
+
+</p>
+<p>
+
+</p>
+<p>If a valid ray was found for both <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">x</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D465" d="M527 376c0 -40 -32 -58 -54 -58c-27 0 -38 19 -38 35c0 24 20 49 48 54c-21 13 -45 13 -50 13c-70 0 -93 -92 -99 -118l-34 -137c-11 -44 -17 -66 -17 -88c0 -34 16 -66 55 -66c32 0 100 24 133 131c2 7 4 11 13 11c3 0 12 0 12 -10c0 -25 -57 -154 -160 -154 c-60 0 -96 39 -108 76c-3 -6 -39 -76 -105 -76c-44 0 -94 20 -94 66c0 32 25 58 55 58c15 0 37 -8 37 -35c0 -28 -22 -49 -47 -54c21 -13 44 -13 50 -13c44 0 79 42 95 104c37 140 54 207 54 238c0 58 -35 67 -54 67c-34 0 -100 -25 -134 -131c-2 -9 -5 -11 -13 -11 c0 0 -12 0 -12 10c0 25 57 154 161 154c29 0 83 -10 108 -76c12 23 47 76 105 76c34 0 93 -14 93 -66Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D465" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg>, we can go ahead and set the
+<tt>hasDifferentials</tt> member variable to <tt>true</tt>.  Otherwise, the
+main ray can still be traced, just without differentials available.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Returnapproximateraydifferentialandweight-0"></span><div class="fragmentname">&lt;&lt;Return approximate ray differential and weight&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">rd.<a href="../Geometry_and_Transformations/Rays.html#RayDifferential::hasDifferentials" class="code">hasDifferentials</a> = rx &amp;&amp; ry;
+return <a href="#CameraRayDifferential" class="code">CameraRayDifferential</a>{rd, cr-&gt;<a href="#CameraRay::weight" class="code">weight</a>};</div><p>
+
+
+</p>
+<p>Finally, for the convenience of its subclasses, <tt>CameraBase</tt> provides
+various transformation methods that use the <a href="#CameraTransform"><tt>CameraTransform</tt></a>.  We will
+only include the <tt>Ray</tt> method here; the others are
+analogous.<span class="anchor" id="CameraBase::CameraFromRender"></span>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CameraBaseProtectedMethods-1"></span><div class="fragmentname">&lt;&lt;CameraBase Protected Methods&gt;&gt;+=&nbsp;<a href="#fragment-CameraBaseProtectedMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> <span class="anchor" id="CameraBase::RenderFromCamera"></span><a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;r) const {
+    return <a href="#CameraBase::cameraTransform" class="code">cameraTransform</a>.<a href="#CameraTransform::RenderFromCamera" class="code">RenderFromCamera</a>(r);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Cameras_and_Film/Projective_Camera_Models.html">Cameras and Film / Projective Camera Models</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

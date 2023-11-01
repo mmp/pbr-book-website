@@ -1,0 +1,632 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>BasicScene and Final Object Creation</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Processing_the_Scene_Description.html">Processing the Scene Description</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">BasicScene and Final Object Creation</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html">(Previous: Managing the Scene Description)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:basic-scene"></span><h2>C.3 BasicScene and Final Object Creation</h2><p>
+
+
+
+</p>
+<p>The responsibilities of the <a href="#BasicScene"><tt>BasicScene</tt></a> are straightforward: it
+takes scene entity objects and
+provides methods that convert them into objects for rendering.  However,
+there are two factors that make its implementation not completely trivial.
+First, as discussed in Section&nbsp;<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#sec:basic-scene-builder">A.2</a>, if the
+<tt>Import</tt> directive is used in the scene specification, there may be
+multiple <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#BasicSceneBuilder"><tt>BasicSceneBuilder</tt></a>s that are concurrently calling
+<a href="#BasicScene"><tt>BasicScene</tt></a> methods.  Therefore, the implementation must use mutual
+exclusion to ensure correct operation.
+
+</p>
+<p>The second consideration is performance: we would like to minimize the time
+spent in the execution of <a href="#BasicScene"><tt>BasicScene</tt></a> methods, as time spent in them
+delays parsing the remainder of the scene description.  System startup time
+is a facet of performance that is worth attending to, and so
+<a href="#BasicScene"><tt>BasicScene</tt></a> uses the asynchronous job capabilities introduced in
+Section&nbsp;<a href="../Utilities/Parallelism.html#sec:async-jobs-and-futures">A.6.6</a> to create scene objects
+while parsing proceeds when possible.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneDefinition-0"></span><div class="fragmentname">&lt;&lt;BasicScene Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="BasicScene"></span>BasicScene {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BasicScenePublicMethods-0">BasicScene Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2886" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2886"><i></i></a><div id="fragbit-2886" class="collapse"><div class="fragmentcode">       BasicScene();
+       void SetOptions(SceneEntity filter, SceneEntity film,
+                       CameraSceneEntity camera, SceneEntity <a href="#BasicScene::sampler" class="code">sampler</a>,
+                       SceneEntity integrator, SceneEntity accelerator);
+       void AddNamedMaterial(std::string name, SceneEntity material);
+       int AddMaterial(SceneEntity material);
+       void AddMedium(MediumSceneEntity medium);
+       void AddFloatTexture(std::string name, TextureSceneEntity texture);
+       void AddSpectrumTexture(std::string name, TextureSceneEntity texture);
+       void AddLight(LightSceneEntity light);
+       int AddAreaLight(SceneEntity light);
+       void AddShapes(pstd::span&lt;ShapeSceneEntity&gt; shape);
+       void AddAnimatedShape(AnimatedShapeSceneEntity shape);
+       void AddInstanceDefinition(InstanceDefinitionSceneEntity instance);
+       void AddInstanceUses(pstd::span&lt;InstanceSceneEntity&gt; in);
+       
+       void Done();
+       <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a> GetCamera() {
+           cameraJobMutex.lock();
+           while (!camera) {
+               pstd::optional&lt;<a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a>&gt; c = cameraJob-&gt;<a href="../Utilities/Parallelism.html#AsyncJob::TryGetResult" class="code">TryGetResult</a>(&amp;cameraJobMutex);
+               if (c)
+                   camera = *c;
+           }
+           cameraJobMutex.unlock();
+           return camera;
+       }
+       <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> GetSampler() {
+           <a href="#BasicScene::samplerJobMutex" class="code">samplerJobMutex</a>.lock();
+           while (!<a href="#BasicScene::sampler" class="code">sampler</a>) {
+               pstd::optional&lt;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>&gt; s = <a href="#BasicScene::samplerJob" class="code">samplerJob</a>-&gt;<a href="../Utilities/Parallelism.html#AsyncJob::TryGetResult" class="code">TryGetResult</a>(&amp;<a href="#BasicScene::samplerJobMutex" class="code">samplerJobMutex</a>);
+               if (s)
+                   <a href="#BasicScene::sampler" class="code">sampler</a> = *s;
+           }
+           <a href="#BasicScene::samplerJobMutex" class="code">samplerJobMutex</a>.unlock();
+           return <a href="#BasicScene::sampler" class="code">sampler</a>;
+       }
+       void CreateMaterials(const NamedTextures &amp;sceneTextures,
+                            std::map&lt;std::string, <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; *namedMaterials,
+                            std::vector&lt;<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; *materials);
+       
+       std::vector&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; CreateLights(const NamedTextures &amp;textures,
+           std::map&lt;int, pstd::vector&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; *&gt; *shapeIndexToAreaLights);
+       std::map&lt;std::string, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt; CreateMedia();
+       <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a> CreateAggregate(
+           const NamedTextures &amp;textures,
+           const std::map&lt;int, pstd::vector&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; *&gt; &amp;shapeIndexToAreaLights,
+           const std::map&lt;std::string, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt; &amp;media,
+           const std::map&lt;std::string, <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; &amp;namedMaterials,
+           const std::vector&lt;<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>&gt; &amp;materials);
+       std::unique_ptr&lt;<a href="../Introduction/pbrt_System_Overview.html#Integrator" class="code">Integrator</a>&gt; CreateIntegrator(<a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a> camera, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> <a href="#BasicScene::sampler" class="code">sampler</a>, <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a> accel,
+                                    std::vector&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; lights) const;
+       NamedTextures CreateTextures();</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BasicScenePublicMembers-0">BasicScene Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2887" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2887"><i></i></a><div id="fragbit-2887" class="collapse"><div class="fragmentcode">       <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity" class="code">SceneEntity</a> integrator, accelerator;
+       std::vector&lt;ShapeSceneEntity&gt; shapes;
+       std::vector&lt;AnimatedShapeSceneEntity&gt; animatedShapes;
+       std::vector&lt;InstanceSceneEntity&gt; instances;
+       std::map&lt;InternedString, InstanceDefinitionSceneEntity *&gt; instanceDefinitions;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname">BasicScene Private Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2888" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2888"><i></i></a><div id="fragbit-2888" class="collapse"><div class="fragmentcode">       <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> GetMedium(const std::string &amp;name, const FileLoc *loc);
+       void startLoadingNormalMaps(const ParameterDictionary &amp;parameters);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BasicScenePrivateMembers-0">BasicScene Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2889" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2889"><i></i></a><div id="fragbit-2889" class="collapse"><div class="fragmentcode">       <a href="../Utilities/Parallelism.html#AsyncJob" class="code">AsyncJob</a>&lt;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>&gt; *samplerJob = nullptr;
+       mutable <a href="../Utilities/Parallelism.html#ThreadLocal" class="code">ThreadLocal</a>&lt;Allocator&gt; threadAllocators;
+       <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a> camera;
+       <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> film;
+       std::mutex cameraJobMutex;
+       <a href="../Utilities/Parallelism.html#AsyncJob" class="code">AsyncJob</a>&lt;<a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a>&gt; *cameraJob = nullptr;
+       std::mutex samplerJobMutex;
+       <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> sampler;
+       std::mutex mediaMutex;
+       std::map&lt;std::string, <a href="../Utilities/Parallelism.html#AsyncJob" class="code">AsyncJob</a>&lt;<a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt; *&gt; mediumJobs;
+       std::map&lt;std::string, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt; mediaMap;
+       std::mutex materialMutex;
+       std::map&lt;std::string, <a href="../Utilities/Parallelism.html#AsyncJob" class="code">AsyncJob</a>&lt;<a href="../Utilities/Images.html#Image" class="code">Image</a> *&gt; *&gt; normalMapJobs;
+       std::map&lt;std::string, <a href="../Utilities/Images.html#Image" class="code">Image</a> *&gt; normalMaps;
+       
+       std::vector&lt;std::pair&lt;std::string, SceneEntity&gt;&gt; namedMaterials;
+       std::vector&lt;SceneEntity&gt; materials;
+       
+       std::mutex lightMutex;
+       std::vector&lt;<a href="../Utilities/Parallelism.html#AsyncJob" class="code">AsyncJob</a>&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; *&gt; lightJobs;
+       
+       std::mutex areaLightMutex;
+       std::vector&lt;SceneEntity&gt; areaLights;
+       
+       std::mutex textureMutex;
+       std::vector&lt;std::pair&lt;std::string, TextureSceneEntity&gt;&gt; serialFloatTextures;
+       std::vector&lt;std::pair&lt;std::string, TextureSceneEntity&gt;&gt; serialSpectrumTextures;
+       std::vector&lt;std::pair&lt;std::string, TextureSceneEntity&gt;&gt; asyncSpectrumTextures;
+       std::set&lt;std::string&gt; loadingTextureFilenames;
+       std::map&lt;std::string, <a href="../Utilities/Parallelism.html#AsyncJob" class="code">AsyncJob</a>&lt;<a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#FloatTexture" class="code">FloatTexture</a>&gt; *&gt; floatTextureJobs;
+       std::map&lt;std::string, <a href="../Utilities/Parallelism.html#AsyncJob" class="code">AsyncJob</a>&lt;<a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#SpectrumTexture" class="code">SpectrumTexture</a>&gt; *&gt; spectrumTextureJobs;
+       int nMissingTextures = 0;
+       
+       std::mutex shapeMutex, animatedShapeMutex;
+       std::mutex instanceDefinitionMutex, instanceUseMutex;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;BasicScene Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-BasicSceneMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicScene::SetOptions"></span>BasicScene::SetOptions(<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity" class="code">SceneEntity</a> filter, <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity" class="code">SceneEntity</a> film,
+                            <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#CameraSceneEntity" class="code">CameraSceneEntity</a> camera, <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity" class="code">SceneEntity</a> sampler,
+                            <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity" class="code">SceneEntity</a> integ, <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity" class="code">SceneEntity</a> accel) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Storeinformationforspecifiedintegratorandaccelerator-0">Store information for specified integrator and accelerator</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2890" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2890"><i></i></a><div id="fragbit-2890" class="collapse"><div class="fragmentcode">       <a href="#BasicScene::integrator" class="code">integrator</a> = integ;
+       <a href="#BasicScene::accelerator" class="code">accelerator</a> = accel;</div></div>
+    &lt;&lt;<span class="fragmentname">Immediately create filter and film</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2891" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2891"><i></i></a><div id="fragbit-2891" class="collapse"><div class="fragmentcode">       LOG_VERBOSE("Starting to create filter and film");
+       Allocator alloc = threadAllocators.Get();
+       <a href="../Sampling_and_Reconstruction/Image_Reconstruction.html#Filter" class="code">Filter</a> filt = <a href="../Sampling_and_Reconstruction/Image_Reconstruction.html#Filter" class="code">Filter</a>::Create(filter.name, filter.parameters, &amp;filter.loc, alloc);
+       
+       // It's a little ugly to poke into the camera's parameters here, but we
+       // have this circular dependency that <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a>::Create() expects a
+       // <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a>, yet now the film needs to know the exposure time from
+       // the camera....
+       Float exposureTime = camera.parameters.GetOneFloat("shutterclose", 1.f) -
+           camera.parameters.GetOneFloat("shutteropen", 0.f);
+       if (exposureTime &lt;= 0)
+           ErrorExit(&amp;camera.loc,
+                     "The specified camera shutter times imply that the shutter "
+                     "does not open.  A black image will result.");
+       
+       this-&gt;film = <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a>::Create(film.name, film.parameters, exposureTime, camera.cameraTransform,
+                                 filt, &amp;film.loc, alloc);
+       LOG_VERBOSE("Finished creating filter and film");</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Enqueueasynchronousjobtocreatesampler-0">Enqueue asynchronous job to create sampler</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2892" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2892"><i></i></a><div id="fragbit-2892" class="collapse"><div class="fragmentcode">       <a href="#BasicScene::samplerJob" class="code">samplerJob</a> = <a href="../Utilities/Parallelism.html#RunAsync" class="code">RunAsync</a>([sampler, this]() {
+           Allocator alloc = <a href="#BasicScene::threadAllocators" class="code">threadAllocators</a>.<a href="../Utilities/Parallelism.html#ThreadLocal::Get" class="code">Get</a>();
+           <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> res = this-&gt;film.<a href="../Cameras_and_Film/Film_and_Imaging.html#Film::FullResolution" class="code">FullResolution</a>();
+           return <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>::Create(sampler.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::name" class="code">name</a>, sampler.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::parameters" class="code">parameters</a>, res,
+                                  &amp;sampler.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::loc" class="code">loc</a>, alloc);
+       });</div></div>
+    &lt;&lt;<span class="fragmentname">Enqueue asynchronous job to create camera</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2893" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2893"><i></i></a><div id="fragbit-2893" class="collapse"><div class="fragmentcode">       cameraJob = RunAsync([camera,this]() {
+           LOG_VERBOSE("Starting to create camera");
+           Allocator alloc = threadAllocators.Get();
+           <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> cameraMedium = GetMedium(camera.medium, &amp;camera.loc);
+       
+           <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a> c = <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a>::Create(camera.name, camera.parameters, cameraMedium,
+                                     camera.cameraTransform, this-&gt;film, &amp;camera.loc, alloc);
+           LOG_VERBOSE("Finished creating camera");
+           return c;
+       });</div></div>
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>When <tt>SetOptions()</tt> is called, the specifications of the geometry and lights in the scene
+have not yet been parsed.  Therefore, it is not yet possible to create the
+integrator (which needs the lights) or the acceleration structure (which
+needs the geometry).  Therefore, their specification
+so far is saved in member variables for use when parsing is
+finished.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Storeinformationforspecifiedintegratorandaccelerator-0"></span><div class="fragmentname">&lt;&lt;Store information for specified integrator and accelerator&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#BasicScene::integrator" class="code">integrator</a> = integ;
+<a href="#BasicScene::accelerator" class="code">accelerator</a> = accel;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicScenePublicMembers-0"></span><div class="fragmentname">&lt;&lt;BasicScene Public Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity" class="code">SceneEntity</a> <span class="anchor" id="BasicScene::integrator"></span>integrator, <span class="anchor" id="BasicScene::accelerator"></span>accelerator;
+</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>However, it is possible to start work on creating the <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>,
+<a href="../Cameras_and_Film/Camera_Interface.html#Camera"><tt>Camera</tt></a>, <a href="../Sampling_and_Reconstruction/Image_Reconstruction.html#Filter"><tt>Filter</tt></a>, and <a href="../Cameras_and_Film/Film_and_Imaging.html#Film"><tt>Film</tt></a>.  While they could all be created
+in turn in the <tt>SetOptions()</tt> method, we instead use <a href="../Utilities/Parallelism.html#RunAsync"><tt>RunAsync()</tt></a>
+to launch multiple jobs to take care of them.  Thus, the
+<tt>SetOptions()</tt> method can return quickly, allowing parsing to resume,
+and creation of those objects can proceed in parallel as parsing proceeds
+if there are available CPU cores.  Although these objects usually take
+little time to initialize, sometimes they do not: the <tt>RealisticCamera</tt>
+requires a second or so on a current CPU to compute exit pupil bounds and
+the <a href="../Sampling_and_Reconstruction/Halton_Sampler.html#HaltonSampler"><tt>HaltonSampler</tt></a> takes approximately 0.1 seconds to initialize its
+random permutations.  If that work can be done concurrently with parsing
+the scene, rendering can begin that much more quickly.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Enqueueasynchronousjobtocreatesampler-0"></span><div class="fragmentname">&lt;&lt;Enqueue asynchronous job to create sampler&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#BasicScene::samplerJob" class="code">samplerJob</a> = <a href="../Utilities/Parallelism.html#RunAsync" class="code">RunAsync</a>([sampler, this]() {
+    Allocator alloc = <a href="#BasicScene::threadAllocators" class="code">threadAllocators</a>.<a href="../Utilities/Parallelism.html#ThreadLocal::Get" class="code">Get</a>();
+    <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> res = this-&gt;film.<a href="../Cameras_and_Film/Film_and_Imaging.html#Film::FullResolution" class="code">FullResolution</a>();
+    return <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>::Create(sampler.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::name" class="code">name</a>, sampler.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::parameters" class="code">parameters</a>, res,
+                           &amp;sampler.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::loc" class="code">loc</a>, alloc);
+});</div><p>
+
+
+</p>
+<p>The <tt>AsyncJob *</tt> returned by <a href="../Utilities/Parallelism.html#RunAsync"><tt>RunAsync()</tt></a> is held in a member variable.
+The <a href="#BasicScene"><tt>BasicScene</tt></a> constructor also initializes <tt>threadAllocators</tt>
+so that appropriate memory allocators are available depending on whether
+the scene objects should be stored in CPU memory or GPU memory.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicScenePrivateMembers-0"></span><div class="fragmentname">&lt;&lt;BasicScene Private Members&gt;&gt;=&nbsp;<a href="#fragment-BasicScenePrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Utilities/Parallelism.html#AsyncJob" class="code">AsyncJob</a>&lt;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>&gt; *<span class="anchor" id="BasicScene::samplerJob"></span>samplerJob = nullptr;
+mutable <a href="../Utilities/Parallelism.html#ThreadLocal" class="code">ThreadLocal</a>&lt;Allocator&gt; <span class="anchor" id="BasicScene::threadAllocators"></span>threadAllocators;</div><p>
+
+
+</p>
+<p>Briefly diverting from the <a href="#BasicScene"><tt>BasicScene</tt></a> implementation, we will turn to
+the <a href="#Sampler::Create"><tt>Sampler::Create()</tt></a> method that is called in the job that creates
+the <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>.  (This method is defined in the file
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/samplers.cpp"><tt>samplers.cpp</tt></a> with the rest of the <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> code.)  It
+checks the provided sampler name against all the sampler names it is
+aware of, calling the appropriate object-specific creation method when it
+finds a match and issuing an error if no match is found.  Thus, if the
+system is to be extended with an additional sampler, this is a second place
+in the code where the existence of the new sampler must be registered.
+
+</p>
+<p>Most of the values that are passed to the object constructors are extracted
+from the <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#ParameterDictionary"><tt>ParameterDictionary</tt></a> in the object-specific <tt>Create()</tt>
+methods, though some that are not in the available parameter list
+(like here, the uncropped image resolution)
+are directly passed as parameters to the <tt>Create()</tt> methods.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SamplerMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;Sampler Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> <span class="anchor" id="Sampler::Create"></span><a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>::Create(const std::string &amp;name,
+        const <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#ParameterDictionary" class="code">ParameterDictionary</a> &amp;parameters, <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> fullRes,
+        const FileLoc *loc, Allocator alloc) {
+    <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> sampler = nullptr;
+    if (name == "zsobol")
+        sampler = <a href="../Sampling_and_Reconstruction/Sobol_Samplers.html#ZSobolSampler" class="code">ZSobolSampler</a>::Create(parameters, fullRes, loc, alloc);
+    &lt;&lt;<span class="fragmentname">Create remainder of <tt>Sampler</tt> types</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2894" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2894"><i></i></a><div id="fragbit-2894" class="collapse"><div class="fragmentcode">       else if (name == "paddedsobol")
+           sampler = PaddedSobolSampler::Create(parameters, loc, alloc);
+       else if (name == "halton")
+           sampler = HaltonSampler::Create(parameters, fullRes, loc, alloc);
+       else if (name == "sobol")
+           sampler = SobolSampler::Create(parameters, fullRes, loc, alloc);
+       else if (name == "pmj02bn")
+            sampler = PMJ02BNSampler::Create(parameters, loc, alloc);
+       else if (name == "independent")
+           sampler = IndependentSampler::Create(parameters, loc, alloc);
+       else if (name == "stratified")
+           sampler = StratifiedSampler::Create(parameters, loc, alloc);
+       else
+           <a href="../Utilities/User_Interaction.html#ErrorExit" class="code">ErrorExit</a>(loc, "%s: sampler type unknown.", name);
+       if (!sampler) <a href="../Utilities/User_Interaction.html#ErrorExit" class="code">ErrorExit</a>(loc, "%s: unable to create sampler.", name);
+       parameters.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#ParameterDictionary::ReportUnused" class="code">ReportUnused</a>();</div></div>
+    return sampler;
+}</div><p>
+
+
+</p>
+<p>The fragment that handles the remainder of types of samplers, &lt;&lt;<span class="fragmentname">Create
+remainder of <tt>Sampler</tt> types</span>&gt;&gt;, is not included here.
+
+</p>
+<p>All the other base interface classes like <a href="../Light_Sources/Light_Interface.html#Light"><tt>Light</tt></a>, <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a>,
+<a href="../Cameras_and_Film/Camera_Interface.html#Camera"><tt>Camera</tt></a>, and so forth provide corresponding <tt>Create()</tt> methods,
+all of which have the same general form.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p><tt>BasicScene</tt> also provides methods that return these asynchronously
+created objects. All have a similar form, acquiring a
+mutex before harvesting the result from the asynchronous job if needed.
+Calling code should delay calling these methods as long as possible,
+doing as much independent work as it can to increase the likelihood that
+the asynchronous job has completed and that the <a href="../Utilities/Parallelism.html#AsyncJob::GetResult"><tt>AsyncJob::GetResult()</tt></a> calls
+do not stall.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicScenePublicMethods-0"></span><div class="fragmentname">&lt;&lt;BasicScene Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> <span class="anchor" id="BasicScene::GetSampler"></span>GetSampler() {
+    <a href="#BasicScene::samplerJobMutex" class="code">samplerJobMutex</a>.lock();
+    while (!<a href="#BasicScene::sampler" class="code">sampler</a>) {
+        pstd::optional&lt;<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>&gt; s = <a href="#BasicScene::samplerJob" class="code">samplerJob</a>-&gt;<a href="../Utilities/Parallelism.html#AsyncJob::TryGetResult" class="code">TryGetResult</a>(&amp;<a href="#BasicScene::samplerJobMutex" class="code">samplerJobMutex</a>);
+        if (s)
+            <a href="#BasicScene::sampler" class="code">sampler</a> = *s;
+    }
+    <a href="#BasicScene::samplerJobMutex" class="code">samplerJobMutex</a>.unlock();
+    return <a href="#BasicScene::sampler" class="code">sampler</a>;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicScenePrivateMembers-1"></span><div class="fragmentname">&lt;&lt;BasicScene Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicScenePrivateMembers-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicScenePrivateMembers-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::mutex <span class="anchor" id="BasicScene::samplerJobMutex"></span>samplerJobMutex;
+<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> <span class="anchor" id="BasicScene::sampler"></span>sampler;</div><p>
+
+
+</p>
+<p><a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> creation is also based on <a href="../Utilities/Parallelism.html#RunAsync"><tt>RunAsync()</tt></a>&rsquo;s asynchronous job
+capabilities, though in that case a <tt>std::map</tt> of jobs is
+maintained, one for each medium.  Note that it is important that a mutex be
+held when storing the <tt>AsyncJob *</tt> returned by <a href="../Utilities/Parallelism.html#RunAsync"><tt>RunAsync()</tt></a> in
+<tt>mediumJobs</tt>, since multiple threads may call this method
+concurrently if <tt>Import</tt> statements are used for multi-threaded
+parsing.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;BasicScene Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneMethodDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicSceneMethodDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="BasicScene::AddMedium"></span>BasicScene::AddMedium(<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#MediumSceneEntity" class="code">MediumSceneEntity</a> medium) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-DefinemonocreatelambdafunctionforuseMediumcreation-0">Define <tt>create</tt> lambda function for <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> creation</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2895" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2895"><i></i></a><div id="fragbit-2895" class="collapse"><div class="fragmentcode">       auto create = [medium, this]() {
+           std::string type = medium.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::parameters" class="code">parameters</a>.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#ParameterDictionary::GetOneString" class="code">GetOneString</a>("type", "");
+           &lt;&lt;<span class="fragmentname">Check for missing medium &ldquo;type&rdquo; or animated medium transform</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2896" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2896"><i></i></a><div id="fragbit-2896" class="collapse"><div class="fragmentcode">              if (type.empty())
+                  ErrorExit(&amp;medium.loc, "No parameter \"string type\" found for medium.");
+              if (medium.renderFromObject.IsAnimated())
+                  Warning(&amp;medium.loc,
+                          "Animated transformation provided for medium. Only the "
+                          "start transform will be used.");</div></div>
+           return <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>::Create(type, medium.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::parameters" class="code">parameters</a>,
+                                 medium.renderFromObject.startTransform,
+                                 &amp;medium.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::loc" class="code">loc</a>, <a href="#BasicScene::threadAllocators" class="code">threadAllocators</a>.<a href="../Utilities/Parallelism.html#ThreadLocal::Get" class="code">Get</a>());
+       };</div></div>
+    std::lock_guard&lt;std::mutex&gt; lock(<a href="#BasicScene::mediaMutex" class="code">mediaMutex</a>);
+    <a href="#BasicScene::mediumJobs" class="code">mediumJobs</a>[medium.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::name" class="code">name</a>] = <a href="../Utilities/Parallelism.html#RunAsync" class="code">RunAsync</a>(create);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicScenePrivateMembers-2"></span><div class="fragmentname">&lt;&lt;BasicScene Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicScenePrivateMembers-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-BasicScenePrivateMembers-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::mutex <span class="anchor" id="BasicScene::mediaMutex"></span>mediaMutex;
+std::map&lt;std::string, <a href="../Utilities/Parallelism.html#AsyncJob" class="code">AsyncJob</a>&lt;<a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt; *&gt; <span class="anchor" id="BasicScene::mediumJobs"></span>mediumJobs;</div><p>
+
+
+</p>
+<p>Creation of each <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> follows a similar form to <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>
+creation, though here the type of medium to be created is found from the
+parameter list; the <tt>MediumSceneEntity::name</tt> member variable holds
+the user-provided name to associate with the medium.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DefinemonocreatelambdafunctionforuseMediumcreation-0"></span><div class="fragmentname">&lt;&lt;Define <tt>create</tt> lambda function for <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> creation&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">auto create = [medium, this]() {
+    std::string type = medium.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::parameters" class="code">parameters</a>.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#ParameterDictionary::GetOneString" class="code">GetOneString</a>("type", "");
+    &lt;&lt;<span class="fragmentname">Check for missing medium &ldquo;type&rdquo; or animated medium transform</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2897" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2897"><i></i></a><div id="fragbit-2897" class="collapse"><div class="fragmentcode">       if (type.empty())
+           ErrorExit(&amp;medium.loc, "No parameter \"string type\" found for medium.");
+       if (medium.renderFromObject.IsAnimated())
+           Warning(&amp;medium.loc,
+                   "Animated transformation provided for medium. Only the "
+                   "start transform will be used.");</div></div>
+    return <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>::Create(type, medium.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::parameters" class="code">parameters</a>,
+                          medium.renderFromObject.startTransform,
+                          &amp;medium.<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#SceneEntity::loc" class="code">loc</a>, <a href="#BasicScene::threadAllocators" class="code">threadAllocators</a>.<a href="../Utilities/Parallelism.html#ThreadLocal::Get" class="code">Get</a>());
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>All the media specified in the scene are provided to callers via a map
+from names to <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> objects.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicSceneMethodDefinitions-2"></span><div class="fragmentname">&lt;&lt;BasicScene Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-BasicSceneMethodDefinitions-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">std::map&lt;std::string, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt; <span class="anchor" id="BasicScene::CreateMedia"></span>BasicScene::CreateMedia() {
+    <a href="#BasicScene::mediaMutex" class="code">mediaMutex</a>.lock();
+    if (!<a href="#BasicScene::mediumJobs" class="code">mediumJobs</a>.empty()) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-ConsumeresultsforasynchronouslycreateduseMediumobjects-0">Consume results for asynchronously created <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> objects</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2898" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2898"><i></i></a><div id="fragbit-2898" class="collapse"><div class="fragmentcode">           for (auto &amp;m : <a href="#BasicScene::mediumJobs" class="code">mediumJobs</a>) {
+               while (<a href="#BasicScene::mediaMap" class="code">mediaMap</a>.find(m.first) == <a href="#BasicScene::mediaMap" class="code">mediaMap</a>.end()) {
+                   pstd::optional&lt;<a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt; med = m.second-&gt;<a href="../Utilities/Parallelism.html#AsyncJob::TryGetResult" class="code">TryGetResult</a>(&amp;mediaMutex);
+                   if (med)
+                       <a href="#BasicScene::mediaMap" class="code">mediaMap</a>[m.first] = *med;
+               }
+           }
+           <a href="#BasicScene::mediumJobs" class="code">mediumJobs</a>.clear();</div></div>
+    }
+    <a href="#BasicScene::mediaMutex" class="code">mediaMutex</a>.unlock();
+    return <a href="#BasicScene::mediaMap" class="code">mediaMap</a>;
+}</div><p>
+
+
+</p>
+<p>The asynchronously created <tt>Medium</tt> objects are consumed using calls
+to <a href="../Utilities/Parallelism.html#AsyncJob::TryGetResult"><tt>AsyncJob::TryGetResult()</tt></a>, which returns the result if it is
+available and otherwise unlocks the mutex, does some of the enqueued
+parallel work, and then relocks it before returning.  Thus, there is no
+risk of deadlock from one thread holding <tt>mediaMutex</tt>, finding that
+the result is not ready and working on enqueued parallel work that itself
+ends up trying to acquire <tt>mediaMutex</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ConsumeresultsforasynchronouslycreateduseMediumobjects-0"></span><div class="fragmentname">&lt;&lt;Consume results for asynchronously created <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a> objects&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">for (auto &amp;m : <a href="#BasicScene::mediumJobs" class="code">mediumJobs</a>) {
+    while (<a href="#BasicScene::mediaMap" class="code">mediaMap</a>.find(m.first) == <a href="#BasicScene::mediaMap" class="code">mediaMap</a>.end()) {
+        pstd::optional&lt;<a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt; med = m.second-&gt;<a href="../Utilities/Parallelism.html#AsyncJob::TryGetResult" class="code">TryGetResult</a>(&amp;mediaMutex);
+        if (med)
+            <a href="#BasicScene::mediaMap" class="code">mediaMap</a>[m.first] = *med;
+    }
+}
+<a href="#BasicScene::mediumJobs" class="code">mediumJobs</a>.clear();</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicScenePrivateMembers-3"></span><div class="fragmentname">&lt;&lt;BasicScene Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BasicScenePrivateMembers-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">std::map&lt;std::string, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a>&gt; <span class="anchor" id="BasicScene::mediaMap"></span>mediaMap;</div><p>
+
+
+</p>
+<p>As much as possible, other scene objects are created similarly using
+<a href="../Utilities/Parallelism.html#RunAsync"><tt>RunAsync()</tt></a>.  Light sources are easy to handle, and it is especially
+helpful to start creating image textures during parsing, as reading image
+file formats from disk can be a bottleneck for scenes with many such
+textures.  However, extra attention is required due to the cache of images
+already read for textures (Section&nbsp;<a href="../Textures_and_Materials/Image_Texture.html#sec:texture-caching">10.4.1</a>).  If an image
+file on disk is used in multiple textures, <a href="#BasicScene"><tt>BasicScene</tt></a> takes care not
+to have multiple jobs redundantly reading the same image.  Instead, only
+one reads it and the rest wait.  When those textures are then
+created, the image they need can be efficiently returned from the cache.
+
+</p>
+<p>In return for the added complexity of this asynchronous object creation, we have
+found that for complex scenes it is not unusual for this version of <tt>pbrt</tt> to be able to start rendering&nbsp;4 times more quickly than the previous
+version.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Processing_the_Scene_Description/Adding_New_Object_Implementations.html">Processing the Scene Description / Adding New Object Implementations</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

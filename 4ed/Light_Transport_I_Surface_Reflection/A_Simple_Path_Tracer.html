@@ -1,0 +1,1223 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>A Simple Path Tracer</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Light_Transport_I_Surface_Reflection.html">Light Transport I: Surface Reflection</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">A Simple Path Tracer</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html">(Previous: Path Tracing)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:simple-path-tracer"></span><h2>13.3 A Simple Path Tracer</h2><p>
+
+
+
+</p>
+<p>The path tracing estimator in
+Equation&nbsp;(<a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#eq:path-incremental-sample-result-weights">13.7</a>) makes it
+possible to apply the BSDF and light sampling techniques that were
+respectively defined in Chapters&nbsp;<a href="../Reflection_Models.html#chap:reflection-models">9</a>
+and&nbsp;<a href="../Light_Sources.html#chap:lights">12</a> to rendering.  As shown in
+Figure&nbsp;<a href="#fig:randomwalk-vs-simplepath-integrators">13.6</a>, more effective
+importance sampling approaches than the uniform sampling in the
+<a href="../Introduction/pbrt_System_Overview.html#RandomWalkIntegrator"><tt>RandomWalkIntegrator</tt></a> significantly reduce error.  Although the
+<a href="#SimplePathIntegrator"><tt>SimplePathIntegrator</tt></a> takes longer to render an image at equal sample
+counts, most of that increase is because paths often terminate early with
+the <a href="../Introduction/pbrt_System_Overview.html#RandomWalkIntegrator"><tt>RandomWalkIntegrator</tt></a>; because it samples outgoing directions at
+intersections uniformly over the sphere, half of the sampled directions
+lead to path termination at non-transmissive surfaces.  The overall
+improvement in Monte Carlo efficiency from the <a href="#SimplePathIntegrator"><tt>SimplePathIntegrator</tt></a>
+is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.942ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2558.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">12.8 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-38" d="M457 168c0 -107 -95 -190 -208 -190c-105 0 -207 67 -207 173c0 99 86 155 144 184c-25 17 -62 42 -73 54c-42 47 -44 92 -44 110c0 93 81 167 181 167c91 0 180 -57 180 -149c0 -66 -49 -118 -121 -155c64 -40 80 -50 99 -71c38 -42 49 -87 49 -123zM386 517 c0 72 -64 124 -137 124c-71 0 -136 -42 -136 -103c0 -17 4 -51 50 -81l124 -80c60 35 99 83 99 140zM407 132c0 61 -47 91 -75 110l-123 78c-85 -47 -117 -111 -117 -169c0 -83 72 -145 158 -145c82 0 157 52 157 126Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="1001" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-38" x="1279" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1780" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:randomwalk-vs-simplepath-integrators"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 134.542%;  position:relative;">
+<div id="xa_RandomWalkIntegrator57" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('xa_RandomWalkIntegrator57'), {
+  title: '(a)_RandomWalkIntegrator57', children: [
+ { title: '(a) RandomWalkIntegrator', image: 'watercolor-path-compare-randomwalk-image.png' },  { title: '(b) SimplePathIntegrator', image: 'watercolor-path-compare-simplepath-image.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 13.6: Comparison of the <a href="../Introduction/pbrt_System_Overview.html#RandomWalkIntegrator"><tt>RandomWalkIntegrator</tt></a> and the
+<a href="#SimplePathIntegrator"><tt>SimplePathIntegrator</tt></a>. <span class="legend">
+(a)&nbsp;Scene rendered with 64 pixel samples using the
+<a href="../Introduction/pbrt_System_Overview.html#RandomWalkIntegrator"><tt>RandomWalkIntegrator</tt></a>.
+(b)&nbsp;Rendered with 64 pixel samples and the <a href="#SimplePathIntegrator"><tt>SimplePathIntegrator</tt></a>.
+The <a href="#SimplePathIntegrator"><tt>SimplePathIntegrator</tt></a> gives an image that is visibly much
+improved, thanks to using more effective BSDF and light sampling
+techniques.  Here, mean squared error (MSE) is reduced by a factor of 101.  Even though
+rendering time was <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.78ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2058 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">7.8 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-37" d="M485 644c0 -21 0 -23 -9 -35l-135 -190c-44 -62 -58 -148 -62 -171c-8 -54 -11 -109 -11 -164v-51c0 -10 0 -55 -46 -55s-46 45 -46 55c0 102 33 241 123 376l112 158h-207c-13 0 -91 0 -98 -6c-13 -12 -22 -75 -25 -91h-25l33 206h25c4 -19 6 -32 128 -32h243Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-38" d="M457 168c0 -107 -95 -190 -208 -190c-105 0 -207 67 -207 173c0 99 86 155 144 184c-25 17 -62 42 -73 54c-42 47 -44 92 -44 110c0 93 81 167 181 167c91 0 180 -57 180 -149c0 -66 -49 -118 -121 -155c64 -40 80 -50 99 -71c38 -42 49 -87 49 -123zM386 517 c0 72 -64 124 -137 124c-71 0 -136 -42 -136 -103c0 -17 4 -51 50 -81l124 -80c60 35 99 83 99 140zM407 132c0 61 -47 91 -75 110l-123 78c-85 -47 -117 -111 -117 -169c0 -83 72 -145 158 -145c82 0 157 52 157 126Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-37"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-38" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1279" y="0"></use>
+</g>
+</svg> longer, the overall improvement in Monte
+Carlo efficiency was still <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.942ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2558.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">12.8 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-38" d="M457 168c0 -107 -95 -190 -208 -190c-105 0 -207 67 -207 173c0 99 86 155 144 184c-25 17 -62 42 -73 54c-42 47 -44 92 -44 110c0 93 81 167 181 167c91 0 180 -57 180 -149c0 -66 -49 -118 -121 -155c64 -40 80 -50 99 -71c38 -42 49 -87 49 -123zM386 517 c0 72 -64 124 -137 124c-71 0 -136 -42 -136 -103c0 -17 4 -51 50 -81l124 -80c60 35 99 83 99 140zM407 132c0 61 -47 91 -75 110l-123 78c-85 -47 -117 -111 -117 -169c0 -83 72 -145 158 -145c82 0 157 52 157 126Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="1001" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-38" x="1279" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1780" y="0"></use>
+</g>
+</svg>.
+<em>(Scene courtesy of Angelo Ferretti.)</em>
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>The &ldquo;simple&rdquo; in the name of this integrator is meaningful:
+<a href="../Light_Transport_I_Surface_Reflection/A_Better_Path_Tracer.html#PathIntegrator"><tt>PathIntegrator</tt></a>, which will be introduced shortly, adds a number of
+additional sampling improvements and should be used in preference to
+<a href="#SimplePathIntegrator"><tt>SimplePathIntegrator</tt></a> if rendering efficiency is important.  This
+integrator is still useful beyond pedagogy, however; it is also useful for debugging
+and for validating the implementation of sampling algorithms.  For example,
+it can be configured to use BSDFs&rsquo; sampling methods or to use uniform
+directional sampling; given a sufficient number of samples, both approaches
+should converge to the same result (assuming that the BSDF is not perfect
+specular).  If they do not, the error is presumably in the BSDF sampling
+code.  Light sampling techniques can be tested in a similar fashion.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SimplePathIntegratorDefinition-0"></span><div class="fragmentname">&lt;&lt;SimplePathIntegrator Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="SimplePathIntegrator"></span>SimplePathIntegrator : public <a href="../Introduction/pbrt_System_Overview.html#RayIntegrator" class="code">RayIntegrator</a> {
+  public:
+    &lt;&lt;<span class="fragmentname">SimplePathIntegrator Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1812" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1812"><i></i></a><div id="fragbit-1812" class="collapse"><div class="fragmentcode">       SimplePathIntegrator(int maxDepth, bool sampleLights, bool sampleBSDF,
+                            <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a> camera, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> sampler,
+                            <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a> aggregate, std::vector&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; lights);
+       
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Li(<a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> ray, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda,
+                          <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> sampler, <a href="../Utilities/Containers_and_Memory_Management.html#ScratchBuffer" class="code">ScratchBuffer</a> &amp;scratchBuffer,
+                          <a href="../Cameras_and_Film/Film_and_Imaging.html#VisibleSurface" class="code">VisibleSurface</a> *visibleSurface) const;
+       
+       static std::unique_ptr&lt;SimplePathIntegrator&gt; Create(
+           const ParameterDictionary &amp;parameters, <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a> camera, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> sampler,
+           <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive" class="code">Primitive</a> aggregate, std::vector&lt;<a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a>&gt; lights, const FileLoc *loc);
+       
+       std::string ToString() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SimplePathIntegratorPrivateMembers-0">SimplePathIntegrator Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1813" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1813"><i></i></a><div id="fragbit-1813" class="collapse"><div class="fragmentcode">       int maxDepth;
+       bool sampleLights, sampleBSDF;
+       <a href="../Light_Sources/Light_Sampling.html#UniformLightSampler" class="code">UniformLightSampler</a> lightSampler;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The constructor sets the following member variables from provided
+parameters, so it is not included here.  Similar to the
+<a href="../Introduction/pbrt_System_Overview.html#RandomWalkIntegrator"><tt>RandomWalkIntegrator</tt></a>, <tt>maxDepth</tt> caps the maximum path
+length.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="&ldquo;Depth&rdquo; is something of a misnomer in that this
+integrator constructs the path iteratively rather than recursively as the
+<tt>RandomWalkIntegrator</tt> did.  Nevertheless, here and in the following
+integrators, we will continue to describe the path length in this way.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p>The <tt>sampleLights</tt> member variable determines whether lights&rsquo;
+<tt>SampleLi()</tt> methods should be used to sample direct illumination or
+whether illumination should only be found by rays randomly intersecting
+emissive surfaces, as was done in the <a href="../Introduction/pbrt_System_Overview.html#RandomWalkIntegrator"><tt>RandomWalkIntegrator</tt></a>.  In a
+similar fashion, <tt>sampleBSDF</tt> determines whether BSDFs&rsquo;
+<tt>Sample_f()</tt> methods should be used to sample directions or whether
+uniform directional sampling should be used.  Both are <tt>true</tt> by default. A <a href="../Light_Sources/Light_Sampling.html#UniformLightSampler"><tt>UniformLightSampler</tt></a>
+is always used for sampling a light; this, too, is an instance where this
+integrator opts for simplicity and a lower likelihood of bugs in exchange
+for lower efficiency.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SimplePathIntegratorPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;SimplePathIntegrator Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int <span class="anchor" id="SimplePathIntegrator::maxDepth"></span>maxDepth;
+bool <span class="anchor" id="SimplePathIntegrator::sampleLights"></span>sampleLights, <span class="anchor" id="SimplePathIntegrator::sampleBSDF"></span>sampleBSDF;
+<a href="../Light_Sources/Light_Sampling.html#UniformLightSampler" class="code">UniformLightSampler</a> <span class="anchor" id="SimplePathIntegrator::lightSampler"></span>lightSampler;</div><p>
+
+
+</p>
+<p>As a <a href="../Introduction/pbrt_System_Overview.html#RayIntegrator"><tt>RayIntegrator</tt></a>, this integrator provides a <tt>Li()</tt> method
+that returns an estimate of the radiance along the provided ray.  It does
+not provide the capability of initializing a <a href="../Cameras_and_Film/Film_and_Imaging.html#VisibleSurface"><tt>VisibleSurface</tt></a> at the
+first intersection point, so the corresponding parameter is ignored.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SimplePathIntegratorMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;SimplePathIntegrator Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="SimplePathIntegrator::Li"></span>SimplePathIntegrator::Li(<a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> ray,
+        <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> sampler,
+        <a href="../Utilities/Containers_and_Memory_Management.html#ScratchBuffer" class="code">ScratchBuffer</a> &amp;scratchBuffer, <a href="../Cameras_and_Film/Film_and_Imaging.html#VisibleSurface" class="code">VisibleSurface</a> *) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Estimateradiancealongrayusingsimplepathtracing-0">Estimate radiance along ray using simple path tracing</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1814" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1814"><i></i></a><div id="fragbit-1814" class="collapse"><div class="fragmentcode">       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> L(0.f), beta(1.f);
+       bool specularBounce = true;
+       int depth = 0;
+       while (beta) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-FindnextmonoSimplePathIntegratorvertexandaccumulatecontribution-0">Find next <tt>SimplePathIntegrator</tt> vertex and accumulate contribution</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1815" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1815"><i></i></a><div id="fragbit-1815" class="collapse"><div class="fragmentcode">              &lt;&lt;<span class="fragmentname"><a href="#fragment-Intersectmonoraywithscene-0">Intersect <tt>ray</tt> with scene</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1816" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1816"><i></i></a><div id="fragbit-1816" class="collapse"><div class="fragmentcode">                 pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; si = <a href="../Introduction/pbrt_System_Overview.html#Integrator::Intersect" class="code">Intersect</a>(ray);</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-Accountforinfinitelightsifrayhasnointersection-0">Account for infinite lights if ray has no intersection</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1817" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1817"><i></i></a><div id="fragbit-1817" class="collapse"><div class="fragmentcode">                 if (!si) {
+                     if (!<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a> || specularBounce)
+                         for (const auto &amp;light : <a href="../Introduction/pbrt_System_Overview.html#Integrator::infiniteLights" class="code">infiniteLights</a>)
+                             L += beta * light.<a href="../Light_Sources/Light_Interface.html#Light::Le" class="code">Le</a>(ray, lambda);
+                     break;
+                 }</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-Accountforemissivesurfaceiflightwasnotsampled-0">Account for emissive surface if light was not sampled</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1818" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1818"><i></i></a><div id="fragbit-1818" class="collapse"><div class="fragmentcode">                 <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>;
+                 if (!<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a> || specularBounce)
+                     L += beta * isect.<a href="../Light_Sources/Light_Interface.html#Light::Le" class="code">Le</a>(-ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>, lambda);</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-Endpathifmaximumdepthreached-0">End path if maximum depth reached</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1819" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1819"><i></i></a><div id="fragbit-1819" class="collapse"><div class="fragmentcode">                 if (depth++ == <a href="#SimplePathIntegrator::maxDepth" class="code">maxDepth</a>)
+                     break;</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-GetBSDFandskipovermediumboundaries-0">Get BSDF and skip over medium boundaries</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1820" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1820"><i></i></a><div id="fragbit-1820" class="collapse"><div class="fragmentcode">                 <a href="../Reflection_Models/BSDF_Representation.html#BSDF" class="code">BSDF</a> bsdf = isect.<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#SurfaceInteraction::GetBSDF" class="code">GetBSDF</a>(ray, lambda, camera, scratchBuffer, sampler);
+                 if (!bsdf) {
+                     isect.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SkipIntersection" class="code">SkipIntersection</a>(&amp;ray, si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>);
+                     continue;
+                 }</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-SampledirectilluminationifmonosampleLightsistrue-0">Sample direct illumination if <tt>sampleLights</tt> is true</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1821" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1821"><i></i></a><div id="fragbit-1821" class="collapse"><div class="fragmentcode">                 <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo = -ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>;
+                 if (<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a>) {
+                     pstd::optional&lt;<a href="../Light_Sources/Light_Sampling.html#SampledLight" class="code">SampledLight</a>&gt; sampledLight =
+                         <a href="#SimplePathIntegrator::lightSampler" class="code">lightSampler</a>.<a href="../Light_Sources/Light_Sampling.html#UniformLightSampler::Sample" class="code">Sample</a>(sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>());
+                     if (sampledLight) {
+                         &lt;&lt;<span class="fragmentname"><a href="#fragment-SamplepointonmonosampledLighttoestimatedirectillumination-0">Sample point on <tt>sampledLight</tt> to estimate direct illumination</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1822" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1822"><i></i></a><div id="fragbit-1822" class="collapse"><div class="fragmentcode">                            <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uLight = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+                            pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt; ls =
+                                sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::light" class="code">light</a>.<a href="../Light_Sources/Light_Interface.html#Light::SampleLi" class="code">SampleLi</a>(isect, uLight, lambda);
+                            if (ls &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a> &gt; 0) {
+                                &lt;&lt;<span class="fragmentname"><a href="#fragment-EvaluateBSDFforlightandpossiblyaddscatteredradiance-0">Evaluate BSDF for light and possibly add scattered radiance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1823" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1823"><i></i></a><div id="fragbit-1823" class="collapse"><div class="fragmentcode">                                   <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a> = ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>;
+                                   <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a>(wo, <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+                                   if (<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> &amp;&amp; <a href="#Integrator::Unoccluded" class="code">Unoccluded</a>(isect, ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pLight" class="code">pLight</a>))
+                                       <a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> += beta * <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> / (sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::p" class="code">p</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a>);</div></div>
+                            }</div></div>
+                     }
+                 }</div></div>
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-Sampleoutgoingdirectionatintersectiontocontinuepath-0">Sample outgoing direction at intersection to continue path</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1824" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1824"><i></i></a><div id="fragbit-1824" class="collapse"><div class="fragmentcode">                 if (<a href="#SimplePathIntegrator::sampleBSDF" class="code">sampleBSDF</a>) {
+                     &lt;&lt;<span class="fragmentname"><a href="#fragment-SampleBSDFfornewpathdirection-0">Sample BSDF for new path direction</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1825" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1825"><i></i></a><div id="fragbit-1825" class="collapse"><div class="fragmentcode">                        Float u = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>();
+                        pstd::optional&lt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample" class="code">BSDFSample</a>&gt; bs = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::Sample_f" class="code">Sample_f</a>(wo, u, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>());
+                        if (!bs)
+                            break;
+                        beta *= bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::f" class="code">f</a> * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>) / bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::pdf" class="code">pdf</a>;
+                        specularBounce = bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::IsSpecular" class="code">IsSpecular</a>();
+                        ray = isect.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SpawnRay" class="code">SpawnRay</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>);</div></div>
+                 } else {
+                     &lt;&lt;<span class="fragmentname">Uniformly sample sphere or hemisphere to get new path direction</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1826" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1826"><i></i></a><div id="fragbit-1826" class="collapse"><div class="fragmentcode">                        Float pdf;
+                        <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi;
+                        <a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a> flags = bsdf.Flags();
+                        if (IsReflective(flags) &amp;&amp; IsTransmissive(flags)) {
+                            wi = SampleUniformSphere(sampler.Get2D());
+                            pdf = UniformSpherePDF();
+                        } else {
+                            wi = SampleUniformHemisphere(sampler.Get2D());
+                            pdf = UniformHemispherePDF();
+                            if (IsReflective(flags) &amp;&amp; <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wo, isect.n) * <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wi, isect.n) &lt; 0)
+                                wi = -wi;
+                            else if (IsTransmissive(flags) &amp;&amp;
+                                     <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wo, isect.n) * <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wi, isect.n) &gt; 0)
+                                wi = -wi;
+                        }
+                        beta *= bsdf.f(wo, wi) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.shading.n) / pdf;
+                        specularBounce = false;
+                        ray = isect.SpawnRay(wi);</div></div>
+                 }</div></div></div></div>
+       }
+       return L;</div></div>
+}</div><p>
+
+
+</p>
+<p>A number of variables record the current state of the path.
+<tt>L</tt> is the current estimated scattered radiance from the running total
+of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="8.495ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3657.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">sigma-summation upper P left-parenthesis normal p Subscript Baseline overbar Subscript i Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNOPERATORS-2211" d="M999 -1l-86 -249h-829c-18 0 -27 0 -27 11c0 4 1 6 9 16l355 439l-365 502c0 31 1 32 28 32h829l86 -234h-25c-70 187 -300 194 -414 194h-396l325 -446c6 -9 7 -10 7 -14s-2 -7 -9 -16l-347 -429h425c147 0 216 24 232 29c85 29 152 90 177 165h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D443" d="M754 532c0 -112 -139 -216 -281 -216h-170l-62 -250c-1 -6 -3 -11 -3 -17c0 -18 28 -18 65 -18c19 0 28 0 28 -11c0 -20 -13 -20 -20 -20c-21 0 -43 2 -65 2l-64 1l-127 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47l134 537c3 12 4 15 4 19 c0 11 -6 14 -22 16c-12 1 -30 2 -43 2c-20 0 -29 0 -29 12c0 19 11 19 30 19h324c131 0 197 -74 197 -151zM661 556c0 69 -53 96 -136 96h-96c-43 0 -45 -3 -54 -38l-68 -272h141c44 0 104 8 154 53c39 36 59 122 59 161Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-AF" d="M431 589h-361v31h361v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNOPERATORS-2211" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D443" x="1223" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1977" y="0"></use>
+<g transform="translate(2367,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-AF" x="28" y="-38"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="787" y="-326"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3267" y="0"></use>
+</g>
+</svg> and <tt>ray</tt> is updated after each surface
+intersection to be the next ray to be traced.  <tt>specularBounce</tt>
+records if the last outgoing path direction sampled was due to specular
+reflection; the need to track this will be explained shortly.
+
+</p>
+<p>The <tt>beta</tt> variable holds the <em>path
+throughput weight</em>, which is defined as the factors of the throughput
+function <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.638ex" height="3.009ex" style="vertical-align: -1.005ex;" viewBox="0 -863.1 3288.7 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper T left-parenthesis normal p Subscript Baseline overbar Subscript i minus 1 Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D447" d="M704 666c0 -3 -1 -13 -2 -17l-27 -174c-2 -15 -4 -23 -15 -23c-9 0 -12 7 -12 13c0 3 2 15 3 19c4 26 8 65 8 80c0 78 -45 82 -146 82c-21 0 -54 0 -63 -2c-12 -3 -16 -9 -23 -37l-133 -531c-4 -15 -4 -21 -4 -21c0 -16 8 -19 37 -22c26 -2 39 -2 64 -2c26 0 34 0 34 -11 c0 -20 -12 -20 -22 -20c-28 0 -58 2 -87 2l-83 1l-85 -1c-27 0 -55 -2 -82 -2c-6 0 -17 0 -17 12c0 19 6 19 42 19c107 0 110 11 119 48l134 534c1 3 4 15 4 21c0 8 0 12 -28 12h-39c-148 0 -174 -18 -228 -173c-6 -16 -7 -21 -17 -21c-7 0 -12 5 -12 11c0 0 5 16 6 18 l60 176c7 19 8 20 32 20h555c17 0 27 0 27 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-AF" d="M431 589h-361v31h361v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D447" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="704" y="0"></use>
+<g transform="translate(1094,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-AF" x="28" y="-38"></use>
+<g transform="translate(556,-231)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2212" x="345" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1124" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2899" y="0"></use>
+</g>
+</svg>&mdash;that is, the product of the BSDF values and
+cosine terms for the vertices generated so far, divided by their respective
+sampling PDFs:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="eq:beta-path-throughput-weight"></span><div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="37.533ex" height="7.676ex" style="vertical-align: -3.338ex;" viewBox="0 -1867.7 16160 3304.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">beta equals product Underscript j equals 1 Overscript i minus 2 Endscripts StartFraction f Subscript Baseline left-parenthesis normal p Subscript j plus 1 Baseline right-arrow normal p Subscript j Baseline right-arrow normal p Subscript j minus 1 Baseline right-parenthesis StartAbsoluteValue cosine theta Subscript j Baseline EndAbsoluteValue Over p Subscript omega Sub Subscript Subscript Baseline left-parenthesis omega Subscript j Baseline right-parenthesis EndFraction period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D6FD" d="M574 574c0 -12 -2 -24 -5 -37c-11 -45 -41 -86 -81 -116c-10 -8 -20 -14 -30 -20c17 -11 31 -26 43 -43c20 -31 30 -68 30 -108c0 -20 -3 -42 -8 -64c-14 -53 -51 -104 -99 -140c-52 -38 -113 -57 -170 -57c-68 0 -114 40 -131 98l-68 -274c-1 -4 -5 -7 -10 -7h-5 c-6 0 -10 4 -10 12l154 615c34 136 125 273 245 273c47 0 89 -18 116 -50c18 -22 29 -51 29 -82zM518 592c0 19 -3 36 -12 51c-16 26 -44 40 -78 40c-110 0 -188 -129 -220 -255l-60 -242c-4 -17 -6 -33 -6 -49c0 -71 41 -126 113 -126c44 0 91 19 129 52 c39 35 61 82 73 128c7 29 12 59 12 87c0 25 -4 48 -14 69c-7 16 -17 29 -30 39c-25 -9 -50 -13 -75 -13c-35 0 -76 0 -76 24c0 0 0 5 1 7c7 27 49 27 85 27c24 0 47 -5 67 -13c9 5 18 12 26 19c31 29 49 67 58 105c5 17 7 34 7 50zM395 403c-11 3 -23 5 -36 5 c-24 0 -57 0 -60 -9c-1 -4 30 -4 52 -4c14 0 29 3 44 8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-220F" d="M1221 -450h-481v54c132 0 164 45 164 110v1182h-531v-1182c0 -64 31 -110 164 -110v-54h-481v54c132 0 164 45 164 110v1072c0 64 -31 110 -164 110v54h1165v-54c-132 0 -164 -45 -164 -110v-1072c0 -64 31 -110 164 -110v-54Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D457" d="M397 625c0 -27 -27 -53 -54 -53c-23 0 -37 16 -37 36c0 30 30 53 53 53c24 0 38 -17 38 -36zM360 350c0 -3 0 -17 -5 -37l-92 -366c-25 -99 -118 -152 -188 -152c-48 0 -88 22 -88 62c0 36 29 57 54 57c27 0 38 -19 38 -35c0 -20 -15 -46 -45 -53c18 -9 33 -9 39 -9 c56 0 104 57 123 133l94 373c4 17 7 28 7 51c0 42 -18 46 -32 46c-55 0 -101 -61 -126 -122c-8 -19 -9 -20 -18 -20c0 0 -12 0 -12 10c0 9 57 154 159 154c50 0 92 -35 92 -92Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6A" d="M210 -50c0 -91 -62 -155 -137 -155c-57 0 -113 28 -113 80c0 26 18 46 46 46s46 -20 46 -46c0 -27 -20 -41 -35 -45c26 -13 49 -13 54 -13c64 0 73 86 73 131v396c0 49 -9 56 -86 56v31l152 11v-492zM210 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53 c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2192" d="M943 250c0 -6 -4 -11 -9 -13c-57 -19 -101 -59 -137 -104c-28 -36 -49 -80 -58 -127c-2 -9 -10 -16 -20 -16c-11 0 -20 9 -20 20c0 1 1 3 1 4c10 53 33 102 66 144c22 28 48 52 78 72h-766c-11 0 -20 9 -20 20s9 20 20 20h766c-30 20 -56 44 -78 72 c-33 42 -56 91 -66 144c0 1 -1 3 -1 4c0 11 9 20 20 20c10 0 18 -7 20 -16c9 -47 30 -91 58 -127c36 -45 80 -85 137 -104c5 -2 9 -7 9 -13Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D6FD" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="852" y="0"></use>
+<g transform="translate(1908,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-220F" x="0" y="0"></use>
+<g transform="translate(41,-1090)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-3D" x="412" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1191" y="0"></use>
+</g>
+<g transform="translate(64,1151)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2212" x="345" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="1124" y="0"></use>
+</g>
+</g>
+<g transform="translate(3187,0)">
+<g transform="translate(286,0)">
+<rect stroke="none" width="12287" height="60" x="0" y="220"></rect>
+<g transform="translate(60,815)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="757" y="0"></use>
+<g transform="translate(1146,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+<g transform="translate(556,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6A" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2B" x="306" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1085" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2192" x="3202" y="0"></use>
+<g transform="translate(4480,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6A" x="787" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2192" x="5631" y="0"></use>
+<g transform="translate(6909,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+<g transform="translate(556,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6A" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2212" x="306" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1085" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="8687" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="9243" y="0"></use>
+<g transform="translate(9521,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(11028,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D457" x="663" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="11889" y="0"></use>
+</g>
+<g transform="translate(4762,-769)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D714" x="712" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1043" y="0"></use>
+<g transform="translate(1433,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6A" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2372" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="15881" y="0"></use>
+</g>
+</svg>
+</div>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+<div class="eqno">(<a href="#eq:beta-path-throughput-weight">13.8</a>)</div>
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<p>
+
+
+</p>
+<p>Thus, the product of <tt>beta</tt> with scattered light from direct lighting
+from the final vertex of the path gives the contribution for a path. (This
+quantity will reoccur many times in the following few chapters, and we will
+consistently refer to it as <tt>beta</tt>.) Because the effect of earlier
+path vertices is aggregated in this way, there is no need to store the
+positions and BSDFs of all the vertices of the path&mdash;only the last one.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Estimateradiancealongrayusingsimplepathtracing-0"></span><div class="fragmentname">&lt;&lt;Estimate radiance along ray using simple path tracing&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> L(0.f), beta(1.f);
+bool specularBounce = true;
+int depth = 0;
+while (beta) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-FindnextmonoSimplePathIntegratorvertexandaccumulatecontribution-0">Find next <tt>SimplePathIntegrator</tt> vertex and accumulate contribution</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1827" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1827"><i></i></a><div id="fragbit-1827" class="collapse"><div class="fragmentcode">       &lt;&lt;<span class="fragmentname"><a href="#fragment-Intersectmonoraywithscene-0">Intersect <tt>ray</tt> with scene</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1828" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1828"><i></i></a><div id="fragbit-1828" class="collapse"><div class="fragmentcode">          pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; si = <a href="../Introduction/pbrt_System_Overview.html#Integrator::Intersect" class="code">Intersect</a>(ray);</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-Accountforinfinitelightsifrayhasnointersection-0">Account for infinite lights if ray has no intersection</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1829" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1829"><i></i></a><div id="fragbit-1829" class="collapse"><div class="fragmentcode">          if (!si) {
+              if (!<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a> || specularBounce)
+                  for (const auto &amp;light : <a href="../Introduction/pbrt_System_Overview.html#Integrator::infiniteLights" class="code">infiniteLights</a>)
+                      L += beta * light.<a href="../Light_Sources/Light_Interface.html#Light::Le" class="code">Le</a>(ray, lambda);
+              break;
+          }</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-Accountforemissivesurfaceiflightwasnotsampled-0">Account for emissive surface if light was not sampled</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1830" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1830"><i></i></a><div id="fragbit-1830" class="collapse"><div class="fragmentcode">          <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>;
+          if (!<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a> || specularBounce)
+              L += beta * isect.<a href="../Light_Sources/Light_Interface.html#Light::Le" class="code">Le</a>(-ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>, lambda);</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-Endpathifmaximumdepthreached-0">End path if maximum depth reached</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1831" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1831"><i></i></a><div id="fragbit-1831" class="collapse"><div class="fragmentcode">          if (depth++ == <a href="#SimplePathIntegrator::maxDepth" class="code">maxDepth</a>)
+              break;</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-GetBSDFandskipovermediumboundaries-0">Get BSDF and skip over medium boundaries</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1832" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1832"><i></i></a><div id="fragbit-1832" class="collapse"><div class="fragmentcode">          <a href="../Reflection_Models/BSDF_Representation.html#BSDF" class="code">BSDF</a> bsdf = isect.<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#SurfaceInteraction::GetBSDF" class="code">GetBSDF</a>(ray, lambda, camera, scratchBuffer, sampler);
+          if (!bsdf) {
+              isect.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SkipIntersection" class="code">SkipIntersection</a>(&amp;ray, si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>);
+              continue;
+          }</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-SampledirectilluminationifmonosampleLightsistrue-0">Sample direct illumination if <tt>sampleLights</tt> is true</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1833" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1833"><i></i></a><div id="fragbit-1833" class="collapse"><div class="fragmentcode">          <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo = -ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>;
+          if (<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a>) {
+              pstd::optional&lt;<a href="../Light_Sources/Light_Sampling.html#SampledLight" class="code">SampledLight</a>&gt; sampledLight =
+                  <a href="#SimplePathIntegrator::lightSampler" class="code">lightSampler</a>.<a href="../Light_Sources/Light_Sampling.html#UniformLightSampler::Sample" class="code">Sample</a>(sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>());
+              if (sampledLight) {
+                  &lt;&lt;<span class="fragmentname"><a href="#fragment-SamplepointonmonosampledLighttoestimatedirectillumination-0">Sample point on <tt>sampledLight</tt> to estimate direct illumination</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1834" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1834"><i></i></a><div id="fragbit-1834" class="collapse"><div class="fragmentcode">                     <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uLight = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+                     pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt; ls =
+                         sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::light" class="code">light</a>.<a href="../Light_Sources/Light_Interface.html#Light::SampleLi" class="code">SampleLi</a>(isect, uLight, lambda);
+                     if (ls &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a> &gt; 0) {
+                         &lt;&lt;<span class="fragmentname"><a href="#fragment-EvaluateBSDFforlightandpossiblyaddscatteredradiance-0">Evaluate BSDF for light and possibly add scattered radiance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1835" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1835"><i></i></a><div id="fragbit-1835" class="collapse"><div class="fragmentcode">                            <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a> = ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>;
+                            <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a>(wo, <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+                            if (<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> &amp;&amp; <a href="#Integrator::Unoccluded" class="code">Unoccluded</a>(isect, ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pLight" class="code">pLight</a>))
+                                <a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> += beta * <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> / (sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::p" class="code">p</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a>);</div></div>
+                     }</div></div>
+              }
+          }</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-Sampleoutgoingdirectionatintersectiontocontinuepath-0">Sample outgoing direction at intersection to continue path</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1836" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1836"><i></i></a><div id="fragbit-1836" class="collapse"><div class="fragmentcode">          if (<a href="#SimplePathIntegrator::sampleBSDF" class="code">sampleBSDF</a>) {
+              &lt;&lt;<span class="fragmentname"><a href="#fragment-SampleBSDFfornewpathdirection-0">Sample BSDF for new path direction</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1837" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1837"><i></i></a><div id="fragbit-1837" class="collapse"><div class="fragmentcode">                 Float u = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>();
+                 pstd::optional&lt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample" class="code">BSDFSample</a>&gt; bs = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::Sample_f" class="code">Sample_f</a>(wo, u, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>());
+                 if (!bs)
+                     break;
+                 beta *= bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::f" class="code">f</a> * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>) / bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::pdf" class="code">pdf</a>;
+                 specularBounce = bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::IsSpecular" class="code">IsSpecular</a>();
+                 ray = isect.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SpawnRay" class="code">SpawnRay</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>);</div></div>
+          } else {
+              &lt;&lt;<span class="fragmentname">Uniformly sample sphere or hemisphere to get new path direction</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1838" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1838"><i></i></a><div id="fragbit-1838" class="collapse"><div class="fragmentcode">                 Float pdf;
+                 <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi;
+                 <a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a> flags = bsdf.Flags();
+                 if (IsReflective(flags) &amp;&amp; IsTransmissive(flags)) {
+                     wi = SampleUniformSphere(sampler.Get2D());
+                     pdf = UniformSpherePDF();
+                 } else {
+                     wi = SampleUniformHemisphere(sampler.Get2D());
+                     pdf = UniformHemispherePDF();
+                     if (IsReflective(flags) &amp;&amp; <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wo, isect.n) * <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wi, isect.n) &lt; 0)
+                         wi = -wi;
+                     else if (IsTransmissive(flags) &amp;&amp;
+                              <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wo, isect.n) * <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wi, isect.n) &gt; 0)
+                         wi = -wi;
+                 }
+                 beta *= bsdf.f(wo, wi) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.shading.n) / pdf;
+                 specularBounce = false;
+                 ray = isect.SpawnRay(wi);</div></div>
+          }</div></div></div></div>
+}
+return L;</div><p>
+
+
+</p>
+<p>Each iteration of the <tt>while</tt> loop accounts for an additional segment
+of a path, corresponding to a term of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.654ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2434.3 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper P left-parenthesis normal p Subscript Baseline overbar Subscript i Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D443" d="M754 532c0 -112 -139 -216 -281 -216h-170l-62 -250c-1 -6 -3 -11 -3 -17c0 -18 28 -18 65 -18c19 0 28 0 28 -11c0 -20 -13 -20 -20 -20c-21 0 -43 2 -65 2l-64 1l-127 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47l134 537c3 12 4 15 4 19 c0 11 -6 14 -22 16c-12 1 -30 2 -43 2c-20 0 -29 0 -29 12c0 19 11 19 30 19h324c131 0 197 -74 197 -151zM661 556c0 69 -53 96 -136 96h-96c-43 0 -45 -3 -54 -38l-68 -272h141c44 0 104 8 154 53c39 36 59 122 59 161Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-AF" d="M431 589h-361v31h361v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D443" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="754" y="0"></use>
+<g transform="translate(1144,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-AF" x="28" y="-38"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="787" y="-326"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2044" y="0"></use>
+</g>
+</svg>&rsquo;s sum.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-FindnextmonoSimplePathIntegratorvertexandaccumulatecontribution-0"></span><div class="fragmentname">&lt;&lt;Find next <tt>SimplePathIntegrator</tt> vertex and accumulate contribution&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">&lt;&lt;<span class="fragmentname"><a href="#fragment-Intersectmonoraywithscene-0">Intersect <tt>ray</tt> with scene</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1839" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1839"><i></i></a><div id="fragbit-1839" class="collapse"><div class="fragmentcode">   pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; si = <a href="../Introduction/pbrt_System_Overview.html#Integrator::Intersect" class="code">Intersect</a>(ray);</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Accountforinfinitelightsifrayhasnointersection-0">Account for infinite lights if ray has no intersection</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1840" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1840"><i></i></a><div id="fragbit-1840" class="collapse"><div class="fragmentcode">   if (!si) {
+       if (!<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a> || specularBounce)
+           for (const auto &amp;light : <a href="../Introduction/pbrt_System_Overview.html#Integrator::infiniteLights" class="code">infiniteLights</a>)
+               L += beta * light.<a href="../Light_Sources/Light_Interface.html#Light::Le" class="code">Le</a>(ray, lambda);
+       break;
+   }</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Accountforemissivesurfaceiflightwasnotsampled-0">Account for emissive surface if light was not sampled</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1841" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1841"><i></i></a><div id="fragbit-1841" class="collapse"><div class="fragmentcode">   <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>;
+   if (!<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a> || specularBounce)
+       L += beta * isect.<a href="../Light_Sources/Light_Interface.html#Light::Le" class="code">Le</a>(-ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>, lambda);</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Endpathifmaximumdepthreached-0">End path if maximum depth reached</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1842" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1842"><i></i></a><div id="fragbit-1842" class="collapse"><div class="fragmentcode">   if (depth++ == <a href="#SimplePathIntegrator::maxDepth" class="code">maxDepth</a>)
+       break;</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-GetBSDFandskipovermediumboundaries-0">Get BSDF and skip over medium boundaries</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1843" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1843"><i></i></a><div id="fragbit-1843" class="collapse"><div class="fragmentcode">   <a href="../Reflection_Models/BSDF_Representation.html#BSDF" class="code">BSDF</a> bsdf = isect.<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#SurfaceInteraction::GetBSDF" class="code">GetBSDF</a>(ray, lambda, camera, scratchBuffer, sampler);
+   if (!bsdf) {
+       isect.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SkipIntersection" class="code">SkipIntersection</a>(&amp;ray, si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>);
+       continue;
+   }</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-SampledirectilluminationifmonosampleLightsistrue-0">Sample direct illumination if <tt>sampleLights</tt> is true</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1844" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1844"><i></i></a><div id="fragbit-1844" class="collapse"><div class="fragmentcode">   <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo = -ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>;
+   if (<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a>) {
+       pstd::optional&lt;<a href="../Light_Sources/Light_Sampling.html#SampledLight" class="code">SampledLight</a>&gt; sampledLight =
+           <a href="#SimplePathIntegrator::lightSampler" class="code">lightSampler</a>.<a href="../Light_Sources/Light_Sampling.html#UniformLightSampler::Sample" class="code">Sample</a>(sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>());
+       if (sampledLight) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-SamplepointonmonosampledLighttoestimatedirectillumination-0">Sample point on <tt>sampledLight</tt> to estimate direct illumination</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1845" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1845"><i></i></a><div id="fragbit-1845" class="collapse"><div class="fragmentcode">              <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uLight = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+              pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt; ls =
+                  sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::light" class="code">light</a>.<a href="../Light_Sources/Light_Interface.html#Light::SampleLi" class="code">SampleLi</a>(isect, uLight, lambda);
+              if (ls &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a> &gt; 0) {
+                  &lt;&lt;<span class="fragmentname"><a href="#fragment-EvaluateBSDFforlightandpossiblyaddscatteredradiance-0">Evaluate BSDF for light and possibly add scattered radiance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1846" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1846"><i></i></a><div id="fragbit-1846" class="collapse"><div class="fragmentcode">                     <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a> = ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>;
+                     <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a>(wo, <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+                     if (<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> &amp;&amp; <a href="#Integrator::Unoccluded" class="code">Unoccluded</a>(isect, ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pLight" class="code">pLight</a>))
+                         <a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> += beta * <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> / (sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::p" class="code">p</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a>);</div></div>
+              }</div></div>
+       }
+   }</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Sampleoutgoingdirectionatintersectiontocontinuepath-0">Sample outgoing direction at intersection to continue path</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1847" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1847"><i></i></a><div id="fragbit-1847" class="collapse"><div class="fragmentcode">   if (<a href="#SimplePathIntegrator::sampleBSDF" class="code">sampleBSDF</a>) {
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-SampleBSDFfornewpathdirection-0">Sample BSDF for new path direction</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1848" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1848"><i></i></a><div id="fragbit-1848" class="collapse"><div class="fragmentcode">          Float u = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>();
+          pstd::optional&lt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample" class="code">BSDFSample</a>&gt; bs = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::Sample_f" class="code">Sample_f</a>(wo, u, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>());
+          if (!bs)
+              break;
+          beta *= bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::f" class="code">f</a> * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>) / bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::pdf" class="code">pdf</a>;
+          specularBounce = bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::IsSpecular" class="code">IsSpecular</a>();
+          ray = isect.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SpawnRay" class="code">SpawnRay</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>);</div></div>
+   } else {
+       &lt;&lt;<span class="fragmentname">Uniformly sample sphere or hemisphere to get new path direction</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1849" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1849"><i></i></a><div id="fragbit-1849" class="collapse"><div class="fragmentcode">          Float pdf;
+          <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi;
+          <a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a> flags = bsdf.Flags();
+          if (IsReflective(flags) &amp;&amp; IsTransmissive(flags)) {
+              wi = SampleUniformSphere(sampler.Get2D());
+              pdf = UniformSpherePDF();
+          } else {
+              wi = SampleUniformHemisphere(sampler.Get2D());
+              pdf = UniformHemispherePDF();
+              if (IsReflective(flags) &amp;&amp; <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wo, isect.n) * <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wi, isect.n) &lt; 0)
+                  wi = -wi;
+              else if (IsTransmissive(flags) &amp;&amp;
+                       <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wo, isect.n) * <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wi, isect.n) &gt; 0)
+                  wi = -wi;
+          }
+          beta *= bsdf.f(wo, wi) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.shading.n) / pdf;
+          specularBounce = false;
+          ray = isect.SpawnRay(wi);</div></div>
+   }</div></div></div><p>
+
+
+</p>
+<p>The first step is to find the intersection of the ray for the current
+segment with the scene geometry.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Intersectmonoraywithscene-0"></span><div class="fragmentname">&lt;&lt;Intersect <tt>ray</tt> with scene&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::optional&lt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection" class="code">ShapeIntersection</a>&gt; si = <a href="../Introduction/pbrt_System_Overview.html#Integrator::Intersect" class="code">Intersect</a>(ray);</div><p>
+
+
+</p>
+<p>If there is no intersection, then the ray path comes to an end.  Before the
+accumulated path radiance estimate can be returned, however, in some
+cases radiance from infinite light sources is added to the path&rsquo;s
+radiance estimate, with contribution scaled by the accumulated <tt>beta</tt>
+factor.
+
+</p>
+<p>If <tt>sampleLights</tt> is false, then emission is only found when rays
+happen to intersect emitters, in which case the contribution of infinite
+area lights must be added to rays that do not intersect any geometry.  If
+it is true, then the integrator calls the <a href="../Light_Sources/Light_Interface.html#Light"><tt>Light</tt></a>
+<tt>SampleLi()</tt> method to estimate direct illumination at each path
+vertex.  In that case, infinite lights have already been accounted for,
+except in the case of a specular BSDF at the previous vertex.  Then,
+<tt>SampleLi()</tt> is not useful since only the specular direction scatters
+light. Therefore, <tt>specularBounce</tt> records whether the last BSDF was
+perfect specular, in which case infinite area lights must be included here
+after all.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Accountforinfinitelightsifrayhasnointersection-0"></span><div class="fragmentname">&lt;&lt;Account for infinite lights if ray has no intersection&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (!si) {
+    if (!<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a> || specularBounce)
+        for (const auto &amp;light : <a href="../Introduction/pbrt_System_Overview.html#Integrator::infiniteLights" class="code">infiniteLights</a>)
+            L += beta * light.<a href="../Light_Sources/Light_Interface.html#Light::Le" class="code">Le</a>(ray, lambda);
+    break;
+}</div><p>
+
+
+</p>
+<p>If the ray hits an emissive surface, similar logic governs whether its
+emission is added to the path&rsquo;s radiance estimate.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Accountforemissivesurfaceiflightwasnotsampled-0"></span><div class="fragmentname">&lt;&lt;Account for emissive surface if light was not sampled&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;isect = si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::intr" class="code">intr</a>;
+if (!<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a> || specularBounce)
+    L += beta * isect.<a href="../Light_Sources/Light_Interface.html#Light::Le" class="code">Le</a>(-ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>, lambda);</div><p>
+
+
+</p>
+<p>The next step is to find the BSDF at the intersection point.  A special
+case arises when an unset <tt>BSDF</tt> is returned by the
+<tt>SurfaceInteraction</tt>&rsquo;s <tt>GetBSDF()</tt> method.  In that case, the
+current surface should have no effect on light.  <tt>pbrt</tt> uses such surfaces
+to represent transitions between participating media, whose boundaries are
+themselves optically inactive (i.e., they have the same index of refraction
+on both sides). Since the <tt>SimplePathIntegrator</tt> ignores media, it
+simply skips over such surfaces without counting them as scattering events
+in the <tt>depth</tt> counter.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GetBSDFandskipovermediumboundaries-0"></span><div class="fragmentname">&lt;&lt;Get BSDF and skip over medium boundaries&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Reflection_Models/BSDF_Representation.html#BSDF" class="code">BSDF</a> bsdf = isect.<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#SurfaceInteraction::GetBSDF" class="code">GetBSDF</a>(ray, lambda, camera, scratchBuffer, sampler);
+if (!bsdf) {
+    isect.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SkipIntersection" class="code">SkipIntersection</a>(&amp;ray, si-&gt;<a href="../Shapes/Basic_Shape_Interface.html#ShapeIntersection::tHit" class="code">tHit</a>);
+    continue;
+}</div><p>
+
+
+</p>
+<p>Otherwise we have a valid surface intersection and can go ahead and
+increment <tt>depth</tt>.  The path is then terminated if it has reached the
+maximum depth.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Endpathifmaximumdepthreached-0"></span><div class="fragmentname">&lt;&lt;End path if maximum depth reached&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (depth++ == <a href="#SimplePathIntegrator::maxDepth" class="code">maxDepth</a>)
+    break;</div><p>
+
+
+</p>
+<p>If explicit light sampling is being performed, then
+the first step is to use the <a href="../Light_Sources/Light_Sampling.html#UniformLightSampler"><tt>UniformLightSampler</tt></a> to choose a single
+light source.  (Recall from Section&nbsp;<a href="../Light_Sources/Light_Sampling.html#sec:light-sampling">12.6</a> that sampling
+only one of the scene&rsquo;s light sources can still give a valid estimate
+of the effect of all of them, given suitable weighting.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledirectilluminationifmonosampleLightsistrue-0"></span><div class="fragmentname">&lt;&lt;Sample direct illumination if <tt>sampleLights</tt> is true&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo = -ray.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>;
+if (<a href="#SimplePathIntegrator::sampleLights" class="code">sampleLights</a>) {
+    pstd::optional&lt;<a href="../Light_Sources/Light_Sampling.html#SampledLight" class="code">SampledLight</a>&gt; sampledLight =
+        <a href="#SimplePathIntegrator::lightSampler" class="code">lightSampler</a>.<a href="../Light_Sources/Light_Sampling.html#UniformLightSampler::Sample" class="code">Sample</a>(sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>());
+    if (sampledLight) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-SamplepointonmonosampledLighttoestimatedirectillumination-0">Sample point on <tt>sampledLight</tt> to estimate direct illumination</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1850" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1850"><i></i></a><div id="fragbit-1850" class="collapse"><div class="fragmentcode">           <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uLight = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+           pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt; ls =
+               sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::light" class="code">light</a>.<a href="../Light_Sources/Light_Interface.html#Light::SampleLi" class="code">SampleLi</a>(isect, uLight, lambda);
+           if (ls &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a> &gt; 0) {
+               &lt;&lt;<span class="fragmentname"><a href="#fragment-EvaluateBSDFforlightandpossiblyaddscatteredradiance-0">Evaluate BSDF for light and possibly add scattered radiance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1851" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1851"><i></i></a><div id="fragbit-1851" class="collapse"><div class="fragmentcode">                  <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a> = ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>;
+                  <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a>(wo, <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+                  if (<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> &amp;&amp; <a href="#Integrator::Unoccluded" class="code">Unoccluded</a>(isect, ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pLight" class="code">pLight</a>))
+                      <a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> += beta * <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> / (sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::p" class="code">p</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a>);</div></div>
+           }</div></div>
+    }
+}</div><p>
+
+
+</p>
+<p>Given a light source, a call to <tt>SampleLi()</tt> yields a sample on the
+light.  If the light sample is valid, a direct lighting calculation is
+performed.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SamplepointonmonosampledLighttoestimatedirectillumination-0"></span><div class="fragmentname">&lt;&lt;Sample point on <tt>sampledLight</tt> to estimate direct illumination&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uLight = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>();
+pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt; ls =
+    sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::light" class="code">light</a>.<a href="../Light_Sources/Light_Interface.html#Light::SampleLi" class="code">SampleLi</a>(isect, uLight, lambda);
+if (ls &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> &amp;&amp; ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a> &gt; 0) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-EvaluateBSDFforlightandpossiblyaddscatteredradiance-0">Evaluate BSDF for light and possibly add scattered radiance</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1852" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1852"><i></i></a><div id="fragbit-1852" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a> = ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>;
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a>(wo, <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+       if (<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> &amp;&amp; <a href="#Integrator::Unoccluded" class="code">Unoccluded</a>(isect, ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pLight" class="code">pLight</a>))
+           <a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> += beta * <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> / (sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::p" class="code">p</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a>);</div></div>
+}</div><p>
+
+
+</p>
+<p>Returning to the path tracing estimator in
+Equation&nbsp;(<a href="../Light_Transport_I_Surface_Reflection/Path_Tracing.html#eq:path-incremental-sample-result-weights">13.7</a>), we have the
+path throughput weight in <tt>beta</tt>, which corresponds to the term in
+parentheses there.  A call to <tt>SampleLi()</tt> yields a sample on the light.
+Because the light sampling methods return samples that are with
+respect to solid angle and not area, yet another Jacobian correction term
+is necessary, and the estimator becomes
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="eq:simple-pt-pathcontrib"></span><div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="67.168ex" height="6.509ex" style="vertical-align: -2.671ex;" viewBox="0 -1652.5 28919.6 2802.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper P left-parenthesis normal p Subscript Baseline overbar Subscript i Baseline right-parenthesis equals StartFraction upper L Subscript normal e Baseline left-parenthesis normal p Subscript i Baseline right-arrow normal p Subscript i minus 1 Baseline right-parenthesis f Subscript Baseline left-parenthesis normal p Subscript i Baseline right-arrow normal p Subscript i minus 1 Baseline right-arrow normal p Subscript i minus 2 Baseline right-parenthesis StartAbsoluteValue cosine theta Subscript i Baseline EndAbsoluteValue upper V left-parenthesis normal p Subscript i Baseline left-right-arrow normal p Subscript i minus 1 Baseline right-parenthesis Over p Subscript l Baseline left-parenthesis omega Subscript i Baseline right-parenthesis p left-parenthesis l right-parenthesis EndFraction beta comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D443" d="M754 532c0 -112 -139 -216 -281 -216h-170l-62 -250c-1 -6 -3 -11 -3 -17c0 -18 28 -18 65 -18c19 0 28 0 28 -11c0 -20 -13 -20 -20 -20c-21 0 -43 2 -65 2l-64 1l-127 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47l134 537c3 12 4 15 4 19 c0 11 -6 14 -22 16c-12 1 -30 2 -43 2c-20 0 -29 0 -29 12c0 19 11 19 30 19h324c131 0 197 -74 197 -151zM661 556c0 69 -53 96 -136 96h-96c-43 0 -45 -3 -54 -38l-68 -272h141c44 0 104 8 154 53c39 36 59 122 59 161Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-AF" d="M431 589h-361v31h361v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2192" d="M943 250c0 -6 -4 -11 -9 -13c-57 -19 -101 -59 -137 -104c-28 -36 -49 -80 -58 -127c-2 -9 -10 -16 -20 -16c-11 0 -20 9 -20 20c0 1 1 3 1 4c10 53 33 102 66 144c22 28 48 52 78 72h-766c-11 0 -20 9 -20 20s9 20 20 20h766c-30 20 -56 44 -78 72 c-33 42 -56 91 -66 144c0 1 -1 3 -1 4c0 11 9 20 20 20c10 0 18 -7 20 -16c9 -47 30 -91 58 -127c36 -45 80 -85 137 -104c5 -2 9 -7 9 -13Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D449" d="M769 671c0 0 -1 -18 -13 -19c-37 -2 -79 -5 -128 -83l-360 -573c-8 -13 -12 -18 -28 -18c-13 0 -17 3 -20 23l-79 617c-3 25 -4 34 -60 34c-16 0 -25 0 -25 12c0 19 12 19 19 19c17 0 36 -2 54 -2s37 -1 55 -1c41 0 84 3 124 3c6 0 14 -2 14 -11c0 -20 -11 -20 -25 -20 c-46 0 -69 -13 -69 -30l68 -529l307 488s15 23 15 38c0 21 -19 31 -46 33c-7 0 -16 1 -16 12c0 19 13 19 19 19c32 0 66 -3 99 -3c27 0 56 3 82 3c8 0 13 -4 13 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2194" d="M942 250c0 -6 -4 -11 -9 -13c-57 -19 -101 -59 -137 -104c-28 -36 -49 -80 -58 -127c-2 -9 -10 -16 -20 -16c-11 0 -20 9 -20 20c0 1 1 3 1 4c10 53 33 102 66 144c22 28 48 52 78 72h-686c30 -20 56 -44 78 -72c33 -42 56 -91 66 -144c0 -1 1 -3 1 -4 c0 -11 -9 -20 -20 -20c-10 0 -18 7 -20 16c-9 47 -30 91 -58 127c-36 45 -80 85 -137 104c-5 2 -9 7 -9 13s4 11 9 13c57 19 101 59 137 104c28 36 49 80 58 127c2 9 10 16 20 16c11 0 20 -9 20 -20c0 -1 -1 -3 -1 -4c-10 -53 -33 -102 -66 -144c-22 -28 -48 -52 -78 -72 h686c-30 20 -56 44 -78 72c-33 42 -56 91 -66 144c0 1 -1 3 -1 4c0 11 9 20 20 20c10 0 18 -7 20 -16c9 -47 30 -91 58 -127c36 -45 80 -85 137 -104c5 -2 9 -7 9 -13Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D459" d="M258 683l-144 -578c-5 -19 -6 -24 -6 -48c0 -14 0 -46 30 -46c40 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -12 -60 -30 -98c-17 -36 -42 -56 -75 -56c-47 0 -91 35 -91 92c0 16 2 23 5 34l126 500l3 20c0 8 -1 17 -49 17c-15 0 -25 0 -25 11 c0 19 11 20 19 21c26 2 99 10 122 10c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D6FD" d="M574 574c0 -12 -2 -24 -5 -37c-11 -45 -41 -86 -81 -116c-10 -8 -20 -14 -30 -20c17 -11 31 -26 43 -43c20 -31 30 -68 30 -108c0 -20 -3 -42 -8 -64c-14 -53 -51 -104 -99 -140c-52 -38 -113 -57 -170 -57c-68 0 -114 40 -131 98l-68 -274c-1 -4 -5 -7 -10 -7h-5 c-6 0 -10 4 -10 12l154 615c34 136 125 273 245 273c47 0 89 -18 116 -50c18 -22 29 -51 29 -82zM518 592c0 19 -3 36 -12 51c-16 26 -44 40 -78 40c-110 0 -188 -129 -220 -255l-60 -242c-4 -17 -6 -33 -6 -49c0 -71 41 -126 113 -126c44 0 91 19 129 52 c39 35 61 82 73 128c7 29 12 59 12 87c0 25 -4 48 -14 69c-7 16 -17 29 -30 39c-25 -9 -50 -13 -75 -13c-35 0 -76 0 -76 24c0 0 0 5 1 7c7 27 49 27 85 27c24 0 47 -5 67 -13c9 5 18 12 26 19c31 29 49 67 58 105c5 17 7 34 7 50zM395 403c-11 3 -23 5 -36 5 c-24 0 -57 0 -60 -9c-1 -4 30 -4 52 -4c14 0 29 3 44 8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D443" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="754" y="0"></use>
+<g transform="translate(1144,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-AF" x="28" y="-38"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="787" y="-326"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2044" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="2712" y="0"></use>
+<g transform="translate(3490,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="24058" height="60" x="0" y="220"></rect>
+<g transform="translate(60,770)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-65" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1095" y="0"></use>
+<g transform="translate(1485,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="787" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2192" x="2616" y="0"></use>
+<g transform="translate(3894,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+<g transform="translate(556,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2212" x="278" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1057" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="5652" y="0"></use>
+<g transform="translate(6042,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="6799" y="0"></use>
+<g transform="translate(7188,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="787" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2192" x="8319" y="0"></use>
+<g transform="translate(9598,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+<g transform="translate(556,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2212" x="278" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1057" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2192" x="11633" y="0"></use>
+<g transform="translate(12912,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+<g transform="translate(556,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2212" x="278" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="1057" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="14669" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="15226" y="0"></use>
+<g transform="translate(15504,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(17010,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="663" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="17777" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="18222" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="18991" y="0"></use>
+<g transform="translate(19381,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="787" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2194" x="20512" y="0"></use>
+<g transform="translate(21790,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+<g transform="translate(556,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-2212" x="278" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1057" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="23548" y="0"></use>
+</g>
+<g transform="translate(9898,-769)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D459" x="712" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="814" y="0"></use>
+<g transform="translate(1204,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2123" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="2679" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="3183" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D459" x="3572" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="3871" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D6FD" x="28066" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="28641" y="0"></use>
+</g>
+</svg>
+</div>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+<div class="eqno">(<a href="#eq:simple-pt-pathcontrib">13.9</a>)</div>
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<p>
+
+where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.965ex" height="2.009ex" style="vertical-align: -0.671ex; margin-left: -0.073ex;" viewBox="-31.5 -576.1 846.1 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">p Subscript l</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D459" d="M258 683l-144 -578c-5 -19 -6 -24 -6 -48c0 -14 0 -46 30 -46c40 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -12 -60 -30 -98c-17 -36 -42 -56 -75 -56c-47 0 -91 35 -91 92c0 16 2 23 5 34l126 500l3 20c0 8 -1 17 -49 17c-15 0 -25 0 -25 11 c0 19 11 20 19 21c26 2 99 10 122 10c13 0 13 -11 13 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D459" x="712" y="-213"></use>
+</g>
+</svg> is the solid angle density that the chosen light <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.693ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 298.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">l</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D459" d="M258 683l-144 -578c-5 -19 -6 -24 -6 -48c0 -14 0 -46 30 -46c40 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -12 -60 -30 -98c-17 -36 -42 -56 -75 -56c-47 0 -91 35 -91 92c0 16 2 23 5 34l126 500l3 20c0 8 -1 17 -49 17c-15 0 -25 0 -25 11 c0 19 11 20 19 21c26 2 99 10 122 10c13 0 13 -11 13 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D459" x="0" y="0"></use>
+</g>
+</svg> would use
+to sample the direction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.745ex" height="2.843ex" style="vertical-align: -0.838ex; margin-left: -0.073ex;" viewBox="-31.5 -863.1 1612.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">p left-parenthesis l right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D459" d="M258 683l-144 -578c-5 -19 -6 -24 -6 -48c0 -14 0 -46 30 -46c40 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -12 -60 -30 -98c-17 -36 -42 -56 -75 -56c-47 0 -91 35 -91 92c0 16 2 23 5 34l126 500l3 20c0 8 -1 17 -49 17c-15 0 -25 0 -25 11 c0 19 11 20 19 21c26 2 99 10 122 10c13 0 13 -11 13 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="503" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D459" x="893" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1191" y="0"></use>
+</g>
+</svg> is the discrete probability of
+sampling the light <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.693ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 298.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">l</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D459" d="M258 683l-144 -578c-5 -19 -6 -24 -6 -48c0 -14 0 -46 30 -46c40 0 59 59 76 124c3 14 4 18 14 18c3 0 12 0 12 -10c0 0 -12 -60 -30 -98c-17 -36 -42 -56 -75 -56c-47 0 -91 35 -91 92c0 16 2 23 5 34l126 500l3 20c0 8 -1 17 -49 17c-15 0 -25 0 -25 11 c0 19 11 20 19 21c26 2 99 10 122 10c13 0 13 -11 13 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D459" x="0" y="0"></use>
+</g>
+</svg> (recall Equation&nbsp;(<a href="../Light_Sources/Light_Sampling.html#eq:mc-sampled-sum">12.2</a>)).
+Their product gives the full probability of the light sample.
+
+</p>
+<p>Before tracing the shadow ray to evaluate the visibility factor <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.787ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 769.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper V</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D449" d="M769 671c0 0 -1 -18 -13 -19c-37 -2 -79 -5 -128 -83l-360 -573c-8 -13 -12 -18 -28 -18c-13 0 -17 3 -20 23l-79 617c-3 25 -4 34 -60 34c-16 0 -25 0 -25 12c0 19 12 19 19 19c17 0 36 -2 54 -2s37 -1 55 -1c41 0 84 3 124 3c6 0 14 -2 14 -11c0 -20 -11 -20 -25 -20 c-46 0 -69 -13 -69 -30l68 -529l307 488s15 23 15 38c0 21 -19 31 -46 33c-7 0 -16 1 -16 12c0 19 13 19 19 19c32 0 66 -3 99 -3c27 0 56 3 82 3c8 0 13 -4 13 -12Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D449" x="0" y="0"></use>
+</g>
+</svg>, it is
+worth checking if the BSDF is zero for the sampled direction, in which case that
+computational expense is unnecessary.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-EvaluateBSDFforlightandpossiblyaddscatteredradiance-0"></span><div class="fragmentname">&lt;&lt;Evaluate BSDF for light and possibly add scattered radiance&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a> = ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>;
+<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a>(wo, <a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(<a href="../Light_Sources/Light_Interface.html#LightLiSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>);
+if (<a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> &amp;&amp; <a href="#Integrator::Unoccluded" class="code">Unoccluded</a>(isect, ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pLight" class="code">pLight</a>))
+    <a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> += beta * <a href="../Reflection_Models/BSDF_Representation.html#BSDF::f" class="code">f</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::L" class="code">L</a> / (sampledLight-&gt;<a href="../Light_Sources/Light_Sampling.html#SampledLight::p" class="code">p</a> * ls-&gt;<a href="../Light_Sources/Light_Interface.html#LightLiSample::pdf" class="code">pdf</a>);</div><p>
+
+
+</p>
+<p><tt>Unoccluded()</tt> is a convenience method provided in the <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a>
+base class.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-IntegratorPublicMethods-1"></span><div class="fragmentname">&lt;&lt;Integrator Public Methods&gt;&gt;+=&nbsp;<a href="../Introduction/pbrt_System_Overview.html#fragment-IntegratorPublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="Integrator::Unoccluded"></span>Unoccluded(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;p0, const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;p1) const {
+    return !<a href="../Introduction/pbrt_System_Overview.html#Integrator::IntersectP" class="code">IntersectP</a>(p0.<a href="../Shapes/Managing_Rounding_Error.html#Interaction::SpawnRayTo" class="code">SpawnRayTo</a>(p1), 1 - <a href="../Shapes/Managing_Rounding_Error.html#ShadowEpsilon" class="code">ShadowEpsilon</a>);
+}</div><p>
+
+
+</p>
+<p>To sample the next path vertex, the direction of the ray leaving
+the surface is found either by calling the <tt>BSDF</tt>&rsquo;s sampling method or
+by sampling uniformly, depending on the <tt>sampleBSDF</tt> parameter.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Sampleoutgoingdirectionatintersectiontocontinuepath-0"></span><div class="fragmentname">&lt;&lt;Sample outgoing direction at intersection to continue path&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="#SimplePathIntegrator::sampleBSDF" class="code">sampleBSDF</a>) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SampleBSDFfornewpathdirection-0">Sample BSDF for new path direction</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1853" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1853"><i></i></a><div id="fragbit-1853" class="collapse"><div class="fragmentcode">       Float u = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>();
+       pstd::optional&lt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample" class="code">BSDFSample</a>&gt; bs = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::Sample_f" class="code">Sample_f</a>(wo, u, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>());
+       if (!bs)
+           break;
+       beta *= bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::f" class="code">f</a> * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>) / bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::pdf" class="code">pdf</a>;
+       specularBounce = bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::IsSpecular" class="code">IsSpecular</a>();
+       ray = isect.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SpawnRay" class="code">SpawnRay</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>);</div></div>
+} else {
+    &lt;&lt;<span class="fragmentname">Uniformly sample sphere or hemisphere to get new path direction</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1854" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1854"><i></i></a><div id="fragbit-1854" class="collapse"><div class="fragmentcode">       Float pdf;
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi;
+       <a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a> flags = bsdf.Flags();
+       if (IsReflective(flags) &amp;&amp; IsTransmissive(flags)) {
+           wi = SampleUniformSphere(sampler.Get2D());
+           pdf = UniformSpherePDF();
+       } else {
+           wi = SampleUniformHemisphere(sampler.Get2D());
+           pdf = UniformHemispherePDF();
+           if (IsReflective(flags) &amp;&amp; <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wo, isect.n) * <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wi, isect.n) &lt; 0)
+               wi = -wi;
+           else if (IsTransmissive(flags) &amp;&amp;
+                    <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wo, isect.n) * <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(wi, isect.n) &gt; 0)
+               wi = -wi;
+       }
+       beta *= bsdf.f(wo, wi) * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(wi, isect.shading.n) / pdf;
+       specularBounce = false;
+       ray = isect.SpawnRay(wi);</div></div>
+}</div><p>
+
+
+</p>
+<p>If BSDF sampling is being used to sample the new direction,
+the <tt>Sample_f()</tt> method gives a direction and the
+associated BSDF and PDF values.  <tt>beta</tt> can then be updated according
+to Equation&nbsp;(<a href="#eq:beta-path-throughput-weight">13.8</a>).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampleBSDFfornewpathdirection-0"></span><div class="fragmentname">&lt;&lt;Sample BSDF for new path direction&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float u = sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get1D" class="code">Get1D</a>();
+pstd::optional&lt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample" class="code">BSDFSample</a>&gt; bs = bsdf.<a href="../Reflection_Models/BSDF_Representation.html#BSDF::Sample_f" class="code">Sample_f</a>(wo, u, sampler.<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Get2D" class="code">Get2D</a>());
+if (!bs)
+    break;
+beta *= bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::f" class="code">f</a> * <a href="../Geometry_and_Transformations/Vectors.html#AbsDot" class="code">AbsDot</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>, isect.shading.<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction::shading::n" class="code">n</a>) / bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::pdf" class="code">pdf</a>;
+specularBounce = bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::IsSpecular" class="code">IsSpecular</a>();
+ray = isect.<a href="../Textures_and_Materials/Texture_Sampling_and_Antialiasing.html#SurfaceInteraction::SpawnRay" class="code">SpawnRay</a>(bs-&gt;<a href="../Reflection_Models/BSDF_Representation.html#BSDFSample::wi" class="code">wi</a>);</div><p>
+
+
+</p>
+<p>Otherwise, the fragment &lt;&lt;<span class="fragmentname">Uniformly sample sphere or hemisphere to
+get new path direction</span>&gt;&gt; uniformly samples a new direction for the ray
+leaving the surface. It goes through more care than the
+<a href="../Introduction/pbrt_System_Overview.html#RandomWalkIntegrator"><tt>RandomWalkIntegrator</tt></a> did: for example, if the surface is reflective
+but not transmissive, it makes sure that the sampled direction is in the
+hemisphere where light is scattered.  We will not include that fragment
+here, as it has to handle a number of such cases, but there is not much that
+is interesting about how it does so.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Light_Transport_I_Surface_Reflection/A_Better_Path_Tracer.html">Light Transport I: Surface Reflection / A Better Path Tracer</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

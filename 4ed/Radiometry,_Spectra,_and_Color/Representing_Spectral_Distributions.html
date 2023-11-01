@@ -1,0 +1,1996 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Representing Spectral Distributions</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Radiometry,_Spectra,_and_Color.html">Radiometry, Spectra, and Color</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Representing Spectral Distributions</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Radiometry,_Spectra,_and_Color/Light_Emission.html">(Previous: Light Emission)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:spectrum"></span><h2>4.5 Representing Spectral Distributions</h2><p>
+
+
+
+</p>
+<p></p>
+<span class="anchor" id="fig:lemon-skin-spd"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha04f16.svg" title=""><img src="pha04f16.svg" width=446 height=302 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 4.16: Spectral Distribution of Reflection from Lemon Skin.</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Spectral distributions in the real world can be complex;
+we have already seen a variety of complex emission spectra and
+Figure&nbsp;<a href="#fig:lemon-skin-spd">4.16</a> shows a graph of the spectral distribution of
+the reflectance of lemon skin.  In order to render images of scenes that include a variety
+of complex spectra, a renderer must have efficient and accurate
+representations of spectral distributions.  This section will introduce
+<tt>pbrt</tt>&rsquo;s abstractions for representing and performing computation with them;
+the corresponding code can be found in the files <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/spectrum.h"><tt>util/spectrum.h</tt></a> and
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/spectrum.cpp"><tt>util/spectrum.cpp</tt></a>.
+
+</p>
+<p>We will start by defining constants that give the range of visible
+wavelengths.  Both here and for the remainder of the spectral code in
+<tt>pbrt</tt>, wavelengths are specified in nanometers, which are of a magnitude
+that gives easily human-readable values for the visible
+wavelengths.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumConstants-0"></span><div class="fragmentname">&lt;&lt;Spectrum Constants&gt;&gt;=&nbsp;<a href="#fragment-SpectrumConstants-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">constexpr Float <span class="anchor" id="Lambda_min"></span>Lambda_min = 360, <span class="anchor" id="Lambda_max"></span>Lambda_max = 830;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SpectrumInterface"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:spectrum-handle"></span><span id="SpectrumInterface"></span><h3>4.5.1  Spectrum Interface</h3><p>
+
+
+
+</p>
+<p>We will find a variety of spectral representations useful in <tt>pbrt</tt>, ranging
+from spectral sample values tabularized by wavelength to functional descriptions
+such as the blackbody function.  This brings us to our first interface
+class, <a href="#Spectrum"><tt>Spectrum</tt></a>.  A <a href="#Spectrum"><tt>Spectrum</tt></a> corresponds to a pointer
+to a class that implements one such spectral representation.
+
+</p>
+<p><tt>Spectrum</tt> inherits from <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer"><tt>TaggedPointer</tt></a>, which handles the
+details of runtime polymorphism.  <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer"><tt>TaggedPointer</tt></a> requires that all
+the types of <tt>Spectrum</tt> implementations be provided as template
+parameters, which allows it to associate a unique integer identifier with
+each type.  (See Section&nbsp;<a href="../Utilities/Containers_and_Memory_Management.html#sec:tagged-pointer">A.4.4</a> for details of its
+implementation.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumDefinition-0"></span><div class="fragmentname">&lt;&lt;Spectrum Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="Spectrum"></span>Spectrum
+    : public <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer" class="code">TaggedPointer</a>&lt;<a href="#ConstantSpectrum" class="code">ConstantSpectrum</a>, <a href="#DenselySampledSpectrum" class="code">DenselySampledSpectrum</a>,
+                           <a href="#PiecewiseLinearSpectrum" class="code">PiecewiseLinearSpectrum</a>, <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBAlbedoSpectrum" class="code">RGBAlbedoSpectrum</a>,
+                           <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBUnboundedSpectrum" class="code">RGBUnboundedSpectrum</a>, <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum" class="code">RGBIlluminantSpectrum</a>,
+                           <a href="#BlackbodySpectrum" class="code">BlackbodySpectrum</a>&gt; {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SpectrumInterface-0">Spectrum Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-144" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-144"><i></i></a><div id="fragbit-144" class="collapse"><div class="fragmentcode">       using <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer" class="code">TaggedPointer</a>::<a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer" class="code">TaggedPointer</a>;
+       std::string ToString() const;
+       Float operator()(Float lambda) const;
+       Float MaxValue() const;
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> Sample(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;</div></div>
+};</div><p>
+
+
+</p>
+<p>As with other classes that are based on <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer"><tt>TaggedPointer</tt></a>,
+<tt>Spectrum</tt> defines an interface that must be implemented by all the
+spectral representations.  Typical practice in C++ would be for such an
+interface to be specified by pure virtual methods in <tt>Spectrum</tt> and
+for <tt>Spectrum</tt> implementations to inherit from <tt>Spectrum</tt> and
+implement those methods.  With the <tt>TaggedPointer</tt> approach, the
+interface is specified implicitly: for each method in the interface, there
+is a method in <tt>Spectrum</tt> that dispatches calls to the appropriate
+type&rsquo;s implementation.  We will discuss the details of how this works for a
+single method here but will omit them for other <tt>Spectrum</tt> methods and
+for other interface classes since they all follow the same boilerplate.
+
+</p>
+<p>
+
+</p>
+<p>The most important method that <a href="#Spectrum"><tt>Spectrum</tt></a> defines is
+<tt>operator()</tt>, which takes a single wavelength <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.355ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 583.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">lamda</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+</g>
+</svg> and returns
+the value of the spectral distribution for that wavelength.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumInterface-0"></span><div class="fragmentname">&lt;&lt;Spectrum Interface&gt;&gt;=&nbsp;<a href="#fragment-SpectrumInterface-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float operator()(Float lambda) const;</div><p>
+
+
+</p>
+<p>The corresponding method implementation is brief, though dense.  A call to
+<a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer::Dispatch"><tt>TaggedPointer::Dispatch()</tt></a> begins the process of dispatching the
+method call.  The <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer"><tt>TaggedPointer</tt></a> class stores an integer tag along with the
+object&rsquo;s pointer that encodes its type; in turn, <tt>Dispatch()</tt> is able
+to determine the specific type of the pointer at runtime.  It then calls
+the callback function provided to it with a pointer to the object, cast to
+be a pointer to its actual type.
+
+</p>
+<p>The lambda function that is called here, <tt>op</tt>, takes a pointer with
+the <tt>auto</tt> type specifier for its parameter.  In C++17, such a lambda
+function acts as a templated function; a call to it with a concrete type
+acts as an instantiation of a lambda that takes that type.  Thus, the call
+<tt>(*ptr)(lambda)</tt> in the lambda body ends up as a direct call to the
+appropriate method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumInlineMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;Spectrum Inline Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">inline Float <span class="anchor" id="Spectrum::operator"></span><a href="#Spectrum" class="code">Spectrum</a>::operator()(Float lambda) const {
+    auto op = [&amp;](auto ptr) { return (*ptr)(lambda); };
+    return <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer::Dispatch" class="code">Dispatch</a>(op);
+}</div><p>
+
+
+</p>
+<p><tt>Spectrum</tt> implementations must also provide a <tt>MaxValue()</tt>
+method that returns a bound on the maximum value of the spectral
+distribution over its wavelength range.  This method&rsquo;s main use in <tt>pbrt</tt> is for
+computing bounds on the power emitted by light sources so that lights can
+be sampled according to their expected contribution to illumination in the
+scene.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumInterface-1"></span><div class="fragmentname">&lt;&lt;Spectrum Interface&gt;&gt;+=&nbsp;<a href="#fragment-SpectrumInterface-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-SpectrumInterface-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="Spectrum::MaxValue"></span>MaxValue() const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#GeneralSpectralDistributions"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="GeneralSpectralDistributions"></span><h3>4.5.2  General Spectral Distributions</h3><p>
+
+
+</p>
+<p>With the <tt>Spectrum</tt> interface specified, we will start by defining a
+few <tt>Spectrum</tt> class implementations that explicitly tabularize values
+of the spectral distribution function.  <a href="#ConstantSpectrum"><tt>ConstantSpectrum</tt></a> is the
+simplest: it represents a constant spectral distribution over all
+wavelengths.  The most common use of the <a href="#ConstantSpectrum"><tt>ConstantSpectrum</tt></a> class in <tt>pbrt</tt> is
+to define a zero-valued spectral distribution in cases where a particular
+form of scattering is not present.
+
+</p>
+<p>The <tt>ConstantSpectrum</tt> implementation is straightforward and we omit
+its trivial <tt>MaxValue()</tt> method here.  Note that it does not
+inherit from <a href="#Spectrum"><tt>Spectrum</tt></a>.  This is another difference from using
+traditional C++ abstract base classes with virtual functions&mdash;as far as
+the C++ type system is concerned, there is no explicit connection between
+<a href="#ConstantSpectrum"><tt>ConstantSpectrum</tt></a> and <tt>Spectrum</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumDefinitions-0"></span><div class="fragmentname">&lt;&lt;Spectrum Definitions&gt;&gt;=&nbsp;<a href="#fragment-SpectrumDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="ConstantSpectrum"></span>ConstantSpectrum {
+  public:
+    ConstantSpectrum(Float <a href="#ConstantSpectrum::c" class="code">c</a>) : <a href="#ConstantSpectrum::c" class="code">c</a>(<a href="#ConstantSpectrum::c" class="code">c</a>) {}
+    Float operator()(Float lambda) const { return <a href="#ConstantSpectrum::c" class="code">c</a>; }
+  private:
+    Float <span class="anchor" id="ConstantSpectrum::c"></span><a href="#ConstantSpectrum::c" class="code">c</a>;
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>More expressive is <tt>DenselySampledSpectrum</tt>, which stores a spectral
+distribution sampled at 1&nbsp;nm intervals over a given range of integer
+wavelengths <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="11.302ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4866 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket lamda Subscript normal m normal i normal n Baseline comma lamda Subscript normal m normal a normal x Baseline right-bracket</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6D" d="M813 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31 c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c45 0 119 -11 133 -98c17 38 61 98 145 98c58 0 91 -20 105 -37c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6E" d="M535 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c58 0 91 -20 105 -37 c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-61" d="M483 89c0 -81 -61 -95 -82 -95c-47 0 -74 42 -78 82c-19 -47 -65 -87 -131 -87c-63 0 -160 25 -160 106c0 44 25 96 100 130c63 30 133 33 184 36v37c0 89 -57 128 -106 128c-32 0 -81 -11 -108 -46c46 -1 51 -34 51 -46c0 -26 -18 -46 -46 -46c-26 0 -46 17 -46 47 c0 66 69 113 151 113c48 0 98 -16 137 -55c36 -37 36 -76 36 -118v-200c0 -5 4 -50 37 -50c11 0 36 6 36 64v56h25v-56zM316 140v100c-165 -6 -207 -89 -207 -144c0 -50 41 -85 90 -85c45 0 117 34 117 129Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-78" d="M516 0c-30 2 -69 3 -96 3l-108 -3v31c27 1 36 16 36 25c0 6 -13 22 -21 33l-76 100c-61 -72 -90 -105 -90 -127c0 -15 7 -28 29 -31v-31l-95 3c-26 0 -57 -1 -83 -3v31c21 0 80 2 128 60c47 57 47 59 94 119l-99 129c-47 60 -48 61 -118 61v31c27 -2 74 -3 95 -3l108 3 v-31c-20 -1 -35 -10 -35 -25c0 -6 0 -8 9 -18l78 -101l62 78c5 6 15 19 15 35s-8 29 -29 31v31c13 -1 66 -3 96 -3c26 0 56 1 82 3v-31c-47 -1 -88 -16 -119 -52c-24 -26 -62 -75 -92 -113l134 -173c23 -29 41 -31 95 -31v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+<g transform="translate(278,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+<g transform="translate(583,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="833" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6E" x="1112" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2141" y="0"></use>
+<g transform="translate(2586,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+<g transform="translate(583,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-61" x="833" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-78" x="1334" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="4587" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumDefinitions-1"></span><div class="fragmentname">&lt;&lt;Spectrum Definitions&gt;&gt;+=&nbsp;<a href="#fragment-SpectrumDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-SpectrumDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="DenselySampledSpectrum"></span>DenselySampledSpectrum {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-DenselySampledSpectrumPublicMethods-0">DenselySampledSpectrum Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-145" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-145"><i></i></a><div id="fragbit-145" class="collapse"><div class="fragmentcode">       DenselySampledSpectrum(int <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a> = <a href="#Lambda_min" class="code">Lambda_min</a>, int <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a> = <a href="#Lambda_max" class="code">Lambda_max</a>,
+                              Allocator alloc = {})
+           : <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>(<a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>),
+             <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>(<a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>),
+             <a href="#DenselySampledSpectrum::values" class="code">values</a>(<a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a> - <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a> + 1, alloc) {}
+       DenselySampledSpectrum(<a href="#Spectrum" class="code">Spectrum</a> s, Allocator alloc)
+           : DenselySampledSpectrum(s, <a href="#Lambda_min" class="code">Lambda_min</a>, <a href="#Lambda_max" class="code">Lambda_max</a>, alloc) {}
+       DenselySampledSpectrum(const DenselySampledSpectrum &amp;s, Allocator alloc)
+           : <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>(s.<a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>),
+             <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>(s.<a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>),
+             <a href="#DenselySampledSpectrum::values" class="code">values</a>(s.<a href="#DenselySampledSpectrum::values" class="code">values</a>.begin(), s.<a href="#DenselySampledSpectrum::values" class="code">values</a>.end(), alloc) {}
+       
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> Sample(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;<a href="#Spectrum::operator" class="code">lambda</a>) const {
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> s;
+           for (int i = 0; i &lt; NSpectrumSamples; ++i) {
+               int offset = std::lround(<a href="#Spectrum::operator" class="code">lambda</a>[i]) - <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>;
+               if (offset &lt; 0 || offset &gt;= <a href="#DenselySampledSpectrum::values" class="code">values</a>.size())
+                   s[i] = 0;
+               else
+                   s[i] = <a href="#DenselySampledSpectrum::values" class="code">values</a>[offset];
+           }
+           return s;
+       }
+       
+       PBRT_CPU_GPU
+       void Scale(Float s) {
+           for (Float &amp;v : <a href="#DenselySampledSpectrum::values" class="code">values</a>)
+               v *= s;
+       }
+       
+       PBRT_CPU_GPU
+       Float MaxValue() const { return *std::max_element(<a href="#DenselySampledSpectrum::values" class="code">values</a>.begin(), <a href="#DenselySampledSpectrum::values" class="code">values</a>.end()); }
+       
+       std::string ToString() const;
+       DenselySampledSpectrum(<a href="#Spectrum" class="code">Spectrum</a> spec, int <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a> = <a href="#Lambda_min" class="code">Lambda_min</a>,
+                              int <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a> = <a href="#Lambda_max" class="code">Lambda_max</a>, Allocator alloc = {})
+           : <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>(<a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>), <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>(<a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>),
+             <a href="#DenselySampledSpectrum::values" class="code">values</a>(<a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a> - <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a> + 1, alloc) {
+           if (spec)
+               for (int <a href="#Spectrum::operator" class="code">lambda</a> = <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>; <a href="#Spectrum::operator" class="code">lambda</a> &lt;= <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>; ++<a href="#Spectrum::operator" class="code">lambda</a>)
+                   <a href="#DenselySampledSpectrum::values" class="code">values</a>[<a href="#Spectrum::operator" class="code">lambda</a> - <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>] = spec(<a href="#Spectrum::operator" class="code">lambda</a>);
+       }
+       template &lt;typename F&gt;
+       static DenselySampledSpectrum SampleFunction(
+               F func, int <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a> = <a href="#Lambda_min" class="code">Lambda_min</a>, int <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a> = <a href="#Lambda_max" class="code">Lambda_max</a>,
+               Allocator alloc = {}) {
+           DenselySampledSpectrum s(<a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>, <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>, alloc);
+           for (int <a href="#Spectrum::operator" class="code">lambda</a> = <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>; <a href="#Spectrum::operator" class="code">lambda</a> &lt;= <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>; ++<a href="#Spectrum::operator" class="code">lambda</a>)
+               s.<a href="#DenselySampledSpectrum::values" class="code">values</a>[<a href="#Spectrum::operator" class="code">lambda</a> - <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>] = func(<a href="#Spectrum::operator" class="code">lambda</a>);
+           return s;
+       }
+       Float operator()(Float <a href="#Spectrum::operator" class="code">lambda</a>) const {
+           int offset = std::lround(<a href="#Spectrum::operator" class="code">lambda</a>) - <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>;
+           if (offset &lt; 0 || offset &gt;= <a href="#DenselySampledSpectrum::values" class="code">values</a>.size()) return 0;
+           return <a href="#DenselySampledSpectrum::values" class="code">values</a>[offset];
+       }
+       PBRT_CPU_GPU
+       bool operator==(const DenselySampledSpectrum &amp;d) const {
+           if (<a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a> != d.<a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a> || <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a> != d.<a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a> ||
+               <a href="#DenselySampledSpectrum::values" class="code">values</a>.size() != d.<a href="#DenselySampledSpectrum::values" class="code">values</a>.size())
+               return false;
+           for (size_t i = 0; i &lt; <a href="#DenselySampledSpectrum::values" class="code">values</a>.size(); ++i)
+               if (<a href="#DenselySampledSpectrum::values" class="code">values</a>[i] != d.<a href="#DenselySampledSpectrum::values" class="code">values</a>[i])
+                   return false;
+           return true;
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-DenselySampledSpectrumPrivateMembers-0">DenselySampledSpectrum Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-146" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-146"><i></i></a><div id="fragbit-146" class="collapse"><div class="fragmentcode">       int lambda_min, lambda_max;
+       pstd::vector&lt;Float&gt; values;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Its constructor takes another <a href="#Spectrum"><tt>Spectrum</tt></a> and evaluates that
+spectral distribution at each wavelength in the range.
+<tt>DenselySampledSpectrum</tt> can be useful if the provided spectral
+distribution is computationally expensive to evaluate, as it allows
+subsequent evaluations to be performed by reading a single value from
+memory.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DenselySampledSpectrumPublicMethods-0"></span><div class="fragmentname">&lt;&lt;DenselySampledSpectrum Public Methods&gt;&gt;=&nbsp;<a href="#fragment-DenselySampledSpectrumPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">DenselySampledSpectrum(<a href="#Spectrum" class="code">Spectrum</a> spec, int <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a> = <a href="#Lambda_min" class="code">Lambda_min</a>,
+                       int <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a> = <a href="#Lambda_max" class="code">Lambda_max</a>, Allocator alloc = {})
+    : <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>(<a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>), <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>(<a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>),
+      <a href="#DenselySampledSpectrum::values" class="code">values</a>(<a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a> - <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a> + 1, alloc) {
+    if (spec)
+        for (int <a href="#Spectrum::operator" class="code">lambda</a> = <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>; <a href="#Spectrum::operator" class="code">lambda</a> &lt;= <a href="#DenselySampledSpectrum::lambda_max" class="code">lambda_max</a>; ++<a href="#Spectrum::operator" class="code">lambda</a>)
+            <a href="#DenselySampledSpectrum::values" class="code">values</a>[<a href="#Spectrum::operator" class="code">lambda</a> - <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>] = spec(<a href="#Spectrum::operator" class="code">lambda</a>);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DenselySampledSpectrumPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;DenselySampledSpectrum Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int <span class="anchor" id="DenselySampledSpectrum::lambda_min"></span>lambda_min, <span class="anchor" id="DenselySampledSpectrum::lambda_max"></span>lambda_max;
+pstd::vector&lt;Float&gt; <span class="anchor" id="DenselySampledSpectrum::values"></span>values;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Finding the spectrum&rsquo;s value for a given wavelength <tt>lambda</tt> is a
+matter of returning zero for wavelengths outside of the valid range and
+indexing into the stored values
+otherwise.<span class="anchor" id="DenselySampledSpectrum::Sample"></span>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DenselySampledSpectrumPublicMethods-1"></span><div class="fragmentname">&lt;&lt;DenselySampledSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-DenselySampledSpectrumPublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="DenselySampledSpectrum::operator"></span>operator()(Float lambda) const {
+    int offset = std::lround(lambda) - <a href="#DenselySampledSpectrum::lambda_min" class="code">lambda_min</a>;
+    if (offset &lt; 0 || offset &gt;= <a href="#DenselySampledSpectrum::values" class="code">values</a>.size()) return 0;
+    return <a href="#DenselySampledSpectrum::values" class="code">values</a>[offset];
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>While sampling a spectral distribution at 1&nbsp;nm wavelengths gives sufficient
+accuracy for most uses in rendering, doing so requires nearly 2&nbsp;kB of
+memory to store a distribution that covers the visible wavelengths.
+<tt>PiecewiseLinearSpectrum</tt> offers another representation that is often
+more compact; its distribution is specified by a set of pairs of values
+
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.925ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2981.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis lamda Subscript i Baseline comma v Subscript i Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="825" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1317" y="0"></use>
+<g transform="translate(1762,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2592" y="0"></use>
+</g>
+</svg> where the spectral distribution is defined by
+linearly interpolating between them; see Figure&nbsp;<a href="#fig:piecewise-linear-spectrum">4.17</a>.  For
+spectra that are smooth in some regions and change rapidly in others, this
+representation makes it possible to specify the distribution at a higher
+rate in regions where its variation is greatest.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumDefinitions-2"></span><div class="fragmentname">&lt;&lt;Spectrum Definitions&gt;&gt;+=&nbsp;<a href="#fragment-SpectrumDefinitions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-SpectrumDefinitions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="PiecewiseLinearSpectrum"></span>PiecewiseLinearSpectrum {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PiecewiseLinearSpectrumPublicMethods-0">PiecewiseLinearSpectrum Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-147" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-147"><i></i></a><div id="fragbit-147" class="collapse"><div class="fragmentcode">       PiecewiseLinearSpectrum() = default;
+       
+       PBRT_CPU_GPU
+       void Scale(Float s) {
+           for (Float &amp;v : values)
+               v *= s;
+       }
+       
+       PBRT_CPU_GPU
+       Float MaxValue() const;
+       
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> Sample(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const {
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> s;
+           for (int i = 0; i &lt; NSpectrumSamples; ++i)
+               s[i] = (*this)(lambda[i]);
+           return s;
+       }
+       PBRT_CPU_GPU
+       Float operator()(Float lambda) const;
+       
+       std::string ToString() const;
+       PiecewiseLinearSpectrum(pstd::span&lt;const Float&gt; lambdas,
+           pstd::span&lt;const Float&gt; values, Allocator alloc = {});
+       static pstd::optional&lt;<a href="#Spectrum" class="code">Spectrum</a>&gt; Read(const std::string &amp;filename,
+                                                  Allocator alloc);
+       static PiecewiseLinearSpectrum *FromInterleaved(pstd::span&lt;const Float&gt; samples,
+                                                       bool normalize, Allocator alloc);</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PiecewiseLinearSpectrumPrivateMembers-0">PiecewiseLinearSpectrum Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-148" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-148"><i></i></a><div id="fragbit-148" class="collapse"><div class="fragmentcode">       pstd::vector&lt;Float&gt; lambdas, values;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fig:piecewise-linear-spectrum"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha04f17.svg" title=""><img src="pha04f17.svg" width=416 height=290 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 4.17: <span class="legend">
+<a href="#PiecewiseLinearSpectrum"><tt>PiecewiseLinearSpectrum</tt></a> defines a spectral distribution
+using a set of sample values <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.925ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2981.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis lamda Subscript i Baseline comma v Subscript i Baseline right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+<g transform="translate(389,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="825" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1317" y="0"></use>
+<g transform="translate(1762,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="686" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2592" y="0"></use>
+</g>
+</svg>.   A continuous
+distribution is then defined by linearly interpolating between them.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>PiecewiseLinearSpectrum</tt> constructor, not included here, checks
+that the provided <tt>lambda</tt> values are sorted and then stores them and
+the associated spectrum values in corresponding member variables.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PiecewiseLinearSpectrumPublicMethods-0"></span><div class="fragmentname">&lt;&lt;PiecewiseLinearSpectrum Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">PiecewiseLinearSpectrum(pstd::span&lt;const Float&gt; lambdas,
+    pstd::span&lt;const Float&gt; values, Allocator alloc = {});</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PiecewiseLinearSpectrumPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;PiecewiseLinearSpectrum Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::vector&lt;Float&gt; <span class="anchor" id="PiecewiseLinearSpectrum::lambdas"></span>lambdas, <span class="anchor" id="PiecewiseLinearSpectrum::values"></span>values;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Finding the value for a given wavelength requires first finding the pair of
+values in the <tt>lambdas</tt> array that bracket it and then linearly interpolating
+between them.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;Spectrum Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-SpectrumMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="PiecewiseLinearSpectrum::operator"></span>PiecewiseLinearSpectrum::operator()(Float lambda) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-HandlemonoPiecewiseLinearSpectrumcornercases-0">Handle <tt>PiecewiseLinearSpectrum</tt> corner cases</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-149" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-149"><i></i></a><div id="fragbit-149" class="collapse"><div class="fragmentcode">       if (<a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>.empty() || lambda &lt; <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>.front() || lambda &gt; <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>.back())
+           return 0;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Findoffsettolargestmonolambdasbelowmonolambdaandinterpolate-0">Find offset to largest <tt>lambdas</tt> below <tt>lambda</tt> and interpolate</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-150" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-150"><i></i></a><div id="fragbit-150" class="collapse"><div class="fragmentcode">       int o = <a href="../Utilities/Mathematical_Infrastructure.html#FindInterval" class="code">FindInterval</a>(<a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>.size(),
+                            [&amp;](int i) { return <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>[i] &lt;= lambda; });
+       Float t = (lambda - <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>[o]) / (<a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>[o + 1] - <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>[o]);
+       return <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(t, <a href="#PiecewiseLinearSpectrum::values" class="code">values</a>[o], <a href="#PiecewiseLinearSpectrum::values" class="code">values</a>[o + 1]);</div></div>
+}</div><p>
+
+
+</p>
+<p>As with <a href="#DenselySampledSpectrum"><tt>DenselySampledSpectrum</tt></a>, wavelengths outside of the specified
+range are given a value of zero.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-HandlemonoPiecewiseLinearSpectrumcornercases-0"></span><div class="fragmentname">&lt;&lt;Handle <tt>PiecewiseLinearSpectrum</tt> corner cases&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>.empty() || lambda &lt; <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>.front() || lambda &gt; <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>.back())
+    return 0;</div><p>
+
+
+</p>
+<p>If <tt>lambda</tt> is in range, then <a href="../Utilities/Mathematical_Infrastructure.html#FindInterval"><tt>FindInterval()</tt></a> gives the offset to
+the largest value of <tt>lambdas</tt> that is less than or equal to
+<tt>lambda</tt>.  In turn, <tt>lambda</tt>&rsquo;s offset between that wavelength and
+the next
+gives the linear interpolation parameter to use with the stored
+values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Findoffsettolargestmonolambdasbelowmonolambdaandinterpolate-0"></span><div class="fragmentname">&lt;&lt;Find offset to largest <tt>lambdas</tt> below <tt>lambda</tt> and interpolate&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int o = <a href="../Utilities/Mathematical_Infrastructure.html#FindInterval" class="code">FindInterval</a>(<a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>.size(),
+                     [&amp;](int i) { return <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>[i] &lt;= lambda; });
+Float t = (lambda - <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>[o]) / (<a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>[o + 1] - <a href="#PiecewiseLinearSpectrum::lambdas" class="code">lambdas</a>[o]);
+return <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(t, <a href="#PiecewiseLinearSpectrum::values" class="code">values</a>[o], <a href="#PiecewiseLinearSpectrum::values" class="code">values</a>[o + 1]);</div><p>
+
+
+</p>
+<p>The maximum value of the distribution is easily
+found using <tt>std::max_element()</tt>, which performs a linear search.
+This function is not currently called in any performance-sensitive parts of
+<tt>pbrt</tt>; if it was, it would likely be worth caching this value to avoid
+recomputing it.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;Spectrum Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-SpectrumMethodDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Color.html#fragment-SpectrumMethodDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="PiecewiseLinearSpectrum::MaxValue"></span>PiecewiseLinearSpectrum::MaxValue() const {
+    if (<a href="#PiecewiseLinearSpectrum::values" class="code">values</a>.empty()) return 0;
+    return *std::max_element(<a href="#PiecewiseLinearSpectrum::values" class="code">values</a>.begin(), <a href="#PiecewiseLinearSpectrum::values" class="code">values</a>.end());
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+
+</p>
+<p>Another useful <a href="#Spectrum"><tt>Spectrum</tt></a> implementation, <tt>BlackbodySpectrum</tt>,
+gives the spectral distribution of a blackbody emitter at a specified
+temperature.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumDefinitions-3"></span><div class="fragmentname">&lt;&lt;Spectrum Definitions&gt;&gt;+=&nbsp;<a href="#fragment-SpectrumDefinitions-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Color.html#fragment-SpectrumDefinitions-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">class <span class="anchor" id="BlackbodySpectrum"></span>BlackbodySpectrum {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BlackbodySpectrumPublicMethods-0">BlackbodySpectrum Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-151" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-151"><i></i></a><div id="fragbit-151" class="collapse"><div class="fragmentcode">       BlackbodySpectrum(Float T) : T(T) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Computeblackbodynormalizationconstantforgiventemperature-0">Compute blackbody normalization constant for given temperature</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-152" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-152"><i></i></a><div id="fragbit-152" class="collapse"><div class="fragmentcode">              Float lambdaMax = 2.8977721e-3f / T;
+              normalizationFactor = 1 / <a href="../Radiometry,_Spectra,_and_Color/Light_Emission.html#Blackbody" class="code">Blackbody</a>(lambdaMax * 1e9f, T);</div></div>
+       }
+       Float operator()(Float lambda) const {
+           return <a href="../Radiometry,_Spectra,_and_Color/Light_Emission.html#Blackbody" class="code">Blackbody</a>(lambda, T) * <a href="#BlackbodySpectrum::normalizationFactor" class="code">normalizationFactor</a>;
+       }
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> Sample(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const {
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> s;
+           for (int i = 0; i &lt; NSpectrumSamples; ++i)
+               s[i] = <a href="../Radiometry,_Spectra,_and_Color/Light_Emission.html#Blackbody" class="code">Blackbody</a>(lambda[i], T) * <a href="#BlackbodySpectrum::normalizationFactor" class="code">normalizationFactor</a>;
+           return s;
+       }
+       
+       PBRT_CPU_GPU
+       Float MaxValue() const { return 1.f; }
+       
+       std::string ToString() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-BlackbodySpectrumPrivateMembers-0">BlackbodySpectrum Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-153" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-153"><i></i></a><div id="fragbit-153" class="collapse"><div class="fragmentcode">       Float T;
+       Float normalizationFactor;</div></div>
+};</div><p>
+
+
+</p>
+<p>The temperature of the blackbody in Kelvin is the constructor&rsquo;s only
+parameter.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlackbodySpectrumPublicMethods-0"></span><div class="fragmentname">&lt;&lt;BlackbodySpectrum Public Methods&gt;&gt;=&nbsp;<a href="#fragment-BlackbodySpectrumPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">BlackbodySpectrum(Float T) : T(T) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Computeblackbodynormalizationconstantforgiventemperature-0">Compute blackbody normalization constant for given temperature</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-154" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-154"><i></i></a><div id="fragbit-154" class="collapse"><div class="fragmentcode">       Float lambdaMax = 2.8977721e-3f / T;
+       normalizationFactor = 1 / <a href="../Radiometry,_Spectra,_and_Color/Light_Emission.html#Blackbody" class="code">Blackbody</a>(lambdaMax * 1e9f, T);</div></div>
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlackbodySpectrumPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;BlackbodySpectrum Private Members&gt;&gt;=&nbsp;<a href="#fragment-BlackbodySpectrumPrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="BlackbodySpectrum::T"></span>T;</div><p>
+
+
+</p>
+<p>Because the power emitted by a blackbody grows so quickly with temperature
+(recall the Stefan&ndash;Boltzmann law,
+Equation&nbsp;(<a href="../Radiometry,_Spectra,_and_Color/Light_Emission.html#eq:stefan-boltzmann">4.19</a>)), the <a href="#BlackbodySpectrum"><tt>BlackbodySpectrum</tt></a>
+represents a normalized blackbody spectral distribution where the maximum
+value at any wavelength is&nbsp;1.  Wien&rsquo;s displacement law,
+Equation&nbsp;(<a href="../Radiometry,_Spectra,_and_Color/Light_Emission.html#eq:wien-displacement">4.20</a>), gives the wavelength in meters where
+emitted radiance is at its maximum; we must convert this value to nm before
+calling <tt>Blackbody()</tt> to find the corresponding radiance value.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computeblackbodynormalizationconstantforgiventemperature-0"></span><div class="fragmentname">&lt;&lt;Compute blackbody normalization constant for given temperature&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float lambdaMax = 2.8977721e-3f / T;
+normalizationFactor = 1 / <a href="../Radiometry,_Spectra,_and_Color/Light_Emission.html#Blackbody" class="code">Blackbody</a>(lambdaMax * 1e9f, T);</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlackbodySpectrumPrivateMembers-1"></span><div class="fragmentname">&lt;&lt;BlackbodySpectrum Private Members&gt;&gt;+=&nbsp;<a href="#fragment-BlackbodySpectrumPrivateMembers-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="BlackbodySpectrum::normalizationFactor"></span>normalizationFactor;</div><p>
+
+
+</p>
+<p>The method that returns the value of the distribution at a wavelength then
+returns the product of the value returned by <a href="../Radiometry,_Spectra,_and_Color/Light_Emission.html#Blackbody"><tt>Blackbody()</tt></a> and the
+normalization factor.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BlackbodySpectrumPublicMethods-1"></span><div class="fragmentname">&lt;&lt;BlackbodySpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-BlackbodySpectrumPublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="BlackbodySpectrum::operator"></span>operator()(Float lambda) const {
+    return <a href="../Radiometry,_Spectra,_and_Color/Light_Emission.html#Blackbody" class="code">Blackbody</a>(lambda, T) * <a href="#BlackbodySpectrum::normalizationFactor" class="code">normalizationFactor</a>;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#EmbeddedSpectralData"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="EmbeddedSpectralData"></span><h3>4.5.3  Embedded Spectral Data</h3><p>
+
+
+</p>
+<p><tt>pbrt</tt>&rsquo;s scene description format provides multiple ways to specify spectral
+data, ranging from blackbody temperatures to arrays of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.355ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 583.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">lamda</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+</g>
+</svg>-value
+pairs to specify a piecewise-linear spectrum.  For convenience, a variety
+of useful spectral distributions are also embedded directly in the <tt>pbrt</tt> binary, including ones that describe the emission profiles of various types
+of light source, the scattering properties of various conductors, and the
+wavelength-dependent indices of refraction of various types of glass.  See
+the online <tt>pbrt</tt> file format documentation for a list of all of them.
+
+</p>
+<p>The <tt>GetNamedSpectrum()</tt> function searches through these spectra and
+returns a <a href="#Spectrum"><tt>Spectrum</tt></a> corresponding to a given named spectrum if it is
+available.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectralFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;Spectral Function Declarations&gt;&gt;=&nbsp;<a href="Color.html#fragment-SpectralFunctionDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#Spectrum" class="code">Spectrum</a> <span class="anchor" id="GetNamedSpectrum"></span>GetNamedSpectrum(std::string name);</div><p>
+
+
+</p>
+<p>A number of important spectra are made available directly through
+corresponding functions, all of which are in a <tt>Spectra</tt> namespace.
+Among them are <tt>Spectra::X()</tt><span class="anchor" id="Spectra::X"></span>,
+<tt>Spectra::Y()</tt><span class="anchor" id="Spectra::Y"></span>, and
+<tt>Spectra::Z()</tt><span class="anchor" id="Spectra::Z"></span>, which return the
+color matching curves that are described in Section&nbsp;<a href="../Radiometry,_Spectra,_and_Color/Color.html#sec:color-xyz">4.6.1</a>,
+and <tt>Spectra::D()</tt>, which returns a <a href="#DenselySampledSpectrum"><tt>DenselySampledSpectrum</tt></a>
+representing the D illuminant at the given temperature.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumFunctionDeclarations-1"></span><div class="fragmentname">&lt;&lt;Spectrum Function Declarations&gt;&gt;+=&nbsp;<a href="Light_Emission.html#fragment-SpectrumFunctionDeclarations-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">DenselySampledSpectrum <span class="anchor" id="Spectra::D"></span>D(Float T, Allocator alloc);
+</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SampledSpectralDistributions"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:sampled-spectral-distributions"></span><span id="SampledSpectralDistributions"></span><h3>4.5.4  Sampled Spectral Distributions</h3><p>
+
+
+
+</p>
+<p>The attentive reader may have noticed that although <a href="#Spectrum"><tt>Spectrum</tt></a>
+makes it possible to evaluate spectral distribution functions, it does not
+provide the ability to do very much computation with them other than
+sampling their value at a specified wavelength.  Yet, for example,
+evaluating the integrand of the reflection equation,
+(<a href="../Radiometry,_Spectra,_and_Color/Surface_Reflection.html#eq:scattering-equation">4.14</a>), requires taking the product of two spectral
+distributions, one for the BSDF and one for the incident radiance function.
+
+</p>
+<p>Providing this functionality with the abstractions that have been
+introduced so far would quickly become unwieldy. For example, while the
+product of two <a href="#DenselySampledSpectrum"><tt>DenselySampledSpectrum</tt></a>s could be faithfully
+represented by another <a href="#DenselySampledSpectrum"><tt>DenselySampledSpectrum</tt></a>, consider taking the
+product of two <a href="#PiecewiseLinearSpectrum"><tt>PiecewiseLinearSpectrum</tt></a>s: the resulting function would
+be piecewise- quadratic and subsequent products would only increase its
+degree. Further, operations between <tt>Spectrum</tt> implementations of
+different types would not only require a custom implementation for each
+pair, but would require choosing a suitable <tt>Spectrum</tt> representation
+for each result.
+
+</p>
+<p><tt>pbrt</tt> avoids this complexity by performing spectral calculations at a set
+of discrete wavelengths as part of the Monte Carlo integration that is
+already being performed for image synthesis.  To understand how this works,
+consider computing the (non-spectral) irradiance at some point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> with
+surface normal <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.485ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 639.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold n Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="0" y="0"></use>
+</g>
+</svg> over some range of wavelengths of interest,
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.147ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3077 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket lamda 0 comma lamda 1 right-bracket</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+<g transform="translate(278,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30" x="825" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1315" y="0"></use>
+<g transform="translate(1761,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="825" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="2798" y="0"></use>
+</g>
+</svg>.  Using Equation
+(<a href="../Radiometry,_Spectra,_and_Color/Working_with_Radiometric_Integrals.html#eq:irradiance-from-radiance">4.7</a>), which expresses irradiance in terms of
+incident radiance, and Equation (<a href="../Radiometry,_Spectra,_and_Color/Radiometry.html#eq:radiance-from-spectral">4.5</a>), which
+expresses radiance in terms of spectral radiance, we have
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="36.19ex" height="6.676ex" style="vertical-align: -2.671ex;" viewBox="0 -1724.2 15581.6 2874.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper E equals integral Underscript normal upper Omega Endscripts integral Subscript lamda 0 Superscript lamda 1 Baseline upper L Subscript normal i Baseline left-parenthesis normal p Subscript Baseline comma omega comma lamda right-parenthesis StartAbsoluteValue cosine theta EndAbsoluteValue normal d omega Subscript Baseline normal d lamda comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D438" d="M763 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12s1 12 1 18c4 27 4 29 4 53c0 82 -30 111 -152 111h-141c-44 0 -45 -4 -54 -39l-60 -241h94c92 0 110 23 131 99c3 12 5 18 14 18c7 0 12 -5 12 -11l-57 -234c-4 -15 -7 -20 -15 -20c-9 0 -13 6 -13 11 c0 3 1 6 3 11c7 30 7 42 7 49c0 25 0 46 -85 46h-99l-68 -273c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h146c171 0 208 67 273 215c2 6 4 12 13 12c12 0 12 -11 12 -11s-3 -9 -5 -14l-92 -216c-7 -16 -8 -17 -31 -17h-519c-19 0 -28 0 -28 12 c0 19 11 19 28 19c79 0 81 8 91 47l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h505c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3A9" d="M677 162l-33 -162h-159c-23 0 -26 0 -26 21c0 69 32 159 47 201c29 82 56 158 56 233c0 156 -106 228 -202 228c-91 0 -201 -68 -201 -228c0 -75 28 -154 49 -212c23 -64 54 -152 54 -222c0 -21 -3 -21 -25 -21h-160l-33 162h25c5 -25 10 -51 18 -74c5 -15 8 -23 66 -23 h80c-13 56 -45 104 -89 170c-47 71 -88 140 -88 219c0 137 133 251 305 251c169 0 304 -112 304 -251c0 -79 -41 -148 -88 -219c-45 -66 -76 -114 -89 -170h80c58 0 61 8 66 24c9 24 13 47 18 73h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1041" y="0"></use>
+<g transform="translate(2097,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-3A9" x="812" y="-1270"></use>
+</g>
+<g transform="translate(3449,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(1054,1088)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-31" x="718" y="-243"></use>
+</g>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-30" x="718" y="-243"></use>
+</g>
+</g>
+<g transform="translate(5541,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="963" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="6519" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="6909" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="7465" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="7910" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="8533" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="8978" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="9561" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="10118" y="0"></use>
+<g transform="translate(10396,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="11902" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="12372" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="12817" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="13373" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="14163" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="14719" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="15303" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="10.243ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4410.3 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal i Baseline left-parenthesis normal p Subscript Baseline comma omega comma lamda right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="978" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1367" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1924" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="2369" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2992" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="3437" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4020" y="0"></use>
+</g>
+</svg> is the incident spectral
+radiance at wavelength <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.355ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 583.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">lamda</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p>Applying the standard Monte Carlo estimator and taking advantage of the
+fact that <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.446ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 622.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.355ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 583.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">lamda</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+</g>
+</svg> are independent, we can see that estimates
+of  <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.773ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 763.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper E</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D438" d="M763 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12s1 12 1 18c4 27 4 29 4 53c0 82 -30 111 -152 111h-141c-44 0 -45 -4 -54 -39l-60 -241h94c92 0 110 23 131 99c3 12 5 18 14 18c7 0 12 -5 12 -11l-57 -234c-4 -15 -7 -20 -15 -20c-9 0 -13 6 -13 11 c0 3 1 6 3 11c7 30 7 42 7 49c0 25 0 46 -85 46h-99l-68 -273c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h146c171 0 208 67 273 215c2 6 4 12 13 12c12 0 12 -11 12 -11s-3 -9 -5 -14l-92 -216c-7 -16 -8 -17 -31 -17h-519c-19 0 -28 0 -28 12 c0 19 11 19 28 19c79 0 81 8 91 47l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h505c25 0 30 0 27 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="0" y="0"></use>
+</g>
+</svg> can be computed by sampling directions <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.245ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 966.8 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="880" y="-213"></use>
+</g>
+</svg> from some distribution
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.497ex" height="2.009ex" style="vertical-align: -0.671ex; margin-left: -0.073ex;" viewBox="-31.5 -576.1 1075.2 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">p Subscript omega</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D714" x="712" y="-213"></use>
+</g>
+</svg>, wavelengths <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.155ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 927.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">lamda Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="825" y="-213"></use>
+</g>
+</svg> from some distribution <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.433ex" height="2.009ex" style="vertical-align: -0.671ex; margin-left: -0.073ex;" viewBox="-31.5 -576.1 1047.6 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">p Subscript lamda</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D706" x="712" y="-213"></use>
+</g>
+</svg>,
+and then evaluating:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="eq:irradiance-from-spectral-radiance-estimate"></span><div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="31.615ex" height="6.843ex" style="vertical-align: -3.005ex;" viewBox="0 -1652.5 13611.9 2946.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper E almost-equals StartFraction 1 Over n EndFraction sigma-summation Underscript i equals 1 Overscript n Endscripts StartFraction upper L Subscript normal i Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript i Baseline comma lamda Subscript i Baseline right-parenthesis StartAbsoluteValue cosine theta Subscript i Baseline EndAbsoluteValue Over p Subscript omega Baseline left-parenthesis omega Subscript i Baseline right-parenthesis p Subscript lamda Baseline left-parenthesis lamda Subscript i Baseline right-parenthesis EndFraction period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D438" d="M763 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12s1 12 1 18c4 27 4 29 4 53c0 82 -30 111 -152 111h-141c-44 0 -45 -4 -54 -39l-60 -241h94c92 0 110 23 131 99c3 12 5 18 14 18c7 0 12 -5 12 -11l-57 -234c-4 -15 -7 -20 -15 -20c-9 0 -13 6 -13 11 c0 3 1 6 3 11c7 30 7 42 7 49c0 25 0 46 -85 46h-99l-68 -273c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h146c171 0 208 67 273 215c2 6 4 12 13 12c12 0 12 -11 12 -11s-3 -9 -5 -14l-92 -216c-7 -16 -8 -17 -31 -17h-519c-19 0 -28 0 -28 12 c0 19 11 19 28 19c79 0 81 8 91 47l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h505c25 0 30 0 27 -27Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2248" d="M717 438v-2c-20 -93 -56 -149 -139 -169c-11 -3 -23 -4 -35 -4c-62 0 -120 37 -172 76c-43 32 -89 67 -138 67c-9 0 -17 -1 -26 -3c-67 -17 -111 -49 -127 -124c-1 -5 -6 -9 -12 -9c-7 0 -12 5 -12 12v2c20 93 56 149 139 169c12 3 24 4 35 4c62 0 120 -37 172 -76 c43 -32 89 -67 139 -67c8 0 16 1 25 3c67 17 111 49 127 124c2 5 6 9 12 9c7 0 12 -5 12 -12zM717 218v-2c-20 -93 -56 -149 -139 -169c-11 -3 -23 -4 -35 -4c-62 0 -120 37 -172 76c-43 32 -89 67 -138 67c-9 0 -17 -1 -26 -3c-67 -17 -111 -49 -127 -124 c-1 -5 -6 -9 -12 -9c-7 0 -12 5 -12 12v2c20 93 56 149 139 169c12 3 24 4 35 4c62 0 120 -37 172 -76c43 -32 89 -67 139 -67c8 0 16 1 25 3c67 17 111 49 127 124c2 5 6 9 12 9c7 0 12 -5 12 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-2211" d="M1387 -130l-121 -320h-1182c-18 0 -27 0 -27 11c0 0 0 6 10 18l518 607l-529 724c0 11 0 30 1 33c3 6 4 7 27 7h1182l121 -281h-25c-34 81 -102 126 -127 142c-79 50 -166 67 -220 75c-9 2 -100 16 -234 16h-548l466 -637c7 -10 7 -15 7 -15c0 -5 -2 -8 -9 -16l-509 -597 h603c192 0 290 26 311 31c115 30 221 98 260 202h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D706" d="M548 -1c0 -3 -1 -9 -11 -10h-22c-27 0 -37 0 -53 22c-16 23 -64 176 -105 281l-241 -284c-8 -10 -17 -21 -33 -21s-30 12 -30 29c0 13 6 19 18 31l276 274l-97 272c-25 68 -32 74 -65 80c0 0 -9 2 -9 10c0 11 13 11 18 11c47 0 101 -13 122 -71l204 -569 c7 -20 13 -35 23 -46c3 -4 5 -6 5 -9Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-7C" d="M159 -230c0 -11 -9 -20 -20 -20s-20 9 -20 20v960c0 11 9 20 20 20s20 -9 20 -20v-960Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45D" d="M490 282c0 -147 -125 -293 -241 -293c-51 0 -79 35 -92 64c-7 -25 -49 -188 -49 -200c0 -9 0 -16 50 -16c14 0 24 0 24 -11c0 -20 -13 -20 -18 -20c-32 0 -66 3 -99 3c-28 0 -57 -3 -84 -3c-8 0 -13 4 -13 12c0 19 11 19 23 19c44 0 46 7 54 41l112 445c4 17 7 28 7 51 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c37 0 80 -21 90 -75c33 39 81 75 131 75c76 0 133 -66 133 -160zM418 326c0 59 -24 94 -64 94c-17 0 -46 -7 -81 -38c-18 -15 -45 -43 -52 -70 l-49 -196c-3 -12 -3 -16 -3 -16c0 -6 13 -89 79 -89c37 0 85 33 119 103c18 38 51 153 51 212Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D438" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2248" x="1041" y="0"></use>
+<g transform="translate(1814,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="720" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="110" y="676"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="60" y="-686"></use>
+</g>
+</g>
+<g transform="translate(3219,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-2211" x="0" y="0"></use>
+<g transform="translate(147,-1090)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-3D" x="345" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="1124" y="0"></use>
+</g>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="721" y="1627"></use>
+</g>
+<g transform="translate(4664,0)">
+<g transform="translate(286,0)">
+<rect stroke="none" width="8262" height="60" x="0" y="220"></rect>
+<g transform="translate(59,770)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="978" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1367" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1924" y="0"></use>
+<g transform="translate(2369,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3336" y="0"></use>
+<g transform="translate(3781,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="825" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4709" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="5265" y="0"></use>
+<g transform="translate(5544,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(7050,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="663" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-7C" x="7864" y="0"></use>
+</g>
+<g transform="translate(1291,-769)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D714" x="712" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1043" y="0"></use>
+<g transform="translate(1433,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2399" y="0"></use>
+<g transform="translate(2956,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D706" x="712" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="3972" y="0"></use>
+<g transform="translate(4361,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D706" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="825" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="5289" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="13333" y="0"></use>
+</g>
+</svg>
+</div>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+<div class="eqno">(<a href="#eq:irradiance-from-spectral-radiance-estimate">4.21</a>)</div>
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<p>
+
+Thus, we only need to be able to evaluate the integrand at the specified
+discrete wavelengths to estimate the irradiance.
+More generally, we will see that it is possible to express all the
+spectral quantities that <tt>pbrt</tt> outputs as integrals over wavelength.
+For example, Section&nbsp;<a href="../Radiometry,_Spectra,_and_Color/Color.html#sec:color">4.6</a> shows that
+when rendering an image represented using RGB colors, each pixel&rsquo;s color
+can be computed by integrating the spectral radiance arriving at a pixel
+with functions that model red, green, and blue color response.  <tt>pbrt</tt> therefore uses only discrete spectral samples for spectral computation.
+
+</p>
+<p>So that we can proceed to the implementation of the classes related to
+sampling spectra and performing computations with spectral samples, we will
+define the constant that sets the number of spectral samples here.
+(Section&nbsp;<a href="../Radiometry,_Spectra,_and_Color/Color.html#sec:number-of-wavelength-samples">4.6.5</a> will discuss in more detail the trade-offs
+involved in choosing this value.)  <tt>pbrt</tt> uses 4 wavelength
+samples by default; this value can easily be changed, though doing so
+requires recompiling the system.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumConstants-1"></span><div class="fragmentname">&lt;&lt;Spectrum Constants&gt;&gt;+=&nbsp;<a href="#fragment-SpectrumConstants-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Color.html#fragment-SpectrumConstants-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static constexpr int <span class="anchor" id="NSpectrumSamples"></span>NSpectrumSamples = 4;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x4-SampledSpectrum"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x4-SampledSpectrum"></span><h4>SampledSpectrum</h4><p>
+
+
+</p>
+<p>The <tt>SampledSpectrum</tt> class stores an array of <a href="#NSpectrumSamples"><tt>NSpectrumSamples</tt></a>
+values that represent values of the spectral distribution at discrete
+wavelengths. It provides methods that allow a variety of mathematical
+operations to be performed with them.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledSpectrumDefinition-0"></span><div class="fragmentname">&lt;&lt;SampledSpectrum Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="SampledSpectrum"></span>SampledSpectrum {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SampledSpectrumPublicMethods-0">SampledSpectrum Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-155" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-155"><i></i></a><div id="fragbit-155" class="collapse"><div class="fragmentcode">       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> operator+(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) const {
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> ret = *this;
+           return ret += s;
+       }
+       
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;operator-=(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) {
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               <a href="#SampledSpectrum::values" class="code">values</a>[i] -= s.<a href="#SampledSpectrum::values" class="code">values</a>[i];
+           return *this;
+       }
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> operator-(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) const {
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> ret = *this;
+           return ret -= s;
+       }
+       PBRT_CPU_GPU
+       friend <a href="#SampledSpectrum" class="code">SampledSpectrum</a> operator-(Float a, const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) {
+           DCHECK(!IsNaN(a));
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> ret;
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               ret.<a href="#SampledSpectrum::values" class="code">values</a>[i] = a - s.<a href="#SampledSpectrum::values" class="code">values</a>[i];
+           return ret;
+       }
+       
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;operator*=(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) {
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               <a href="#SampledSpectrum::values" class="code">values</a>[i] *= s.<a href="#SampledSpectrum::values" class="code">values</a>[i];
+           return *this;
+       }
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> operator*(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) const {
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> ret = *this;
+           return ret *= s;
+       }
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> operator*(Float a) const {
+           DCHECK(!IsNaN(a));
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> ret = *this;
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               ret.<a href="#SampledSpectrum::values" class="code">values</a>[i] *= a;
+           return ret;
+       }
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;operator*=(Float a) {
+           DCHECK(!IsNaN(a));
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               <a href="#SampledSpectrum::values" class="code">values</a>[i] *= a;
+           return *this;
+       }
+       PBRT_CPU_GPU
+       friend <a href="#SampledSpectrum" class="code">SampledSpectrum</a> operator*(Float a, const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) { return s * a; }
+       
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;operator/=(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) {
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i) {
+               DCHECK_NE(0, s.<a href="#SampledSpectrum::values" class="code">values</a>[i]);
+               <a href="#SampledSpectrum::values" class="code">values</a>[i] /= s.<a href="#SampledSpectrum::values" class="code">values</a>[i];
+           }
+           return *this;
+       }
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> operator/(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) const {
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> ret = *this;
+           return ret /= s;
+       }
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;operator/=(Float a) {
+           DCHECK_NE(a, 0);
+           DCHECK(!IsNaN(a));
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               <a href="#SampledSpectrum::values" class="code">values</a>[i] /= a;
+           return *this;
+       }
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> operator/(Float a) const {
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> ret = *this;
+           return ret /= a;
+       }
+       
+       PBRT_CPU_GPU
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> operator-() const {
+           <a href="#SampledSpectrum" class="code">SampledSpectrum</a> ret;
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               ret.<a href="#SampledSpectrum::values" class="code">values</a>[i] = -<a href="#SampledSpectrum::values" class="code">values</a>[i];
+           return ret;
+       }
+       PBRT_CPU_GPU
+       bool operator==(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) const { return <a href="#SampledSpectrum::values" class="code">values</a> == s.<a href="#SampledSpectrum::values" class="code">values</a>; }
+       PBRT_CPU_GPU
+       bool operator!=(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) const { return <a href="#SampledSpectrum::values" class="code">values</a> != s.<a href="#SampledSpectrum::values" class="code">values</a>; }
+       
+       std::string ToString() const;
+       
+       PBRT_CPU_GPU
+       bool HasNaNs() const {
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               if (IsNaN(<a href="#SampledSpectrum::values" class="code">values</a>[i]))
+                   return true;
+           return false;
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Radiometry,_Spectra,_and_Color/Color.html#XYZ" class="code">XYZ</a> ToXYZ(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;
+       PBRT_CPU_GPU
+       <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGB" class="code">RGB</a> ToRGB(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda, const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> &amp;cs) const;
+       PBRT_CPU_GPU
+       Float y(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;
+       explicit <a href="#SampledSpectrum" class="code">SampledSpectrum</a>(Float c) { <a href="#SampledSpectrum::values" class="code">values</a>.fill(c); }
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a>(pstd::span&lt;const Float&gt; v) {
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               <a href="#SampledSpectrum::values" class="code">values</a>[i] = v[i];
+       }
+       Float operator[](int i) const { return <a href="#SampledSpectrum::values" class="code">values</a>[i]; }
+       Float &amp;operator[](int i) { return <a href="#SampledSpectrum::values" class="code">values</a>[i]; }
+       explicit operator bool() const {
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               if (<a href="#SampledSpectrum::values" class="code">values</a>[i] != 0) return true;
+           return false;
+       }
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;operator+=(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) {
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               <a href="#SampledSpectrum::values" class="code">values</a>[i] += s.<a href="#SampledSpectrum::values" class="code">values</a>[i];
+           return *this;
+       }
+       PBRT_CPU_GPU
+       Float MinComponentValue() const {
+        Float m = <a href="#SampledSpectrum::values" class="code">values</a>[0];
+           for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               m = std::min(m, <a href="#SampledSpectrum::values" class="code">values</a>[i]);
+           return m;
+       }
+       PBRT_CPU_GPU
+       Float MaxComponentValue() const {
+           Float m = <a href="#SampledSpectrum::values" class="code">values</a>[0];
+           for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               m = std::max(m, <a href="#SampledSpectrum::values" class="code">values</a>[i]);
+           return m;
+       }
+       PBRT_CPU_GPU
+       Float Average() const {
+           Float sum = <a href="#SampledSpectrum::values" class="code">values</a>[0];
+           for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               sum += <a href="#SampledSpectrum::values" class="code">values</a>[i];
+           return sum / <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>;
+       }</div></div>
+  private:
+    pstd::array&lt;Float, <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>&gt; <span class="anchor" id="SampledSpectrum::values"></span>values;
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Its constructors include one that allows providing a single value for all
+wavelengths and one that takes an appropriately sized <tt>pstd::span</tt> of
+per-wavelength values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledSpectrumPublicMethods-0"></span><div class="fragmentname">&lt;&lt;SampledSpectrum Public Methods&gt;&gt;=&nbsp;<a href="#fragment-SampledSpectrumPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">explicit <a href="#SampledSpectrum" class="code">SampledSpectrum</a>(Float c) { <a href="#SampledSpectrum::values" class="code">values</a>.fill(c); }
+<a href="#SampledSpectrum" class="code">SampledSpectrum</a>(pstd::span&lt;const Float&gt; v) {
+    for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+        <a href="#SampledSpectrum::values" class="code">values</a>[i] = v[i];
+}</div><p>
+
+
+</p>
+<p>The usual indexing operations are also provided for accessing and setting
+each wavelength&rsquo;s value.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledSpectrumPublicMethods-1"></span><div class="fragmentname">&lt;&lt;SampledSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-SampledSpectrumPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-SampledSpectrumPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="SampledSpectrum::operator"></span>operator[](int i) const { return values[i]; }
+Float &amp;operator[](int i) { return values[i]; }</div><p>
+
+
+</p>
+<p>It is often useful to know if all the values in a
+<tt>SampledSpectrum</tt> are zero.  For example, if a surface has zero
+reflectance, then the light transport routines can avoid the computational
+cost of casting reflection rays that have contributions that would
+eventually be multiplied by zeros.  This
+capability is provided through a type conversion operator to
+<tt>bool</tt>.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="C++ arcana: the <tt>explicit</tt> qualifier ensures
+that a <tt>SampledSpectrum</tt> is not unintentionally passed as a
+<tt>bool</tt> argument to a function without an explicit cast. However, if a
+<tt>SampledSpectrum</tt> is used as the condition in an &ldquo;if&rdquo; test, it is
+still automatically converted to a Boolean value without a
+cast.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledSpectrumPublicMethods-2"></span><div class="fragmentname">&lt;&lt;SampledSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-SampledSpectrumPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-SampledSpectrumPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">explicit <span class="anchor" id="SampledSpectrum::operator_bool"></span>operator bool() const {
+    for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+        if (<a href="#SampledSpectrum::values" class="code">values</a>[i] != 0) return true;
+    return false;
+}</div><p>
+
+
+</p>
+<p>All the standard arithmetic operations on <a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> objects
+are provided; each operates component-wise on the stored values.  The
+implementation of <tt>operator+=</tt> is below.  The others are analogous and
+are therefore not included in the text.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledSpectrumPublicMethods-3"></span><div class="fragmentname">&lt;&lt;SampledSpectrum Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-SampledSpectrumPublicMethods-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode"><a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;operator+=(const <a href="#SampledSpectrum" class="code">SampledSpectrum</a> &amp;s) {
+    for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+        <a href="#SampledSpectrum::values" class="code">values</a>[i] += s.<a href="#SampledSpectrum::values" class="code">values</a>[i];
+    return *this;
+}</div><p>
+
+
+</p>
+<p><tt>SafeDiv()</tt> divides two sampled spectra, but generates zero for any
+sample where the divisor is zero.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledSpectrumInlineFunctions-0"></span><div class="fragmentname">&lt;&lt;SampledSpectrum Inline Functions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="SampledSpectrum::SafeDiv"></span>SafeDiv(<a href="#SampledSpectrum" class="code">SampledSpectrum</a> a, <a href="#SampledSpectrum" class="code">SampledSpectrum</a> b) {
+    <a href="#SampledSpectrum" class="code">SampledSpectrum</a> r;
+    for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+        r[i] = (b[i] != 0) ? a[i] / b[i] : 0.;
+    return r;
+}</div><p>
+
+
+</p>
+<p>In addition to the basic arithmetic operations, <a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> also provides
+<tt>Lerp()</tt><span class="anchor" id="SampledSpectrum::Lerp"></span>,
+<tt>Sqrt()</tt><span class="anchor" id="SampledSpectrum::Sqrt"></span>,
+<tt>Clamp()</tt><span class="anchor" id="SampledSpectrum::Clamp"></span>,
+<tt>ClampZero()</tt><span class="anchor" id="SampledSpectrum::ClampZero"></span>,
+<tt>Pow()</tt><span class="anchor" id="SampledSpectrum::Pow"></span>,
+<tt>Exp()</tt><span class="anchor" id="SampledSpectrum::Exp"></span>, and
+<tt>FastExp()</tt><span class="anchor" id="SampledSpectrum::FastExp"></span> functions that
+operate (again, component-wise) on <a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> objects; some of these
+operations are necessary for evaluating some of the reflection
+models in Chapter&nbsp;<a href="../Reflection_Models.html#chap:reflection-models">9</a> and for evaluating volume
+scattering models in Chapter&nbsp;<a href="../Light_Transport_II_Volume_Rendering.html#chap:volume-integration">14</a>.  Finally,
+<tt>MinComponentValue()</tt><span class="anchor" id="SampledSpectrum::MinComponentValue"></span>
+and
+<tt>MaxComponentValue()</tt><span class="anchor" id="SampledSpectrum::MaxComponentValue"></span>
+return the minimum and maximum of all the values, and
+<tt>Average()</tt><span class="anchor" id="SampledSpectrum::Average"></span> returns their
+average.  These methods are all straightforward and are therefore not
+included in the text.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x4-SampledWavelengths"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x4-SampledWavelengths"></span><h4>SampledWavelengths</h4><p>
+
+
+</p>
+<p>A separate class, <tt>SampledWavelengths</tt>, stores the wavelengths for
+which a <a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> stores samples.  Thus, it is important
+not only to keep careful track of the <tt>SampledWavelengths</tt> that are
+represented by an individual <tt>SampledSpectrum</tt> but also to not perform
+any operations that combine <tt>SampledSpectrum</tt>s that have samples at
+different wavelengths.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledWavelengthsDefinitions-0"></span><div class="fragmentname">&lt;&lt;SampledWavelengths Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="SampledWavelengths"></span>SampledWavelengths {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SampledWavelengthsPublicMethods-0">SampledWavelengths Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-156" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-156"><i></i></a><div id="fragbit-156" class="collapse"><div class="fragmentcode">       PBRT_CPU_GPU
+       bool operator==(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;swl) const {
+           return <a href="#SampledWavelengths::lambda" class="code">lambda</a> == swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a> &amp;&amp; <a href="#SampledWavelengths::pdf" class="code">pdf</a> == swl.<a href="#SampledWavelengths::pdf" class="code">pdf</a>;
+       }
+       PBRT_CPU_GPU
+       bool operator!=(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;swl) const {
+           return <a href="#SampledWavelengths::lambda" class="code">lambda</a> != swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a> || <a href="#SampledWavelengths::pdf" class="code">pdf</a> != swl.<a href="#SampledWavelengths::pdf" class="code">pdf</a>;
+       }
+       
+       std::string ToString() const;
+       static <a href="#SampledWavelengths" class="code">SampledWavelengths</a> SampleUniform(Float u,
+               Float lambda_min = <a href="#Lambda_min" class="code">Lambda_min</a>, Float lambda_max = <a href="#Lambda_max" class="code">Lambda_max</a>) {
+           <a href="#SampledWavelengths" class="code">SampledWavelengths</a> swl;
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Samplefirstwavelengthusingmonou-0">Sample first wavelength using <tt>u</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-157" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-157"><i></i></a><div id="fragbit-157" class="collapse"><div class="fragmentcode">              swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[0] = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(u, lambda_min, lambda_max);</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializemonolambdaforremainingwavelengths-0">Initialize <tt>lambda</tt> for remaining wavelengths</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-158" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-158"><i></i></a><div id="fragbit-158" class="collapse"><div class="fragmentcode">              Float delta = (lambda_max - lambda_min) / <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>;
+              for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i) {
+                  swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] = swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i - 1] + delta;
+                  if (swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] &gt; lambda_max)
+                      swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] = lambda_min + (swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] - lambda_max);
+              }</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputePDFforsampledwavelengths-0">Compute PDF for sampled wavelengths</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-159" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-159"><i></i></a><div id="fragbit-159" class="collapse"><div class="fragmentcode">              for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+                  swl.<a href="#SampledWavelengths::pdf" class="code">pdf</a>[i] = 1 / (lambda_max - lambda_min);</div></div>
+           return swl;
+       }
+       Float operator[](int i) const { return <a href="#SampledWavelengths::lambda" class="code">lambda</a>[i]; }
+       Float &amp;operator[](int i) { return <a href="#SampledWavelengths::lambda" class="code">lambda</a>[i]; }
+       <a href="#SampledSpectrum" class="code">SampledSpectrum</a> PDF() const { return <a href="#SampledSpectrum" class="code">SampledSpectrum</a>(<a href="#SampledWavelengths::pdf" class="code">pdf</a>); }
+       void TerminateSecondary() {
+           if (<a href="#SampledWavelengths::SecondaryTerminated" class="code">SecondaryTerminated</a>()) return;
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatewavelengthprobabilitiesfortermination-0">Update wavelength probabilities for termination</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-160" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-160"><i></i></a><div id="fragbit-160" class="collapse"><div class="fragmentcode">              for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+                  <a href="#SampledWavelengths::pdf" class="code">pdf</a>[i] = 0;
+              <a href="#SampledWavelengths::pdf" class="code">pdf</a>[0] /= <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>;</div></div>
+       }
+       bool <a href="#SampledWavelengths::SecondaryTerminated" class="code">SecondaryTerminated</a>() const {
+           for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+               if (<a href="#SampledWavelengths::pdf" class="code">pdf</a>[i] != 0)
+                   return false;
+           return true;
+       }
+       static <a href="#SampledWavelengths" class="code">SampledWavelengths</a> SampleVisible(Float u) {
+           <a href="#SampledWavelengths" class="code">SampledWavelengths</a> swl;
+           for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i) {
+               &lt;&lt;<span class="fragmentname"><a href="../Cameras_and_Film/Film_and_Imaging.html#fragment-Computemonoupforithwavelengthsample-0">Compute <tt>up</tt> for <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="0.802ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 345.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D456" x="0" y="0"></use>
+</g>
+</svg>th wavelength sample</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-161" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-161"><i></i></a><div id="fragbit-161" class="collapse"><div class="fragmentcode">                  Float up = u + Float(i) / <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>;
+                  if (up &gt; 1)
+                      up -= 1;</div></div>
+               swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] = <a href="../Cameras_and_Film/Film_and_Imaging.html#SampleVisibleWavelengths" class="code">SampleVisibleWavelengths</a>(up);
+               swl.<a href="#SampledWavelengths::pdf" class="code">pdf</a>[i] = <a href="../Cameras_and_Film/Film_and_Imaging.html#VisibleWavelengthsPDF" class="code">VisibleWavelengthsPDF</a>(swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i]);
+           }
+           return swl;
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SampledWavelengthsPrivateMembers-0">SampledWavelengths Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-162" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-162"><i></i></a><div id="fragbit-162" class="collapse"><div class="fragmentcode">       friend struct SOA&lt;<a href="#SampledWavelengths" class="code">SampledWavelengths</a>&gt;;
+       pstd::array&lt;Float, <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>&gt; lambda, pdf;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>To be used in the context of Monte Carlo integration, the
+wavelengths stored in <a href="#SampledWavelengths"><tt>SampledWavelengths</tt></a> must be sampled from some
+probability distribution.  Therefore, the class stores
+the wavelengths themselves as well as each one&rsquo;s probability density.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledWavelengthsPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;SampledWavelengths Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::array&lt;Float, <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>&gt; <span class="anchor" id="SampledWavelengths::lambda"></span>lambda, <span class="anchor" id="SampledWavelengths::pdf"></span>pdf;</div><p>
+
+
+</p>
+<p>The easiest way to sample wavelengths is uniformly over a
+given range. This approach is implemented in the <tt>SampleUniform()</tt>
+method, which takes a single uniform sample <tt>u</tt> and a range of
+wavelengths.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledWavelengthsPublicMethods-0"></span><div class="fragmentname">&lt;&lt;SampledWavelengths Public Methods&gt;&gt;=&nbsp;<a href="#fragment-SampledWavelengthsPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static <a href="#SampledWavelengths" class="code">SampledWavelengths</a> <span class="anchor" id="SampledWavelengths::SampleUniform"></span>SampleUniform(Float u,
+        Float lambda_min = <a href="#Lambda_min" class="code">Lambda_min</a>, Float lambda_max = <a href="#Lambda_max" class="code">Lambda_max</a>) {
+    <a href="#SampledWavelengths" class="code">SampledWavelengths</a> swl;
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Samplefirstwavelengthusingmonou-0">Sample first wavelength using <tt>u</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-163" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-163"><i></i></a><div id="fragbit-163" class="collapse"><div class="fragmentcode">       swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[0] = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(u, lambda_min, lambda_max);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializemonolambdaforremainingwavelengths-0">Initialize <tt>lambda</tt> for remaining wavelengths</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-164" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-164"><i></i></a><div id="fragbit-164" class="collapse"><div class="fragmentcode">       Float delta = (lambda_max - lambda_min) / <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>;
+       for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i) {
+           swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] = swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i - 1] + delta;
+           if (swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] &gt; lambda_max)
+               swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] = lambda_min + (swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] - lambda_max);
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputePDFforsampledwavelengths-0">Compute PDF for sampled wavelengths</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-165" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-165"><i></i></a><div id="fragbit-165" class="collapse"><div class="fragmentcode">       for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+           swl.<a href="#SampledWavelengths::pdf" class="code">pdf</a>[i] = 1 / (lambda_max - lambda_min);</div></div>
+    return swl;
+}</div><p>
+
+
+</p>
+<p>It chooses the first wavelength uniformly within the range.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Samplefirstwavelengthusingmonou-0"></span><div class="fragmentname">&lt;&lt;Sample first wavelength using <tt>u</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[0] = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(u, lambda_min, lambda_max);</div><p>
+
+
+</p>
+<p>The remaining wavelengths are chosen by taking uniform steps <tt>delta</tt>
+starting from the first wavelength and wrapping around if
+<tt>lambda_max</tt> is passed.  The result is a set of stratified wavelength
+samples that are generated using a single random number.  One advantage of
+sampling wavelengths in this way rather than using a separate uniform
+sample for each one is that the value of <a href="#NSpectrumSamples"><tt>NSpectrumSamples</tt></a> can be
+changed without requiring the modification of code that calls
+<tt>SampleUniform()</tt> to adjust the number of sample values that are
+passed to this method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Initializemonolambdaforremainingwavelengths-0"></span><div class="fragmentname">&lt;&lt;Initialize <tt>lambda</tt> for remaining wavelengths&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float delta = (lambda_max - lambda_min) / <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>;
+for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i) {
+    swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] = swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i - 1] + delta;
+    if (swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] &gt; lambda_max)
+        swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] = lambda_min + (swl.<a href="#SampledWavelengths::lambda" class="code">lambda</a>[i] - lambda_max);
+}</div><p>
+
+
+</p>
+<p>The probability density for each sample is easily computed, since the
+sampling distribution is uniform.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputePDFforsampledwavelengths-0"></span><div class="fragmentname">&lt;&lt;Compute PDF for sampled wavelengths&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">for (int i = 0; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+    swl.<a href="#SampledWavelengths::pdf" class="code">pdf</a>[i] = 1 / (lambda_max - lambda_min);</div><p>
+
+
+</p>
+<p>Additional methods provide access to the individual wavelengths and to all
+of their PDFs.  PDF values are returned in the form of a
+<a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a>, which makes it easy to compute the value of associated
+Monte Carlo estimators.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledWavelengthsPublicMethods-1"></span><div class="fragmentname">&lt;&lt;SampledWavelengths Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-SampledWavelengthsPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-SampledWavelengthsPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float operator[](int i) const { return <a href="#SampledWavelengths::lambda" class="code">lambda</a>[i]; }
+Float &amp;operator[](int i) { return <a href="#SampledWavelengths::lambda" class="code">lambda</a>[i]; }
+<a href="#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="SampledWavelengths::PDF"></span>PDF() const { return <a href="#SampledSpectrum" class="code">SampledSpectrum</a>(<a href="#SampledWavelengths::pdf" class="code">pdf</a>); }</div><p>
+
+
+</p>
+<p>In some cases, different wavelengths of light may follow different paths
+after a scattering event.  The most common example is when light undergoes
+dispersion and different wavelengths of light refract to different
+directions.  When this happens, it is no longer possible to track multiple
+wavelengths of light with a single ray.  For this case, <a href="#SampledWavelengths"><tt>SampledWavelengths</tt></a>
+provides the capability of terminating all but one of the wavelengths;
+subsequent computations can then consider the single surviving wavelength
+exclusively.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledWavelengthsPublicMethods-2"></span><div class="fragmentname">&lt;&lt;SampledWavelengths Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-SampledWavelengthsPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-SampledWavelengthsPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="SampledWavelengths::TerminateSecondary"></span>TerminateSecondary() {
+    if (<a href="#SampledWavelengths::SecondaryTerminated" class="code">SecondaryTerminated</a>()) return;
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatewavelengthprobabilitiesfortermination-0">Update wavelength probabilities for termination</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-166" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-166"><i></i></a><div id="fragbit-166" class="collapse"><div class="fragmentcode">       for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+           <a href="#SampledWavelengths::pdf" class="code">pdf</a>[i] = 0;
+       <a href="#SampledWavelengths::pdf" class="code">pdf</a>[0] /= <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>;</div></div>
+}</div><p>
+
+
+</p>
+<p>The wavelength stored in <tt>lambda[0]</tt> is always the survivor: there is
+no need to randomly select the surviving wavelength so long as each
+<tt>lambda</tt> value was randomly sampled from the same distribution as is
+the case with <tt>SampleUniform()</tt>, for example.  Note
+that this means that it would be incorrect for
+<a href="#SampledWavelengths::SampleUniform"><tt>SampledWavelengths::SampleUniform()</tt></a> to always place <tt>lambda[0]</tt>
+in a first wavelength stratum between <tt>lambda_min</tt> and
+<tt>lambda_min+delta</tt>, <tt>lambda[1]</tt> in the second, and so
+forth.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="This mistake is one of the bugs that the authors encountered during
+the initial development of this functionality in <tt>pbrt</tt>.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p>
+
+</p>
+<p>Terminated wavelengths have their PDF values set to zero; code that
+computes Monte Carlo estimates using <tt>SampledWavelengths</tt> must
+therefore detect this case and ignore terminated wavelengths accordingly.
+The surviving wavelength&rsquo;s PDF is updated to account for the termination
+event by multiplying it by the probability of a wavelength surviving
+termination, <tt>1 / NSpectrumSamples</tt>. (This is similar to how applying
+Russian roulette affects the Monte Carlo estimator&mdash;see
+Section&nbsp;<a href="../Monte_Carlo_Integration/Improving_Efficiency.html#sec:russian-roulette">2.2.4</a>.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Updatewavelengthprobabilitiesfortermination-0"></span><div class="fragmentname">&lt;&lt;Update wavelength probabilities for termination&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+    <a href="#SampledWavelengths::pdf" class="code">pdf</a>[i] = 0;
+<a href="#SampledWavelengths::pdf" class="code">pdf</a>[0] /= <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>;</div><p>
+
+
+</p>
+<p><tt>SecondaryTerminated()</tt> indicates whether <tt>TerminateSecondary()</tt>
+has already been called.  Because path termination is the only thing that
+causes zero-valued PDFs after the first wavelength, checking the PDF values
+suffices for this test.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledWavelengthsPublicMethods-3"></span><div class="fragmentname">&lt;&lt;SampledWavelengths Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-SampledWavelengthsPublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Cameras_and_Film/Film_and_Imaging.html#fragment-SampledWavelengthsPublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="SampledWavelengths::SecondaryTerminated"></span>SecondaryTerminated() const {
+    for (int i = 1; i &lt; <a href="#NSpectrumSamples" class="code">NSpectrumSamples</a>; ++i)
+        if (<a href="#SampledWavelengths::pdf" class="code">pdf</a>[i] != 0)
+            return false;
+    return true;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>We will often have a <a href="#Spectrum"><tt>Spectrum</tt></a> and a set of wavelengths for
+which we would like to evaluate it. Therefore, we will add a method to
+the <a href="#Spectrum"><tt>Spectrum</tt></a> interface that provides a
+<tt>Sample()</tt> method that takes a set of wavelengths, evaluates its
+spectral distribution function at each one, and returns a
+<a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a>.  This convenience method eliminates the need for an
+explicit loop over wavelengths with individual calls to
+<a href="#Spectrum::operator"><tt>Spectrum::operator()</tt></a> in this common case. The implementations of this
+method are straightforward and not included here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpectrumInterface-2"></span><div class="fragmentname">&lt;&lt;Spectrum Interface&gt;&gt;+=&nbsp;<a href="#fragment-SpectrumInterface-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode"><a href="#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="Spectrum::Sample"></span>Sample(const <a href="#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x4-Discussion"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x4-Discussion"></span><h4>Discussion</h4><p>
+
+
+</p>
+<p>Now that <a href="#SampledWavelengths"><tt>SampledWavelengths</tt></a> and <a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> have been
+introduced, it is reasonable to ask the question: why are they separate
+classes, rather than a single class that stores both wavelengths and their
+sample values?  Indeed, an advantage of such a design would be that it
+would be possible to detect at runtime if an operation was performed with
+two <a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> instances that stored values for different
+wavelengths&mdash;such an operation is nonsensical and would signify a bug in
+the system.
+
+</p>
+<p>However, in practice many <a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> objects are created during
+rendering, many as
+temporary values in the course of evaluating expressions involving spectral
+computation.  It is therefore worthwhile to minimize the object&rsquo;s size, if
+only to avoid initialization and copying of additional data.
+While the <tt>pbrt</tt>&rsquo;s CPU-based integrators do not store many
+<a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> values in memory at the same time, the GPU rendering path
+stores a few million of them, giving further motivation to minimize their
+size.
+
+</p>
+<p>Our experience has been that bugs from mixing computations at different
+wavelengths have been rare.  With the way that computation is structured in
+<tt>pbrt</tt>, wavelengths are generally sampled at the start of following a ray&rsquo;s
+path through the scene, and then the same wavelengths are used throughout
+for all spectral calculations along the path.  There ends up being little
+opportunity for inadvertent mingling of sampled wavelengths in
+<a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> instances.  Indeed, in an earlier version of the
+system, <a href="#SampledSpectrum"><tt>SampledSpectrum</tt></a> did carry along a <a href="#SampledWavelengths"><tt>SampledWavelengths</tt></a>
+member variable in debug builds in order to be able to check for that case.
+It was eliminated in the interests of simplicity after a few months&rsquo;
+existence without finding a bug.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Radiometry,_Spectra,_and_Color/Color.html">Radiometry, Spectra, and Color / Color</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

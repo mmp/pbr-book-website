@@ -1,0 +1,922 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Using and Understanding the Code</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Introduction.html">Introduction</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Using and Understanding the Code</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Introduction/How_to_Proceed_through_This_Book.html">(Previous: How to Proceed through This Book)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>1.5 Using and Understanding the Code</h2><p>
+
+
+</p>
+<p>The <tt>pbrt</tt> source code distribution is available from
+<a href="https://pbrt.org">pbrt.org</a>.  The website also includes additional
+documentation, images rendered with <tt>pbrt</tt>, example scenes, errata, and
+links to a bug reporting system.  We encourage you to visit the website
+and subscribe to the <tt>pbrt</tt> mailing list.
+
+</p>
+<p><tt>pbrt</tt> is written in C++, but we have tried to make it accessible to
+non-C++ experts by limiting the use of esoteric features of the
+language. Staying close to the core language features also helps with the
+system&rsquo;s portability.  We make use of C++&rsquo;s extensive standard library
+whenever it is applicable but will not discuss the semantics of calls to standard
+library functions in the text.  Our expectation is that the reader will
+consult documentation of the standard library as necessary.
+
+</p>
+<p>We will occasionally omit short sections of <tt>pbrt</tt>&rsquo;s source code from the
+book.  For example, when there are a number of cases to be handled, all
+with nearly identical code, we will present one case and note that the code
+for the remaining cases has been omitted from the text.  Default class
+constructors are generally not shown, and the text also does not include details
+like the
+various <tt>#include</tt> directives at the start of each source file.  
+All the omitted code can be found in the <tt>pbrt</tt> source code
+distribution.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SourceCodeOrganization"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="SourceCodeOrganization"></span><h3>1.5.1  Source Code Organization</h3><p>
+
+
+</p>
+<p>The source code used for building <tt>pbrt</tt> is under the <tt>src</tt> directory
+in the <tt>pbrt</tt> distribution.  In that directory are <tt>src/ext</tt>, which
+has the source code for various third-party libraries that are used by
+<tt>pbrt</tt>, and <tt>src/pbrt</tt>, which contains <tt>pbrt</tt>&rsquo;s source code.  We will
+not discuss the third-party libraries&rsquo; implementations in the book.
+
+</p>
+<p>The source files in the <tt>src/pbrt</tt> directory mostly consist of
+implementations of the various interface types. For example,
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/shapes.h"><tt>shapes.h</tt></a> and <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/shapes.cpp"><tt>shapes.cpp</tt></a> have implementations of
+the <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> interface, <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/materials.h"><tt>materials.h</tt></a> and
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/materials.cpp"><tt>materials.cpp</tt></a> have materials, and so forth.  That directory
+also holds the source code for parsing <tt>pbrt</tt>&rsquo;s scene description files.
+
+</p>
+<p>The <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/pbrt.h"><tt>pbrt.h</tt></a> header file in <tt>src/pbrt</tt> is the first file
+that is included by all other source files in the system.  It contains a
+few macros and widely useful forward declarations, though we have tried to
+keep it short and to minimize the number of other headers that it includes
+in the interests of compile time efficiency.
+
+</p>
+<p>The <tt>src/pbrt</tt> directory also contains a number of
+subdirectories.  They have the following roles:
+</p>
+<ul>
+<li> <tt>base</tt>: Header files defining the interfaces for 12 of the common
+interface types listed in Table&nbsp;<a href="../Introduction/pbrt_System_Overview.html#fig:plug-in-types">1.1</a>
+(<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a> and <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a> are CPU-only and so are defined in
+files in the <tt>cpu</tt> directory).
+<li> <tt>cmd</tt>: Source files containing the <tt>main()</tt> functions for
+the executables that are built for <tt>pbrt</tt>. (Others besides the <tt>pbrt</tt> executable
+include <tt>imgtool</tt>, which performs various image processing
+operations, and <tt>pbrt_test</tt>, which contains unit tests.)
+<li> <tt>cpu</tt>: CPU-specific code, including <a href="../Introduction/pbrt_System_Overview.html#Integrator"><tt>Integrator</tt></a> implementations.
+<li> <tt>gpu</tt>: GPU-specific source code, including functions for
+allocating memory and launching work on the GPU.
+<li> <tt>util</tt>: Lower-level utility code, most of it not specific to
+rendering.
+<li> <tt>wavefront</tt>: Implementation of the
+<a href="../Wavefront_Rendering_on_GPUs/Path_Tracer_Implementation.html#WavefrontPathIntegrator"><tt>WavefrontPathIntegrator</tt></a>, which is introduced in
+Chapter&nbsp;<a href="../Wavefront_Rendering_on_GPUs.html#chap:gpu">15</a>.  This integrator runs on both CPUs and GPUs.
+</ul><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#NamingConventions"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="NamingConventions"></span><h3>1.5.2  Naming Conventions</h3><p>
+
+
+</p>
+<p>Functions and classes are generally named using Camel case, with the first
+letter of each word capitalized and no delineation for spaces.  One
+exception is some methods of container classes, which follow the naming
+convention of the C++ standard library when they have matching
+functionality (e.g., <tt>size()</tt> and <tt>begin()</tt> and <tt>end()</tt> for
+iterators).  Variables also use Camel case, though with the first letter
+lowercase, except for a few global variables.
+
+</p>
+<p>We also try to match mathematical notation in naming: for example, we use
+variables like <tt>p</tt> for points <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> and <tt>w</tt> for directions
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.446ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 622.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+</g>
+</svg>.  We will occasionally add a <tt>p</tt> to the end of a variable to
+denote a primed symbol: <tt>wp</tt> for <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.347ex" height="2.343ex" style="vertical-align: -0.338ex;" viewBox="0 -863.1 1010.6 1008.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega prime Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="880" y="513"></use>
+</g>
+</svg>.  Underscores are used to
+indicate subscripts in equations: <tt>theta_o</tt> for <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.145ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 923.4 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta Subscript normal o</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="663" y="-213"></use>
+</g>
+</svg>,
+for example.
+
+</p>
+<p>Our use of underscores is not perfectly consistent, however.
+Short variable names often omit the underscore&mdash;we use <tt>wi</tt> for <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="880" y="-213"></use>
+</g>
+</svg>
+and we have already seen the use of <tt>Li</tt> for <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.272ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 978.4 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="963" y="-213"></use>
+</g>
+</svg>.
+We also occasionally use an underscore to separate a word from a lowercase
+mathematical symbol.  For example, we use <tt>Sample_f</tt> for a method
+that samples a function <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.283ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 552.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+</svg> rather than <tt>Samplef</tt>, which would be more
+difficult to read, or <tt>SampleF</tt>, which would obscure the connection to
+the function <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.283ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 552.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+</svg> (&ldquo;where was the function <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.738ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 748.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper F</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D439" d="M748 653l-20 -173c-2 -19 -3 -25 -14 -25c-9 0 -12 7 -12 12c0 3 0 5 2 18c3 27 3 31 3 54c0 77 -23 110 -146 110h-132c-44 0 -45 -4 -54 -39l-64 -254h91c85 0 108 18 129 96c4 16 5 21 15 21s12 -11 12 -11c0 -3 0 -5 -3 -16l-55 -217c-5 -18 -5 -21 -15 -21 c-6 0 -12 4 -12 12c0 0 1 6 3 11c7 30 7 42 7 49c0 29 -8 45 -83 45h-97l-62 -249c-4 -15 -4 -23 -4 -23c0 -13 3 -17 32 -20c25 -2 30 -2 52 -2c23 0 25 0 28 -1c0 0 6 -3 6 -11c0 -19 -12 -19 -21 -19l-149 3l-132 -3c-3 0 -15 0 -15 12c0 19 11 19 28 19c79 0 81 8 91 47 l132 529c5 18 5 20 5 24c0 18 -28 18 -65 18c-19 0 -28 0 -28 11c0 20 10 20 30 20h490c25 0 30 0 27 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D439" x="0" y="0"></use>
+</g>
+</svg> defined?&rdquo;).
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#PointerorReference"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="PointerorReference"></span><h3>1.5.3  Pointer or Reference?</h3><p>
+
+
+</p>
+<p> C++ provides two different mechanisms for passing an object 
+to a function or method by reference: pointers and references.  If a
+function argument is not intended as an output variable, either can be used
+to save the expense of passing the entire structure on the stack.  The
+convention in <tt>pbrt</tt> is to use a pointer when the argument will be completely
+changed by the function or method, a reference when some of its internal
+state will be changed but it will not be fully reinitialized, and
+<tt>const</tt> references when it will not be changed at all.  One important
+exception to this rule is that we will always use a pointer when we want to
+be able to pass <tt>nullptr</tt> to indicate that a parameter is not
+available or should not be used.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#AbstractionversusEfficiency"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="AbstractionversusEfficiency"></span><h3>1.5.4  Abstraction versus Efficiency</h3><p>
+
+
+</p>
+<p>One of the primary tensions when designing interfaces for software systems
+is making a reasonable trade-off between abstraction and efficiency.  For
+example, many programmers religiously make all data in all classes
+<tt>private</tt> and provide methods to obtain or modify the values of the
+data items.  For simple classes (e.g., <a href="../Geometry_and_Transformations/Vectors.html#Vector3f"><tt>Vector3f</tt></a>), we believe that
+approach needlessly hides a basic property of the implementation&mdash;that the
+class holds three floating-point coordinates&mdash;that we can reasonably
+expect to never change.  Of course, using no information hiding and
+exposing all details of all classes&rsquo; internals leads to a code maintenance
+nightmare, but we believe that there is nothing wrong with judiciously
+exposing basic design decisions throughout the system.  For example, the
+fact that a <a href="../Geometry_and_Transformations/Rays.html#Ray"><tt>Ray</tt></a> is represented with a point, a vector, a time, and
+the medium it is in is a decision that does not need to be hidden behind a
+layer of abstraction.  Code elsewhere is shorter and easier to understand
+when details like these are exposed.
+
+</p>
+<p>An important thing to keep in mind when writing a software system and
+making these sorts of trade-offs is the expected final size of the system.
+<tt>pbrt</tt> is roughly 70,000 lines of code and it is never going to grow to be
+a million lines of code; this fact should be reflected in the
+amount of information hiding used in the system.  It would be a waste of
+programmer time (and likely a source of runtime inefficiency) to design
+the interfaces to accommodate a system of a much higher level of complexity.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#pstd"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:pstd"></span><span id="pstd"></span><h3>1.5.5  pstd</h3><p>
+
+
+
+</p>
+<p>We have reimplemented a subset of the C++ standard library in the
+<tt>pstd</tt> namespace; this was necessary in order to use those parts of it
+interchangeably on the CPU and on the GPU.  For the purposes of reading
+<tt>pbrt</tt>&rsquo;s source code, anything in <tt>pstd</tt> provides the same
+functionality with the same type and methods as the corresponding
+entity in <tt>std</tt>.  We will therefore not document usage of
+<tt>pstd</tt> in the text here.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Allocators"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Allocators"></span><h3>1.5.6  Allocators</h3><p>
+
+
+</p>
+<p>Almost all dynamic memory allocation for the objects that represent the
+scene in <tt>pbrt</tt> is performed using an instance of an <tt>Allocator</tt> that
+is provided to the object creation methods.  In <tt>pbrt</tt>, <tt>Allocator</tt> is
+shorthand for the C++ standard library&rsquo;s <tt>pmr::polymorphic_allocator</tt>
+type.  Its definition is in <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/pbrt.h"><tt>pbrt.h</tt></a> so that it is available to all
+other source files.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DefinemonoAllocator-0"></span><div class="fragmentname">&lt;&lt;Define <tt>Allocator</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">using <span class="anchor" id="Allocator"></span>Allocator = pstd::pmr::polymorphic_allocator&lt;std::byte&gt;;</div><p>
+
+
+</p>
+<p><tt>std::pmr::polymorphic_allocator</tt> implementations provide a few
+methods for allocating and freeing objects.  These three are used widely in
+<tt>pbrt</tt>:<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Because <tt>pmr::polymorphic_allocator</tt> is a recent
+addition to C++ that is not yet widely used, yet is widely used in <tt>pbrt</tt>,
+we break our regular habit of not documenting standard library
+functionality in the text here.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p></p>
+<div class="fragmentcode">void *allocate_bytes(size_t nbytes, size_t alignment);
+template &lt;class T&gt; T *allocate_object(size_t n = 1);
+template &lt;class T, class... Args&gt; T *new_object(Args &amp;&amp;... args);</div><p>
+
+
+</p>
+<p>The first,
+<tt>allocate_bytes()</tt><span class="anchor" id="std::pmr::polymorphic_allocator::allocate_bytes"></span>,
+allocates the specified number of bytes of memory.  Next,
+<tt>allocate_object()</tt><span class="anchor" id="std::pmr::polymorphic_allocator::allocate_object"></span>
+allocates an array of <tt>n</tt> objects of the specified type <tt>T</tt>,
+initializing each one with its default constructor.  The final method,
+<tt>new_object()</tt><span class="anchor" id="std::pmr::polymorphic_allocator::new_object"></span>,
+allocates a single object of type <tt>T</tt> and calls its constructor with
+the provided arguments.  There are corresponding methods for freeing each
+type of allocation:
+<tt>deallocate_bytes()</tt><span class="anchor" id="std::pmr::polymorphic_allocator::deallocate_bytes"></span>,
+<tt>deallocate_object()</tt><span class="anchor" id="std::pmr::polymorphic_allocator::deallocate_object"></span>,
+and
+<tt>delete_object()</tt><span class="anchor" id="std::pmr::polymorphic_allocator::delete_object"></span>.
+
+</p>
+<p>A tricky detail related to the use of allocators with data structures from
+the C++ standard library is that a container&rsquo;s allocator is fixed once its
+constructor has run.  Thus, if one container is assigned to another, the
+target container&rsquo;s allocator is unchanged even though all the values it
+stores are updated. (This is the case even with C++&rsquo;s move semantics.)  Therefore,
+it is common to see objects&rsquo; constructors in <tt>pbrt</tt> passing along an
+allocator in member initializer lists for containers that they store even
+if they are not yet ready to set the values stored in them.
+
+</p>
+<p>Using an explicit memory allocator rather than direct calls to <tt>new</tt>
+and <tt>delete</tt> has a few advantages.  Not only does it make it easy to
+do things like track the total amount of memory that has been allocated,
+but it also makes it easy to substitute allocators that are optimized for
+many small allocations, as is useful when building acceleration structures
+in Chapter&nbsp;<a href="../Primitives_and_Intersection_Acceleration.html#chap:acceleration">7</a>.  Using allocators in this way also
+makes it easy to store the scene objects in memory that is visible to the
+GPU when GPU rendering is being used.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#DynamicDispatch"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:dynamic-dispatch"></span><span id="DynamicDispatch"></span><h3>1.5.7  Dynamic Dispatch</h3><p>
+
+
+
+</p>
+<p>As mentioned in Section&nbsp;<a href="../Introduction/pbrt_System_Overview.html#sec:pbrt-system-overview">1.3</a>, virtual functions
+are generally not used for dynamic dispatch with polymorphic types in
+<tt>pbrt</tt> (the main exception being the <tt>Integrator</tt>s).  Instead, the
+<a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer"><tt>TaggedPointer</tt></a> class is used to represent a pointer to one of a
+specified set of types; it includes machinery for runtime type
+identification and thence dynamic dispatch.  (Its implementation can be
+found in Appendix&nbsp;<a href="../Utilities/Containers_and_Memory_Management.html#sec:tagged-pointer">A.4.4</a>.)  Two considerations motivate
+its use.
+
+</p>
+<p>First, in C++, an instance of an object that inherits from an abstract base
+class includes a hidden virtual function table pointer that is used to
+resolve virtual function calls.  On most modern systems, this pointer uses
+eight bytes of memory.  While eight bytes may not seem like much, we have
+found that when rendering complex scenes with previous versions of <tt>pbrt</tt>, a
+substantial amount of memory would be used just for virtual function
+pointers for shapes and primitives.  With the <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer"><tt>TaggedPointer</tt></a> class,
+there is no incremental storage cost for type information.
+
+</p>
+<p>The other problem with virtual function tables is that they store function
+pointers that point to executable code.  Of course, that&rsquo;s what they are
+supposed to do, but this characteristic means that a virtual function table can
+be valid for method calls from either the CPU or from the GPU, but not from
+both simultaneously, since the executable code for the different processors
+is stored at different memory locations.  When using the GPU for rendering,
+it is useful to be able to call methods from both processors, however.
+
+</p>
+<p>For all the code that just calls methods of polymorphic objects, the use of
+<tt>pbrt</tt>&rsquo;s <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer"><tt>TaggedPointer</tt></a> in place of virtual functions makes no
+difference other than the fact that method calls are made using the
+<tt>.</tt> operator, just as would be used for a C++ reference.
+Section&nbsp;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#sec:spectrum-handle">4.5.1</a>, which introduces <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum"><tt>Spectrum</tt></a>, the
+first class based on <a href="../Utilities/Containers_and_Memory_Management.html#TaggedPointer"><tt>TaggedPointer</tt></a> that occurs in the book,
+has more details about how <tt>pbrt</tt>&rsquo;s dynamic dispatch scheme is implemented.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#CodeOptimization"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="CodeOptimization"></span><h3>1.5.8  Code Optimization</h3><p>
+
+
+</p>
+<p> We have tried to make <tt>pbrt</tt> efficient through the use of well-chosen
+algorithms rather than through local micro-optimizations, so that the
+system can be more easily understood.  However, efficiency is an integral
+part of rendering, and so we discuss performance issues throughout the
+book.
+
+</p>
+<p>For both CPUs and GPUs, processing performance continues to grow more
+quickly than the speed at which data can be loaded from main memory into
+the processor.  This means that waiting for values to be fetched from
+memory can be a major performance limitation.  The most important
+optimizations that we discuss relate to minimizing unnecessary memory
+access and organizing algorithms and data structures in ways that lead to
+coherent access patterns; paying attention to these issues can speed up
+program execution much more than reducing the total number of instructions
+executed.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#DebuggingandLogging"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="DebuggingandLogging"></span><h3>1.5.9  Debugging and Logging</h3><p>
+
+
+</p>
+<p>Debugging a renderer can be challenging, especially in cases where the
+result is correct most of the time but not always.  <tt>pbrt</tt> includes a
+number of facilities to ease debugging.
+
+</p>
+<p>One of the most important is a suite of unit tests.  We have found unit
+testing to be invaluable in the development of <tt>pbrt</tt> for the reassurance
+it gives that the tested functionality is very likely to be correct.
+Having this assurance relieves the concern behind questions during debugging
+such as &ldquo;am I sure that the hash table that is being used here is not
+itself the source of my bug?&rdquo;  Alternatively, a failing unit test is
+almost always easier to debug than an incorrect image generated by the
+renderer; many of the tests have been added along the way as we have
+debugged <tt>pbrt</tt>.  Unit tests for a file <tt>code.cpp</tt> are found in
+<tt>code_tests.cpp</tt>.  All the unit tests are executed by an invocation
+of the <tt>pbrt_test</tt> executable and specific ones can be selected via
+command-line options.
+
+</p>
+<p>There are many assertions throughout the <tt>pbrt</tt> codebase, most of them not
+included in the book text.  These check conditions that should never be
+true and issue an error and exit immediately if they are found to be true
+at runtime.  (See Section&nbsp;<a href="../Utilities/User_Interaction.html#sec:assertions">A.3.6</a> for the definitions of the
+assertion macros used in <tt>pbrt</tt>.)  A failed assertion gives a first hint
+about the source of an error; like a unit test, an assertion helps focus
+debugging, at least with a starting point.  Some of the more
+computationally expensive assertions in <tt>pbrt</tt> are only enabled for debug
+builds; if the renderer is crashing or otherwise producing incorrect
+output, it is worthwhile to try running a debug build to see if one of
+those additional assertions fails and yields a clue.
+
+</p>
+<p>We have also endeavored to make the execution of <tt>pbrt</tt> at a given pixel
+sample deterministic.  One challenge with debugging a renderer is a crash
+that only happens after minutes or hours of rendering computation.  With
+deterministic execution, rendering can be restarted at a single pixel
+sample in order to more quickly return to the point of a crash.
+Furthermore, upon a crash <tt>pbrt</tt> will print a message such as &ldquo;Rendering
+failed at pixel (16, 27) sample 821. Debug with --debugstart 16,27,821&rdquo;.
+The values printed after &ldquo;debugstart&rdquo; depend on the integrator being
+used, but are sufficient to restart its computation close to the point of a
+crash.
+
+</p>
+<p>Finally, it is often useful to print out the values stored in a data
+structure during the course of debugging.  We have implemented
+<tt>ToString()</tt> methods for nearly all of <tt>pbrt</tt>&rsquo;s classes.  They return a
+<tt>std::string</tt> representation of them so that it is easy to print their
+full object state during program execution.  Furthermore, <tt>pbrt</tt>&rsquo;s custom
+<a href="../Utilities/User_Interaction.html#Printf"><tt>Printf()</tt></a> and <a href="../Utilities/User_Interaction.html#StringPrintf"><tt>StringPrintf()</tt></a> functions
+(Section&nbsp;<a href="../Utilities/User_Interaction.html#sec:pbrt-printf">A.3.3</a>) automatically use the string returned by
+<tt>ToString()</tt> for an object when a <tt>%s</tt> specifier is found in the
+formatting string.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ParallelismandThreadSafety"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ParallelismandThreadSafety"></span><h3>1.5.10  Parallelism and Thread Safety</h3><p>
+
+
+</p>
+<p>In <tt>pbrt</tt> (as is the case for most ray tracers), the vast majority of data
+at rendering time is read only (e.g., the scene description and texture images).
+Much of the parsing of the scene file and creation of the scene representation
+in memory is done with a single thread of execution, so there are few
+synchronization issues during that phase of execution.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Exceptions
+include the fact that we try to load image maps and binary geometry files
+in parallel, some image resampling performed on texture images, and
+construction of one variant of the <tt>BVHAggregate</tt>, though all of these are
+highly localized.">
+      <sup>&dagger;</sup>
+    </button>
+		 During rendering, concurrent read access to all the
+read-only data by multiple threads works with no problems on both the CPU
+and the GPU; we only need to be concerned with situations where data in
+memory is being modified.
+
+</p>
+<p>As a general rule, the low-level classes and structures in the
+system are not thread-safe.  For example, the <a href="../Geometry_and_Transformations/Points.html#Point3f"><tt>Point3f</tt></a> class, which stores
+three <tt>float</tt> values to represent a point in 3D space, is not safe for
+multiple threads to call methods that modify it at the same time.
+(Multiple threads can use <tt>Point3f</tt>s as read-only data simultaneously,
+of course.)  The runtime overhead to make <a href="../Geometry_and_Transformations/Points.html#Point3f"><tt>Point3f</tt></a> thread-safe would
+have a substantial effect on performance with little benefit in return.
+
+</p>
+<p>The same is true for classes like <a href="../Geometry_and_Transformations/Vectors.html#Vector3f"><tt>Vector3f</tt></a>, <a href="../Geometry_and_Transformations/Normals.html#Normal3f"><tt>Normal3f</tt></a>,
+<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum"><tt>SampledSpectrum</tt></a>, <a href="../Geometry_and_Transformations/Transformations.html#Transform"><tt>Transform</tt></a>, <tt>Quaternion</tt>, and
+<a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a>.  These classes are usually either created at
+scene construction time and then used as read-only data or allocated on the
+stack during rendering and used only by a single thread.
+
+</p>
+<p>The utility classes <a href="../Utilities/Containers_and_Memory_Management.html#ScratchBuffer"><tt>ScratchBuffer</tt></a> (used for high-performance
+temporary memory allocation) and <a href="../Utilities/Mathematical_Infrastructure.html#RNG"><tt>RNG</tt></a> (pseudo-random number
+generation) are also not safe for use by multiple threads; these classes
+store state that is modified when their methods are called, and the
+overhead from protecting modification to their state with mutual exclusion
+would be excessive relative to the amount of computation they perform.
+Consequently, in code like the <a href="../Introduction/pbrt_System_Overview.html#ImageTileIntegrator::Render"><tt>ImageTileIntegrator::Render()</tt></a> method
+earlier, <tt>pbrt</tt> allocates per-thread instances of these classes
+on the stack.
+
+</p>
+<p>With two exceptions, implementations of the base types listed in
+Table&nbsp;<a href="../Introduction/pbrt_System_Overview.html#fig:plug-in-types">1.1</a> are safe for multiple threads to use
+simultaneously.  With a little care, it is usually straightforward to
+implement new instances of these base classes so they do not modify any
+shared state in their methods.
+
+</p>
+<p>The first exceptions are the <a href="../Light_Sources/Light_Interface.html#Light"><tt>Light</tt></a>
+<tt>Preprocess()</tt> method implementations.  These
+are called by the system during scene construction, and implementations of
+them generally modify shared state in their objects.  Therefore,
+it is helpful to allow the implementer to assume that only a single thread
+will call into these methods.  (This is a separate issue from the
+consideration that implementations of these methods that are
+computationally intensive may use <a href="../Utilities/Parallelism.html#ParallelFor"><tt>ParallelFor()</tt></a> to parallelize their
+computation.)
+
+</p>
+<p>The second exception is <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> class implementations; their methods are also not
+expected to be thread-safe.  This is another instance where this
+requirement would impose an excessive performance and scalability impact;
+many threads simultaneously trying to get samples from a single
+<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> would limit the system&rsquo;s overall performance.  Therefore, as
+described in Section&nbsp;<a href="../Introduction/pbrt_System_Overview.html#sec:image-tile-integrator">1.3.4</a>, a unique
+<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> is created for each rendering thread using
+<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler::Clone"><tt>Sampler::Clone()</tt></a>.
+
+</p>
+<p>All stand-alone functions in <tt>pbrt</tt> are thread-safe (as long as
+multiple threads do not pass pointers to the same data to them).
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ExtendingtheSystem"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ExtendingtheSystem"></span><h3>1.5.11  Extending the System</h3><p>
+
+
+</p>
+<p>One of our goals in writing this book and building the <tt>pbrt</tt> system was to
+make it easier for developers and researchers to experiment with new (or
+old!) ideas in rendering.  One of the great joys in computer graphics is
+writing new software that makes a new image; even small changes to the
+system can be fun to experiment with.  The exercises throughout the book
+suggest many changes to make to the system, ranging from small tweaks to
+major open-ended research projects.  Section&nbsp;<a href="../Processing_the_Scene_Description/Adding_New_Object_Implementations.html#sec:adding-plugins">A.4</a> in
+Appendix&nbsp;<a href="../Processing_the_Scene_Description.html#chap:API">A</a> has more information about the mechanics of adding new
+implementations of the interfaces listed in
+Table&nbsp;<a href="../Introduction/pbrt_System_Overview.html#fig:plug-in-types">1.1</a>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Bugs"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Bugs"></span><h3>1.5.12  Bugs</h3><p>
+
+
+</p>
+<p> Although we made every effort to make <tt>pbrt</tt> as correct as
+possible through extensive testing, it is inevitable that some bugs are
+still present.
+
+</p>
+<p>If you believe you have found a bug in the system, please do the following:
+
+</p>
+<p></p>
+<ol>
+<li> Reproduce the bug with an unmodified copy of the latest version of <tt>pbrt</tt>.
+
+<li> Check the online discussion forum and the bug-tracking system at
+<a href="https://pbrt.org">pbrt.org</a>.  Your issue may be a known bug, or it may be a
+commonly misunderstood feature.
+
+<li> Try to find the simplest possible test case that demonstrates the
+bug.  Many bugs can be demonstrated by scene description files that are
+just a few lines long, and debugging is much easier with a simple scene
+than a complex one.
+
+<li> Submit a detailed bug report using our online bug-tracking system.
+Make sure that you include the scene file that demonstrates the bug
+and a detailed description of why you think <tt>pbrt</tt> is not behaving
+correctly with the scene.  If you can provide a patch that fixes
+the bug, all the better!
+</ol><p>
+
+
+</p>
+<p>We will periodically update the <tt>pbrt</tt> source code repository with bug
+fixes and minor enhancements.  (Be aware that we often let bug reports
+accumulate for a few months before going through them; do not take this as
+an indication that we do not value them!)  However, we will not make major
+changes to the <tt>pbrt</tt> source code so that it does not diverge from the
+system described here in the book.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Introduction/A_Brief_History_of_Physically_Based;_Rendering.html">Introduction / A Brief History of Physically Based; Rendering</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

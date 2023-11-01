@@ -1,0 +1,450 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Tokenizing and Parsing</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Processing_the_Scene_Description.html">Processing the Scene Description</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Tokenizing and Parsing</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Processing_the_Scene_Description.html">(Previous: Processing the Scene Description)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>C.1 Tokenizing and Parsing</h2><p>
+
+
+</p>
+<p>Two functions expose <tt>pbrt</tt>&rsquo;s scene-parsing capabilities, one taking one or
+more names of files to process in sequence, and the other taking a string
+that holds a scene description.  All of <tt>pbrt</tt>&rsquo;s parsing code is in the
+files <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/parser.h"><tt>parser.h</tt></a> and <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/parser.cpp"><tt>parser.cpp</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SceneParsingDeclarations-0"></span><div class="fragmentname">&lt;&lt;Scene Parsing Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="ParseFiles"></span>ParseFiles(<a href="#ParserTarget" class="code">ParserTarget</a> *target,
+                pstd::span&lt;const std::string&gt; filenames);
+void <span class="anchor" id="ParseString"></span>ParseString(<a href="#ParserTarget" class="code">ParserTarget</a> *target, std::string str);</div><p>
+
+
+</p>
+<p>Rather than directly returning an object that represents the parsed scene,
+the parsing functions call methods of the provided <a href="#ParserTarget"><tt>ParserTarget</tt></a> to
+convey what they have found. <tt>ParserTarget</tt> is an abstract interface
+class that defines nearly 40 pure virtual functions, each one corresponding
+to a statement in a <tt>pbrt</tt> scene description file.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParserTargetDefinition-0"></span><div class="fragmentname">&lt;&lt;ParserTarget Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="ParserTarget"></span>ParserTarget {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParserTargetInterface-0">ParserTarget Interface</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2855" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2855"><i></i></a><div id="fragbit-2855" class="collapse"><div class="fragmentcode">       virtual void Scale(Float sx, Float sy, Float sz, FileLoc loc) = 0;
+       virtual void <a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>(const std::string &amp;name,
+                          <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params, FileLoc loc) = 0;
+       virtual ~ParserTarget();
+       
+       virtual void Option(const std::string &amp;name, const std::string &amp;value,
+                           FileLoc loc) = 0;
+       
+       virtual void Identity(FileLoc loc) = 0;
+       virtual void Translate(Float dx, Float dy, Float dz, FileLoc loc) = 0;
+       virtual void Rotate(Float angle, Float ax, Float ay, Float az, FileLoc loc) = 0;
+       virtual void LookAt(Float ex, Float ey, Float ez, Float lx, Float ly, Float lz,
+                           Float ux, Float uy, Float uz, FileLoc loc) = 0;
+       virtual void ConcatTransform(Float transform[16], FileLoc loc) = 0;
+       virtual void <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a>(Float transform[16], FileLoc loc) = 0;
+       virtual void CoordinateSystem(const std::string &amp;, FileLoc loc) = 0;
+       virtual void CoordSysTransform(const std::string &amp;, FileLoc loc) = 0;
+       virtual void ActiveTransformAll(FileLoc loc) = 0;
+       virtual void ActiveTransformEndTime(FileLoc loc) = 0;
+       virtual void ActiveTransformStartTime(FileLoc loc) = 0;
+       virtual void TransformTimes(Float start, Float end, FileLoc loc) = 0;
+       
+       virtual void ColorSpace(const std::string &amp;n, FileLoc loc) = 0;
+       virtual void PixelFilter(const std::string &amp;name, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                                FileLoc loc) = 0;
+       virtual void <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a>(const std::string &amp;type, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                         FileLoc loc) = 0;
+       virtual void Accelerator(const std::string &amp;name, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                                FileLoc loc) = 0;
+       virtual void <a href="../Introduction/pbrt_System_Overview.html#Integrator" class="code">Integrator</a>(const std::string &amp;name, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                               FileLoc loc) = 0;
+       virtual void <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a>(const std::string &amp;, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                           FileLoc loc) = 0;
+       virtual void MakeNamedMedium(const std::string &amp;name, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                                    FileLoc loc) = 0;
+       virtual void <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a>(const std::string &amp;insideName,
+                                    const std::string &amp;outsideName, FileLoc loc) = 0;
+       virtual void <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a>(const std::string &amp;name, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                            FileLoc loc) = 0;
+       
+       virtual void WorldBegin(FileLoc loc) = 0;
+       virtual void AttributeBegin(FileLoc loc) = 0;
+       virtual void AttributeEnd(FileLoc loc) = 0;
+       virtual void Attribute(const std::string &amp;target, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                              FileLoc loc) = 0;
+       virtual void Texture(const std::string &amp;name, const std::string &amp;type,
+                            const std::string &amp;texname, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                            FileLoc loc) = 0;
+       virtual void <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a>(const std::string &amp;name, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                             FileLoc loc) = 0;
+       virtual void MakeNamedMaterial(const std::string &amp;name, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                                      FileLoc loc) = 0;
+       virtual void NamedMaterial(const std::string &amp;name, FileLoc loc) = 0;
+       virtual void LightSource(const std::string &amp;name, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                                FileLoc loc) = 0;
+       virtual void AreaLightSource(const std::string &amp;name, <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params,
+                                    FileLoc loc) = 0;
+       virtual void ReverseOrientation(FileLoc loc) = 0;
+       virtual void ObjectBegin(const std::string &amp;name, FileLoc loc) = 0;
+       virtual void ObjectEnd(FileLoc loc) = 0;
+       virtual void ObjectInstance(const std::string &amp;name, FileLoc loc) = 0;
+       
+       virtual void EndOfFiles() = 0;</div></div>
+  protected:
+    &lt;&lt;<span class="fragmentname">ParserTarget Protected Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2856" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2856"><i></i></a><div id="fragbit-2856" class="collapse"><div class="fragmentcode">       template &lt;typename... Args&gt;
+       void ErrorExitDeferred(const char *fmt, Args &amp;&amp;... args) const {
+           errorExit = true;
+           Error(fmt, std::forward&lt;Args&gt;(args)...);
+       }
+       template &lt;typename... Args&gt;
+       void ErrorExitDeferred(const FileLoc *loc, const char *fmt, Args &amp;&amp;... args) const {
+           errorExit = true;
+           Error(loc, fmt, std::forward&lt;Args&gt;(args)...);
+       }
+       
+       mutable bool errorExit = false;</div></div>
+};</div><p>
+
+
+</p>
+<p>For example, given the statement
+</p>
+<div class="fragmentcode">   Scale 2 2 4</div><p>
+
+in a scene description file, the parsing code will call
+its <tt>ParserTarget</tt>&rsquo;s <tt>Scale()</tt> method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParserTargetInterface-0"></span><div class="fragmentname">&lt;&lt;ParserTarget Interface&gt;&gt;=&nbsp;<a href="#fragment-ParserTargetInterface-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">virtual void <span class="anchor" id="ParserTarget::Scale"></span>Scale(Float sx, Float sy, Float sz, FileLoc loc) = 0;</div><p>
+
+
+</p>
+<p>The provided <tt>FileLoc</tt> records the location of the corresponding
+statement in a file.  If it is passed to the <a href="../Utilities/User_Interaction.html#Warning"><tt>Warning()</tt></a>, <a href="../Utilities/User_Interaction.html#Error"><tt>Error()</tt></a>,
+and <a href="../Utilities/User_Interaction.html#ErrorExit"><tt>ErrorExit()</tt></a> functions, the resulting message includes this
+information so that it is easier for users to fix errors in their scene files.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-FileLocDefinition-0"></span><div class="fragmentname">&lt;&lt;FileLoc Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct <span class="anchor" id="FileLoc"></span>FileLoc {
+    std::string_view <span class="anchor" id="FileLoc::filename"></span>filename;
+    int <span class="anchor" id="FileLoc::line"></span>line = 1, <span class="anchor" id="FileLoc::column"></span>column = 0;
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Specifying <tt>ParserTarget</tt> as an abstract base class makes it easy to
+do a variety of things while parsing <tt>pbrt</tt> scene descriptions.  For
+example, there is a
+<tt>FormattingParserTarget</tt><span class="anchor" id="FormattingParserTarget"></span>
+implementation of the <tt>ParserTarget</tt> interface that pretty-prints
+scene files and can upgrade scene files from the previous version of <tt>pbrt</tt> to conform to the current implementation&rsquo;s syntax.
+(<tt>FormattingParserTarget</tt> is not described any further in the book.)
+Section&nbsp;<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#sec:basic-scene-builder">A.2</a> will describe the
+<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#BasicSceneBuilder"><tt>BasicSceneBuilder</tt></a> class, which also inherits from <tt>ParserTarget</tt>
+and builds an in-memory representation of the parsed scene.
+
+</p>
+<p><tt>pbrt</tt>&rsquo;s scene description is easy to convert into tokens.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="See
+the <em>pbrt.org</em> website for more information about the text file
+format used to describe <tt>pbrt</tt> scenes.">
+      <sup>&dagger;</sup>
+    </button>
+		 Its
+salient properties are:
+</p>
+<ul>
+<li> Individual tokens are separated by whitespace.
+<li> Strings are delimited using double quotes.
+<li> One-dimensional arrays of values can be specified using square
+brackets: <tt>[&thinsp;]</tt>.
+<li> Comments start with a hash character, <tt>#</tt>, and continue to the end of
+the current line. 
+</ul><p>
+
+We have not included <tt>pbrt</tt>&rsquo;s straightforward tokenizer in the book text.
+(See the <tt>Tokenizer</tt><span class="anchor" id="Tokenizer"></span> class in
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/parser.h"><tt>parser.h</tt></a> and <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/parser.cpp"><tt>parser.cpp</tt></a> for its implementation.)
+
+</p>
+<p>Given a stream of tokens, the next task is parsing them.  Some scene file
+statements have a fixed format (e.g., <tt>Scale</tt>, which expects three
+numeric values to follow).  For each of those, the parser has fixed logic that looks for
+the expected number of values and checks that they have the correct types,
+issuing an error message if they are deficient.  Other
+statements take lists of named parameters and values:
+</p>
+<div class="fragmentcode">    Shape "sphere" "float radius" 10 "float zmin" 0</div><p>
+
+
+</p>
+<p>Such named parameter lists are encoded by the parser in instances of the
+<tt>ParsedParameterVector</tt> class that are passed to <a href="#ParserTarget"><tt>ParserTarget</tt></a>
+interface methods.  For example, the signature for the
+<tt>Shape()</tt> interface method is:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParserTargetInterface-1"></span><div class="fragmentname">&lt;&lt;ParserTarget Interface&gt;&gt;+=&nbsp;<a href="#fragment-ParserTargetInterface-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">virtual void <span class="anchor" id="ParserTarget::Shape"></span><a href="../Shapes/Basic_Shape_Interface.html#Shape" class="code">Shape</a>(const std::string &amp;name,
+                   <a href="#ParsedParameterVector" class="code">ParsedParameterVector</a> params, FileLoc loc) = 0;</div><p>
+
+
+</p>
+<p>One might ask: why tokenize and parse the files using a custom
+implementation and not use lexer and parser generators like <tt>flex</tt>,
+<tt>bison</tt>, or <tt>antlr</tt>?  In fact, previous versions of <tt>pbrt</tt> did
+use <tt>flex</tt> and <tt>bison</tt>.  However, when investigating <tt>pbrt</tt>&rsquo;s
+performance in loading multi-gigabyte scene description files when
+rendering Disney&rsquo;s <em>Moana Island</em> scene (<a href="Further_Reading.html#cite:DisneyMoana">Walt Disney Animation Studios 2018</a>), we found
+that a substantial fraction of execution time was spent in the mechanics of
+parsing.  Replacing that part of the system with a custom implementation
+substantially improved parsing performance.  A secondary advantage of not
+using those tools is that doing so makes it easier to build <tt>pbrt</tt> on a
+variety of systems by eliminating the requirement of ensuring that they are
+installed.
+
+</p>
+<p>
+
+</p>
+<p><tt>ParsedParameterVector</tt> uses <a href="../Utilities/Containers_and_Memory_Management.html#InlinedVector"><tt>InlinedVector</tt></a> to store a vector of
+parameters, avoiding the performance cost of dynamic allocation that comes
+with <tt>std::vector</tt> in the common case of a handful of parameters.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParsedParameterVectorDefinition-0"></span><div class="fragmentname">&lt;&lt;ParsedParameterVector Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">using <span class="anchor" id="ParsedParameterVector"></span>ParsedParameterVector = <a href="../Utilities/Containers_and_Memory_Management.html#InlinedVector" class="code">InlinedVector</a>&lt;<a href="#ParsedParameter" class="code">ParsedParameter</a> *, 8&gt;;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParsedParameterDefinition-0"></span><div class="fragmentname">&lt;&lt;ParsedParameter Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="ParsedParameter"></span>ParsedParameter {
+  public:
+    &lt;&lt;<span class="fragmentname">ParsedParameter Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2857" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2857"><i></i></a><div id="fragbit-2857" class="collapse"><div class="fragmentcode">       ParsedParameter(FileLoc loc) : loc(loc) {}
+       
+       void AddFloat(Float v);
+       void AddInt(int i);
+       void AddString(std::string_view str);
+       void AddBool(bool v);
+       
+       std::string ToString() const;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParsedParameterPublicMembers-0">ParsedParameter Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2858" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2858"><i></i></a><div id="fragbit-2858" class="collapse"><div class="fragmentcode">       std::string type, name;
+       FileLoc loc;
+       pstd::vector&lt;Float&gt; floats;
+       pstd::vector&lt;int&gt; ints;
+       pstd::vector&lt;std::string&gt; strings;
+       pstd::vector&lt;uint8_t&gt; bools;
+       mutable bool lookedUp = false;
+       </div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><a href="#ParsedParameter"><tt>ParsedParameter</tt></a> provides the parameter type and name as strings as
+well as the location of the parameter in the scene description
+file.  For the first parameter in the sphere example above, <tt>type</tt>
+would store &ldquo;float&rdquo; and <tt>name</tt> would store &ldquo;radius&rdquo;.  Note that
+the parser makes no effort to ensure that the type is valid or that the
+parameter name is used by the corresponding statement; those checks are
+handled subsequently.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParsedParameterPublicMembers-0"></span><div class="fragmentname">&lt;&lt;ParsedParameter Public Members&gt;&gt;=&nbsp;<a href="#fragment-ParsedParameterPublicMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::string <span class="anchor" id="ParsedParameter::type"></span>type, <span class="anchor" id="ParsedParameter::name"></span>name;
+FileLoc <span class="anchor" id="ParsedParameter::loc"></span>loc;</div><p>
+
+
+</p>
+<p>Parameter values are provided in one of four formats, corresponding to the
+basic types used for parameter values in scene description files.  (Values
+for higher-level parameter types like <tt>point3</tt> are subsequently
+constructed from the corresponding basic type.)  Exactly one of the
+following vectors will be non-empty in each provided <a href="#ParsedParameter"><tt>ParsedParameter</tt></a>.
+
+</p>
+<p>As before, the parser makes no effort to validate these&mdash;for example, if
+the user has provided string values for a parameter with &ldquo;float&rdquo; type,
+those values will be provided in <tt>strings</tt> with no complaint (yet).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParsedParameterPublicMembers-1"></span><div class="fragmentname">&lt;&lt;ParsedParameter Public Members&gt;&gt;+=&nbsp;<a href="#fragment-ParsedParameterPublicMembers-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ParsedParameterPublicMembers-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">pstd::vector&lt;Float&gt; <span class="anchor" id="ParsedParameter::floats"></span>floats;
+pstd::vector&lt;int&gt; <span class="anchor" id="ParsedParameter::ints"></span>ints;
+pstd::vector&lt;std::string&gt; <span class="anchor" id="ParsedParameter::strings"></span>strings;
+pstd::vector&lt;uint8_t&gt; <span class="anchor" id="ParsedParameter::bools"></span>bools;</div><p>
+
+
+</p>
+<p>The <tt>lookedUp</tt> member variable is provided for the code related to
+extracting parameter values.  It makes it easy to issue an error message if
+any provided parameters were not actually used by <tt>pbrt</tt>, which generally
+indicates a misspelling or other user error.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParsedParameterPublicMembers-2"></span><div class="fragmentname">&lt;&lt;ParsedParameter Public Members&gt;&gt;+=&nbsp;<a href="#fragment-ParsedParameterPublicMembers-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">mutable bool <span class="anchor" id="ParsedParameter::lookedUp"></span>lookedUp = false;
+</div><p>
+
+
+</p>
+<p>We will not discuss the remainder of the methods in the <a href="#ParserTarget"><tt>ParserTarget</tt></a>
+interface here, though we will see more of them in the
+<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#BasicSceneBuilder"><tt>BasicSceneBuilder</tt></a> methods that implement them in
+Sections&nbsp;<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#sec:graphics-state">A.2.3</a> and&nbsp;<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#sec:specifying-scene-elements">A.2.4</a>.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html">Processing the Scene Description / Managing the Scene Description</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

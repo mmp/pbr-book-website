@@ -1,0 +1,1662 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Containers and Memory Management</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Containers and Memory Management</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities/User_Interaction.html">(Previous: User Interaction)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:containers"></span><h2>B.4 Containers and Memory Management</h2><p>
+
+
+
+</p>
+<p>A variety of container data structures that extend those made available by
+the standard library are provided in the file
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/containers.h"><tt>util/containers.h</tt></a>.
+
+</p>
+<p>First, there is <tt>InlinedVector</tt><span class="anchor" id="InlinedVector"></span>.  We will
+not describe its implementation here, but note that it is an extended
+version of <tt>std::vector</tt> that has storage for a handful of vector
+elements preallocated in its class definition.  Thus, for short vectors,
+it can be used without incurring the cost of dynamic memory allocation.  It
+is used extensively in the <a href="../Utilities/Images.html#Image"><tt>Image</tt></a> class, for example.
+
+</p>
+<p>Its class declaration is of the form:
+</p>
+<div class="fragmentcode">template &lt;typename T, int N, class Allocator = /* ... */&gt;
+class InlinedVector;</div><p>
+
+
+</p>
+<p>The value of <tt>N</tt> specifies the number of elements to handle via the
+inline allocation in the class definition. 
+
+</p>
+<p>Even though the C++ standard library provides a hash table via
+<tt>std::unordered_map</tt>, <tt>pbrt</tt> additionally provides a
+<tt>HashMap</tt><span class="anchor" id="HashMap"></span>, also not included here.  There are two
+reasons it exists: first, the hash table in the standard library is
+specified such that pointers to elements in the hash table will not change
+even if the table is resized, which in turn requires dynamic memory
+allocation for each element.  Second, the GPU rendering path requires a
+hash table that can be used from GPU code. 
+Its class declaration is of the form:
+</p>
+<div class="fragmentcode">template &lt;typename Key, typename Value, typename Hash = std::hash&lt;Key&gt;,
+          typename Allocator = /* ... */&gt;
+class HashMap;</div><p>
+
+
+</p>
+<p>Its main methods have the following signatures:<span class="anchor" id="HashMap::HasKey"></span><span class="anchor" id="HashMap::Insert"></span>
+</p>
+<div class="fragmentcode">void Insert(const Key &amp;key, const Value &amp;value);
+bool HasKey(const Key &amp;key) const;
+const Value &amp;operator[](const Key &amp;key) const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x2DArrays"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x2DArrays"></span><h3>B.4.1  2D Arrays</h3><p>
+
+
+</p>
+<p>While it is not difficult to index into a 1D memory buffer that represents
+a 2D array of values, having a template class that handles this task helps
+make code elsewhere in the system less verbose and easier to verify.
+<tt>Array2D</tt> fills this role in <tt>pbrt</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Array2DDefinition-0"></span><div class="fragmentname">&lt;&lt;Array2D Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="Array2D"></span>Array2D {
+  public:
+    &lt;&lt;<span class="fragmentname">Array2D Type Definitions</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2746" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2746"><i></i></a><div id="fragbit-2746" class="collapse"><div class="fragmentcode">       using value_type = T;
+       using iterator = value_type *;
+       using const_iterator = const value_type *;
+       using allocator_type = pstd::pmr::polymorphic_allocator&lt;std::byte&gt;;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Array2DPublicMethods-0">Array2D Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2747" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2747"><i></i></a><div id="fragbit-2747" class="collapse"><div class="fragmentcode">       Array2D(allocator_type <a href="#Array2D::allocator" class="code">allocator</a> = {}) : Array2D({{0, 0}, {0, 0}}, <a href="#Array2D::allocator" class="code">allocator</a>) {}
+       Array2D(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2i" class="code">Bounds2i</a> <a href="#Array2D::extent" class="code">extent</a>, Allocator <a href="#Array2D::allocator" class="code">allocator</a> = {})
+           : <a href="#Array2D::extent" class="code">extent</a>(<a href="#Array2D::extent" class="code">extent</a>), <a href="#Array2D::allocator" class="code">allocator</a>(<a href="#Array2D::allocator" class="code">allocator</a>) {
+           int n = <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Area" class="code">Area</a>();
+           <a href="#Array2D::values" class="code">values</a> = <a href="#Array2D::allocator" class="code">allocator</a>.<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_object" class="code">allocate_object</a>&lt;T&gt;(n);
+           for (int i = 0; i &lt; n; ++i)
+               <a href="#Array2D::allocator" class="code">allocator</a>.construct(<a href="#Array2D::values" class="code">values</a> + i);
+       }
+       Array2D(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2i" class="code">Bounds2i</a> <a href="#Array2D::extent" class="code">extent</a>, T def, allocator_type <a href="#Array2D::allocator" class="code">allocator</a> = {})
+           : Array2D(<a href="#Array2D::extent" class="code">extent</a>, <a href="#Array2D::allocator" class="code">allocator</a>) {
+           std::fill(begin(), end(), def);
+       }
+       template &lt;typename InputIt,
+                 typename = typename std::enable_if_t&lt;
+                     !std::is_integral&lt;InputIt&gt;::value &amp;&amp;
+                     std::is_base_of&lt;
+                         std::input_iterator_tag,
+                         typename std::iterator_traits&lt;InputIt&gt;::iterator_category&gt;::value&gt;&gt;
+       Array2D(InputIt first, InputIt last, int nx, int ny, allocator_type <a href="#Array2D::allocator" class="code">allocator</a> = {})
+           : Array2D({{0, 0}, {nx, ny}}, <a href="#Array2D::allocator" class="code">allocator</a>) {
+           std::copy(first, last, begin());
+       }
+       Array2D(int nx, int ny, allocator_type <a href="#Array2D::allocator" class="code">allocator</a> = {})
+           : Array2D({{0, 0}, {nx, ny}}, <a href="#Array2D::allocator" class="code">allocator</a>) {}
+       Array2D(int nx, int ny, T def, allocator_type <a href="#Array2D::allocator" class="code">allocator</a> = {})
+           : Array2D({{0, 0}, {nx, ny}}, def, <a href="#Array2D::allocator" class="code">allocator</a>) {}
+       Array2D(const Array2D &amp;a, allocator_type <a href="#Array2D::allocator" class="code">allocator</a> = {})
+           : Array2D(a.begin(), a.end(), a.XSize(), a.YSize(), <a href="#Array2D::allocator" class="code">allocator</a>) {}
+       ~Array2D() {
+           int n = <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Area" class="code">Area</a>();
+           for (int i = 0; i &lt; n; ++i)
+               <a href="#Array2D::allocator" class="code">allocator</a>.destroy(<a href="#Array2D::values" class="code">values</a> + i);
+           <a href="#Array2D::allocator" class="code">allocator</a>.deallocate_object(<a href="#Array2D::values" class="code">values</a>, n);
+       }
+       Array2D(Array2D &amp;&amp;a, allocator_type <a href="#Array2D::allocator" class="code">allocator</a> = {})
+           : <a href="#Array2D::extent" class="code">extent</a>(a.<a href="#Array2D::extent" class="code">extent</a>), <a href="#Array2D::allocator" class="code">allocator</a>(<a href="#Array2D::allocator" class="code">allocator</a>) {
+           if (<a href="#Array2D::allocator" class="code">allocator</a> == a.<a href="#Array2D::allocator" class="code">allocator</a>) {
+               <a href="#Array2D::values" class="code">values</a> = a.<a href="#Array2D::values" class="code">values</a>;
+               a.<a href="#Array2D::extent" class="code">extent</a> = <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2i" class="code">Bounds2i</a>({0, 0}, {0, 0});
+               a.<a href="#Array2D::values" class="code">values</a> = nullptr;
+           } else {
+               <a href="#Array2D::values" class="code">values</a> = <a href="#Array2D::allocator" class="code">allocator</a>.<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_object" class="code">allocate_object</a>&lt;T&gt;(<a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Area" class="code">Area</a>());
+               std::copy(a.begin(), a.end(), begin());
+           }
+       }
+       Array2D &amp;operator=(const Array2D &amp;a) = delete;
+       
+       Array2D &amp;operator=(Array2D &amp;&amp;other) {
+           if (<a href="#Array2D::allocator" class="code">allocator</a> == other.<a href="#Array2D::allocator" class="code">allocator</a>) {
+               pstd::swap(<a href="#Array2D::extent" class="code">extent</a>, other.<a href="#Array2D::extent" class="code">extent</a>);
+               pstd::swap(<a href="#Array2D::values" class="code">values</a>, other.<a href="#Array2D::values" class="code">values</a>);
+           } else if (<a href="#Array2D::extent" class="code">extent</a> == other.<a href="#Array2D::extent" class="code">extent</a>) {
+               int n = <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Area" class="code">Area</a>();
+               for (int i = 0; i &lt; n; ++i) {
+                   <a href="#Array2D::allocator" class="code">allocator</a>.destroy(<a href="#Array2D::values" class="code">values</a> + i);
+                   <a href="#Array2D::allocator" class="code">allocator</a>.construct(<a href="#Array2D::values" class="code">values</a> + i, other.<a href="#Array2D::values" class="code">values</a>[i]);
+               }
+               <a href="#Array2D::extent" class="code">extent</a> = other.<a href="#Array2D::extent" class="code">extent</a>;
+           } else {
+               int n = <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Area" class="code">Area</a>();
+               for (int i = 0; i &lt; n; ++i)
+                   <a href="#Array2D::allocator" class="code">allocator</a>.destroy(<a href="#Array2D::values" class="code">values</a> + i);
+               <a href="#Array2D::allocator" class="code">allocator</a>.deallocate_object(<a href="#Array2D::values" class="code">values</a>, n);
+       
+               int no = other.<a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Area" class="code">Area</a>();
+               <a href="#Array2D::values" class="code">values</a> = <a href="#Array2D::allocator" class="code">allocator</a>.<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_object" class="code">allocate_object</a>&lt;T&gt;(no);
+               for (int i = 0; i &lt; no; ++i)
+                   <a href="#Array2D::allocator" class="code">allocator</a>.construct(<a href="#Array2D::values" class="code">values</a> + i, other.<a href="#Array2D::values" class="code">values</a>[i]);
+           }
+           return *this;
+       }
+       T &amp;operator[](<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> p) {
+           <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::InsideExclusive" class="code">InsideExclusive</a>(p, <a href="#Array2D::extent" class="code">extent</a>));
+           p.x -= <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.x;
+           p.y -= <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.y;
+           return <a href="#Array2D::values" class="code">values</a>[p.x + (<a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMax" class="code">pMax</a>.x - <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.x) * p.y];
+       }
+       PBRT_CPU_GPU
+       const T &amp;operator()(int x, int y) const { return (*this)[{x, y}]; }
+       PBRT_CPU_GPU
+       const T &amp;operator[](<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> p) const {
+           <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::InsideExclusive" class="code">InsideExclusive</a>(p, <a href="#Array2D::extent" class="code">extent</a>));
+           p.x -= <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.x;
+           p.y -= <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.y;
+           return <a href="#Array2D::values" class="code">values</a>[p.x + (<a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMax" class="code">pMax</a>.x - <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.x) * p.y];
+       }
+       int size() const { return <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Area" class="code">Area</a>(); }
+       int XSize() const { return <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMax" class="code">pMax</a>.x - <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.x; }
+       int YSize() const { return <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMax" class="code">pMax</a>.y - <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.y; }
+       iterator begin() { return <a href="#Array2D::values" class="code">values</a>; }
+       iterator end() { return begin() + size(); }
+       PBRT_CPU_GPU
+       const_iterator begin() const { return <a href="#Array2D::values" class="code">values</a>; }
+       PBRT_CPU_GPU
+       const_iterator end() const { return begin() + size(); }
+       PBRT_CPU_GPU
+       operator pstd::span&lt;T&gt;() { return pstd::span&lt;T&gt;(<a href="#Array2D::values" class="code">values</a>, size()); }
+       PBRT_CPU_GPU
+       operator pstd::span&lt;const T&gt;() const { return pstd::span&lt;const T&gt;(<a href="#Array2D::values" class="code">values</a>, size()); }
+       
+       std::string ToString() const {
+           std::string s = StringPrintf("[ Array2D <a href="#Array2D::extent" class="code">extent</a>: %s <a href="#Array2D::values" class="code">values</a>: [", <a href="#Array2D::extent" class="code">extent</a>);
+           for (int y = <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.y; y &lt; <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMax" class="code">pMax</a>.y; ++y) {
+               s += " [ ";
+               for (int x = <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.x; x &lt; <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMax" class="code">pMax</a>.x; ++x) {
+                   T value = (*this)(x, y);
+                   s += StringPrintf("%s, ", value);
+               }
+               s += "], ";
+           }
+           s += " ] ]";
+           return s;
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Array2DPrivateMembers-0">Array2D Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2748" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2748"><i></i></a><div id="fragbit-2748" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2i" class="code">Bounds2i</a> extent;
+       Allocator allocator;
+       T *values;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The array is defined over a 2D region specified by <tt>extent</tt>; its lower
+bounds do not necessarily need to be at <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.168ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2225.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1835" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Array2DPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;Array2D Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2i" class="code">Bounds2i</a> <span class="anchor" id="Array2D::extent"></span>extent;
+Allocator <span class="anchor" id="Array2D::allocator"></span>allocator;
+T *<span class="anchor" id="Array2D::values"></span>values;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>Array2D</tt> provides a variety of constructors, including ones that
+initialize its entries with a constant value or via a start and ending
+iterator.  Here is the one that default-initializes the entries.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Array2DPublicMethods-0"></span><div class="fragmentname">&lt;&lt;Array2D Public Methods&gt;&gt;=&nbsp;<a href="#fragment-Array2DPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Array2D(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2i" class="code">Bounds2i</a> <a href="#Array2D::extent" class="code">extent</a>, Allocator <a href="#Array2D::allocator" class="code">allocator</a> = {})
+    : <a href="#Array2D::extent" class="code">extent</a>(<a href="#Array2D::extent" class="code">extent</a>), <a href="#Array2D::allocator" class="code">allocator</a>(<a href="#Array2D::allocator" class="code">allocator</a>) {
+    int n = <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Area" class="code">Area</a>();
+    <a href="#Array2D::values" class="code">values</a> = <a href="#Array2D::allocator" class="code">allocator</a>.<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_object" class="code">allocate_object</a>&lt;T&gt;(n);
+    for (int i = 0; i &lt; n; ++i)
+        <a href="#Array2D::allocator" class="code">allocator</a>.construct(<a href="#Array2D::values" class="code">values</a> + i);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The array can be indexed using a <a href="../Geometry_and_Transformations/Points.html#Point2i"><tt>Point2i</tt></a>, which should be inside the
+specified extent.  After translating the point by the origin of the bounds,
+the usual indexing computation is performed to find the value.
+<tt>Array2D</tt> also provides a <tt>const</tt> version of this method as well
+as an <tt>operator()</tt><span class="anchor" id="Array2D::operator"></span> that takes a pair of integers.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Array2DPublicMethods-1"></span><div class="fragmentname">&lt;&lt;Array2D Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Array2DPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Array2DPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">T &amp;operator[](<a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> p) {
+    <a href="../Utilities/User_Interaction.html#DCHECK" class="code">DCHECK</a>(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::InsideExclusive" class="code">InsideExclusive</a>(p, <a href="#Array2D::extent" class="code">extent</a>));
+    p.x -= <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.x;
+    p.y -= <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.y;
+    return values[p.x + (<a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMax" class="code">pMax</a>.x - <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMin" class="code">pMin</a>.x) * p.y];
+}
+</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A few methods give the total size and sizes of individual dimensions of the
+array.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Array2DPublicMethods-2"></span><div class="fragmentname">&lt;&lt;Array2D Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Array2DPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Array2DPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">int <span class="anchor" id="Array2D::size"></span>size() const { return <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Area" class="code">Area</a>(); }
+int <span class="anchor" id="Array2D::XSize"></span>XSize() const { return <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMax" class="code">pMax</a>.x - <a href="#Array2D::extent" class="code">extent</a>.pMin.x; }
+int <span class="anchor" id="Array2D::YSize"></span>YSize() const { return <a href="#Array2D::extent" class="code">extent</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::pMax" class="code">pMax</a>.y - <a href="#Array2D::extent" class="code">extent</a>.pMin.y; }</div><p>
+
+
+</p>
+<p>It is also possible to iterate over elements of the array directly.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Array2DPublicMethods-3"></span><div class="fragmentname">&lt;&lt;Array2D Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Array2DPublicMethods-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">iterator <span class="anchor" id="Array2D::begin"></span>begin() { return values; }
+iterator <span class="anchor" id="Array2D::end"></span>end() { return begin() + size(); }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#InternedObjects"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:interned-objects"></span><span id="InternedObjects"></span><h3>B.4.2  Interned Objects</h3><p>
+
+
+
+</p>
+<p>If many instances of the same object are stored in memory, especially if
+the objects are large, the <em>interning</em> technique can be helpful.  With
+it, a single copy of each unique object is stored and all uses of it refer
+to that copy.  (The technique is thus generally only useful for read-only
+data.)  <tt>pbrt</tt> uses interning both for transformations found in the scene
+description and for strings in the scene entity objects defined in
+Section&nbsp;<a href="../Processing_the_Scene_Description/Managing_the_Scene_Description.html#sec:scene-entities">A.2.1</a>.  For complex scenes, the
+memory savings from eliminating redundant copies can be large.
+
+</p>
+<p>The <tt>InternCache</tt><span class="anchor" id="InternCache"></span> class manages such caches.
+It is a template class based on the type being managed and its hash
+function.  Types managed by it must provide an equality operator so that it
+can find matches.
+
+</p>
+<p></p>
+<div class="fragmentcode">template &lt;typename T, typename Hash = std::hash&lt;T&gt;&gt;
+class InternCache;</div><p>
+
+
+</p>
+<p>Beyond the constructor, <a href="#InternCache"><tt>InternCache</tt></a> provides two variations of a
+single method, <tt>Lookup()</tt><span class="anchor" id="InternCache::Lookup"></span>.  Their
+signatures are below.  Both store a single copy of provided objects in a
+hash table, using a mutex to allow concurrent access by multiple threads.
+The first <tt>Lookup()</tt> method allocates memory for the object itself
+using the allocator passed to the <a href="#InternCache"><tt>InternCache</tt></a> constructor and copies
+the provided item to initialize the object stored in the cache.  The second
+takes a user-provided creation callback function with the signature shown
+below.  This allows for more complex object initialization&mdash;as is used in
+the <a href="../Light_Sources/Light_Interface.html#LightBase::LookupSpectrum"><tt>LightBase::LookupSpectrum()</tt></a> method, for example.
+
+</p>
+<p></p>
+<div class="fragmentcode">const T *Lookup(const T &amp;item);
+
+/* F: T *create(Allocator alloc, const T &amp;item) */
+template &lt;typename F&gt; const T *Lookup(const T &amp;item, F create);</div><p>
+
+
+</p>
+<p>Note that the <tt>Lookup()</tt> methods return a pointer to the shared
+instance of the object.  They always return the same pointer for equal
+objects, so a pointer equality test can be used to test for equality
+with values returned by the cache.  For large or complex objects, more
+efficient equality tests can be a further benefit of interning.
+
+</p>
+<p>
+
+</p>
+<p><tt>InternedString</tt> is a convenience class for strings stored in an
+<a href="#InternCache"><tt>InternCache</tt></a>.  Using it makes it clear that a string pointer refers to
+an interned string, which helps clarify code.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InternedStringDefinition-0"></span><div class="fragmentname">&lt;&lt;InternedString Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="InternedString"></span>InternedString {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-InternedStringPublicMethods-0">InternedString Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2749" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2749"><i></i></a><div id="fragbit-2749" class="collapse"><div class="fragmentcode">       InternedString(const std::string *str) : str(str) {}
+       operator const std::string &amp;() const { return *str; }
+       bool operator==(const char *s) const { return *str == s; }
+       bool operator==(const std::string &amp;s) const { return *str == s; }
+       bool operator!=(const char *s) const { return *str != s; }
+       bool operator!=(const std::string &amp;s) const { return *str != s; }
+       bool operator&lt;(const char *s) const { return *str &lt; s; }
+       bool operator&lt;(const std::string &amp;s) const { return *str &lt; s; }
+       
+       std::string ToString() const { return *str; }</div></div>
+private:
+    const std::string *<span class="anchor" id="InternedString::str"></span>str = nullptr;
+};</div><p>
+
+
+</p>
+<p>It also provides an automatic conversion operator to <tt>std::string</tt>,
+saving users from needing to dereference the pointer themselves.
+Comparison operators with strings and <tt>const char *</tt>s are also
+available.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InternedStringPublicMethods-0"></span><div class="fragmentname">&lt;&lt;InternedString Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">InternedString(const std::string *str) : str(str) {}
+operator const std::string &amp;() const { return *str; }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#CollectionsofTypes"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:type-pack"></span><span id="CollectionsofTypes"></span><h3>B.4.3  Collections of Types<button data-toggle="tooltip" data-placement="right" class="btn difficult-button"
+title="This section contains advanced content and may be skipped on a first reading.">
+<i class="fas fa-exclamation-triangle midredtext"></i></button>
+</h3><p>
+
+
+
+</p>
+<p>In <tt>pbrt</tt>&rsquo;s wavefront rendering path, it was useful to perform various operations
+on collections of types (e.g., to instantiate a template function for each
+of the possible <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material"><tt>Material</tt></a> types).  There is
+no direct support for such operations in C++, but with some application of
+template programming it is possible to provide these capabilities.
+
+</p>
+<p>First, we define <tt>TypePack</tt>, a structure that holds no
+non-<tt>static</tt> data.  Its purpose is to define a type that represents a
+collection of types&mdash;those provided in the template parameter pack.  It
+also provides a handy <tt>count</tt> member variable that gives the number of
+types.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TypePackDefinition-0"></span><div class="fragmentname">&lt;&lt;TypePack Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename... Ts&gt;
+struct <span class="anchor" id="TypePack"></span>TypePack {
+    static constexpr size_t <span class="anchor" id="TypePack::count"></span>count = sizeof...(Ts);
+};</div><p>
+
+
+</p>
+<p><tt>IndexOf</tt> provides the index of a given type among the types in a
+<tt>TypePack</tt>.  Here is the declaration of the structure for its general
+template, which will only be instantiated if the given type is not in fact
+one of the types in a type pack.  We can use a C++ trick to ensure a
+reasonable error message is printed in this case: because the following
+<tt>static_assert</tt>&rsquo;s condition can only be evaluated at compile time
+given a concrete type <tt>T</tt> (even though it will clearly always be
+<tt>false</tt>), the error message is thus only printed if this version of
+<tt>IndexOf</tt> is instantiated.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TypePackOperations-0"></span><div class="fragmentname">&lt;&lt;TypePack Operations&gt;&gt;=&nbsp;<a href="#fragment-TypePackOperations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T, typename... Ts&gt;
+struct <span class="anchor" id="IndexOf"></span>IndexOf {
+    static constexpr int count = 0;
+    static_assert(!std::is_same_v&lt;T, T&gt;, "Type not present in TypePack");
+};</div><p>
+
+
+</p>
+<p>A first template specialization handles the case where the first type in
+the <tt>TypePack</tt> matches the given type <tt>T</tt>.  In this case, the
+index is zero.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TypePackOperations-1"></span><div class="fragmentname">&lt;&lt;TypePack Operations&gt;&gt;+=&nbsp;<a href="#fragment-TypePackOperations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TypePackOperations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T, typename... Ts&gt;
+struct IndexOf&lt;T, TypePack&lt;T, Ts...&gt;&gt; {
+    static constexpr int count = 0;
+};</div><p>
+
+
+</p>
+<p>Another template specialization handles the case where <tt>T</tt> is not the
+first type.  One is added to the final count, and a recursive template
+instantiation checks the next type.  Note that because all the types
+involved are known at compile time, the final value is a compile-time
+constant (as evidenced by the <tt>constexpr</tt> qualifier).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TypePackOperations-2"></span><div class="fragmentname">&lt;&lt;TypePack Operations&gt;&gt;+=&nbsp;<a href="#fragment-TypePackOperations-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TypePackOperations-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T, typename U, typename... Ts&gt;
+struct IndexOf&lt;T, TypePack&lt;U, Ts...&gt;&gt; {
+    static constexpr int count = 1 + IndexOf&lt;T, TypePack&lt;Ts...&gt;&gt;::count;
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>We will find it useful to be able to wrap a template class around each of a
+set of types.  This operation is provided by <tt>MapType</tt><span class="anchor" id="MapType"></span>.
+The base case is a single-element type pack.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TypePackOperations-3"></span><div class="fragmentname">&lt;&lt;TypePack Operations&gt;&gt;+=&nbsp;<a href="#fragment-TypePackOperations-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TypePackOperations-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;template &lt;typename&gt; class M, typename T&gt;
+struct MapType&lt;M, TypePack&lt;T&gt;&gt; {
+    using type = TypePack&lt;M&lt;T&gt;&gt;;
+};</div><p>
+
+
+</p>
+<p>Larger numbers of types are handled recursively.
+<tt>Prepend</tt>, not included here, gives the <tt>TypePack</tt> that results
+from prepending a given type to a <tt>TypePack</tt> of others.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TypePackOperations-4"></span><div class="fragmentname">&lt;&lt;TypePack Operations&gt;&gt;+=&nbsp;<a href="#fragment-TypePackOperations-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TypePackOperations-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;template &lt;typename&gt; class M, typename T, typename... Ts&gt;
+struct MapType&lt;M, TypePack&lt;T, Ts...&gt;&gt; {
+    using type = typename Prepend&lt;M&lt;T&gt;,
+        typename MapType&lt;M, TypePack&lt;Ts...&gt;&gt;::type&gt;::type;
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Finally, we will define a <tt>ForEachType()</tt> function, which calls the provided
+function (which is assumed to be a template function) once for each of the
+types in a <tt>TypePack</tt>.  The general case peels off the first type,
+calls the provided function, and
+then proceeds with a recursive call with the remainder of types in the
+<tt>TypePack</tt>.  In this case, the recursion is expressed in a slightly
+different manner, via a temporary instance of a <tt>TypePack</tt>-typed
+variable that is used purely to record the types yet to be handled. 
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TypePackOperations-5"></span><div class="fragmentname">&lt;&lt;TypePack Operations&gt;&gt;+=&nbsp;<a href="#fragment-TypePackOperations-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TypePackOperations-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename F, typename T, typename... Ts&gt;
+void <span class="anchor" id="ForEachType"></span>ForEachType(F func, TypePack&lt;T, Ts...&gt;) {
+    func.template operator()&lt;T&gt;();
+    ForEachType(func, TypePack&lt;Ts...&gt;());
+}</div><p>
+
+
+</p>
+<p>The base case of an empty <tt>TypePack</tt> ends the recursion.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TypePackOperations-6"></span><div class="fragmentname">&lt;&lt;TypePack Operations&gt;&gt;+=&nbsp;<a href="#fragment-TypePackOperations-5"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">template &lt;typename F&gt; void ForEachType(F func, TypePack&lt;&gt;) {}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TaggedPointers"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:tagged-pointer"></span><span id="TaggedPointers"></span><h3>B.4.4  Tagged Pointers</h3><p>
+
+
+
+</p>
+<p>The <tt>TaggedPointer</tt> class is at the heart of how <tt>pbrt</tt> handles
+polymorphic types.  It takes the pointer to an object of known type and
+uses excess bits in its pointer to encode the object&rsquo;s actual type (i.e.,
+to <em>tag</em> it).  When dynamic dispatch or other type-specific operations
+are needed, the object&rsquo;s type can be extracted from the
+pointer.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Our <tt>TaggedPointer</tt> implementation is derived from
+<tt>DiscriminatedPtr</tt> in Facebook&rsquo;s open source <em>folly</em> library.">
+      <sup>&dagger;</sup>
+    </button>
+		
+This class&rsquo;s implementation is in the file <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/taggedptr.h"><tt>util/taggedptr.h</tt></a>.
+
+</p>
+<p><tt>TaggedPointer</tt> is a template class that requires all the
+types it may represent to be provided at compile time.  Note that this
+approach thus precludes runtime loading of additional class definitions of
+new types, as would be possible with the usual approach to
+polymorphism based on virtual functions.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerDefinition-0"></span><div class="fragmentname">&lt;&lt;TaggedPointer Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename... Ts&gt;
+class <span class="anchor" id="TaggedPointer"></span>TaggedPointer {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-TaggedPointerPublicTypes-0">TaggedPointer Public Types</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2750" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2750"><i></i></a><div id="fragbit-2750" class="collapse"><div class="fragmentcode">       using Types = TypePack&lt;Ts...&gt;;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-TaggedPointerPublicMethods-0">TaggedPointer Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2751" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2751"><i></i></a><div id="fragbit-2751" class="collapse"><div class="fragmentcode">       template &lt;typename T&gt;
+       <a href="#TaggedPointer" class="code">TaggedPointer</a>(T *<a href="#TaggedPointer::ptr" class="code">ptr</a>) {
+           uintptr_t iptr = reinterpret_cast&lt;uintptr_t&gt;(<a href="#TaggedPointer::ptr" class="code">ptr</a>);
+           constexpr unsigned int type = <a href="#TaggedPointer::TypeIndex" class="code">TypeIndex</a>&lt;T&gt;();
+           <a href="#TaggedPointer::bits" class="code">bits</a> = iptr | ((uintptr_t)type &lt;&lt; <a href="#TaggedPointer::tagShift" class="code">tagShift</a>);
+       }
+       PBRT_CPU_GPU
+       <a href="#TaggedPointer" class="code">TaggedPointer</a>(std::nullptr_t np) {}
+       
+       PBRT_CPU_GPU
+       <a href="#TaggedPointer" class="code">TaggedPointer</a>(const <a href="#TaggedPointer" class="code">TaggedPointer</a> &amp;t) { <a href="#TaggedPointer::bits" class="code">bits</a> = t.<a href="#TaggedPointer::bits" class="code">bits</a>; }
+       PBRT_CPU_GPU
+       <a href="#TaggedPointer" class="code">TaggedPointer</a> &amp;operator=(const <a href="#TaggedPointer" class="code">TaggedPointer</a> &amp;t) {
+           <a href="#TaggedPointer::bits" class="code">bits</a> = t.<a href="#TaggedPointer::bits" class="code">bits</a>;
+           return *this;
+       }
+       template &lt;typename T&gt;
+       static constexpr unsigned int <a href="#TaggedPointer::TypeIndex" class="code">TypeIndex</a>() {
+           using Tp = typename std::remove_cv_t&lt;T&gt;;
+           if constexpr (std::is_same_v&lt;Tp, std::nullptr_t&gt;) return 0;
+           else return 1 + pbrt::<a href="#IndexOf" class="code">IndexOf</a>&lt;Tp, Types&gt;::count;
+       }
+       unsigned int <a href="#TaggedPointer::Tag" class="code">Tag</a>() const { return ((<a href="#TaggedPointer::bits" class="code">bits</a> &amp; tagMask) &gt;&gt; <a href="#TaggedPointer::tagShift" class="code">tagShift</a>); }
+       template &lt;typename T&gt;
+       bool <a href="#TaggedPointer::Is" class="code">Is</a>() const { return <a href="#TaggedPointer::Tag" class="code">Tag</a>() == <a href="#TaggedPointer::TypeIndex" class="code">TypeIndex</a>&lt;T&gt;(); }
+       static constexpr unsigned int MaxTag() { return sizeof...(Ts); }
+       PBRT_CPU_GPU
+       explicit operator bool() const { return (<a href="#TaggedPointer::bits" class="code">bits</a> &amp; <a href="#TaggedPointer::ptrMask" class="code">ptrMask</a>) != 0; }
+       
+       PBRT_CPU_GPU
+       bool operator&lt;(const <a href="#TaggedPointer" class="code">TaggedPointer</a> &amp;tp) const { return <a href="#TaggedPointer::bits" class="code">bits</a> &lt; tp.<a href="#TaggedPointer::bits" class="code">bits</a>; }
+       template &lt;typename T&gt;
+       T *Cast() {
+           return reinterpret_cast&lt;T *&gt;(<a href="#TaggedPointer::ptr" class="code">ptr</a>());
+       }
+       template &lt;typename T&gt;
+       const T *Cast() const {
+           return reinterpret_cast&lt;const T *&gt;(<a href="#TaggedPointer::ptr" class="code">ptr</a>());
+       }
+       template &lt;typename T&gt;
+       T *CastOrNullptr() {
+           if (<a href="#TaggedPointer::Is" class="code">Is</a>&lt;T&gt;()) return reinterpret_cast&lt;T *&gt;(<a href="#TaggedPointer::ptr" class="code">ptr</a>());
+           else return nullptr;
+       }
+       template &lt;typename T&gt;
+       PBRT_CPU_GPU const T *CastOrNullptr() const {
+           if (<a href="#TaggedPointer::Is" class="code">Is</a>&lt;T&gt;())
+               return reinterpret_cast&lt;const T *&gt;(<a href="#TaggedPointer::ptr" class="code">ptr</a>());
+           else
+               return nullptr;
+       }
+       std::string ToString() const {
+           return StringPrintf("[ <a href="#TaggedPointer" class="code">TaggedPointer</a> <a href="#TaggedPointer::ptr" class="code">ptr</a>: 0x%p tag: %d ]", <a href="#TaggedPointer::ptr" class="code">ptr</a>(), <a href="#TaggedPointer::Tag" class="code">Tag</a>());
+       }
+       
+       PBRT_CPU_GPU
+       bool operator==(const <a href="#TaggedPointer" class="code">TaggedPointer</a> &amp;tp) const { return <a href="#TaggedPointer::bits" class="code">bits</a> == tp.<a href="#TaggedPointer::bits" class="code">bits</a>; }
+       PBRT_CPU_GPU
+       bool operator!=(const <a href="#TaggedPointer" class="code">TaggedPointer</a> &amp;tp) const { return <a href="#TaggedPointer::bits" class="code">bits</a> != tp.<a href="#TaggedPointer::bits" class="code">bits</a>; }
+       void *<a href="#TaggedPointer::ptr" class="code">ptr</a>() { return reinterpret_cast&lt;void *&gt;(<a href="#TaggedPointer::bits" class="code">bits</a> &amp; <a href="#TaggedPointer::ptrMask" class="code">ptrMask</a>); }
+       const void *<a href="#TaggedPointer::ptr" class="code">ptr</a>() const { return reinterpret_cast&lt;const void *&gt;(<a href="#TaggedPointer::bits" class="code">bits</a> &amp; <a href="#TaggedPointer::ptrMask" class="code">ptrMask</a>); }
+       template &lt;typename F&gt;
+       PBRT_CPU_GPU decltype(auto) Dispatch(F &amp;&amp;func) {
+           using R = typename detail::ReturnType&lt;F, Ts...&gt;::type;
+           return detail::Dispatch&lt;F, R, Ts...&gt;(func, <a href="#TaggedPointer::ptr" class="code">ptr</a>(), <a href="#TaggedPointer::Tag" class="code">Tag</a>() - 1);
+       }
+       template &lt;typename F&gt;
+       PBRT_CPU_GPU decltype(auto) Dispatch(F &amp;&amp;func) const {
+           DCHECK(<a href="#TaggedPointer::ptr" class="code">ptr</a>());
+           using R = typename detail::ReturnType&lt;F, Ts...&gt;::type;
+           return detail::Dispatch&lt;F, R, Ts...&gt;(func, <a href="#TaggedPointer::ptr" class="code">ptr</a>(), <a href="#TaggedPointer::Tag" class="code">Tag</a>() - 1);
+       }
+       
+       template &lt;typename F&gt;
+       decltype(auto) DispatchCPU(F &amp;&amp;func) {
+           DCHECK(<a href="#TaggedPointer::ptr" class="code">ptr</a>());
+           using R = typename detail::ReturnType&lt;F, Ts...&gt;::type;
+           return detail::DispatchCPU&lt;F, R, Ts...&gt;(func, <a href="#TaggedPointer::ptr" class="code">ptr</a>(), <a href="#TaggedPointer::Tag" class="code">Tag</a>() - 1);
+       }
+       
+       template &lt;typename F&gt;
+       decltype(auto) DispatchCPU(F &amp;&amp;func) const {
+           DCHECK(<a href="#TaggedPointer::ptr" class="code">ptr</a>());
+           using R = typename detail::ReturnTypeConst&lt;F, Ts...&gt;::type;
+           return detail::DispatchCPU&lt;F, R, Ts...&gt;(func, <a href="#TaggedPointer::ptr" class="code">ptr</a>(), <a href="#TaggedPointer::Tag" class="code">Tag</a>() - 1);
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-TaggedPointerPrivateMembers-0">TaggedPointer Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2752" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2752"><i></i></a><div id="fragbit-2752" class="collapse"><div class="fragmentcode">       static constexpr int <a href="#TaggedPointer::tagShift" class="code">tagShift</a> = 57;
+       static constexpr int <a href="#TaggedPointer::tagBits" class="code">tagBits</a> = 64 - <a href="#TaggedPointer::tagShift" class="code">tagShift</a>;
+       static constexpr uint64_t <a href="#TaggedPointer::tagMask" class="code">tagMask</a> = ((1ull &lt;&lt; <a href="#TaggedPointer::tagBits" class="code">tagBits</a>) - 1) &lt;&lt; <a href="#TaggedPointer::tagShift" class="code">tagShift</a>;
+       static constexpr uint64_t ptrMask = ~<a href="#TaggedPointer::tagMask" class="code">tagMask</a>;
+       uintptr_t bits = 0;</div></div>
+};</div><p>
+
+
+</p>
+<p>All the possible types for a tagged pointer are provided via a public
+type definition.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPublicTypes-0"></span><div class="fragmentname">&lt;&lt;TaggedPointer Public Types&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">using <span class="anchor" id="TaggedPointer::Types"></span>Types = TypePack&lt;Ts...&gt;;</div><p>
+
+
+</p>
+<p>Modern processors ubiquitously use 64-bit pointers, which allow addressing
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.039ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 1308.3 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript 64</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-34" x="500" y="0"></use>
+</g>
+</g>
+</svg> bytes of memory.  Memory sizes of tens to hundreds of gigabytes
+are common now, which is a far cry from the <em>billions</em> of gigabytes
+that a 64-bit pointer can address.  Therefore, processors specify the size
+of their addressable memory space in terms of a smaller number of bits.
+Until recently, a 48-bit address space was common on CPUs, though that has
+recently increased to 57 bits.  While it is still unimaginable for a single
+system to have <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.039ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 1308.3 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript 57</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-37" d="M485 644c0 -21 0 -23 -9 -35l-135 -190c-44 -62 -58 -148 -62 -171c-8 -54 -11 -109 -11 -164v-51c0 -10 0 -55 -46 -55s-46 45 -46 55c0 102 33 241 123 376l112 158h-207c-13 0 -91 0 -98 -6c-13 -12 -22 -75 -25 -91h-25l33 206h25c4 -19 6 -32 128 -32h243Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-35"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-37" x="500" y="0"></use>
+</g>
+</g>
+</svg> bytes of RAM, large address spaces can be useful
+for cluster computing where many machines present a unified address space
+or for mapping pointers to data in offline storage.
+
+</p>
+<p><tt>TaggedPointer</tt> therefore steals the upper bits of pointers in order
+to encode types.  Even with 57-bit address spaces, there are still 7 bits
+left, which allows <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.217ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 954.4 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript 7</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-37" d="M485 644c0 -21 0 -23 -9 -35l-135 -190c-44 -62 -58 -148 -62 -171c-8 -54 -11 -109 -11 -164v-51c0 -10 0 -55 -46 -55s-46 45 -46 55c0 102 33 241 123 376l112 158h-207c-13 0 -91 0 -98 -6c-13 -12 -22 -75 -25 -91h-25l33 206h25c4 -19 6 -32 128 -32h243Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-37" x="707" y="557"></use>
+</g>
+</svg> types, far more than <tt>pbrt</tt> needs.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;TaggedPointer Private Members&gt;&gt;=&nbsp;<a href="#fragment-TaggedPointerPrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static constexpr int <span class="anchor" id="TaggedPointer::tagShift"></span><a href="#TaggedPointer::tagShift" class="code">tagShift</a> = 57;
+static constexpr int <span class="anchor" id="TaggedPointer::tagBits"></span>tagBits = 64 - <a href="#TaggedPointer::tagShift" class="code">tagShift</a>;</div><p>
+
+
+</p>
+<p><tt>tagMask</tt> is a bitmask that extracts the type tag&rsquo;s bits, and
+<tt>ptrMask</tt> extracts the original pointer.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPrivateMembers-1"></span><div class="fragmentname">&lt;&lt;TaggedPointer Private Members&gt;&gt;+=&nbsp;<a href="#fragment-TaggedPointerPrivateMembers-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TaggedPointerPrivateMembers-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static constexpr uint64_t <span class="anchor" id="TaggedPointer::tagMask"></span><a href="#TaggedPointer::tagMask" class="code">tagMask</a> = ((1ull &lt;&lt; <a href="#TaggedPointer::tagBits" class="code">tagBits</a>) - 1) &lt;&lt; <a href="#TaggedPointer::tagShift" class="code">tagShift</a>;
+static constexpr uint64_t <span class="anchor" id="TaggedPointer::ptrMask"></span>ptrMask = ~<a href="#TaggedPointer::tagMask" class="code">tagMask</a>;</div><p>
+
+
+</p>
+<p>We can now implement the primary <tt>TaggedPointer</tt> constructor.  Given a
+pointer of known type <tt>T</tt>, it uses the <tt>TypeIndex()</tt> method to
+get an integer index for its type.  In turn, the <tt>bits</tt> member is set
+by combining the original pointer with the integer type, shifted up into
+the unused bits of the pointer value.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPublicMethods-0"></span><div class="fragmentname">&lt;&lt;TaggedPointer Public Methods&gt;&gt;=&nbsp;<a href="#fragment-TaggedPointerPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+<a href="#TaggedPointer" class="code">TaggedPointer</a>(T *ptr) {
+    uintptr_t iptr = reinterpret_cast&lt;uintptr_t&gt;(ptr);
+    constexpr unsigned int type = <a href="#TaggedPointer::TypeIndex" class="code">TypeIndex</a>&lt;T&gt;();
+    <a href="#TaggedPointer::bits" class="code">bits</a> = iptr | ((uintptr_t)type &lt;&lt; <a href="#TaggedPointer::tagShift" class="code">tagShift</a>);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPrivateMembers-2"></span><div class="fragmentname">&lt;&lt;TaggedPointer Private Members&gt;&gt;+=&nbsp;<a href="#fragment-TaggedPointerPrivateMembers-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">uintptr_t <span class="anchor" id="TaggedPointer::bits"></span>bits = 0;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Most of the work for the <tt>TypeIndex()</tt> method is done by the
+<a href="#IndexOf"><tt>IndexOf</tt></a> structure defined in the previous section.  One more index
+is needed to represent a null pointer, however, so an index of 0&nbsp;is used
+for it and the rest have one added to them.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPublicMethods-1"></span><div class="fragmentname">&lt;&lt;TaggedPointer Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-TaggedPointerPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TaggedPointerPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+static constexpr unsigned int <span class="anchor" id="TaggedPointer::TypeIndex"></span>TypeIndex() {
+    using Tp = typename std::remove_cv_t&lt;T&gt;;
+    if constexpr (std::is_same_v&lt;Tp, std::nullptr_t&gt;) return 0;
+    else return 1 + pbrt::<a href="#IndexOf" class="code">IndexOf</a>&lt;Tp, Types&gt;::count;
+}</div><p>
+
+
+</p>
+<p><tt>Tag()</tt> returns a <tt>TaggedPointer</tt>&rsquo;s tag by extracting the
+relevant bits.  In turn, the <tt>Is()</tt> method performs a runtime check of
+whether a <tt>TaggedPointer</tt> represents a particular type.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPublicMethods-2"></span><div class="fragmentname">&lt;&lt;TaggedPointer Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-TaggedPointerPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TaggedPointerPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">unsigned int <span class="anchor" id="TaggedPointer::Tag"></span><a href="#TaggedPointer::Tag" class="code">Tag</a>() const { return ((bits &amp; tagMask) &gt;&gt; tagShift); }
+template &lt;typename T&gt;
+bool <span class="anchor" id="TaggedPointer::Is"></span>Is() const { return <a href="#TaggedPointer::Tag" class="code">Tag</a>() == <a href="#TaggedPointer::TypeIndex" class="code">TypeIndex</a>&lt;T&gt;(); }</div><p>
+
+
+</p>
+<p>The maximum value of a tag is equal to the number of represented types.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPublicMethods-3"></span><div class="fragmentname">&lt;&lt;TaggedPointer Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-TaggedPointerPublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TaggedPointerPublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static constexpr unsigned int <span class="anchor" id="TaggedPointer::MaxTag"></span>MaxTag() { return sizeof...(Ts); }
+</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>A pointer of a specified type is returned by <tt>CastOrNullptr()</tt>.  As
+the name suggests, it returns <tt>nullptr</tt> if the <tt>TaggedPointer</tt>
+does not in fact hold an object of type <tt>T</tt>.  In addition to this
+method, <tt>TaggedPointer</tt> also provides a <tt>const</tt> variant that
+returns a <tt>const T *</tt> as well as unsafe
+<tt>Cast()</tt><span class="anchor" id="TaggedPointer::Cast"></span> methods that always return
+a pointer of the given type.  Those should only be used when there is no
+question about the underlying type held by a <tt>TaggedPointer</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPublicMethods-4"></span><div class="fragmentname">&lt;&lt;TaggedPointer Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-TaggedPointerPublicMethods-3"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TaggedPointerPublicMethods-5"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+T *<span class="anchor" id="TaggedPointer::CastOrNullptr"></span>CastOrNullptr() {
+    if (<a href="#TaggedPointer::Is" class="code">Is</a>&lt;T&gt;()) return reinterpret_cast&lt;T *&gt;(<a href="#TaggedPointer::ptr" class="code">ptr</a>());
+    else return nullptr;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+
+</p>
+<p>For cases where the original pointer is needed but <tt>void</tt> pointer will
+suffice, the <tt>ptr()</tt> method is available.  It has a <tt>const</tt>
+variant as well.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPublicMethods-5"></span><div class="fragmentname">&lt;&lt;TaggedPointer Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-TaggedPointerPublicMethods-4"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-TaggedPointerPublicMethods-6"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void *<span class="anchor" id="TaggedPointer::ptr"></span>ptr() { return reinterpret_cast&lt;void *&gt;(<a href="#TaggedPointer::bits" class="code">bits</a> &amp; <a href="#TaggedPointer::ptrMask" class="code">ptrMask</a>); }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The most interesting <tt>TaggedPointer</tt> method is <tt>Dispatch()</tt>,
+which is at the heart of <tt>pbrt</tt>&rsquo;s dynamic dispatch mechanism for polymorphic
+types.  Its task is to determine which type of object a
+<tt>TaggedPointer</tt> points to and then call the provided function, passing
+it the object&rsquo;s pointer, cast to the correct type.  (See the
+<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum::operator"><tt>Spectrum::operator()</tt></a> method, which calls
+<tt>TaggedPointer::Dispatch()</tt>; details about the operation of the
+function that is provided to <tt>Dispatch()</tt> are discussed with its
+implementation.)
+
+</p>
+<p>Most of the work is done by standalone <tt>Dispatch()</tt>
+functions that are defined in a <tt>detail</tt> namespace, signifying that
+although they are defined in a header file, they should not be used by code
+outside of the header.  Those functions require the return type of the
+provided function, which is determined by the <tt>ReturnType</tt> helper
+template.  We will not include <tt>ReturnType</tt>&rsquo;s implementation here; it
+uses C++ template pack expansion to find the return type of <tt>func</tt>
+when called with each of the types that the <tt>TaggedPointer</tt>
+can hold, issues a compile time error if they are not all the same, and
+provides the return type via its definition of <tt>type</tt>.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="About
+the <tt>decltype(auto)</tt> specifying <tt>Dispatch()</tt>&rsquo;s return type: this
+syntax is unfortunately necessary in C++ for <em>perfect forwarding</em>,
+which ensures that reference types are returned as references and not
+converted to their underlying value type if a plain <tt>auto</tt> was used.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerPublicMethods-6"></span><div class="fragmentname">&lt;&lt;TaggedPointer Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-TaggedPointerPublicMethods-5"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">template &lt;typename F&gt;
+PBRT_CPU_GPU decltype(auto) <span class="anchor" id="TaggedPointer::Dispatch"></span>Dispatch(F &amp;&amp;func) {
+    using R = typename detail::ReturnType&lt;F, Ts...&gt;::type;
+    return detail::Dispatch&lt;F, R, Ts...&gt;(func, <a href="#TaggedPointer::ptr" class="code">ptr</a>(), <a href="#TaggedPointer::Tag" class="code">Tag</a>() - 1);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p><tt>detail::Dispatch()</tt><span class="anchor" id="detail::Dispatch"></span> may be called with
+an arbitrary number of types to handle, depending on how many a
+<tt>TaggedPointer</tt> manages.  This is handled by providing a number of
+template specializations for different numbers of such types.
+
+</p>
+<p>Early in the development of this version of <tt>pbrt</tt>, we implemented a
+dispatch mechanism that applied binary search, making a series of recursive
+function calls based on the type index until the corresponding type was
+found.  That had equivalent performance to the approach implemented here
+and entailed fewer lines of code.  However, we found that it cluttered call
+stacks, which was a nuisance when debugging.  With the current approach,
+dynamic dispatch only imposes a single function call.
+
+</p>
+<p>As an example of a <tt>Dispatch()</tt> function, here is the implementation
+of the one that handles three types; it is parameterized by the type of the
+callback function <tt>F</tt> and its return type <tt>R</tt> as well.  All that
+there is to it is a <tt>switch</tt> statement to call the function with the
+appropriate pointer type based on the index passed in from
+<a href="#TaggedPointer::Dispatch"><tt>TaggedPointer::Dispatch()</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-TaggedPointerHelperTemplates-0"></span><div class="fragmentname">&lt;&lt;TaggedPointer Helper Templates&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename F, typename R, typename T0, typename T1, typename T2&gt;
+R Dispatch(F &amp;&amp;func, void *ptr, int index) {
+    switch (index) {
+      case 0:  return func((T0 *)ptr);
+      case 1:  return func((T1 *)ptr);
+      default: return func((T2 *)ptr);
+    }
+}</div><p>
+
+
+</p>
+<p>There are implementations of <tt>detail::Dispatch()</tt> for up to 8&nbsp;types.
+If more are provided, a fallback implementation handles the first&nbsp;8 and
+then makes a recursive call to <tt>detail::Dispatch()</tt> with the rest of
+them for larger indices.  For <tt>pbrt</tt>&rsquo;s uses, where there are at most 10 or so
+types, this approach works well.
+
+</p>
+<p><tt>TaggedPointer</tt> also includes a <tt>const</tt>-qualified dispatch method
+as well as <tt>DispatchCPU()</tt><span class="anchor" id="TaggedPointer::DispatchCPU"></span>,
+which is necessary for methods that are only able to run on the CPU. (The
+default <tt>Dispatch()</tt> method requires that the method be callable from
+both CPU or GPU code, which is the most common use case in <tt>pbrt</tt>.)  These
+both have corresponding dispatch functions in the <tt>detail</tt> namespace.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x3DSampledData"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x3DSampledData"></span><h3>B.4.5  3D Sampled Data</h3><p>
+
+
+</p>
+<p><tt>SampledGrid</tt> represents a point-sampled function over the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.707ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2457.1 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-bracket cubed</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+<g transform="translate(1724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-33" x="393" y="513"></use>
+</g>
+</g>
+</svg>
+domain.  It is in a sense the 3D generalization of the <a href="../Utilities/Images.html#Image"><tt>Image</tt></a> class,
+though it offers far fewer capabilities.  Its main use in <tt>pbrt</tt> is as a
+representation for the <a href="../Volume_Scattering/Media.html#GridMedium"><tt>GridMedium</tt></a> used to represent
+volumetric media.  It is templated on a type <tt>T</tt> that represents the
+point-sampled values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledGridDefinition-0"></span><div class="fragmentname">&lt;&lt;SampledGrid Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T&gt;
+class <span class="anchor" id="SampledGrid"></span>SampledGrid {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SampledGridPublicMethods-0">SampledGrid Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2753" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2753"><i></i></a><div id="fragbit-2753" class="collapse"><div class="fragmentcode">       SampledGrid(Allocator alloc) : values(alloc) {}
+       SampledGrid(pstd::span&lt;const T&gt; v, int nx, int ny, int nz, Allocator alloc)
+           : values(v.begin(), v.end(), alloc), nx(nx), ny(ny), nz(nz) {
+       }
+       int XSize() const { return nx; }
+       int YSize() const { return ny; }
+       int zSize() const { return nz; }
+       const_iterator begin() const { return values.begin(); }
+       const_iterator end() const { return values.end(); }
+       template &lt;typename F&gt;
+       auto Lookup(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, F convert) const {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Computevoxelcoordinatesandoffsetsformonop-0">Compute voxel coordinates and offsets for <tt>p</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2754" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2754"><i></i></a><div id="fragbit-2754" class="collapse"><div class="fragmentcode">              <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pSamples(p.x * nx - .5f, p.y * ny - .5f, p.z * nz - .5f);
+              Point3i pi = (Point3i)<a href="../Geometry_and_Transformations/n-Tuple_Base_Classes.html#Tuple3::Floor" class="code">Floor</a>(pSamples);
+              <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> d = pSamples - (<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>)pi;</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Returntrilinearlyinterpolatedvoxelvalues-0">Return trilinearly interpolated voxel values</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2755" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2755"><i></i></a><div id="fragbit-2755" class="collapse"><div class="fragmentcode">              auto d00 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi, convert),
+                                   Lookup(pi + Vector3i(1, 0, 0), convert));
+              auto d10 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 1, 0), convert),
+                                   Lookup(pi + Vector3i(1, 1, 0), convert));
+              auto d01 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 0, 1), convert),
+                                   Lookup(pi + Vector3i(1, 0, 1), convert));
+              auto d11 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 1, 1), convert),
+                                   Lookup(pi + Vector3i(1, 1, 1), convert));
+              return <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.z, <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.y, d00, d10), <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.y, d01, d11));</div></div>
+       }
+       T Lookup(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p) const {
+           // Compute voxel coordinates and offsets for _p_
+           <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pSamples(p.x * nx - .5f, p.y * ny - .5f, p.z * nz - .5f);
+           Point3i pi = (Point3i)Floor(pSamples);
+           <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> d = pSamples - (<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>)pi;
+       
+           // Return trilinearly interpolated voxel values
+           auto d00 =
+               <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi), Lookup(pi + Vector3i(1, 0, 0)));
+           auto d10 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 1, 0)),
+                           Lookup(pi + Vector3i(1, 1, 0)));
+           auto d01 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 0, 1)),
+                           Lookup(pi + Vector3i(1, 0, 1)));
+           auto d11 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 1, 1)),
+                           Lookup(pi + Vector3i(1, 1, 1)));
+           return <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.z, <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.y, d00, d10), <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.y, d01, d11));
+       }
+       template &lt;typename F&gt;
+       auto Lookup(const Point3i &amp;p, F convert) const {
+           Bounds3i sampleBounds(Point3i(0, 0, 0), Point3i(nx, ny, nz));
+           if (!InsideExclusive(p, sampleBounds))
+               return convert(T{});
+           return convert(values[(p.z * ny + p.y) * nx + p.x]);
+       }
+       T Lookup(const Point3i &amp;p) const {
+           Bounds3i sampleBounds(Point3i(0, 0, 0), Point3i(nx, ny, nz));
+           if (!InsideExclusive(p, sampleBounds))
+               return T{};
+           return values[(p.z * ny + p.y) * nx + p.x];
+       }
+       template &lt;typename F&gt;
+       Float MaxValue(const <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> &amp;bounds, F convert) const {
+           <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> ps[2] = {<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(bounds.pMin.x * nx - .5f, bounds.pMin.y * ny - .5f,
+                                    bounds.pMin.z * nz - .5f),
+                            <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(bounds.pMax.x * nx - .5f, bounds.pMax.y * ny - .5f,
+                                    bounds.pMax.z * nz - .5f)};
+           Point3i pi[2] = {Max(Point3i(Floor(ps[0])), Point3i(0, 0, 0)),
+                            Min(Point3i(Floor(ps[1])) + Vector3i(1, 1, 1),
+                                Point3i(nx - 1, ny - 1, nz - 1))};
+       
+           Float maxValue = Lookup(Point3i(pi[0]), convert);
+           for (int z = pi[0].z; z &lt;= pi[1].z; ++z)
+               for (int y = pi[0].y; y &lt;= pi[1].y; ++y)
+                   for (int x = pi[0].x; x &lt;= pi[1].x; ++x)
+                       maxValue = std::max(maxValue, Lookup(Point3i(x, y, z), convert));
+       
+           return maxValue;
+       }
+       T MaxValue(const <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> &amp;bounds) const {
+           return MaxValue(bounds, [](T value) { return value; });
+       }
+       std::string ToString() const {
+           return StringPrintf("[ SampledGrid nx: %d ny: %d nz: %d values: %s ]", nx, ny, nz,
+                               values);
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SampledGridPrivateMembers-0">SampledGrid Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2756" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2756"><i></i></a><div id="fragbit-2756" class="collapse"><div class="fragmentcode">       pstd::vector&lt;T&gt; values;
+       int nx, ny, nz;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>It offsets a few constructors, not included here, that initialize a vector
+of values at specified sampling rates <tt>nx</tt>, <tt>ny</tt>, and <tt>nz</tt>
+in each dimension.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledGridPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;SampledGrid Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::vector&lt;T&gt; <span class="anchor" id="SampledGrid::values"></span>values;
+int <span class="anchor" id="SampledGrid::nx"></span>nx, <span class="anchor" id="SampledGrid::ny"></span>ny, <span class="anchor" id="SampledGrid::nz"></span>nz;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>Lookup()</tt> takes a point and a function that can be used to convert
+from the type stored in memory to another type that is returned from the
+method.  (This capability is used, for example, by the
+<a href="../Volume_Scattering/Media.html#RGBGridMedium"><tt>RGBGridMedium</tt></a>, which stores a grid of RGB values that are
+represented using the <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBUnboundedSpectrum"><tt>RGBUnboundedSpectrum</tt></a> class but then wants a
+corresponding <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum"><tt>SampledSpectrum</tt></a> at specific wavelengths to be returned
+from <tt>Lookup()</tt>.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SampledGridPublicMethods-0"></span><div class="fragmentname">&lt;&lt;SampledGrid Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename F&gt;
+auto <span class="anchor" id="SampledGrid::Lookup"></span>Lookup(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, F convert) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Computevoxelcoordinatesandoffsetsformonop-0">Compute voxel coordinates and offsets for <tt>p</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2757" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2757"><i></i></a><div id="fragbit-2757" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pSamples(p.x * nx - .5f, p.y * ny - .5f, p.z * nz - .5f);
+       Point3i pi = (Point3i)<a href="../Geometry_and_Transformations/n-Tuple_Base_Classes.html#Tuple3::Floor" class="code">Floor</a>(pSamples);
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> d = pSamples - (<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>)pi;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Returntrilinearlyinterpolatedvoxelvalues-0">Return trilinearly interpolated voxel values</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2758" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2758"><i></i></a><div id="fragbit-2758" class="collapse"><div class="fragmentcode">       auto d00 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi, convert),
+                            Lookup(pi + Vector3i(1, 0, 0), convert));
+       auto d10 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 1, 0), convert),
+                            Lookup(pi + Vector3i(1, 1, 0), convert));
+       auto d01 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 0, 1), convert),
+                            Lookup(pi + Vector3i(1, 0, 1), convert));
+       auto d11 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 1, 1), convert),
+                            Lookup(pi + Vector3i(1, 1, 1), convert));
+       return <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.z, <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.y, d00, d10), <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.y, d01, d11));</div></div>
+}</div><p>
+
+
+</p>
+<p>For the convenience of cases where the in-memory type <tt>T</tt> is the one
+that should be returned, a second implementation of <tt>Lookup()</tt>, not
+included here,
+provides a default identity implementation of the conversion function.
+
+</p>
+<p>
+
+</p>
+<p><tt>SampledGrid</tt> follows the same conventions as were used for discrete and
+continuous coordinates for pixel indexing, defined in
+Section&nbsp;<a href="../Sampling_and_Reconstruction/Sampling_Theory.html#sec:pixel-concepts">8.1.4</a>.  Here the discrete coordinates for the
+lower corner of the 8&nbsp;samples are computed.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computevoxelcoordinatesandoffsetsformonop-0"></span><div class="fragmentname">&lt;&lt;Compute voxel coordinates and offsets for <tt>p</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pSamples(p.x * nx - .5f, p.y * ny - .5f, p.z * nz - .5f);
+Point3i pi = (Point3i)<a href="../Geometry_and_Transformations/n-Tuple_Base_Classes.html#Tuple3::Floor" class="code">Floor</a>(pSamples);
+<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> d = pSamples - (<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>)pi;</div><p>
+
+
+</p>
+<p>A sequence of linear interpolations gives the trilinearly interpolated
+sample value.  They use a second <tt>Lookup()</tt> method, not included here,
+that returns a voxel sample given integer coordinates.  Out-of-bounds
+indices result in a default-initialized value being returned, which is
+generally the zero value for the type.
+
+</p>
+<p>Note that <tt>SampledGrid</tt> is able to represent any class
+for which an appropriate <tt>Lerp()</tt> function is defined for the type
+returned by the conversion function.  Further, note the use of <tt>auto</tt>,
+which allows this method to be implemented without worrying about what type
+is returned by <tt>convert</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Returntrilinearlyinterpolatedvoxelvalues-0"></span><div class="fragmentname">&lt;&lt;Return trilinearly interpolated voxel values&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">auto d00 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi, convert),
+                     Lookup(pi + Vector3i(1, 0, 0), convert));
+auto d10 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 1, 0), convert),
+                     Lookup(pi + Vector3i(1, 1, 0), convert));
+auto d01 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 0, 1), convert),
+                     Lookup(pi + Vector3i(1, 0, 1), convert));
+auto d11 = <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.x, Lookup(pi + Vector3i(0, 1, 1), convert),
+                     Lookup(pi + Vector3i(1, 1, 1), convert));
+return <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.z, <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.y, d00, d10), <a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(d.y, d01, d11));</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Finally, the <tt>MaxValue()</tt><span class="anchor" id="SampledGrid::MaxValue"></span> method,
+also not included here, returns a bound on the maximum value of the
+interpolated function over the given bounds, computed by looping over all
+of the sample values that contribute to grid lookups inside those bounds.
+It takes a function that converts the in-memory type to a
+<tt>Float</tt>; the maximum of all such <tt>Float</tt>s is then returned.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#EfficientTemporaryMemoryAllocations"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:scratchbuffer"></span><span id="EfficientTemporaryMemoryAllocations"></span><h3>B.4.6  Efficient Temporary Memory Allocations</h3><p>
+
+
+
+</p>
+<p>For small objects with short lifetimes, C++&rsquo;s traditional <tt>new</tt>
+and <tt>delete</tt> memory allocation operators may impose undesirable
+overhead from maintenance of their internal data structures.  A custom
+allocation technique that has proved to be useful in such cases is
+<em>arena-based allocation</em>, which allocates objects from a large
+contiguous region of memory.  In this scheme, individual objects are never
+explicitly freed; instead, the entire region of memory is released when the
+lifetime of all the allocated objects ends.
+
+</p>
+<p>The <a href="#ScratchBuffer"><tt>ScratchBuffer</tt></a> class implements this approach.  It is used for
+dynamic allocation of <a href="../Reflection_Models/BSDF_Representation.html#BxDF"><tt>BxDF</tt></a>s, <tt>BSSRDF</tt>s, and
+<a href="../Volume_Scattering/Media.html#RayMajorantIterator"><tt>RayMajorantIterator</tt></a>s as rays are being traced through the scene.
+Some of its efficiency comes from its not allowing multiple
+threads to use a single <a href="#ScratchBuffer"><tt>ScratchBuffer</tt></a> instance concurrently; instead,
+<tt>pbrt</tt>&rsquo;s <a href="../Utilities/Parallelism.html#ThreadLocal"><tt>ThreadLocal</tt></a> capability should be used to allocate a separate
+<a href="#ScratchBuffer"><tt>ScratchBuffer</tt></a> for each thread that needs one.
+
+</p>
+<p>One important detail in its definition is the use of <tt>alignas</tt>, which
+helps improve CPU cache performance by preventing multiple threads from
+accessing the same cache line.  (For details, see the discussion of false
+sharing in Section&nbsp;<a href="../Utilities/Parallelism.html#sec:multi-thread-memory-perf">A.6.3</a>.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScratchBufferDefinition-0"></span><div class="fragmentname">&lt;&lt;ScratchBuffer Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class alignas(<a href="../Utilities/Parallelism.html#PBRT_L1_CACHE_LINE_SIZE" class="code">PBRT_L1_CACHE_LINE_SIZE</a>) <span class="anchor" id="ScratchBuffer"></span>ScratchBuffer {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ScratchBufferPublicMethods-0">ScratchBuffer Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2759" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2759"><i></i></a><div id="fragbit-2759" class="collapse"><div class="fragmentcode">       <a href="#ScratchBuffer" class="code">ScratchBuffer</a>(int size = 256) : <a href="#ScratchBuffer::allocSize" class="code">allocSize</a>(size) {
+           <a href="#ScratchBuffer::ptr" class="code">ptr</a> = (char *)Allocator().<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_bytes" class="code">allocate_bytes</a>(size, <a href="#ScratchBuffer::align" class="code">align</a>);
+       }
+       <a href="#ScratchBuffer" class="code">ScratchBuffer</a>(const <a href="#ScratchBuffer" class="code">ScratchBuffer</a> &amp;) = delete;
+       
+       <a href="#ScratchBuffer" class="code">ScratchBuffer</a>(<a href="#ScratchBuffer" class="code">ScratchBuffer</a> &amp;&amp;b) {
+           <a href="#ScratchBuffer::ptr" class="code">ptr</a> = b.<a href="#ScratchBuffer::ptr" class="code">ptr</a>;
+           <a href="#ScratchBuffer::allocSize" class="code">allocSize</a> = b.<a href="#ScratchBuffer::allocSize" class="code">allocSize</a>;
+           <a href="#ScratchBuffer::offset" class="code">offset</a> = b.<a href="#ScratchBuffer::offset" class="code">offset</a>;
+           <a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a> = std::move(b.<a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a>);
+       
+           b.<a href="#ScratchBuffer::ptr" class="code">ptr</a> = nullptr;
+           b.<a href="#ScratchBuffer::allocSize" class="code">allocSize</a> = b.<a href="#ScratchBuffer::offset" class="code">offset</a> = 0;
+       }
+       
+       ~<a href="#ScratchBuffer" class="code">ScratchBuffer</a>() {
+           Reset();
+           Allocator().deallocate_bytes(<a href="#ScratchBuffer::ptr" class="code">ptr</a>, <a href="#ScratchBuffer::allocSize" class="code">allocSize</a>, <a href="#ScratchBuffer::align" class="code">align</a>);
+       }
+       
+       <a href="#ScratchBuffer" class="code">ScratchBuffer</a> &amp;operator=(const <a href="#ScratchBuffer" class="code">ScratchBuffer</a> &amp;) = delete;
+       
+       <a href="#ScratchBuffer" class="code">ScratchBuffer</a> &amp;operator=(<a href="#ScratchBuffer" class="code">ScratchBuffer</a> &amp;&amp;b) {
+           std::swap(b.<a href="#ScratchBuffer::ptr" class="code">ptr</a>, <a href="#ScratchBuffer::ptr" class="code">ptr</a>);
+           std::swap(b.<a href="#ScratchBuffer::allocSize" class="code">allocSize</a>, <a href="#ScratchBuffer::allocSize" class="code">allocSize</a>);
+           std::swap(b.<a href="#ScratchBuffer::offset" class="code">offset</a>, <a href="#ScratchBuffer::offset" class="code">offset</a>);
+           std::swap(b.<a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a>, <a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a>);
+           return *this;
+       }
+       void *Alloc(size_t size, size_t <a href="#ScratchBuffer::align" class="code">align</a>) {
+           if ((<a href="#ScratchBuffer::offset" class="code">offset</a> % <a href="#ScratchBuffer::align" class="code">align</a>) != 0)
+               <a href="#ScratchBuffer::offset" class="code">offset</a> += <a href="#ScratchBuffer::align" class="code">align</a> - (<a href="#ScratchBuffer::offset" class="code">offset</a> % <a href="#ScratchBuffer::align" class="code">align</a>);
+           if (<a href="#ScratchBuffer::offset" class="code">offset</a> + size &gt; <a href="#ScratchBuffer::allocSize" class="code">allocSize</a>)
+               <a href="#ScratchBuffer::Realloc" class="code">Realloc</a>(size);
+           void *p = <a href="#ScratchBuffer::ptr" class="code">ptr</a> + <a href="#ScratchBuffer::offset" class="code">offset</a>;
+           <a href="#ScratchBuffer::offset" class="code">offset</a> += size;
+           return p;
+       }
+       template &lt;typename T, typename... Args&gt;
+       typename AllocationTraits&lt;T&gt;::SingleObject Alloc(Args &amp;&amp;... args) {
+           T *p = (T *)Alloc(sizeof(T), alignof(T));
+           return new (p) T(std::forward&lt;Args&gt;(args)...);
+       }
+       
+       template &lt;typename T&gt;
+       typename AllocationTraits&lt;T&gt;::Array Alloc(size_t n = 1) {
+           using ElementType = typename std::remove_extent_t&lt;T&gt;;
+           ElementType *ret =
+               (ElementType *)Alloc(n * sizeof(ElementType), alignof(ElementType));
+           for (size_t i = 0; i &lt; n; ++i)
+               new (&amp;ret[i]) ElementType();
+           return ret;
+       }
+       void Reset() {
+           for (const auto &amp;buf : <a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a>)
+               Allocator().deallocate_bytes(buf.first, buf.second, <a href="#ScratchBuffer::align" class="code">align</a>);
+           <a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a>.clear();
+           <a href="#ScratchBuffer::offset" class="code">offset</a> = 0;
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ScratchBufferPrivateMethods-0">ScratchBuffer Private Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2760" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2760"><i></i></a><div id="fragbit-2760" class="collapse"><div class="fragmentcode">       void Realloc(size_t minSize) {
+           <a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a>.push_back(std::make_pair(<a href="#ScratchBuffer::ptr" class="code">ptr</a>, <a href="#ScratchBuffer::allocSize" class="code">allocSize</a>));
+           <a href="#ScratchBuffer::allocSize" class="code">allocSize</a> = std::max(2 * minSize, <a href="#ScratchBuffer::allocSize" class="code">allocSize</a> + minSize);
+           <a href="#ScratchBuffer::ptr" class="code">ptr</a> = (char *)Allocator().<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_bytes" class="code">allocate_bytes</a>(<a href="#ScratchBuffer::allocSize" class="code">allocSize</a>, <a href="#ScratchBuffer::align" class="code">align</a>);
+           <a href="#ScratchBuffer::offset" class="code">offset</a> = 0;
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ScratchBufferPrivateMembers-0">ScratchBuffer Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2761" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2761"><i></i></a><div id="fragbit-2761" class="collapse"><div class="fragmentcode">       static constexpr int align = <a href="../Utilities/Parallelism.html#PBRT_L1_CACHE_LINE_SIZE" class="code">PBRT_L1_CACHE_LINE_SIZE</a>;
+       char *ptr = nullptr;
+       int allocSize = 0, offset = 0;
+       std::list&lt;std::pair&lt;char *, size_t&gt;&gt; smallBuffers;</div></div>
+};</div><p>
+
+
+</p>
+<p>The <a href="#ScratchBuffer"><tt>ScratchBuffer</tt></a> hands out pointers to memory from a single
+preallocated block.  If the block&rsquo;s size is insufficient, it will be
+replaced with a larger one; this allows a small default block size, though
+the caller can specify a larger one if the default is known to be too
+little.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScratchBufferPublicMethods-0"></span><div class="fragmentname">&lt;&lt;ScratchBuffer Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ScratchBufferPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#ScratchBuffer" class="code">ScratchBuffer</a>(int size = 256) : <a href="#ScratchBuffer::allocSize" class="code">allocSize</a>(size) {
+    <a href="#ScratchBuffer::ptr" class="code">ptr</a> = (char *)Allocator().<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_bytes" class="code">allocate_bytes</a>(size, <a href="#ScratchBuffer::align" class="code">align</a>);
+}</div><p>
+
+
+</p>
+<p><tt>offset</tt> maintains the offset after <tt>ptr</tt> where free memory
+begins.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScratchBufferPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;ScratchBuffer Private Members&gt;&gt;=&nbsp;<a href="#fragment-ScratchBufferPrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">static constexpr int <span class="anchor" id="ScratchBuffer::align"></span>align = <a href="../Utilities/Parallelism.html#PBRT_L1_CACHE_LINE_SIZE" class="code">PBRT_L1_CACHE_LINE_SIZE</a>;
+char *<span class="anchor" id="ScratchBuffer::ptr"></span>ptr = nullptr;
+int <span class="anchor" id="ScratchBuffer::allocSize"></span>allocSize = 0, <span class="anchor" id="ScratchBuffer::offset"></span>offset = 0;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>To service an allocation request, the allocation routine first advances
+<tt>offset</tt> as necessary so that the returned address meets the specified
+memory alignment.  (It is thus required that <tt>ptr</tt> has at minimum that
+alignment.)  If the allocation would go past the end of the allocated
+buffer, <tt>Realloc()</tt> takes care of allocating a new, larger buffer.
+With the usual case of long-lived <tt>ScratchBuffer</tt>s, this should
+happen rarely.  Given sufficient space, the pointer can be returned and
+<tt>offset</tt> incremented to account for the allocation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScratchBufferPublicMethods-1"></span><div class="fragmentname">&lt;&lt;ScratchBuffer Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ScratchBufferPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ScratchBufferPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void *<span class="anchor" id="ScratchBuffer::Alloc"></span>Alloc(size_t size, size_t align) {
+    if ((<a href="#ScratchBuffer::offset" class="code">offset</a> % align) != 0)
+        <a href="#ScratchBuffer::offset" class="code">offset</a> += align - (<a href="#ScratchBuffer::offset" class="code">offset</a> % align);
+    if (<a href="#ScratchBuffer::offset" class="code">offset</a> + size &gt; <a href="#ScratchBuffer::allocSize" class="code">allocSize</a>)
+        <a href="#ScratchBuffer::Realloc" class="code">Realloc</a>(size);
+    void *p = <a href="#ScratchBuffer::ptr" class="code">ptr</a> + <a href="#ScratchBuffer::offset" class="code">offset</a>;
+    <a href="#ScratchBuffer::offset" class="code">offset</a> += size;
+    return p;
+}</div><p>
+
+
+</p>
+<p><tt>ScratchBuffer</tt> provides two additional <tt>Alloc()</tt> methods that
+are not included here.  Both are templated on the type of object being
+allocated.  One allocates a single object, passing along provided
+parameters to its constructor.  The other allocates an array of objects of
+a specified length, running the default constructor for each one.
+
+</p>
+<p>If a larger buffer is needed, <tt>Realloc()</tt> holds on to a pointer to the
+current buffer and its size in <tt>smallBuffers</tt>.  The current buffer
+cannot be freed until the user later calls <tt>ScratchBuffer</tt>&rsquo;s
+<tt>Reset()</tt> method, but it should be returned to the system then, as
+<tt>ScratchBuffer</tt> will henceforth have no need for it.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScratchBufferPrivateMethods-0"></span><div class="fragmentname">&lt;&lt;ScratchBuffer Private Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="ScratchBuffer::Realloc"></span>Realloc(size_t minSize) {
+    <a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a>.push_back(std::make_pair(<a href="#ScratchBuffer::ptr" class="code">ptr</a>, <a href="#ScratchBuffer::allocSize" class="code">allocSize</a>));
+    <a href="#ScratchBuffer::allocSize" class="code">allocSize</a> = std::max(2 * minSize, <a href="#ScratchBuffer::allocSize" class="code">allocSize</a> + minSize);
+    <a href="#ScratchBuffer::ptr" class="code">ptr</a> = (char *)Allocator().<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_bytes" class="code">allocate_bytes</a>(<a href="#ScratchBuffer::allocSize" class="code">allocSize</a>, <a href="#ScratchBuffer::align" class="code">align</a>);
+    <a href="#ScratchBuffer::offset" class="code">offset</a> = 0;
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScratchBufferPrivateMembers-1"></span><div class="fragmentname">&lt;&lt;ScratchBuffer Private Members&gt;&gt;+=&nbsp;<a href="#fragment-ScratchBufferPrivateMembers-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">std::list&lt;std::pair&lt;char *, size_t&gt;&gt; <span class="anchor" id="ScratchBuffer::smallBuffers"></span>smallBuffers;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A call to <tt>Reset()</tt> is lightweight, usually just resetting
+<tt>offset</tt> to&nbsp;0.  Note that, lacking the necessary information to be
+able to do so, it does not run the destructors of the allocated objects.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ScratchBufferPublicMethods-2"></span><div class="fragmentname">&lt;&lt;ScratchBuffer Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ScratchBufferPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ScratchBuffer::Reset"></span>Reset() {
+    for (const auto &amp;buf : <a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a>)
+        Allocator().deallocate_bytes(buf.first, buf.second, align);
+    <a href="#ScratchBuffer::smallBuffers" class="code">smallBuffers</a>.clear();
+    <a href="#ScratchBuffer::offset" class="code">offset</a> = 0;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Images.html">Utilities / Images</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

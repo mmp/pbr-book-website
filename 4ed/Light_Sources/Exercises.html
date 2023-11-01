@@ -1,0 +1,257 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Exercises</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources.html">Light Sources</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Exercises</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources/Further_Reading.html">(Previous: Further Reading)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>Exercises</h2><p>
+
+
+</p>
+<p></p>
+<ol>
+
+ <li class="exercise"><span class="exerciseicon">&#9312;</span> The functionality of the <tt>SpotLight</tt> could be
+replicated by using a suitable image in conjunction with the
+<a href="../Light_Sources/Point_Lights.html#ProjectionLight"><tt>ProjectionLight</tt></a> or <a href="../Light_Sources/Point_Lights.html#GoniometricLight"><tt>GoniometricLight</tt></a>.  Discuss the advantages
+and disadvantages of providing this specific functionality separately with
+the <tt>SpotLight</tt> class.
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Modify the <a href="../Light_Sources/Point_Lights.html#ProjectionLight"><tt>ProjectionLight</tt></a> to also support
+orthographic projections.  This variant is particularly useful even without
+an image map, since it gives a directional light source with a beam of
+user-defined extent.
+
+ <li class="exercise"><span class="exerciseicon">&#9314;</span> The current light source implementations do not support
+animated transformations.  Modify <tt>pbrt</tt> to include this functionality and
+render images showing off the effect of animating light positions.  Note
+that if you would like to use the <a href="../Light_Sources/Light_Sampling.html#BVHLightSampler"><tt>BVHLightSampler</tt></a> with animated light
+sources, it will require substantial modifications.
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Implement an area light that generalizes
+the <a href="../Light_Sources/Area_Lights.html#DiffuseAreaLight"><tt>DiffuseAreaLight</tt></a> to support directionally varying emitted
+radiance.  You might, for example, allow focusing the light by computing
+the cosine of the outgoing direction and the surface normal and raising it
+to some power.  Derive a model such that the total power of the light is
+left unchanged as the directional distribution of emitted radiance varies
+and update the light&rsquo;s <tt>SampleLe()</tt> methods for sampling rays leaving
+the light to account for the emission distribution.  Discuss the
+implications of your approach for sampling via <tt>SampleLi()</tt>; should
+that method be aware of the changed directional distribution?
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Read some of the papers in the &ldquo;Further Reading&rdquo;
+section that discuss the shadow cache, and add this optimization to <tt>pbrt</tt>.
+Measure how much it speeds up the system for a variety of scenes.  What
+techniques can you come up with that make it work better in the presence of
+multiple levels of reflection?
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> One of the advantages of the linearity assumption in
+radiometry is that the final image of a scene is the same as the sum of
+individual images that account for each light source&rsquo;s contribution
+(assuming a floating-point image file format is used that does not clip
+pixel radiance values).  An implication of this property is that if a
+renderer creates a separate image for each light source, it is possible to
+write interactive lighting design tools that make it possible to quickly
+see the effects of scaling the contributions of individual lights in the
+scene without needing to re-render it from scratch. Instead, a light&rsquo;s
+individual image can be scaled and the final image regenerated by summing
+all the light images again.  (This technique was first applied for opera
+lighting design by Dorsey, Sillion, and Greenberg
+(<a href="Further_Reading.html#cite:Dorsey:1991:DAS">1991</a>).)  Modify <tt>pbrt</tt> to output a separate image
+for each of the lights in the scene, and write an interactive lighting
+design tool that uses them in this manner.
+
+ <li class="exercise"><span class="exerciseicon">&#9314;</span> Read the paper by Vel&aacute;zquez-Armend&aacute;riz
+et&nbsp;al. (<a href="Further_Reading.html#cite:Velazquez-Armendariz2015">2015</a>), and implement their method
+for efficiently rendering scenes with complex light sources. Create or find
+models of a few complex lights that include many shapes that exhibit specular
+reflection or transmission in order to evaluate your implementation.
+
+
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Generalize the <a href="../Light_Sources/Infinite_Area_Lights.html#PortalImageInfiniteLight"><tt>PortalImageInfiniteLight</tt></a> to allow
+the specification of multiple portals.  Note that multiple coplanar
+portals can be supported without resampling the environment map, but
+non-coplanar portals will require multiple copies of it.  As noted by
+Bitterli et al.&nbsp;(<a href="Further_Reading.html#cite:Bitterli2015">2015</a>), the summed area table representation
+makes it easy to compute the total power passing through a portal given a
+receiving point.  Modify your implementation to use the relative power of
+multiple portals as a sampling distribution to choose which portal to
+sample.  Render images that show the benefit of this improvement.
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Sampling wavelengths according to the XYZ matching
+functions is a reasonable approach for many scenes, though if the light
+sources in the scene have highly peaked spectra (as, for example, many
+fluorescent lights do), error may be reduced by instead sampling
+wavelengths according to the lights&rsquo; spectral distributions.  Implement
+this approach and compare the results to <tt>pbrt</tt>&rsquo;s current wavelength
+sampling implementation using a variety of spectral emission profiles.
+How much does the alternative sampling strategy help in the best case
+versus the worst case?  Can you find a way to improve the results further
+by applying multiple importance sampling?
+
+ <li class="exercise"><span class="exerciseicon">&#9314;</span> The <a href="../Light_Sources/Light_Sampling.html#BVHLightSampler"><tt>BVHLightSampler</tt></a> is missing a number of features in
+the BVH sampling scheme described by Conty Estevez and Kulla (<a href="Further_Reading.html#cite:Conty2018:bvh">2018</a>),
+including an importance factor specialized for participating media and
+adaptive splitting, where multiple lights may be returned from the sampling
+operation when it is difficult to determine which child node is a better
+choice at the upper levels of the tree.  Read their paper and improve <tt>pbrt</tt>&rsquo;s
+implementation.  What is the change in Monte Carlo efficiency?  Does the
+reduction in error justify the increase in computation?
+
+ <li class="exercise"><span class="exerciseicon">&#9314;</span> Another shortcoming of the current <a href="../Light_Sources/Light_Sampling.html#BVHLightSampler"><tt>BVHLightSampler</tt></a>
+implementation is that it does not account for the BSDF at the reference
+point but instead effectively assumes a diffuse surface.  Read the paper by
+Liu et&nbsp;al. (<a href="Further_Reading.html#cite:Liu2019">2019b</a>) and improve the BVH light sampler&rsquo;s
+implementation by using their approach to account for this factor.  Measure
+the change in MSE for a variety of scenes with this improvement.
+
+</ol><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Light_Transport_I_Surface_Reflection.html">Light Transport I: Surface Reflection</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2069 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Point Lights</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources.html">Light Sources</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Point Lights</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources/Light_Interface.html">(Previous: Light Interface)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:point-lights"></span><h2>12.2 Point Lights</h2><p>
+
+
+
+</p>
+<p>A number of interesting lights can be described in terms of emission from a
+single point in space with some possibly angularly varying distribution of
+outgoing light.  This section describes the implementation of a number of
+them, starting with <a href="#PointLight"><tt>PointLight</tt></a>, which represents an isotropic point
+light source that emits the same amount of light in all directions.
+(Figure&nbsp;<a href="#fig:light-pointlight">12.3</a> shows a scene rendered with a point light
+source.)  Building on this base, a number of more complex lights based on
+point sources will then be introduced, including spotlights and a light
+that projects an image into the scene.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:light-pointlight"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+<div class="figure-row">
+<img src="dragon-point-light.png" style="max-width: 100%; height: auto;" width=1500 height=1000>
+</div>
+<p>
+
+</p>
+<figcaption class="caption">Figure 12.3: Scene Rendered with a Point Light
+Source. <span class="legend">  Notice the hard shadow boundaries from this type of light.
+<em>(Dragon model courtesy of the Stanford Computer Graphics Laboratory.)</em>
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PointLightDefinition-0"></span><div class="fragmentname">&lt;&lt;PointLight Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="PointLight"></span>PointLight : public <a href="../Light_Sources/Light_Interface.html#LightBase" class="code">LightBase</a> {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PointLightPublicMethods-0">PointLight Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1637" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1637"><i></i></a><div id="fragbit-1637" class="collapse"><div class="fragmentcode">       PointLight(<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> <a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>, <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> <a href="../Light_Sources/Light_Interface.html#LightBase::mediumInterface" class="code">mediumInterface</a>,
+                  <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> <a href="#PointLight::I" class="code">I</a>, Float <a href="#PointLight::scale" class="code">scale</a>)
+           : LightBase(<a href="../Light_Sources/Light_Interface.html#LightType::DeltaPosition" class="code">LightType</a>::DeltaPosition, <a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>, <a href="../Light_Sources/Light_Interface.html#LightBase::mediumInterface" class="code">mediumInterface</a>),
+             <a href="#PointLight::I" class="code">I</a>(<a href="../Light_Sources/Light_Interface.html#LightBase::LookupSpectrum" class="code">LookupSpectrum</a>(<a href="#PointLight::I" class="code">I</a>)), <a href="#PointLight::scale" class="code">scale</a>(<a href="#PointLight::scale" class="code">scale</a>) {}
+       static PointLight *Create(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>,
+                                 <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium, const ParameterDictionary &amp;parameters,
+                                 const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace, const FileLoc *loc,
+                                 Allocator alloc);
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const;
+       void Preprocess(const <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> &amp;sceneBounds) {}
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;LightLeSample&gt; SampleLe(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u1, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u2,
+                                              <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda,
+                                              Float time) const;
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;, Float *pdfPos, Float *pdfDir) const;
+       
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, Float *pdfPos, Float *pdfDir) const {
+           LOG_FATAL("Shouldn't be called for non-area lights");
+       }
+       
+       pstd::optional&lt;<a href="../Light_Sources/Light_Sampling.html#LightBounds" class="code">LightBounds</a>&gt; Bounds() const;
+       
+       std::string ToString() const;
+       pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt;
+       SampleLi(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a> ctx, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda,
+                bool allowIncompletePDF) const {
+           <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a> = <a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(0, 0, 0));
+           <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a> - ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>());
+           <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Li = <a href="#PointLight::scale" class="code">scale</a> * <a href="#PointLight::I" class="code">I</a>-&gt;Sample(lambda) /
+                                <a href="../Geometry_and_Transformations/Points.html#DistanceSquared" class="code">DistanceSquared</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>, ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>());
+           return <a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>(Li, wi, 1, <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>, &amp;<a href="../Light_Sources/Light_Interface.html#LightBase::mediumInterface" class="code">mediumInterface</a>));
+       }
+       Float PDF_Li(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a>, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>, bool allowIncompletePDF) const {
+           return 0;
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-PointLightPrivateMembers-0">PointLight Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1638" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1638"><i></i></a><div id="fragbit-1638" class="collapse"><div class="fragmentcode">       const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum" class="code">DenselySampledSpectrum</a> *I;
+       Float scale;</div></div>
+};</div><p>
+
+
+</p>
+<p><a href="#PointLight"><tt>PointLight</tt></a>s are positioned at the origin in the light coordinate
+system. To place them elsewhere, the rendering-from-light transformation
+should be set accordingly.  In addition to passing the common light
+parameters to <a href="../Light_Sources/Light_Interface.html#LightBase"><tt>LightBase</tt></a>, the constructor supplies
+<a href="../Light_Sources/Light_Interface.html#LightType::DeltaPosition"><tt>LightType::DeltaPosition</tt></a> for its light type, since point lights
+represent singularities that only emit light from a single position.  The
+constructor also stores the light&rsquo;s intensity
+(Section&nbsp;<a href="../Radiometry,_Spectra,_and_Color/Radiometry.html#sec:basic-radiometric-quantities">4.1.1</a>).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PointLightPublicMethods-0"></span><div class="fragmentname">&lt;&lt;PointLight Public Methods&gt;&gt;=&nbsp;<a href="#fragment-PointLightPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">PointLight(<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> renderFromLight, <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> mediumInterface,
+           <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> I, Float scale)
+    : LightBase(<a href="../Light_Sources/Light_Interface.html#LightType::DeltaPosition" class="code">LightType</a>::DeltaPosition, renderFromLight, mediumInterface),
+      I(<a href="../Light_Sources/Light_Interface.html#LightBase::LookupSpectrum" class="code">LookupSpectrum</a>(I)), scale(scale) {}</div><p>
+
+
+</p>
+<p>As <a href="../Volume_Scattering/Media.html#HomogeneousMedium"><tt>HomogeneousMedium</tt></a> and <tt>GridMedium</tt> did with spectral
+scattering coefficients, <tt>PointLight</tt> uses a
+<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum"><tt>DenselySampledSpectrum</tt></a> rather than a <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum"><tt>Spectrum</tt></a> for the
+spectral intensity, trading off storage for more efficient spectral
+sampling operations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PointLightPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;PointLight Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum" class="code">DenselySampledSpectrum</a> *<span class="anchor" id="PointLight::I"></span>I;
+Float <span class="anchor" id="PointLight::scale"></span>scale;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Strictly speaking, it is incorrect to describe the light arriving at a
+point due to a point light source using units of radiance.  Radiant
+intensity is instead the proper unit for describing emission from a point
+light source, as explained in Section&nbsp;<a href="../Radiometry,_Spectra,_and_Color/Radiometry.html#sec:radiometry">4.1</a>.  In the light
+source interfaces here, however, we will abuse terminology and use
+<tt>SampleLi()</tt> methods to report the illumination arriving at a point
+for all types of light sources, dividing radiant intensity by the squared
+distance to the point&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> to convert units.  In the end, the
+correctness of the computation does not suffer from this fudge, and it
+makes the implementation of light transport algorithms more straightforward
+by not requiring them to use different interfaces for different types of
+lights.
+
+</p>
+<p>Point lights are described by a delta distribution such that they only
+illuminate a receiving point from a single direction.  Thus, the sampling
+problem is deterministic and makes no use of the random sample <tt>u</tt>.
+We find the light&rsquo;s position <tt>p</tt> in the rendering coordinate system
+and sample its spectral emission at the provided wavelengths.  Note that a
+PDF value of&nbsp;1 is returned in the <a href="../Light_Sources/Light_Interface.html#LightLiSample"><tt>LightLiSample</tt></a>: there is implicitly
+a Dirac delta distribution in both the radiance and the PDF that cancels
+when the Monte Carlo estimator is evaluated.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PointLightPublicMethods-1"></span><div class="fragmentname">&lt;&lt;PointLight Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-PointLightPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-PointLightPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt;
+<span class="anchor" id="PointLight::SampleLi"></span>SampleLi(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a> ctx, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda,
+         bool allowIncompletePDF) const {
+    <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a> = <a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(0, 0, 0));
+    <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a> - ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>());
+    <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Li = <a href="#PointLight::scale" class="code">scale</a> * <a href="#PointLight::I" class="code">I</a>-&gt;Sample(lambda) /
+                         <a href="../Geometry_and_Transformations/Points.html#DistanceSquared" class="code">DistanceSquared</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>, ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>());
+    return <a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>(Li, wi, 1, <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>, &amp;<a href="../Light_Sources/Light_Interface.html#LightBase::mediumInterface" class="code">mediumInterface</a>));
+}</div><p>
+
+
+</p>
+<p>Due to the delta distribution, the <tt>PointLight::PDF_Li()</tt> method
+returns&nbsp;0. This value reflects the fact that there is no chance for some other
+sampling process to randomly generate a direction that would intersect an
+infinitesimal light source.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PointLightPublicMethods-2"></span><div class="fragmentname">&lt;&lt;PointLight Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-PointLightPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="PointLight::PDF_Li"></span>PDF_Li(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a>, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>, bool allowIncompletePDF) const {
+    return 0;
+}</div><p>
+
+
+</p>
+<p>The total power emitted by the light source can be found by integrating the
+intensity over the entire sphere of directions:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="31.224ex" height="5.676ex" style="vertical-align: -2.338ex;" viewBox="0 -1437.2 13443.4 2443.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Phi equals integral Underscript script upper S squared Endscripts upper I normal d omega Subscript Baseline equals upper I integral Underscript script upper S squared Endscripts normal d omega Subscript Baseline equals 4 pi upper I period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3A6" d="M665 341c0 -101 -111 -194 -266 -206v-56c0 -35 0 -48 95 -48h33v-31c-36 3 -129 3 -170 3s-133 0 -169 -3v31h33c95 0 95 14 95 48v56c-149 15 -260 104 -260 207c0 99 107 191 260 206v56c0 35 0 48 -95 48h-33v31c36 -3 129 -3 170 -3s133 0 169 3v-31h-33 c-95 0 -95 -14 -95 -48v-56c152 -12 266 -103 266 -207zM316 158v367c-150 -20 -160 -132 -160 -184c0 -62 18 -164 160 -183zM565 342c0 76 -28 168 -166 184v-369c151 18 166 125 166 185Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-53" d="M499 186c0 -110 -80 -208 -197 -208c-89 0 -153 36 -184 70c-33 -53 -36 -57 -36 -57c-7 -11 -8 -13 -15 -13c-11 0 -11 7 -11 24v200c0 18 0 25 13 25c3 0 11 0 12 -10c1 -36 4 -100 62 -154c53 -49 129 -54 158 -54c84 0 134 72 134 143c0 33 -10 66 -31 92 c-28 37 -58 44 -85 51c-70 17 -121 29 -132 33c-78 27 -131 100 -131 183c0 106 84 194 195 194c89 0 130 -41 160 -70l35 57c7 12 8 13 15 13c11 0 11 -7 11 -24v-201c0 -19 0 -24 -13 -24c-11 0 -11 6 -12 12c-6 45 -28 209 -195 209c-78 0 -132 -61 -132 -131 c0 -58 39 -112 101 -127l128 -31c84 -20 150 -102 150 -202Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43C" d="M497 671c0 -19 -8 -19 -32 -19c-79 0 -82 -10 -91 -46l-134 -533c-2 -7 -4 -15 -4 -23c0 -11 4 -15 25 -17c20 -2 25 -2 43 -2c22 0 30 0 30 -12c0 -19 -12 -19 -20 -19l-134 3l-131 -3c-3 0 -15 0 -15 11c0 20 9 20 32 20c79 0 82 10 91 47l135 539c2 9 2 11 2 16 c0 19 -27 19 -69 19c-19 0 -28 0 -28 11c0 20 13 20 20 20l133 -3l132 3c4 0 15 0 15 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-3A6" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1000" y="0"></use>
+<g transform="translate(2056,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-53" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="685" y="483"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="3649" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="4313" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="4869" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="5770" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="6826" y="0"></use>
+<g transform="translate(7490,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-53" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="685" y="483"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="9083" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="9639" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="10540" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="11596" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="12096" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="12667" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="13164" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+Radiant power is returned by the <tt>Phi()</tt> method and not the luminous
+power that may have been used to specify the light source.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PointLightMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;PointLight Method Definitions&gt;&gt;=&nbsp;<a href="Light_Sampling.html#fragment-PointLightMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="PointLight::Phi"></span>PointLight::Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const {
+    return 4 * <a href="../Utilities/Mathematical_Infrastructure.html#Pi" class="code">Pi</a> * <a href="#PointLight::scale" class="code">scale</a> * <a href="#PointLight::I" class="code">I</a>-&gt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum::Sample" class="code">Sample</a>(lambda);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Spotlights"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:spotlight"></span><span id="Spotlights"></span><h3>12.2.1  Spotlights</h3><p>
+
+
+
+</p>
+<p>Spotlights are a handy variation on point lights; rather than shining
+illumination in all directions, they emit light in a cone of directions
+from their position.  For simplicity, we will define the spotlight in the
+light coordinate system to always be at position <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg> and pointing
+down the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.894ex" height="2.176ex" style="vertical-align: -0.505ex;" viewBox="0 -719.6 1246 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">plus z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="778" y="0"></use>
+</g>
+</svg> axis.  To place or orient it elsewhere in the scene, the
+rendering-from-light transformation should be set accordingly.
+Figure&nbsp;<a href="#fig:light-spotlight">12.4</a> shows a rendering of the same scene as
+Figure&nbsp;<a href="#fig:light-pointlight">12.3</a>, illuminated with a spotlight
+instead of a point light.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:light-spotlight"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+<div class="figure-row">
+<img src="dragon-spot-light.png" style="max-width: 100%; height: auto;" width=1500 height=1000>
+</div>
+<p>
+
+</p>
+<figcaption class="caption">Figure 12.4: Scene Rendered with a Spotlight. <span class="legend">  The
+spotlight cone smoothly cuts off illumination past a user-specified angle
+from the light&rsquo;s central axis.
+<em>(Dragon model courtesy of the Stanford Computer Graphics Laboratory.)</em>
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpotLightDefinition-0"></span><div class="fragmentname">&lt;&lt;SpotLight Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="SpotLight"></span>SpotLight : public <a href="../Light_Sources/Light_Interface.html#LightBase" class="code">LightBase</a> {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SpotLightPublicMethods-0">SpotLight Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1639" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1639"><i></i></a><div id="fragbit-1639" class="collapse"><div class="fragmentcode">       SpotLight(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>, const <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> &amp;m,
+                 <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> I, Float scale, Float totalWidth, Float falloffStart);
+       
+       static SpotLight *Create(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium,
+                                const ParameterDictionary &amp;parameters,
+                                const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace, const FileLoc *loc,
+                                Allocator alloc);
+       
+       void Preprocess(const <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> &amp;sceneBounds) {}
+       
+       PBRT_CPU_GPU
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> I(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a>) const;
+       
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const;
+       
+       PBRT_CPU_GPU
+       Float PDF_Li(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a>, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>, bool allowIncompletePDF) const;
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;LightLeSample&gt; SampleLe(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u1, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u2,
+                                              <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda,
+                                              Float time) const;
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;, Float *pdfPos, Float *pdfDir) const;
+       
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, Float *pdfPos, Float *pdfDir) const {
+           LOG_FATAL("Shouldn't be called for non-area lights");
+       }
+       
+       pstd::optional&lt;<a href="../Light_Sources/Light_Sampling.html#LightBounds" class="code">LightBounds</a>&gt; Bounds() const;
+       
+       std::string ToString() const;
+       pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt;
+       SampleLi(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a> ctx, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda,
+                bool allowIncompletePDF) const {
+           <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a> = <a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(0, 0, 0));
+           <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a> - ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>());
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputeincidentradiancemonoLiformonoSpotLight-0">Compute incident radiance <tt>Li</tt> for <tt>SpotLight</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1640" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1640"><i></i></a><div id="fragbit-1640" class="collapse"><div class="fragmentcode">              <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wLight = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>.ApplyInverse(-wi));
+              <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Li = <a href="#SpotLight::I" class="code">I</a>(wLight, lambda) / <a href="../Geometry_and_Transformations/Points.html#DistanceSquared" class="code">DistanceSquared</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>, ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>());</div></div>
+           if (!Li) return {};
+           return <a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>(Li, wi, 1, <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>, &amp;<a href="../Light_Sources/Light_Interface.html#LightBase::mediumInterface" class="code">mediumInterface</a>));
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SpotLightPrivateMembers-0">SpotLight Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1641" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1641"><i></i></a><div id="fragbit-1641" class="collapse"><div class="fragmentcode">       const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum" class="code">DenselySampledSpectrum</a> *Iemit;
+       Float scale, cosFalloffStart, cosFalloffEnd;</div></div>
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fig:spotlight"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha12f05.svg" title=""><img src="pha12f05.svg" width=672 height=201 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 12.5: <span class="legend"> Spotlights are defined by two angles,
+falloffStart and totalWidth, that are measured with respect to
+the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> axis in light space.  Objects inside the inner cone
+of angles, up to <em>falloffStart</em>, are fully illuminated by the light.
+The directions between <em>falloffStart</em> and <em>totalWidth</em> are a
+transition zone that ramps down from full illumination to no illumination,
+such that points outside the <em>totalWidth</em> cone are not illuminated at
+all.  The cosine of the angle <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 469.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+</g>
+</svg> between the vector to a point&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> and the
+spotlight axis can easily be computed with a dot product.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>There is not anything interesting in the <a href="#SpotLight"><tt>SpotLight</tt></a> constructor, so it
+is not included here.  It is given angles that set the extent of the
+<a href="#SpotLight"><tt>SpotLight</tt></a>&rsquo;s cone&mdash;the overall angular width of the cone and the
+angle at which falloff starts (Figure&nbsp;<a href="#fig:spotlight">12.5</a>)&mdash;but it stores
+the cosines of these angles, which are more useful to have at hand in the
+<tt>SpotLight</tt>&rsquo;s methods.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpotLightPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;SpotLight Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum" class="code">DenselySampledSpectrum</a> *<span class="anchor" id="SpotLight::Iemit"></span>Iemit;
+Float <span class="anchor" id="SpotLight::scale"></span>scale, <span class="anchor" id="SpotLight::cosFalloffStart"></span>cosFalloffStart, <span class="anchor" id="SpotLight::cosFalloffEnd"></span>cosFalloffEnd;</div><p>
+
+
+</p>
+<p>The <a href="#SpotLight::SampleLi"><tt>SpotLight::SampleLi()</tt></a> method is of similar form to that of
+<a href="#PointLight::SampleLi"><tt>PointLight::SampleLi()</tt></a>, though an unset sample is returned if
+the receiving point is outside of the spotlight&rsquo;s outer cone and thus
+receives zero radiance.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpotLightPublicMethods-0"></span><div class="fragmentname">&lt;&lt;SpotLight Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt;
+<span class="anchor" id="SpotLight::SampleLi"></span>SampleLi(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a> ctx, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda,
+         bool allowIncompletePDF) const {
+    <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a> = <a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(0, 0, 0));
+    <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a> - ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>());
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputeincidentradiancemonoLiformonoSpotLight-0">Compute incident radiance <tt>Li</tt> for <tt>SpotLight</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1642" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1642"><i></i></a><div id="fragbit-1642" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wLight = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>.ApplyInverse(-wi));
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Li = <a href="#SpotLight::I" class="code">I</a>(wLight, lambda) / <a href="../Geometry_and_Transformations/Points.html#DistanceSquared" class="code">DistanceSquared</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>, ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>());</div></div>
+    if (!Li) return {};
+    return <a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>(Li, wi, 1, <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>, &amp;<a href="../Light_Sources/Light_Interface.html#LightBase::mediumInterface" class="code">mediumInterface</a>));
+}</div><p>
+
+
+</p>
+<p>The <tt>I()</tt> method computes the distribution of light accounting
+for the spotlight cone.  This computation is encapsulated in a separate
+method since other <tt>SpotLight</tt> methods will need to perform it as
+well.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputeincidentradiancemonoLiformonoSpotLight-0"></span><div class="fragmentname">&lt;&lt;Compute incident radiance <tt>Li</tt> for <tt>SpotLight</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wLight = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>.ApplyInverse(-wi));
+<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Li = <a href="#SpotLight::I" class="code">I</a>(wLight, lambda) / <a href="../Geometry_and_Transformations/Points.html#DistanceSquared" class="code">DistanceSquared</a>(<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>, ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>());</div><p>
+
+
+</p>
+<p>As with point lights, the <tt>SpotLight</tt>&rsquo;s
+<tt>PDF_Li()</tt><span class="anchor" id="SpotLight::PDF_Li"></span> method always returns
+zero.  It is not included here.
+
+</p>
+<p>
+
+</p>
+<p>To compute the spotlight&rsquo;s strength for a direction leaving the light, the first
+step is to compute the cosine of the angle between that direction
+and the vector along the center of the spotlight&rsquo;s
+cone.  Because the spotlight is oriented to point down the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.894ex" height="2.176ex" style="vertical-align: -0.505ex;" viewBox="0 -719.6 1246 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">plus z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="778" y="0"></use>
+</g>
+</svg> axis, the
+<a href="../Geometry_and_Transformations/Spherical_Geometry.html#CosTheta"><tt>CosTheta()</tt></a> function can be used to do so.
+
+</p>
+<p>The <tt>SmoothStep()</tt> function is then used to modulate the emission
+according to the cosine of the angle: it returns&nbsp;0 if the provided value is
+below <tt>cosFalloffEnd</tt>, 1 if it is above <tt>cosFalloffStart</tt>, and
+it interpolates between&nbsp;0 and&nbsp;1 for intermediate values using a cubic curve.
+(To understand its usage, keep in mind that for <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="8.746ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3765.7 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta element-of left-bracket 0 comma pi right-bracket</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2208" d="M587 -23c0 -11 -9 -20 -20 -20h-193c-162 0 -293 131 -293 293s131 293 293 293h193c11 0 20 -9 20 -20s-9 -20 -20 -20h-193c-133 0 -242 -103 -252 -233h445c27 0 27 -40 0 -40h-445c10 -130 119 -233 252 -233h193c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2208" x="747" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="1692" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1971" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2471" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="2916" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="3487" y="0"></use>
+</g>
+</svg>, as is
+the case here, if <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.181ex" height="2.343ex" style="vertical-align: -0.338ex;" viewBox="0 -863.1 2661.2 1008.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta greater-than theta prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3E" d="M688 230l-581 -275c-25 -11 -42 25 -18 36l548 259l-548 259c-24 11 -7 47 18 36l581 -275c17 -8 17 -32 0 -40Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3E" x="747" y="0"></use>
+<g transform="translate(1803,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="663" y="513"></use>
+</g>
+</g>
+</svg>, then <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="13.177ex" height="2.343ex" style="vertical-align: -0.338ex;" viewBox="0 -863.1 5673.5 1008.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">cosine theta less-than cosine theta prime</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3C" d="M689 -9c24 -11 7 -47 -18 -36l-581 275c-17 8 -17 32 0 40l581 275c25 11 42 -25 18 -36l-548 -259Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNVARIANTS-2032" d="M340 496c0 -10 -3 -20 -8 -28l-227 -372h-38l171 424c6 15 26 29 48 29c30 0 54 -24 54 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="1506" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3C" x="2253" y="0"></use>
+<g transform="translate(3309,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(4815,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNVARIANTS-2032" x="663" y="513"></use>
+</g>
+</g>
+</svg>.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpotLightMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;SpotLight Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-SpotLightMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="SpotLight::I"></span>SpotLight::I(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const {
+    return <a href="../Utilities/Mathematical_Infrastructure.html#SmoothStep" class="code">SmoothStep</a>(<a href="../Geometry_and_Transformations/Spherical_Geometry.html#CosTheta" class="code">CosTheta</a>(w), <a href="#SpotLight::cosFalloffEnd" class="code">cosFalloffEnd</a>, <a href="#SpotLight::cosFalloffStart" class="code">cosFalloffStart</a>) *
+           <a href="#SpotLight::scale" class="code">scale</a> * <a href="#SpotLight::Iemit" class="code">Iemit</a>-&gt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum::Sample" class="code">Sample</a>(lambda);
+}</div><p>
+
+
+</p>
+<p>To compute the power emitted by a spotlight, it is necessary to integrate the
+falloff function over the sphere.  In spherical coordinates, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 469.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+</g>
+</svg> and
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.385ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 596.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">phi</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D719" d="M573 262c0 -134 -145 -269 -306 -274l-38 -149c-3 -14 -9 -38 -11 -40c-3 -3 -5 -4 -10 -4s-12 1 -12 11c0 3 10 41 22 88l23 94c-122 7 -192 86 -192 181c0 136 147 269 306 274l58 231c4 17 5 20 15 20c12 0 12 -10 12 -10l-3 -14l-56 -227c139 -10 192 -102 192 -181z M349 421c-149 -13 -235 -153 -235 -273c0 -100 72 -135 132 -138zM508 283c0 88 -57 134 -133 138l-103 -411c150 12 236 155 236 273Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D719" x="0" y="0"></use>
+</g>
+</svg> are separable, so we just need to integrate over <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 469.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+</g>
+</svg> and scale
+the result by <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.487ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1071 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 pi</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="500" y="0"></use>
+</g>
+</svg>.  For the part that lies inside the inner cone of full
+power, we have
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="29.825ex" height="6.343ex" style="vertical-align: -2.338ex;" viewBox="0 -1724.2 12841.2 2730.8" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">integral Subscript 0 Superscript theta Subscript normal s normal t normal a normal r normal t Baseline Baseline sine theta normal d theta equals 1 minus cosine theta Subscript normal s normal t normal a normal r normal t Baseline period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-74" d="M332 124c0 -64 -28 -135 -99 -135c-36 0 -129 12 -129 135v276h-85v22c98 4 128 111 129 193h25v-184h143v-31h-143v-278c0 -17 0 -108 67 -108c37 0 67 38 67 112v55h25v-57Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-61" d="M483 89c0 -81 -61 -95 -82 -95c-47 0 -74 42 -78 82c-19 -47 -65 -87 -131 -87c-63 0 -160 25 -160 106c0 44 25 96 100 130c63 30 133 33 184 36v37c0 89 -57 128 -106 128c-32 0 -81 -11 -108 -46c46 -1 51 -34 51 -46c0 -26 -18 -46 -46 -46c-26 0 -46 17 -46 47 c0 66 69 113 151 113c48 0 98 -16 137 -55c36 -37 36 -76 36 -118v-200c0 -5 4 -50 37 -50c11 0 36 6 36 64v56h25v-56zM316 140v100c-165 -6 -207 -89 -207 -144c0 -50 41 -85 90 -85c45 0 117 34 117 129Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6E" d="M535 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c58 0 91 -20 105 -37 c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(1054,1088)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+<g transform="translate(331,-111)">
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-73" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-74" x="394" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-61" x="784" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-72" x="1284" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-74" x="1677" y="0"></use>
+</g>
+</g>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30" x="812" y="-1270"></use>
+<g transform="translate(2909,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-73"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-69" x="394" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6E" x="673" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="4306" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="4942" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="5498" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="6246" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="7302" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="8025" y="0"></use>
+<g transform="translate(9025,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(10531,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+<g transform="translate(469,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-73" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="394" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-61" x="784" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="1284" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="1677" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="12562" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+The falloff region works out simply, thanks in part to <a href="../Utilities/Mathematical_Infrastructure.html#SmoothStep"><tt>SmoothStep()</tt></a> being a polynomial.
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="65.169ex" height="6.676ex" style="vertical-align: -2.671ex;" viewBox="0 -1724.2 28058.7 2874.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">integral Subscript theta Subscript normal s normal t normal a normal r normal t Baseline Superscript theta Subscript normal e normal n normal d Baseline Baseline normal s normal m normal o normal o normal t normal h normal s normal t normal e normal p left-parenthesis cosine theta comma theta Subscript normal e normal n normal d Baseline comma theta Subscript normal s normal t normal a normal r normal t Baseline right-parenthesis sine theta normal d theta equals StartFraction cosine theta Subscript normal s normal t normal a normal r normal t Baseline minus cosine theta Subscript normal e normal n normal d Baseline Over 2 EndFraction period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6E" d="M535 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c58 0 91 -20 105 -37 c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-74" d="M332 124c0 -64 -28 -135 -99 -135c-36 0 -129 12 -129 135v276h-85v22c98 4 128 111 129 193h25v-184h143v-31h-143v-278c0 -17 0 -108 67 -108c37 0 67 38 67 112v55h25v-57Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-61" d="M483 89c0 -81 -61 -95 -82 -95c-47 0 -74 42 -78 82c-19 -47 -65 -87 -131 -87c-63 0 -160 25 -160 106c0 44 25 96 100 130c63 30 133 33 184 36v37c0 89 -57 128 -106 128c-32 0 -81 -11 -108 -46c46 -1 51 -34 51 -46c0 -26 -18 -46 -46 -46c-26 0 -46 17 -46 47 c0 66 69 113 151 113c48 0 98 -16 137 -55c36 -37 36 -76 36 -118v-200c0 -5 4 -50 37 -50c11 0 36 6 36 64v56h25v-56zM316 140v100c-165 -6 -207 -89 -207 -144c0 -50 41 -85 90 -85c45 0 117 34 117 129Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-72" d="M364 381c0 -32 -25 -44 -43 -44c-22 0 -43 15 -43 43c0 26 20 38 23 39c-2 1 -4 1 -11 1c-76 0 -118 -89 -118 -188v-154c0 -36 2 -47 76 -47h21v-31c-40 3 -87 3 -127 3l-114 -3v31c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l139 11v-110c14 43 50 110 123 110 c43 0 74 -29 74 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6D" d="M813 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31 c67 0 78 0 78 45v268c0 49 -8 56 -78 56v31l141 11v-105c28 62 75 105 148 105c45 0 119 -11 133 -98c17 38 61 98 145 98c58 0 91 -20 105 -37c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-68" d="M535 0l-112 3l-113 -3v31c67 0 78 0 78 45v233c0 57 -11 111 -74 111c-64 0 -135 -56 -135 -160v-184c0 -45 11 -45 78 -45v-31l-112 3l-113 -3v31c67 0 78 0 78 45v520c0 49 -8 56 -78 56v31l144 11v-348h1c16 36 60 96 144 96c58 0 91 -20 105 -37 c31 -36 31 -67 31 -153v-191c1 -30 26 -30 78 -30v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(1054,1088)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+<g transform="translate(331,-156)">
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-65" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-6E" x="444" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-64" x="1001" y="0"></use>
+</g>
+</g>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+<g transform="translate(331,-111)">
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-73" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-74" x="394" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-61" x="784" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-72" x="1284" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-74" x="1677" y="0"></use>
+</g>
+</g>
+<g transform="translate(2617,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6D" x="394" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="1228" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="1728" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-74" x="2229" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-68" x="2618" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="3175" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-74" x="3569" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-65" x="3959" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="4403" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="7577" y="0"></use>
+<g transform="translate(7967,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="9473" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="9942" y="0"></use>
+<g transform="translate(10388,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+<g transform="translate(469,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-65" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6E" x="444" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="1001" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="12058" y="0"></use>
+<g transform="translate(12504,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+<g transform="translate(469,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-73" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="394" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-61" x="784" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="1284" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="1677" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="14534" y="0"></use>
+<g transform="translate(15090,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-73"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-69" x="394" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6E" x="673" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="16487" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="17123" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="17679" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="18427" y="0"></use>
+<g transform="translate(19205,0)">
+<g transform="translate(397,0)">
+<rect stroke="none" width="8056" height="60" x="0" y="220"></rect>
+<g transform="translate(60,677)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+<g transform="translate(1506,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+<g transform="translate(469,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-73" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="394" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-61" x="784" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-72" x="1284" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-74" x="1677" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3759" y="0"></use>
+<g transform="translate(4759,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+<g transform="translate(6266,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+<g transform="translate(469,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-65" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6E" x="444" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-64" x="1001" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="3778" y="-687"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="27780" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SpotLightMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;SpotLight Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-SpotLightMethodDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="Light_Sampling.html#fragment-SpotLightMethodDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="SpotLight::Phi"></span>SpotLight::Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const {
+    return <a href="#SpotLight::scale" class="code">scale</a> * <a href="#SpotLight::Iemit" class="code">Iemit</a>-&gt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum::Sample" class="code">Sample</a>(lambda) * 2 * <a href="../Utilities/Mathematical_Infrastructure.html#Pi" class="code">Pi</a> *
+           ((1 - <a href="#SpotLight::cosFalloffStart" class="code">cosFalloffStart</a>) + (<a href="#SpotLight::cosFalloffStart" class="code">cosFalloffStart</a> - <a href="#SpotLight::cosFalloffEnd" class="code">cosFalloffEnd</a>) / 2);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#TextureProjectionLights"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:projection-lights"></span><span id="TextureProjectionLights"></span><h3>12.2.2  Texture Projection Lights</h3><p>
+
+
+
+</p>
+<p>Another useful light source acts like a slide projector; it takes an image
+map and projects its image out into the scene.  The <a href="#ProjectionLight"><tt>ProjectionLight</tt></a>
+class uses a projective transformation to project points in the scene onto
+the light&rsquo;s projection plane based on the field of view angle given to the
+constructor (Figure&nbsp;<a href="#fig:projlight">12.6</a>).
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:projlight"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha12f06.svg" title=""><img src="pha12f06.svg" width=355 height=257 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 12.6: The Basic Setting for Projection Light
+Sources. <span class="legend">  A point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> in the light&rsquo;s coordinate system is
+projected onto the plane of the image using the light&rsquo;s projection
+matrix.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>The use of this light in the lighting example scene is shown in
+Figure&nbsp;<a href="#fig:light-projection">12.7</a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:light-projection"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+<div class="figure-row">
+<img src="dragon-projection-light.png" style="max-width: 100%; height: auto;" width=1500 height=1000>
+</div>
+<p>
+
+</p>
+<figcaption class="caption">Figure 12.7: Scene Rendered with a Projection Light
+Using a Grid Image. <span class="legend">  The projection light acts like a slide projector,
+projecting an image onto objects in the scene.
+<em>(Dragon model courtesy of the Stanford Computer Graphics Laboratory.)</em>
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProjectionLightDefinition-0"></span><div class="fragmentname">&lt;&lt;ProjectionLight Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="ProjectionLight"></span>ProjectionLight : public <a href="../Light_Sources/Light_Interface.html#LightBase" class="code">LightBase</a> {
+  public:
+    &lt;&lt;<span class="fragmentname">ProjectionLight Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1643" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1643"><i></i></a><div id="fragbit-1643" class="collapse"><div class="fragmentcode">       ProjectionLight(<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> renderFromLight, <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> medium, <a href="../Utilities/Images.html#Image" class="code">Image</a> image,
+                       const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace, Float scale, Float fov,
+                       Allocator alloc);
+       
+       static ProjectionLight *Create(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;renderFromLight,
+                                      <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium,
+                                      const ParameterDictionary &amp;parameters,
+                                      const FileLoc *loc, Allocator alloc);
+       
+       void Preprocess(const <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> &amp;sceneBounds) {}
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt; SampleLi(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a> ctx, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u,
+                              <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda,
+                              bool allowIncompletePDF) const;
+       PBRT_CPU_GPU
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> I(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;
+       
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const;
+       
+       PBRT_CPU_GPU
+       Float PDF_Li(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a>, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>, bool allowIncompletePDF) const;
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;LightLeSample&gt; SampleLe(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u1, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u2,
+                                              <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda,
+                                              Float time) const;
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;, Float *pdfPos, Float *pdfDir) const;
+       
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, Float *pdfPos, Float *pdfDir) const {
+           LOG_FATAL("Shouldn't be called for non-area lights");
+       }
+       
+       pstd::optional&lt;<a href="../Light_Sources/Light_Sampling.html#LightBounds" class="code">LightBounds</a>&gt; Bounds() const;
+       
+       std::string ToString() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ProjectionLightPrivateMembers-0">ProjectionLight Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1644" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1644"><i></i></a><div id="fragbit-1644" class="collapse"><div class="fragmentcode">       <a href="../Utilities/Images.html#Image" class="code">Image</a> image;
+       const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *imageColorSpace;
+       Float scale;
+       <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2f" class="code">Bounds2f</a> screenBounds;
+       Float hither = 1e-3f;
+       <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> screenFromLight, lightFromScreen;
+       Float A;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>This light could use a <a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#Texture"><tt>Texture</tt></a> to represent the light projection
+distribution so that procedural projection patterns could be used.
+However, having a tabularized representation of the projection function
+makes it easier to sample with probability proportional to the projection
+
+function.
+
+
+Therefore, the
+<a href="../Utilities/Images.html#Image"><tt>Image</tt></a> class is used to specify the projection pattern.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProjectionLightMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;ProjectionLight Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-ProjectionLightMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">ProjectionLight::ProjectionLight(
+        <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> renderFromLight, <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> mediumInterface,
+        <a href="../Utilities/Images.html#Image" class="code">Image</a> im, const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *imageColorSpace, Float scale,
+        Float fov, Allocator alloc)
+    : <a href="../Light_Sources/Light_Interface.html#LightBase" class="code">LightBase</a>(<a href="../Light_Sources/Light_Interface.html#LightType::DeltaPosition" class="code">LightType</a>::DeltaPosition, renderFromLight, mediumInterface),
+      image(std::move(im)), imageColorSpace(imageColorSpace), scale(scale),
+      distrib(alloc) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-monoProjectionLightconstructorimplementation-0"><tt>ProjectionLight</tt> constructor implementation</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1645" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1645"><i></i></a><div id="fragbit-1645" class="collapse"><div class="fragmentcode">       &lt;&lt;<span class="fragmentname"><a href="#fragment-InitializemonoProjectionLightprojectionmatrix-0">Initialize <tt>ProjectionLight</tt> projection matrix</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1646" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1646"><i></i></a><div id="fragbit-1646" class="collapse"><div class="fragmentcode">          Float aspect = Float(<a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x) / Float(<a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y);
+          if (aspect &gt; 1)
+              <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a> = <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2f" class="code">Bounds2f</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(-aspect, -1), <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(aspect, 1));
+          else
+              <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a> = <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2f" class="code">Bounds2f</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(-1, -1/aspect), <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(1, 1/aspect));
+          <a href="#ProjectionLight::screenFromLight" class="code">screenFromLight</a> = <a href="../Cameras_and_Film/Projective_Camera_Models.html#Perspective" class="code">Perspective</a>(fov, <a href="#ProjectionLight::hither" class="code">hither</a>, 1e30f /* yon */);
+          <a href="#ProjectionLight::lightFromScreen" class="code">lightFromScreen</a> = <a href="../Geometry_and_Transformations/Transformations.html#Transform::Inverse" class="code">Inverse</a>(<a href="#ProjectionLight::screenFromLight" class="code">screenFromLight</a>);</div></div>
+       &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputeprojectionimageareamonoA-0">Compute projection image area <tt>A</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1647" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1647"><i></i></a><div id="fragbit-1647" class="collapse"><div class="fragmentcode">          Float opposite = std::tan(<a href="../Utilities/Mathematical_Infrastructure.html#Radians" class="code">Radians</a>(fov) / 2);
+          <a href="#ProjectionLight::A" class="code">A</a> = 4 * <a href="../Utilities/Mathematical_Infrastructure.html#Sqr" class="code">Sqr</a>(opposite) * (aspect &gt; 1 ? aspect : (1 / aspect));</div></div>
+       &lt;&lt;<span class="fragmentname">Compute sampling distribution for <tt>ProjectionLight</tt></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1648" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1648"><i></i></a><div id="fragbit-1648" class="collapse"><div class="fragmentcode"></div></div></div></div>
+}</div><p>
+
+
+</p>
+<p>A color space for the image is stored so that it is possible to convert
+image RGB values to spectra.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProjectionLightPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;ProjectionLight Private Members&gt;&gt;=&nbsp;<a href="#fragment-ProjectionLightPrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Utilities/Images.html#Image" class="code">Image</a> <span class="anchor" id="ProjectionLight::image"></span>image;
+const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *<span class="anchor" id="ProjectionLight::imageColorSpace"></span>imageColorSpace;
+Float <span class="anchor" id="ProjectionLight::scale"></span>scale;</div><p>
+
+
+</p>
+<p>The constructor has more work to do than the ones we have seen so far,
+including initializing a projection matrix and computing the area of the
+projected image on the projection plane.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-monoProjectionLightconstructorimplementation-0"></span><div class="fragmentname">&lt;&lt;<tt>ProjectionLight</tt> constructor implementation&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">&lt;&lt;<span class="fragmentname"><a href="#fragment-InitializemonoProjectionLightprojectionmatrix-0">Initialize <tt>ProjectionLight</tt> projection matrix</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1649" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1649"><i></i></a><div id="fragbit-1649" class="collapse"><div class="fragmentcode">   Float aspect = Float(<a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x) / Float(<a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y);
+   if (aspect &gt; 1)
+       <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a> = <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2f" class="code">Bounds2f</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(-aspect, -1), <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(aspect, 1));
+   else
+       <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a> = <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2f" class="code">Bounds2f</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(-1, -1/aspect), <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(1, 1/aspect));
+   <a href="#ProjectionLight::screenFromLight" class="code">screenFromLight</a> = <a href="../Cameras_and_Film/Projective_Camera_Models.html#Perspective" class="code">Perspective</a>(fov, <a href="#ProjectionLight::hither" class="code">hither</a>, 1e30f /* yon */);
+   <a href="#ProjectionLight::lightFromScreen" class="code">lightFromScreen</a> = <a href="../Geometry_and_Transformations/Transformations.html#Transform::Inverse" class="code">Inverse</a>(<a href="#ProjectionLight::screenFromLight" class="code">screenFromLight</a>);</div></div>
+&lt;&lt;<span class="fragmentname"><a href="#fragment-ComputeprojectionimageareamonoA-0">Compute projection image area <tt>A</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1650" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1650"><i></i></a><div id="fragbit-1650" class="collapse"><div class="fragmentcode">   Float opposite = std::tan(<a href="../Utilities/Mathematical_Infrastructure.html#Radians" class="code">Radians</a>(fov) / 2);
+   <a href="#ProjectionLight::A" class="code">A</a> = 4 * <a href="../Utilities/Mathematical_Infrastructure.html#Sqr" class="code">Sqr</a>(opposite) * (aspect &gt; 1 ? aspect : (1 / aspect));</div></div>
+&lt;&lt;<span class="fragmentname">Compute sampling distribution for <tt>ProjectionLight</tt></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1651" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1651"><i></i></a><div id="fragbit-1651" class="collapse"><div class="fragmentcode"></div></div></div><p>
+
+
+</p>
+<p>First, similar to the <a href="../Cameras_and_Film/Projective_Camera_Models.html#PerspectiveCamera"><tt>PerspectiveCamera</tt></a>, the <a href="#ProjectionLight"><tt>ProjectionLight</tt></a>
+constructor computes a projection matrix and the screen space extent of the
+projection on the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.347ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2302.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z equals 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="745" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1801" y="0"></use>
+</g>
+</svg> plane.
+ 
+</p>
+<span class="anchor" id="fragment-InitializemonoProjectionLightprojectionmatrix-0"></span><div class="fragmentname">&lt;&lt;Initialize <tt>ProjectionLight</tt> projection matrix&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float aspect = Float(<a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x) / Float(<a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y);
+if (aspect &gt; 1)
+    <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a> = <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2f" class="code">Bounds2f</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(-aspect, -1), <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(aspect, 1));
+else
+    <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a> = <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2f" class="code">Bounds2f</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(-1, -1/aspect), <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(1, 1/aspect));
+<a href="#ProjectionLight::screenFromLight" class="code">screenFromLight</a> = <a href="../Cameras_and_Film/Projective_Camera_Models.html#Perspective" class="code">Perspective</a>(fov, <a href="#ProjectionLight::hither" class="code">hither</a>, 1e30f /* yon */);
+<a href="#ProjectionLight::lightFromScreen" class="code">lightFromScreen</a> = <a href="../Geometry_and_Transformations/Transformations.html#Transform::Inverse" class="code">Inverse</a>(<a href="#ProjectionLight::screenFromLight" class="code">screenFromLight</a>);</div><p>
+
+
+</p>
+<p>Since there is no particular need to keep <tt>ProjectionLight</tt>s compact,
+both of the screen&ndash;light transformations are stored explicitly, which makes
+code in the following that uses them more succinct.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProjectionLightPrivateMembers-1"></span><div class="fragmentname">&lt;&lt;ProjectionLight Private Members&gt;&gt;+=&nbsp;<a href="#fragment-ProjectionLightPrivateMembers-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ProjectionLightPrivateMembers-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2f" class="code">Bounds2f</a> <span class="anchor" id="ProjectionLight::screenBounds"></span>screenBounds;
+Float <span class="anchor" id="ProjectionLight::hither"></span>hither = 1e-3f;
+<a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> <span class="anchor" id="ProjectionLight::screenFromLight"></span>screenFromLight, <span class="anchor" id="ProjectionLight::lightFromScreen"></span>lightFromScreen;</div><p>
+
+
+</p>
+<p>For a number of the following methods, we will need the light-space area
+of the image on the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.347ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2302.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z equals 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="745" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1801" y="0"></use>
+</g>
+</svg> plane.  One way to find this is to compute half
+of one of the two rectangle edge lengths using the projection&rsquo;s field of view
+and to use the fact that the plane is a distance of&nbsp;1 from the camera&rsquo;s
+position.  Doubling that gives one edge length and the other can be found
+using a factor based on the aspect ratio; see Figure&nbsp;<a href="#fig:light-space-image-area-z1">12.8</a>.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:light-space-image-area-z1"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha12f08.svg" title=""><img src="pha12f08.svg" width=334 height=257 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 12.8: <span class="legend">
+The first step of computing the light-space area of the image on
+the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.347ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2302.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z equals 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="745" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1801" y="0"></use>
+</g>
+</svg> projection plane is to compute the length <tt>opposite</tt>
+illustrated here.  It is easily found using basic trigonometry.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputeprojectionimageareamonoA-0"></span><div class="fragmentname">&lt;&lt;Compute projection image area <tt>A</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float opposite = std::tan(<a href="../Utilities/Mathematical_Infrastructure.html#Radians" class="code">Radians</a>(fov) / 2);
+<a href="#ProjectionLight::A" class="code">A</a> = 4 * <a href="../Utilities/Mathematical_Infrastructure.html#Sqr" class="code">Sqr</a>(opposite) * (aspect &gt; 1 ? aspect : (1 / aspect));</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProjectionLightPrivateMembers-2"></span><div class="fragmentname">&lt;&lt;ProjectionLight Private Members&gt;&gt;+=&nbsp;<a href="#fragment-ProjectionLightPrivateMembers-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="ProjectionLight::A"></span>A;</div><p>
+
+
+</p>
+<p>The
+<tt>ProjectionLight::SampleLi()</tt><span class="anchor" id="ProjectionLight::SampleLi"></span>
+follows the same form as <a href="#SpotLight::SampleLi"><tt>SpotLight::SampleLi()</tt></a> except that it uses
+the following <tt>I()</tt> method to compute the spectral intensity of the
+projected image.  We will therefore skip over its implementation here.  We
+will also not include the
+<tt>PDF_Li()</tt><span class="anchor" id="ProjectionLight::PDF_Li"></span> method&rsquo;s
+implementation, as it, too, returns&nbsp;0.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>The direction passed to the <tt>I()</tt> method should be normalized and
+already transformed into the light&rsquo;s coordinate system.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProjectionLightMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;ProjectionLight Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ProjectionLightMethodDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ProjectionLightMethodDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="ProjectionLight::I"></span>ProjectionLight::I(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w,
+        const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Discarddirectionsbehindprojectionlight-0">Discard directions behind projection light</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1652" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1652"><i></i></a><div id="fragbit-1652" class="collapse"><div class="fragmentcode">       if (w.z &lt; <a href="#ProjectionLight::hither" class="code">hither</a>)
+           return <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a>(0.f);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ProjectpointontoprojectionplaneandcomputeRGB-0">Project point onto projection plane and compute RGB</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1653" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1653"><i></i></a><div id="fragbit-1653" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> ps = <a href="#ProjectionLight::screenFromLight" class="code">screenFromLight</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(w));
+       if (!<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Inside" class="code">Inside</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(ps.x, ps.y), <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a>))
+           return <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a>(0.f);
+       <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv = <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(<a href="#ProjectionLight::screenBounds" class="code">screenBounds</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Offset" class="code">Offset</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(ps.x, ps.y)));
+       <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGB" class="code">RGB</a> rgb;
+       for (int c = 0; c &lt; 3; ++c)
+           rgb[c] = <a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::LookupNearestChannel" class="code">LookupNearestChannel</a>(uv, c);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ReturnscaledwavelengthsamplescorrespondingtoRGB-0">Return scaled wavelength samples corresponding to RGB</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1654" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1654"><i></i></a><div id="fragbit-1654" class="collapse"><div class="fragmentcode">       <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum" class="code">RGBIlluminantSpectrum</a> s(*<a href="#ProjectionLight::imageColorSpace" class="code">imageColorSpace</a>, ClampZero(rgb));
+       return <a href="#ProjectionLight::scale" class="code">scale</a> * s.<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum::Sample" class="code">Sample</a>(lambda);</div></div>
+}</div><p>
+
+
+</p>
+<p>Because the projective transformation has the property that it projects
+points behind the center of projection to points in front of it, it is
+important to discard points with a negative <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> value.  Therefore, the
+projection code immediately returns no illumination for projection points
+that are behind the hither plane for the projection.  If this check were
+not done, then it would not be possible to know if a projected point was
+originally behind the light (and therefore not illuminated) or in front of
+it.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Discarddirectionsbehindprojectionlight-0"></span><div class="fragmentname">&lt;&lt;Discard directions behind projection light&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (w.z &lt; <a href="#ProjectionLight::hither" class="code">hither</a>)
+    return <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a>(0.f);</div><p>
+
+
+</p>
+<p>After being projected to the projection plane, points with coordinate
+values outside the screen window are discarded.  Points that pass this test
+are transformed to get texture coordinates inside <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.707ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2457.1 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-bracket squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+<g transform="translate(1724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="393" y="513"></use>
+</g>
+</g>
+</svg> for the
+lookup in the image.
+
+</p>
+<p>One thing to note is that a &ldquo;nearest&rdquo; lookup is used rather than, say,
+bilinear interpolation of the image samples.  Although bilinear
+interpolation would lead to smoother results, especially for low-resolution
+image maps, in this way the projection function will exactly match the
+piecewise-constant distribution that is used for importance sampling in the
+light emission sampling
+
+methods.
+
+
+Further, the code here assumes that the image stores red, green, and blue
+in its first three channels; the code that creates <a href="#ProjectionLight"><tt>ProjectionLight</tt></a>s
+ensures that this is so.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProjectpointontoprojectionplaneandcomputeRGB-0"></span><div class="fragmentname">&lt;&lt;Project point onto projection plane and compute RGB&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> ps = <a href="#ProjectionLight::screenFromLight" class="code">screenFromLight</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(w));
+if (!<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Inside" class="code">Inside</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(ps.x, ps.y), <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a>))
+    return <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a>(0.f);
+<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv = <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(<a href="#ProjectionLight::screenBounds" class="code">screenBounds</a>.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2::Offset" class="code">Offset</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>(ps.x, ps.y)));
+<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGB" class="code">RGB</a> rgb;
+for (int c = 0; c &lt; 3; ++c)
+    rgb[c] = <a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::LookupNearestChannel" class="code">LookupNearestChannel</a>(uv, c);</div><p>
+
+
+</p>
+<p>It is important to use an <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum"><tt>RGBIlluminantSpectrum</tt></a> to convert the RGB value to
+spectral samples rather than, say, an <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBUnboundedSpectrum"><tt>RGBUnboundedSpectrum</tt></a>.  This
+ensures that, for example, a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 1 comma 1 comma 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg> RGB value corresponds to
+the color space&rsquo;s illuminant and not a constant spectral distribution.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ReturnscaledwavelengthsamplescorrespondingtoRGB-0"></span><div class="fragmentname">&lt;&lt;Return scaled wavelength samples corresponding to RGB&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum" class="code">RGBIlluminantSpectrum</a> s(*<a href="#ProjectionLight::imageColorSpace" class="code">imageColorSpace</a>, ClampZero(rgb));
+return <a href="#ProjectionLight::scale" class="code">scale</a> * s.<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum::Sample" class="code">Sample</a>(lambda);</div><p>
+
+
+</p>
+<p>The total emitted power is given by integrating radiant intensity over the
+sphere of directions (Equation&nbsp;(<a href="../Radiometry,_Spectra,_and_Color/Radiometry.html#eq:power-from-radiant-intensity">4.2</a>)),
+though here the projection function is tabularized over a planar 2D area.
+Power can thus be computed by integrating over the area of the image and
+applying a change of variables factor <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.936ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2986.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal d omega Subscript slash normal d upper A</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D434" d="M721 20c0 -20 -12 -20 -18 -20c-25 0 -88 3 -113 3c-41 0 -84 -3 -125 -3c0 0 -14 0 -14 11c0 20 10 20 24 20c20 0 72 3 72 33c0 10 -14 146 -16 167h-251c-68 -116 -69 -116 -76 -128c-8 -14 -14 -25 -14 -37c0 -25 24 -33 47 -35c7 0 16 -1 16 -12 c0 -19 -13 -19 -19 -19c-32 0 -67 3 -100 3c-28 0 -59 -3 -86 -3c-8 0 -13 5 -13 11c0 19 9 19 21 20c44 3 83 17 123 84l348 584c6 10 10 17 26 17c17 0 17 -4 19 -24l61 -625c3 -29 3 -36 65 -36c13 0 23 0 23 -11zM528 262l-32 330l-197 -330h229Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="556" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1179" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="1679" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D434" x="2236" y="0"></use>
+</g>
+</svg>:
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="34.882ex" height="5.843ex" style="vertical-align: -2.338ex;" viewBox="0 -1508.9 15018.7 2515.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Phi equals integral Underscript script upper S squared Endscripts upper I left-parenthesis omega Subscript Baseline right-parenthesis normal d omega Subscript Baseline equals integral Underscript upper A Endscripts upper I left-parenthesis normal p Subscript Baseline right-parenthesis StartFraction normal d omega Subscript Baseline Over normal d upper A EndFraction normal d upper A period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3A6" d="M665 341c0 -101 -111 -194 -266 -206v-56c0 -35 0 -48 95 -48h33v-31c-36 3 -129 3 -170 3s-133 0 -169 -3v31h33c95 0 95 14 95 48v56c-149 15 -260 104 -260 207c0 99 107 191 260 206v56c0 35 0 48 -95 48h-33v31c36 -3 129 -3 170 -3s133 0 169 3v-31h-33 c-95 0 -95 -14 -95 -48v-56c152 -12 266 -103 266 -207zM316 158v367c-150 -20 -160 -132 -160 -184c0 -62 18 -164 160 -183zM565 342c0 76 -28 168 -166 184v-369c151 18 166 125 166 185Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE1-222B" d="M943 1268c0 -35 -25 -50 -49 -50c-23 0 -48 16 -48 49c0 25 17 47 50 49c-4 4 -29 23 -60 23c-39 0 -73 -129 -85 -178c-34 -129 -71 -329 -108 -542c-54 -321 -119 -640 -196 -956c-71 -290 -128 -524 -280 -524c-61 0 -111 42 -111 93c0 35 25 50 49 50 c23 0 48 -16 48 -49c0 -25 -17 -47 -49 -49c0 0 25 -23 61 -23c81 0 127 188 145 261c33 139 62 306 88 459c110 654 246 1156 249 1167c55 204 111 313 187 313c55 0 109 -39 109 -93Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-53" d="M499 186c0 -110 -80 -208 -197 -208c-89 0 -153 36 -184 70c-33 -53 -36 -57 -36 -57c-7 -11 -8 -13 -15 -13c-11 0 -11 7 -11 24v200c0 18 0 25 13 25c3 0 11 0 12 -10c1 -36 4 -100 62 -154c53 -49 129 -54 158 -54c84 0 134 72 134 143c0 33 -10 66 -31 92 c-28 37 -58 44 -85 51c-70 17 -121 29 -132 33c-78 27 -131 100 -131 183c0 106 84 194 195 194c89 0 130 -41 160 -70l35 57c7 12 8 13 15 13c11 0 11 -7 11 -24v-201c0 -19 0 -24 -13 -24c-11 0 -11 6 -12 12c-6 45 -28 209 -195 209c-78 0 -132 -61 -132 -131 c0 -58 39 -112 101 -127l128 -31c84 -20 150 -102 150 -202Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43C" d="M497 671c0 -19 -8 -19 -32 -19c-79 0 -82 -10 -91 -46l-134 -533c-2 -7 -4 -15 -4 -23c0 -11 4 -15 25 -17c20 -2 25 -2 43 -2c22 0 30 0 30 -12c0 -19 -12 -19 -20 -19l-134 3l-131 -3c-3 0 -15 0 -15 11c0 20 9 20 32 20c79 0 82 10 91 47l135 539c2 9 2 11 2 16 c0 19 -27 19 -69 19c-19 0 -28 0 -28 11c0 20 13 20 20 20l133 -3l132 3c4 0 15 0 15 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D434" d="M721 20c0 -20 -12 -20 -18 -20c-25 0 -88 3 -113 3c-41 0 -84 -3 -125 -3c0 0 -14 0 -14 11c0 20 10 20 24 20c20 0 72 3 72 33c0 10 -14 146 -16 167h-251c-68 -116 -69 -116 -76 -128c-8 -14 -14 -25 -14 -37c0 -25 24 -33 47 -35c7 0 16 -1 16 -12 c0 -19 -13 -19 -19 -19c-32 0 -67 3 -100 3c-28 0 -59 -3 -86 -3c-8 0 -13 5 -13 11c0 19 9 19 21 20c44 3 83 17 123 84l348 584c6 10 10 17 26 17c17 0 17 -4 19 -24l61 -625c3 -29 3 -36 65 -36c13 0 23 0 23 -11zM528 262l-32 330l-197 -330h229Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-3A6" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1000" y="0"></use>
+<g transform="translate(2056,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+<g transform="translate(574,-898)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-53" x="0" y="0"></use>
+ <use transform="scale(0.574)" xlink:href="#E1-LATINMODERNMAIN-32" x="685" y="483"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="3649" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="4146" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="4536" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="5158" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="5714" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="6271" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="7171" y="0"></use>
+<g transform="translate(8227,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE1-222B" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D434" x="812" y="-1270"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43C" x="9599" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="10097" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="10486" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="11043" y="0"></use>
+<g transform="translate(11599,0)">
+<g transform="translate(120,0)">
+<rect stroke="none" width="1427" height="60" x="0" y="220"></rect>
+<g transform="translate(124,676)">
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="556" y="0"></use>
+</g>
+<g transform="translate(60,-737)">
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D434" x="556" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="13433" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D434" x="13989" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="14740" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProjectionLightMethodDefinitions-2"></span><div class="fragmentname">&lt;&lt;ProjectionLight Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ProjectionLightMethodDefinitions-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="ProjectionLight::Phi"></span>ProjectionLight::Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const {
+    <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> sum(0.f);
+    for (int y = 0; y &lt; <a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y; ++y)
+        for (int x = 0; x &lt; <a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x; ++x) {
+            &lt;&lt;<span class="fragmentname"><a href="#fragment-ComputechangeofvariablesfactormonodwdAforprojectionlightpixel-0">Compute change of variables factor <tt>dwdA</tt> for projection light pixel</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1655" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1655"><i></i></a><div id="fragbit-1655" class="collapse"><div class="fragmentcode">               <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> ps = <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a>.<a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>((x + 0.5f) / image.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x,
+                                                      (y + 0.5f) / image.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y));
+               <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w = <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(<a href="#ProjectionLight::lightFromScreen" class="code">lightFromScreen</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(ps.x, ps.y, 0)));
+               w = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(w);
+               Float dwdA = <a href="../Utilities/Mathematical_Infrastructure.html#Pow" class="code">Pow</a>&lt;3&gt;(<a href="../Geometry_and_Transformations/Spherical_Geometry.html#CosTheta" class="code">CosTheta</a>(w));</div></div>
+            &lt;&lt;<span class="fragmentname"><a href="#fragment-Updatemonosumforprojectionlightpixel-0">Update <tt>sum</tt> for projection light pixel</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1656" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1656"><i></i></a><div id="fragbit-1656" class="collapse"><div class="fragmentcode">               <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGB" class="code">RGB</a> rgb;
+               for (int c = 0; c &lt; 3; ++c)
+                   rgb[c] = image.<a href="../Utilities/Images.html#Image::GetChannel" class="code">GetChannel</a>({x, y}, c);
+               <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum" class="code">RGBIlluminantSpectrum</a> s(*<a href="#ProjectionLight::imageColorSpace" class="code">imageColorSpace</a>, ClampZero(rgb));
+               sum += s.<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum::Sample" class="code">Sample</a>(lambda) * dwdA;</div></div>
+        }
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Returnfinalpowerforprojectionlight-0">Return final power for projection light</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1657" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1657"><i></i></a><div id="fragbit-1657" class="collapse"><div class="fragmentcode">       return <a href="#ProjectionLight::scale" class="code">scale</a> * <a href="#ProjectionLight::A" class="code">A</a> * sum / (<a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x * <a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y);</div></div>
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Recall from Section&nbsp;<a href="../Radiometry,_Spectra,_and_Color/Working_with_Radiometric_Integrals.html#sec:radiometric-area-integrals">4.2.3</a> that differential
+area <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.036ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1307 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal d upper A Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D434" d="M721 20c0 -20 -12 -20 -18 -20c-25 0 -88 3 -113 3c-41 0 -84 -3 -125 -3c0 0 -14 0 -14 11c0 20 10 20 24 20c20 0 72 3 72 33c0 10 -14 146 -16 167h-251c-68 -116 -69 -116 -76 -128c-8 -14 -14 -25 -14 -37c0 -25 24 -33 47 -35c7 0 16 -1 16 -12 c0 -19 -13 -19 -19 -19c-32 0 -67 3 -100 3c-28 0 -59 -3 -86 -3c-8 0 -13 5 -13 11c0 19 9 19 21 20c44 3 83 17 123 84l348 584c6 10 10 17 26 17c17 0 17 -4 19 -24l61 -625c3 -29 3 -36 65 -36c13 0 23 0 23 -11zM528 262l-32 330l-197 -330h229Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D434" x="556" y="0"></use>
+</g>
+</svg> is converted to differential solid angle <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.738ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1179 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal d omega Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-64" d="M527 0l-147 -11v66c-25 -32 -70 -66 -134 -66c-114 0 -212 99 -212 226c0 129 105 227 223 227c54 0 97 -26 126 -62v216c0 49 -8 56 -78 56v31l144 11v-607c0 -49 8 -56 78 -56v-31zM380 118v205c0 18 0 20 -11 37c-31 45 -73 60 -108 60c-54 0 -92 -33 -113 -64 c-29 -45 -31 -105 -31 -142c0 -41 3 -98 29 -139c24 -38 60 -64 105 -64c43 0 88 22 118 70c11 17 11 19 11 37Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-64" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="556" y="0"></use>
+</g>
+</svg> by
+multiplying by a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.589ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1975.7 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">cosine theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="1506" y="0"></use>
+</g>
+</svg> factor and dividing by the squared distance.
+Because the plane we are integrating over is at <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.347ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2302.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z equals 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="745" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1801" y="0"></use>
+</g>
+</svg>, the distance from
+the origin to a point on the plane is equal to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3143.3 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1 slash cosine theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="500" y="0"></use>
+<g transform="translate(1167,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="2673" y="0"></use>
+</g>
+</svg> and
+thus the aggregate factor is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.643ex" height="2.509ex" style="vertical-align: -0.338ex;" viewBox="0 -934.9 2429.6 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">cosine cubed theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-33" x="1894" y="513"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="1960" y="0"></use>
+</g>
+</svg>; see Figure&nbsp;<a href="#fig:projection-light-power">12.9</a>.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:projection-light-power"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha12f09.svg" title=""><img src="pha12f09.svg" width=334 height=257 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 12.9: <span class="legend">
+To find the power of a point light source, we generally integrate
+radiant intensity over directions around the light.  For the
+<a href="#ProjectionLight"><tt>ProjectionLight</tt></a>, we instead integrate over the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.347ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2302.1 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z equals 1</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="745" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1801" y="0"></use>
+</g>
+</svg> plane, in which
+case we need to account for the change of variables, applying both a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.589ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1975.7 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">cosine theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-63" d="M415 119c0 -10 -32 -130 -166 -130c-116 0 -215 99 -215 227c0 124 92 232 217 232c77 0 153 -39 153 -107c0 -30 -20 -47 -46 -47c-28 0 -46 20 -46 46c0 13 6 43 47 46c-35 36 -98 37 -107 37c-53 0 -135 -42 -135 -205c0 -161 88 -204 141 -204c37 0 102 12 131 105 c2 6 4 10 13 10c3 0 13 0 13 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-73" d="M360 128c0 -72 -46 -139 -161 -139c-21 0 -66 1 -110 43c-18 -19 -18 -21 -20 -23c-19 -19 -20 -20 -25 -20c-11 0 -11 7 -11 24v132c0 18 0 25 13 25c10 0 11 -4 14 -17c19 -85 55 -142 139 -142c78 0 113 40 113 91c0 72 -82 88 -104 92c-72 14 -100 20 -132 46 c-27 22 -43 50 -43 85c0 56 38 123 160 123c15 0 56 0 94 -28c4 3 14 12 17 16c13 12 15 12 20 12c11 0 11 -7 11 -24v-101c0 -19 0 -24 -13 -24c0 0 -11 0 -12 9c-2 31 -7 121 -117 121c-86 0 -112 -41 -112 -76c0 -58 67 -71 123 -82c42 -8 81 -16 114 -48 c12 -12 42 -42 42 -95Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-63"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-6F" x="444" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-73" x="945" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="1506" y="0"></use>
+</g>
+</svg> and a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.428ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 1906.4 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1 slash r squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="500" y="0"></use>
+<g transform="translate(1001,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="638" y="513"></use>
+</g>
+</g>
+</svg> factor.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ComputechangeofvariablesfactormonodwdAforprojectionlightpixel-0"></span><div class="fragmentname">&lt;&lt;Compute change of variables factor <tt>dwdA</tt> for projection light pixel&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> ps = <a href="#ProjectionLight::screenBounds" class="code">screenBounds</a>.<a href="../Monte_Carlo_Integration/Sampling_Using_the_Inversion_Method.html#Lerp" class="code">Lerp</a>(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>((x + 0.5f) / image.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x,
+                                       (y + 0.5f) / image.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y));
+<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w = <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(<a href="#ProjectionLight::lightFromScreen" class="code">lightFromScreen</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(ps.x, ps.y, 0)));
+w = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(w);
+Float dwdA = <a href="../Utilities/Mathematical_Infrastructure.html#Pow" class="code">Pow</a>&lt;3&gt;(<a href="../Geometry_and_Transformations/Spherical_Geometry.html#CosTheta" class="code">CosTheta</a>(w));</div><p>
+
+
+</p>
+<p>For the same reasons as in the <tt>Project()</tt> method, an
+<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum"><tt>RGBIlluminantSpectrum</tt></a> is used to convert each RGB value to spectral
+samples.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Updatemonosumforprojectionlightpixel-0"></span><div class="fragmentname">&lt;&lt;Update <tt>sum</tt> for projection light pixel&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Color.html#RGB" class="code">RGB</a> rgb;
+for (int c = 0; c &lt; 3; ++c)
+    rgb[c] = image.<a href="../Utilities/Images.html#Image::GetChannel" class="code">GetChannel</a>({x, y}, c);
+<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum" class="code">RGBIlluminantSpectrum</a> s(*<a href="#ProjectionLight::imageColorSpace" class="code">imageColorSpace</a>, ClampZero(rgb));
+sum += s.<a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBIlluminantSpectrum::Sample" class="code">Sample</a>(lambda) * dwdA;</div><p>
+
+
+</p>
+<p>The final integrated value includes a factor of the area that was
+integrated over, <tt>A</tt>, and is divided by the total number of pixels.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Returnfinalpowerforprojectionlight-0"></span><div class="fragmentname">&lt;&lt;Return final power for projection light&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">return <a href="#ProjectionLight::scale" class="code">scale</a> * <a href="#ProjectionLight::A" class="code">A</a> * sum / (<a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x * <a href="#ProjectionLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#GoniophotometricDiagramLights"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:gonio-lights"></span><span id="GoniophotometricDiagramLights"></span><h3>12.2.3  Goniophotometric Diagram Lights</h3><p>
+
+
+
+</p>
+<p>A <em>goniophotometric diagram</em> describes the angular distribution of
+luminance from a point light source; it is widely used in illumination
+engineering to characterize lights.
+Figure&nbsp;<a href="#fig:goniophotometric-diagram">12.10</a> shows an example of a
+goniophotometric diagram in two dimensions.  In this section, we will
+implement a light source that uses goniophotometric diagrams encoded in 2D
+image maps to describe the emission distribution lights.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:goniophotometric-diagram"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha12f10.svg" title=""><img src="pha12f10.svg" width=197 height=203 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 12.10: An Example of a Goniophotometric Diagram
+Specifying an Outgoing Light Distribution from a Point Light Source in
+2D. <span class="legend">  The emitted intensity is defined in a fixed set of directions on the
+unit sphere, and the intensity for a given outgoing direction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.446ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 622.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+</g>
+</svg> is found by
+interpolating the intensities of the adjacent samples.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fig:gonio-images"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+<div class="figure-row">
+  <a href="pha12f11.svg" title=""><img src="pha12f11.svg" width=784 height=290 style="max-width: 100%;"></a>
+</div>
+<p>
+
+</p>
+<figcaption class="caption">Figure 12.11: Goniophotometric Diagrams for Real-World
+Light Sources. <span class="legend">
+These images are encoded using an equal-area parameterization (Section&nbsp;<a href="../Geometry_and_Transformations/Spherical_Geometry.html#sec:equi-area-sphere">3.8.3</a>).
+(a)&nbsp;A light that mostly illuminates in
+its up direction, with only a small amount of illumination in the down
+direction. (b)&nbsp;A light that mostly illuminates in the
+down direction. (c)&nbsp;A light that casts illumination
+both above and below.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Figure&nbsp;<a href="#fig:gonio-images">12.11</a> shows a few goniophotometric diagrams encoded
+as image maps and Figure&nbsp;<a href="#fig:light-gonio-renderings">12.12</a> shows a scene
+rendered with a light source that uses one of these images to modulate its
+directional distribution of illumination.  The <a href="#GoniometricLight"><tt>GoniometricLight</tt></a> uses
+the equal-area parameterization of the sphere that was introduced in
+Section&nbsp;<a href="../Geometry_and_Transformations/Spherical_Geometry.html#sec:equi-area-sphere">3.8.3</a>, so the center of the image corresponds
+to the &ldquo;up&rdquo; direction.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:light-gonio-renderings"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+<div class="figure-row">
+<img src="dragon-gonio-light.png" style="max-width: 100%; height: auto;" width=1500 height=1000>
+</div>
+<p>
+
+</p>
+<figcaption class="caption">Figure 12.12: Scene Rendered Using the Goniophotometric Diagram from
+Figure&nbsp;<a href="#fig:gonio-images">12.11</a>(b). <span class="legend"> Even though a point light source is the basis of this light, including the
+directional variation of a realistic light improves the visual realism of
+the rendered image.
+<em>(Dragon model courtesy of the Stanford Computer Graphics Laboratory.)</em>
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GoniometricLightDefinition-0"></span><div class="fragmentname">&lt;&lt;GoniometricLight Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="GoniometricLight"></span>GoniometricLight : public <a href="../Light_Sources/Light_Interface.html#LightBase" class="code">LightBase</a> {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-GoniometricLightPublicMethods-0">GoniometricLight Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1658" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1658"><i></i></a><div id="fragbit-1658" class="collapse"><div class="fragmentcode">       GoniometricLight(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;renderFromLight,
+                        const <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> &amp;mediumInterface, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> I,
+                        Float <a href="#GoniometricLight::scale" class="code">scale</a>, <a href="../Utilities/Images.html#Image" class="code">Image</a> <a href="#GoniometricLight::image" class="code">image</a>, Allocator alloc);
+       
+       static GoniometricLight *Create(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;renderFromLight,
+                                       <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium,
+                                       const ParameterDictionary &amp;parameters,
+                                       const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace, const FileLoc *loc,
+                                       Allocator alloc);
+       
+       void Preprocess(const <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> &amp;sceneBounds) {}
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt; SampleLi(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a> ctx, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u,
+                              <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda,
+                              bool allowIncompletePDF) const;
+       
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const;
+       
+       PBRT_CPU_GPU
+       Float PDF_Li(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a>, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>, bool allowIncompletePDF) const;
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;LightLeSample&gt; SampleLe(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u1, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u2,
+                              <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda,
+                              Float time) const;
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;, Float *pdfPos, Float *pdfDir) const;
+       
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, Float *pdfPos, Float *pdfDir) const {
+           LOG_FATAL("Shouldn't be called for non-area lights");
+       }
+       
+       pstd::optional&lt;<a href="../Light_Sources/Light_Sampling.html#LightBounds" class="code">LightBounds</a>&gt; Bounds() const;
+       
+       std::string ToString() const;
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> I(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const {
+           <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#EqualAreaSphereToSquare" class="code">EqualAreaSphereToSquare</a>(w);
+           return <a href="#GoniometricLight::scale" class="code">scale</a> * <a href="#GoniometricLight::Iemit" class="code">Iemit</a>-&gt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum::Sample" class="code">Sample</a>(lambda) * <a href="#GoniometricLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::LookupNearestChannel" class="code">LookupNearestChannel</a>(uv, 0);
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-GoniometricLightPrivateMembers-0">GoniometricLight Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1659" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1659"><i></i></a><div id="fragbit-1659" class="collapse"><div class="fragmentcode">       const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum" class="code">DenselySampledSpectrum</a> *Iemit;
+       Float scale;
+       <a href="../Utilities/Images.html#Image" class="code">Image</a> image;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <a href="#GoniometricLight"><tt>GoniometricLight</tt></a> constructor takes a base intensity, an image map
+that scales the intensity based on the angular distribution of light, and
+the usual transformation and medium interface; these are stored in
+the following member variables.  In the following methods, only the first
+channel of the image map will be used to scale the light&rsquo;s intensity: the
+<tt>GoniometricLight</tt> does not support specifying color via the image.
+It is the responsibility of calling code to convert RGB images to luminance
+or some other appropriate scalar value before passing the image to the
+constructor here.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GoniometricLightPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;GoniometricLight Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum" class="code">DenselySampledSpectrum</a> *<span class="anchor" id="GoniometricLight::Iemit"></span>Iemit;
+Float <span class="anchor" id="GoniometricLight::scale"></span>scale;
+<a href="../Utilities/Images.html#Image" class="code">Image</a> <span class="anchor" id="GoniometricLight::image"></span>image;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>SampleLi()</tt><span class="anchor" id="GoniometricLight::SampleLi"></span> method
+follows the same form as that of <a href="#SpotLight"><tt>SpotLight</tt></a> and <a href="#ProjectionLight"><tt>ProjectionLight</tt></a>,
+so it is not included here.  It uses the following method to compute the
+radiant intensity for a given direction. 
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GoniometricLightPublicMethods-0"></span><div class="fragmentname">&lt;&lt;GoniometricLight Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="GoniometricLight::I"></span>I(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const {
+    <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#EqualAreaSphereToSquare" class="code">EqualAreaSphereToSquare</a>(w);
+    return <a href="#GoniometricLight::scale" class="code">scale</a> * <a href="#GoniometricLight::Iemit" class="code">Iemit</a>-&gt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum::Sample" class="code">Sample</a>(lambda) * <a href="#GoniometricLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::LookupNearestChannel" class="code">LookupNearestChannel</a>(uv, 0);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Because it uses an equal-area mapping from the image to the sphere, each
+pixel in the image subtends an equal solid angle and the change of
+variables factor for integrating over the sphere of directions is the same
+for all pixels.  Its value is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.487ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1071 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">4 pi</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="500" y="0"></use>
+</g>
+</svg>, the ratio of the area of the unit
+sphere to the unit square.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GoniometricLightMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;GoniometricLight Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="GoniometricLight::Phi"></span>GoniometricLight::Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const {
+    Float sumY = 0;
+    for (int y = 0; y &lt; <a href="#GoniometricLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y; ++y)
+        for (int x = 0; x &lt; <a href="#GoniometricLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x; ++x)
+            sumY += <a href="#GoniometricLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::GetChannel" class="code">GetChannel</a>({x, y}, 0);
+    return <a href="#GoniometricLight::scale" class="code">scale</a> * <a href="#GoniometricLight::Iemit" class="code">Iemit</a>-&gt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum::Sample" class="code">Sample</a>(lambda) * 4 * Pi * sumY / 
+           (<a href="#GoniometricLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().x * <a href="#GoniometricLight::image" class="code">image</a>.<a href="../Utilities/Images.html#Image::Resolution" class="code">Resolution</a>().y);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Light_Sources/Distant_Lights.html">Light Sources / Distant Lights</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

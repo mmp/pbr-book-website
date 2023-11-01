@@ -1,0 +1,1058 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Mapping Path Tracing to the GPU</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Wavefront_Rendering_on_GPUs.html">Wavefront Rendering on GPUs</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Mapping Path Tracing to the GPU</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Wavefront_Rendering_on_GPUs.html">(Previous: Wavefront Rendering on GPUs)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:mapping-path-tracing-to-gpu"></span><h2>15.1 Mapping Path Tracing to the GPU</h2><p>
+
+
+
+</p>
+<p>Achieving good performance on GPUs requires some care in how computation is
+organized and how data is laid out in memory.  We will start with an
+overview of how GPUs work and the ways in which they differ from CPUs.  This foundation
+makes it possible to discuss the design space of GPU ray tracers.  After
+summarizing some of the alternatives, we give an overview of the design of
+the wavefront path integrator, which subsequent sections will delve into
+more deeply.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#BasicGPUArchitecture"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:basic-gpu-model"></span><span id="BasicGPUArchitecture"></span><h3>15.1.1  Basic GPU Architecture</h3><p>
+
+
+
+</p>
+<p>The performance difference between CPUs and GPUs stems from a fundamental
+difference in the computations that they are designed for.  CPUs have long
+been designed to minimize <em>latency</em>&mdash;to run a single thread of
+computation as efficiently as possible, finishing its work as quickly as
+possible.  (This has somewhat changed with the advent of multicore CPUs,
+though each core remains latency optimized.)
+In contrast, GPUs target <em>throughput</em>: they are designed to work on
+many computations in parallel and finish all of them quickly, which is a
+different thing than finishing any one of them as quickly as possible.
+
+</p>
+<p>The focus on throughput allows GPUs to devote much less space on the chip
+for caches, branch prediction hardware, out-of-order execution units, and
+other features that have been invented to improve single-thread performance
+on CPUs.  Thus, given a fixed amount of chip area, GPUs are able to provide
+many more of the arithmetic logic units (ALUs) that actually perform
+computation than a CPU provides.  Yet, more ALUs do not necessarily deliver more
+performance: they must be kept occupied doing useful work.  
+
+</p>
+<p>An ALU cannot perform computation if the input values it requires are not
+available.  On current processors, reading a value from memory consumes a
+few hundred processor cycles, and so it is important to avoid the situation
+where a processor remains idle while it waits for the completion of such read
+operations&mdash;substantial amounts of potential computation might be
+lost. CPUs and GPUs approach this problem quite differently.  Understanding
+each helps illuminate their philosophical differences.
+
+</p>
+<p>CPUs apply a barrage of techniques to this task.  They feature a relatively
+large amount of on-chip memory in the form of caches; if a memory request
+targets a location that is already present in a cache, the result can be returned
+much more quickly than reading from dynamic random access
+memory (DRAM).  Cache memory access typically
+takes from a handful of cycles to at most a few tens of them.
+When it is necessary to wait for a memory
+read, CPUs also use out-of-order execution, continuing to execute the program&rsquo;s
+instructions past the read instruction. Dependencies are carefully tracked
+during this process, and operations that are independent of pending
+computations can execute out of order. The CPU
+may also execute instructions speculatively, ready to roll back their
+effects if it turns out they should not have run.  If all of that does not
+suffice, another thread may be available, ready to start executing&mdash;modern
+CPUs generally use <em>hyperthreading</em> to switch to another thread in the
+event of a stall.  This thread switch can be performed without any
+overhead, which is much better than the thousands of processor cycles it
+takes for the operating system to perform a context switch.
+
+</p>
+<p>GPUs instead focus on a single mechanism to address such latencies: much
+more aggressive thread switching, over many more threads than are used for
+hyperthreading on CPUs.  If one thread reads from memory, a GPU will just
+switch to another, saving all of the complexity and chip area required for
+out-of-order execution logic.  If that other thread issues a read, then yet
+another is scheduled.  Given enough threads and computation between memory
+accesses, such an approach is sufficient to keep the ALUs fed with useful
+work while avoiding long periods of inactivity.
+
+</p>
+<p>An implication of this design is that GPUs require much more parallelism
+than CPUs to run at their peak potential.  While tens of threads&mdash;or at most a few
+hundred&mdash;suffice to fully utilize a modern multicore CPU, a GPU may
+require tens of thousands of them. Path tracing
+fortunately involves millions of independent calculations (one per pixel
+sample), which makes it a good fit for throughput-oriented
+architectures like GPUs.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x1-ThreadExecution"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x1-ThreadExecution"></span><h4>Thread Execution</h4><p>
+
+
+</p>
+<p>GPUs contain an array of independent processors, numbered from the tens up
+to nearly a hundred at writing.  We will not often need to consider these
+in the following, but will denote them as <em>processors</em> when we
+do.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="These correspond to <em>compute units</em> on AMD GPUs,
+<em>execution units</em> on Intel GPUs, and <em>streaming multiprocessors</em>
+on NVIDIA GPUs.">
+      <sup>&dagger;</sup>
+    </button>
+		  Each one typically executes 32 or 64 threads
+concurrently, with as many as a thousand threads available to be scheduled.
+
+</p>
+<p>The execution model of GPUs centers around the concept of a <em>kernel</em>,
+which refers to a GPU-targeted function that is executed by a specified number
+of threads. Parameters passed to the kernel are forwarded to each thread; a
+<em>thread index</em> provides the information needed to distinguish one thread from
+another. <em>Launching</em> a kernel refers to the operation that informs the GPU
+that a particular kernel function should be executed concurrently. This differs
+from an ordinary function call in the sense that the kernel will complete
+asynchronously at some later point. Frameworks like CUDA provide extensive API
+functionality to wait for the conclusion of such asynchronous computation, or
+to enforce ordering constraints between multiple separate kernel launches.
+Launching vast numbers of threads on the GPU is extremely efficient, so there
+is no need to amortize this cost using a thread pool, as is done in <tt>pbrt</tt>&rsquo;s
+<a href="../Utilities/Parallelism.html#ThreadPool"><tt>ThreadPool</tt></a> class for CPU parallelism.
+
+</p>
+<p>Kernels may be launched both from the CPU and from the GPU, though <tt>pbrt</tt> only
+does the former. In contrast to an ordinary function call, a kernel launch
+cannot return any values to the caller. 
+Kernels therefore must write their results to memory before exiting.
+
+</p>
+<p>An important hardware simplification that distinguishes CPUs and GPUs is
+that GPUs bundle multiple threads into what we will refer to as a
+<em>thread group</em>.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="This term corresponds to a <em>subgroup</em> in
+OpenCL and Vulkan, a <em>warp</em> in CUDA&rsquo;s model, and a <em>wavefront</em> on
+AMD GPUs.">
+      <sup>&dagger;</sup>
+    </button>
+		 This group (32 threads on most current GPUs) executes
+instructions together, which means that a single instruction decoder can be shared by
+the group instead of requiring one for each executing thread.
+Consequently, silicon die area that would ordinarily be needed for
+instruction decoding can be dedicated to improving parallelism in the form of
+additional ALUs.  Most GPU programming models further organize
+thread groups into larger aggregations&mdash;though these are not used in <tt>pbrt</tt>&rsquo;s GPU
+implementation, so we will not discuss them further here.
+
+</p>
+<p>While the hardware simplifications enabled by thread groups allow for
+additional parallelism, the elimination of per-thread instruction
+decoders also brings limitations that can have substantial performance
+implications. Efficient GPU implementation of algorithms requires a thorough
+understanding of them. Although the threads in a thread group are free to work
+independently, just as the threads on different CPU cores are, the more that
+they follow similar paths through the program, the better performance will be
+achieved. This is a different performance model than for CPUs and can be a subtle
+point to consider when optimizing code: performance is not just a consequence
+of the computation performed by an individual thread, but also how often that
+same computation is performed at the same time with other threads within
+the same group.
+
+</p>
+<p>For example, consider this simple block of code:
+</p>
+<div class="fragmentcode">    if (condition) a();
+    else b();</div><p>
+
+Executed on a CPU, the processor will test the condition and then execute
+either <tt>a()</tt> or <tt>b()</tt> depending on the condition&rsquo;s value.  On a
+GPU, the situation is more complex: if all the threads in a thread
+group follow the same control flow path, then execution proceeds as it does
+on a CPU.  However, if some threads need to evaluate <tt>a()</tt> and some
+<tt>b()</tt>, then the GPU will execute both functions&rsquo; instructions
+with a subset of the threads disabled for each one.
+These disabled threads represent a wasted opportunity to perform useful work.
+
+</p>
+<p>In the worst case, a computation could be serialized all the way down to the
+level of individual threads, resulting in a <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.133ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1779.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">32 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1001" y="0"></use>
+</g>
+</svg> loss of performance that
+would largely negate the benefits of the GPU. Algorithms like path
+tracing are especially susceptible to this type of behavior, which is a
+consequence of the physical characteristics of light: when a beam of light
+interacts with an object, it will tend to spread out and eventually reach every
+part of the environment with nonzero probability. Suppose that a bundle of rays
+is processed by a thread group: due to this property, an initially coherent
+computation could later encounter many different shapes and materials that are
+implemented in different parts of the system. Additional work is necessary to
+reorder computation into coherent groups to avoid such degenerate behavior.
+
+</p>
+<p>The implementation of the
+<a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#FloatMixTexture::Evaluate"><tt>FloatMixTexture::Evaluate()</tt></a> method from
+Section&nbsp;<a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#sec:mix-textures">10.3.3</a> can be better understood with thread groups in mind.  Its body was:
+</p>
+<div class="fragmentcode">    Float amt = amount.Evaluate(ctx);
+    Float t1 = 0, t2 = 0;
+    if (amt != 1) t1 = tex1.Evaluate(ctx);
+    if (amt != 0) t2 = tex2.Evaluate(ctx);
+    return (1 - amt) * t1 + amt * t2;</div><p>
+
+
+</p>
+<p>A more natural implementation might have been the following, which computes
+the same result in the end:
+</p>
+<div class="fragmentcode">    Float amt = amount.Evaluate(ctx);
+    if (amt == 0) return tex1.Evaluate(ctx);
+    if (amt == 1) return tex2.Evaluate(ctx);
+    return (1 - amt) * tex1.Evaluate(ctx) + amt * tex2.Evaluate(ctx);</div><p>
+
+
+</p>
+<p>Considered under the lens of GPU execution, we can see the benefit of the
+first implementation.  If some of the threads have a value of&nbsp;0 for
+<tt>amt</tt>, some have a value of&nbsp;1, and the rest have a value in between,
+then the second implementation will execute the code for evaluating
+<tt>tex1</tt> and <tt>tex2</tt> twice, for a different subset of threads for
+each time.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="This assumes that the compiler is unable to
+automatically restructure the code in the way that we have done manually.
+It might, but it might not; our experience has been that it is best not to
+expect too much of compilers in such ways, lest they disappoint.">
+      <sup>&dagger;</sup>
+    </button>
+		
+With the first implementation, all of the threads that need to
+evaluate <tt>tex1</tt> do so together, and similarly for
+<tt>tex2</tt>.
+
+</p>
+<p>We will say that execution across a thread group is <em>converged</em> when
+all of the threads follow the same control flow path through the program,
+and that it has become <em>divergent</em> at points in the program execution
+where some threads follow one path and others follow another through the
+program code.  Some divergence is inevitable, but the less there is the
+better.  Convergence can be improved both by writing individual
+blocks of code to minimize the number of separate control paths and
+by sorting work so that all of the threads in a thread block do the
+same thing.  This latter idea will come up repeatedly in
+Section&nbsp;<a href="../Wavefront_Rendering_on_GPUs/Path_Tracer_Implementation.html#sec:pbrt-gpu-path-tracer">15.3</a> when we discuss the set of kernels
+that the <a href="../Wavefront_Rendering_on_GPUs/Path_Tracer_Implementation.html#WavefrontPathIntegrator"><tt>WavefrontPathIntegrator</tt></a> executes.
+
+</p>
+<p>One implication of thread groups is that techniques like Russian roulette
+may have a different performance impact on a CPU than on a GPU.  With
+<tt>pbrt</tt>&rsquo;s CPU integrators, if a ray path is terminated with Russian roulette, the CPU thread can
+immediately go on to start work on a new path.  Depending on how the
+rendering computation is mapped to threads on a GPU, terminating one ray
+path may not have the same benefit if it just leads to an idle thread being
+carried along with an otherwise still-active thread group.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#x1-MemoryHierarchy"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="x1-MemoryHierarchy"></span><h4>Memory Hierarchy</h4><p>
+
+
+</p>
+<p>Large differences in the memory system architectures of CPUs and GPUs
+further affect how a system should be structured to run efficiently on each
+type of processor.  Table&nbsp;<a href="#table:cpu-gpu-specs">15.1</a> summarizes some relevant
+quantities for a representative modern CPU and GPU
+that at the time of this writing have roughly the
+same cost.
+
+</p>
+<p></p>
+<span class="anchor" id="table:cpu-gpu-specs"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+</p>
+<figcaption class="caption">Table 15.1: Key Properties of a Representative Modern CPU and GPU.
+<span class="legend"> This CPU and GPU have approximately the same cost at time of
+writing but provide their computational capabilities using very different
+architectures.  This table summarizes some of their most important
+characteristics.
+</span>
+</figcaption><p>
+
+
+<table class="table table-hover table-light table-sm"><thead><tr>
+<th></th><th> AMD 3970x CPU</th><th> NVIDIA 3090 RTX GPU</th></tr>
+</thead>
+<tbody>
+<tr>
+<td> Processors</td><td> 32 </td><td> 82 </td></tr>
+<tr>
+<td> Peak single-precision TFLOPS</td><td> 3.8 </td><td> 36 </td></tr>
+<tr>
+<td> Peak memory bandwidth </td><td> <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.929ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2552.8 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">tilde 100</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-223C" d="M717 354c-4 -116 -34 -183 -119 -211c-15 -4 -30 -7 -45 -7c-66 0 -130 46 -184 95c-44 39 -93 81 -146 81c-10 0 -21 -1 -31 -5c-70 -23 -109 -67 -112 -161c0 -7 -6 -12 -12 -12c-7 0 -12 5 -12 12c4 116 34 183 120 211c14 4 29 7 44 7c66 0 130 -46 184 -95 c44 -39 93 -81 146 -81c11 0 21 1 32 5c69 23 108 67 111 161c0 7 6 12 12 12c7 0 12 -5 12 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-223C" x="0" y="0"></use>
+<g transform="translate(1051,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1001" y="0"></use>
+</g>
+</g>
+</svg>&nbsp;GiB/s </td><td> 936&nbsp;GiB/s </td></tr>
+</tbody></table>
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+
+
+
+</p>
+<p>Two differences are immediately apparent:
+the peak memory bandwidth and 
+number of TFLOPS (trillions of floating
+point operations per second)
+are both  approximately ten times higher on the GPU.
+It is also clear that neither processor is able to reach its peak
+performance solely by operating on values stored in memory.  For
+example, the 3.8 TFLOPS that the CPU is capable of would require 15.2&nbsp;TB/s
+of memory bandwidth if each 4-byte floating-point value operated on was to
+be read from memory.  Consequently, we can see that the performance
+of a computation such as iterating over a large array, reading each value,
+squaring it, and writing the result back to memory would not be limited by
+the processor&rsquo;s computational capabilities but would be limited by the
+memory bandwidth.  We say that such computations are <em>bandwidth
+limited</em>.
+
+</p>
+<p>A useful measurement of a computation is its <em>arithmetic intensity</em>,
+which is usually measured as the number of floating-point operations
+performed per byte of memory accessed.  Dividing peak TFLOPS by peak memory
+bandwidth gives a measurement of how much arithmetic intensity a processor
+requires to achieve its peak performance.  For this CPU, we can see that it
+is roughly 38 floating-point operations (FLOPS) per byte, or 152 FLOPS for every 4-byte <tt>float</tt>
+read from memory.  For the GPU, the values are 38.5 and 154,
+respectively&mdash;remarkably, almost exactly the same.  Given such arithmetic
+intensity requirements, it is easy to become bandwidth limited.
+
+</p>
+<p>Therefore, there must be some combination of reuse of each value read from
+memory and reuse of intermediate computed values that are stored in
+on-chip memory in order to reach peak floating-point performance.  Both the
+processors&rsquo; register files and cache hierarchies are integral to keeping
+them working productively by making some values available from faster
+on-chip memory, though their effect is quite different on the two types of
+architecture.  See Table&nbsp;<a href="#table:cpu-gpu-processor-specs">15.2</a>, which
+presents additional quantities related to the individual processors on
+the example CPU and GPU.
+
+</p>
+<p></p>
+<span class="anchor" id="table:cpu-gpu-processor-specs"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+</p>
+<figcaption class="caption">Table 15.2: Key Properties of the Example CPU and GPU Processors.
+<span class="legend"> This table summarizes a few relevant per-processor quantities for
+the CPU and GPU in Table&nbsp;<a href="#table:cpu-gpu-specs">15.1</a>.  For the CPU, &ldquo;maximum
+available threads&rdquo; is the number that can be switched to without
+incurring the cost of an operating system thread switch.  Furthermore, the number of
+CPU registers here is the total available for out-of-order execution, which is many
+more than are visible through the instruction set.  The L2 cache
+on the GPU is shared across all processors and the L3 cache on the CPU is
+shared across four processors; here we report those cache sizes divided by the
+number of processors that share them.
+</span>
+</figcaption><p>
+
+
+<table class="table table-hover table-light table-sm"><thead><tr>
+<th></th><th> AMD 3970x CPU</th><th> NVIDIA 3090 RTX GPU</th></tr>
+</thead>
+<tbody>
+<tr>
+<td> Concurrently executing threads</td><td> 1 </td><td> 32 </td></tr>
+<tr>
+<td> Maximum available threads </td><td> 2 </td><td> 1,024 </td></tr>
+<tr>
+<td> thread</td><td> 32</td><td> 2</td></tr>
+<tr>
+<td> Registers </td><td> 160 (<tt>float</tt>) </td><td> 65,536 </td></tr>
+<tr>
+<td> L1 cache </td><td> 32&nbsp;KiB (data) </td><td> 128&nbsp;KiB </td></tr>
+<tr>
+<td> L2 cache </td><td> 512&nbsp;KiB </td><td> <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.767ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2052.3 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">tilde 75</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-223C" d="M717 354c-4 -116 -34 -183 -119 -211c-15 -4 -30 -7 -45 -7c-66 0 -130 46 -184 95c-44 39 -93 81 -146 81c-10 0 -21 -1 -31 -5c-70 -23 -109 -67 -112 -161c0 -7 -6 -12 -12 -12c-7 0 -12 5 -12 12c4 116 34 183 120 211c14 4 29 7 44 7c66 0 130 -46 184 -95 c44 -39 93 -81 146 -81c11 0 21 1 32 5c69 23 108 67 111 161c0 7 6 12 12 12c7 0 12 -5 12 -12Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-37" d="M485 644c0 -21 0 -23 -9 -35l-135 -190c-44 -62 -58 -148 -62 -171c-8 -54 -11 -109 -11 -164v-51c0 -10 0 -55 -46 -55s-46 45 -46 55c0 102 33 241 123 376l112 158h-207c-13 0 -91 0 -98 -6c-13 -12 -22 -75 -25 -91h-25l33 206h25c4 -19 6 -32 128 -32h243Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-223C" x="0" y="0"></use>
+<g transform="translate(1051,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-37"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="500" y="0"></use>
+</g>
+</g>
+</svg>&nbsp;KiB </td></tr>
+<tr>
+<td> L3 cache </td><td> 4&nbsp;MiB </td><td> none </td></tr>
+</tbody></table>
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>To understand the differences, it is illuminating to compare the two in
+terms of their cache size with respect to the number of threads that they
+are running.  (Space in the caches is not explicitly allocated to
+threads, though this is still a useful thought exercise.)  This CPU runs
+one thread at a time on each core, with a second ready for hyperthreading,
+giving 16&nbsp;KiB of L1 cache, 256&nbsp;KiB of L2, and 2&nbsp;MiB of L3 cache for each of
+the two threads.  This is enough memory to give a fairly wide window for
+the reuse of previous values and is enough that, for example, we do not
+need to worry about how big the <a href="../Geometry_and_Transformations/Interactions.html#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> structure is (it
+is just under 256 bytes); it fits comfortably in the caches close to the processor.
+These generous cache hierarchies can be a great help to programmers,
+leaving them with the task of making sure their programs have some locality
+in their memory accesses but often allowing them not to worry over it too
+much further.
+
+</p>
+<p>The GPU runs thread groups of 32 threads, with as many as 31 additional
+thread groups ready to switch to, for a total of 1,024 threads afoot.  We
+are left with 128 bytes of L1 cache and 75 bytes of L2 per thread, meaning
+factors of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.296ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2280 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">128 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-38" d="M457 168c0 -107 -95 -190 -208 -190c-105 0 -207 67 -207 173c0 99 86 155 144 184c-25 17 -62 42 -73 54c-42 47 -44 92 -44 110c0 93 81 167 181 167c91 0 180 -57 180 -149c0 -66 -49 -118 -121 -155c64 -40 80 -50 99 -71c38 -42 49 -87 49 -123zM386 517 c0 72 -64 124 -137 124c-71 0 -136 -42 -136 -103c0 -17 4 -51 50 -81l124 -80c60 35 99 83 99 140zM407 132c0 61 -47 91 -75 110l-123 78c-85 -47 -117 -111 -117 -169c0 -83 72 -145 158 -145c82 0 157 52 157 126Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-38" x="1001" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="1501" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.458ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2780.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">3500 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-33" d="M457 171c0 -102 -91 -193 -213 -193c-109 0 -202 66 -202 157c0 44 32 58 56 58c29 0 56 -20 56 -56c0 -38 -31 -60 -66 -55c35 -59 110 -76 153 -76c44 0 113 29 113 165c0 98 -37 166 -119 166h-44c-17 0 -24 0 -24 11c0 10 7 11 15 12c7 0 31 2 39 3c25 1 59 4 89 52 c26 44 28 102 28 114c0 90 -55 112 -96 112c-36 0 -102 -13 -133 -62c15 0 62 0 62 -50c0 -29 -20 -51 -51 -51c-29 0 -51 19 -51 52c0 76 76 136 177 136c96 0 184 -56 184 -138c0 -79 -58 -149 -140 -176c104 -21 167 -99 167 -181Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-33"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1001" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1501" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="2002" y="0"></use>
+</g>
+</svg> less than the CPU, respectively.
+If the GPU threads are accessing independent memory locations, we are left with
+a very small window of potential data reuse that can be served by the caches.  Thus,
+structuring GPU computation so that threads access the same locations in memory 
+as much as possible can significantly improve performance by making
+the caches more effective.
+
+</p>
+<p>GPUs partially make up for their small caches with large register files;
+for the one in this comparison there are 65,536 32-bit registers for each GPU
+processor, giving 64 or more for each thread.  (Note that this register
+file actually has twice as much total storage as the processor&rsquo;s L1 cache.)
+If a computation can be structured such that it fits into its allocation of
+registers and has limited memory traffic (especially reads that are
+different than other threads&rsquo;), then its computation can achieve high
+performance on the GPU.
+
+</p>
+<p>The allocation of registers to a kernel must be determined at compile time;
+this presents a balance for the compiler to strike.  On one hand,
+allocating more registers to a kernel gives it more on-chip storage and, in
+turn, generally reduces the amount of memory bandwidth that it requires.
+However, the more registers that are allocated to a kernel, the fewer
+threads can be scheduled on a processor.  For the example GPU, allocating
+64 registers for each thread of a kernel means that 1,024 threads can run
+on a processor at once.  128 registers per thread means just 512 threads,
+and so forth.  The fewer threads that are running, the more difficult it is
+to hide memory latency via thread switching, and performance may suffer when
+all threads are stalled waiting for memory reads.
+
+</p>
+<p>The effect of these constraints is that reducing the size of objects can
+significantly improve performance on the GPU: doing so reduces the amount
+of bandwidth consumed when reading them from memory (and so may improve
+performance if a computation is bandwidth limited) and can reduce the
+number of registers consumed to store them after they have been loaded,
+potentially allowing more threads and thus more effective latency hiding.
+This theme will come up repeatedly later in the
+chapter.
+
+</p>
+<p>The coherence of the memory locations accessed by the threads in a thread
+group affects performance as well.  A reasonable model for thinking about
+this is in terms of the processor&rsquo;s cache lines.  A common GPU
+cache line size is 128 bytes.  The cost of a memory access by the threads
+in a thread group is related to the total number of cache lines that
+the threads access.  The best case is that they all access the same cache
+line, for a location that is already in the cache.  (Thus with a
+128-byte cache line size, 32 threads accessing
+successive cache line&ndash;aligned 4-byte values
+such as <tt>float</tt>s access a single cache line.)  Performance remains
+reasonable if the locations accessed correspond to a small number of cache
+lines that are already in the cache.
+
+</p>
+<p>
+
+</p>
+<p>An entire cache line must be read for a cache miss.  Here as
+well, the coherence of the locations accessed by the threads has a big
+impact on performance: if all locations are in a single cache line, then a
+single memory read can be performed.  If all 32 threads access locations that
+lie in different cache lines, then 32 independent memory reads are required; not only
+is there a significant bandwidth cost to reading so much data, but there is
+much more memory latency&mdash;likely more than can be effectively hidden.
+Thus, another important theme in the following
+implementation will be organizing data structures and computation in order
+to improve the coherence of memory locations accessed by the threads in a
+thread group.
+
+</p>
+<p>A final issue related to memory performance arises due to the various
+different types of memory that can be referenced by a computation.  The GPU
+has its own <em>device memory</em>, distinct from the <em>host memory</em> used
+by the CPU. Each GPU processor offers a small high-performance <em>shared
+memory</em> that can be used by the threads running on it.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Shared
+memory corresponds to local memory in OpenCL, thread group shared memory in
+DirectX Compute, and shared memory in CUDA.">
+      <sup>&dagger;</sup>
+    </button>
+		
+It is best interpreted as a manually managed cache.  Shared memory
+and L1 and L2 caches provide much higher bandwidth and lower latency than
+device memory, while host memory is the most expensive for the GPU to access: any read
+or write must be encapsulated into a transaction that is sent over the
+comparably slow PCI Express bus connecting the CPU and GPU. Optimally
+placing and, if necessary, moving data in memory during multiple phases of
+a computation requires expertise and extra engineering effort.
+
+</p>
+<p><tt>pbrt</tt> sidesteps this issue using <em>managed memory</em>, which exists in a
+unified address space that can be accessed from both CPU and GPU. Its
+physical location is undecided and can migrate on demand to improve
+performance. This automatic migration comes at a small additional
+performance cost, but this is well worth the convenience of not having to
+micromanage memory allocations. In <tt>pbrt</tt>, the CPU initializes the scene in
+managed memory, and this migration cost is paid once when rendering on the
+GPU begins. There is then a small cost to read back the final image from the
+<a href="../Cameras_and_Film/Film_and_Imaging.html#Film"><tt>Film</tt></a> at the end.  In the following implementation, as CPU code is
+launching kernels on the GPU, it is important that it does not
+inadvertently access GPU memory, which would harm performance.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#StructuringRenderingComputation"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:gpu-structuring-rendering-computation"></span><span id="StructuringRenderingComputation"></span><h3>15.1.2  Structuring Rendering Computation</h3><p>
+
+
+
+</p>
+<p>With these factors that affect GPU performance in mind, we can consider
+various ways of structuring <tt>pbrt</tt>&rsquo;s rendering computation so that it is
+suitable for the GPU.  First, consider applying the same parallelism
+decomposition that is used in the <a href="../Introduction/pbrt_System_Overview.html#ImageTileIntegrator"><tt>ImageTileIntegrator</tt></a>: assigning each
+tile of the image to a thread that is then responsible for evaluating its
+pixel samples.  Such an approach is hopeless from the start.  Not only is
+it unlikely to provide a sufficient number of threads to fill the GPU, but
+the effect of the load imbalance among tiles is exacerbated when the
+threads execute in groups.  (Recall
+Figure&nbsp;<a href="../Introduction/pbrt_System_Overview.html#fig:task-time-distribution">1.17</a>, the histogram of time spent
+rendering image tiles in Figure&nbsp;<a href="../Introduction/Photorealistic_Rendering_and_the_Ray-Tracing_Algorithm.html#fig:intro-raytracing-example">1.11</a>.)  Since a thread
+group continues executing until all of its threads have finished,
+performance is worse if the long-running threads are spread across many
+different thread groups versus all together in fewer.
+
+</p>
+<p>Another natural approach might be to assign each pixel sample to a thread,
+launching as many threads as there are pixel samples, and to have each
+thread execute the same code as runs on the CPU to evaluate a pixel sample.
+Each thread&rsquo;s task then would be to generate a camera ray, find the closest
+intersection, evaluate the material and textures at the intersection point,
+and so forth.  This is known as the <em>megakernel</em> approach, since a
+single large kernel is responsible for all rendering computation for a ray.
+This approach provides more than sufficient parallelism to the GPU, but suffers
+greatly from execution divergence.  While the computation may remain
+converged until intersections are found, if different rays hit objects with
+different materials, or the same material but with different textures,
+their execution will diverge and performance will quickly deteriorate.
+
+</p>
+<p>Even if the camera rays all hit objects with the same material, 
+coherence will generally be lost with tracing the first batch of indirect
+rays: some may find no intersection and leave the scene, others may hit
+objects with various materials, and yet others may end up scattering in
+participating media.  Each different case leads to execution divergence.
+Even if all the threads end up sampling a light BVH, for instance, they
+may not do so at the same time and thus that code may be executed multiple
+times, just as was the case for the inferior approach of implementing the
+<a href="../Textures_and_Materials/Texture_Interface_and_Basic_Textures.html#FloatMixTexture"><tt>FloatMixTexture</tt></a> <tt>Evaluate()</tt> method.  We can expect that over time all of
+the threads will fully diverge, leading to processing that is less
+efficient than it could be by a factor of the number of threads in a thread
+group.
+
+</p>
+<p>The performance of a megakernel ray tracer can be improved with the
+addition of work scheduling and reordering within the executing kernels.
+Such a megakernel ray tracer can be seen as what is effectively a thread
+group&ndash;wide state machine that successively chooses an operation to perform:
+&ldquo;generate camera rays,&rdquo; &ldquo;find closest intersections,&rdquo; &ldquo;evaluate and
+sample diffuse BSDFs,&rdquo; &ldquo;sample the light BVH,&rdquo; and so forth.  It might
+choose among operations based on how many threads would like to perform the
+corresponding operation.
+
+</p>
+<p>This approach can greatly improve execution convergence.  For example, if
+only a single thread is waiting to evaluate and sample diffuse BSDFs, that
+work can be deferred while other threads trace rays and do other rendering
+work.  Perhaps some of those rays will intersect diffuse surfaces, adding
+themselves to the tally of threads that need to do that operation.  When
+that operation is eventually selected, it can be done for the benefit of
+more threads, redundant executions saved.
+
+</p>
+<p>Direct implementation of the megakernel approach does have disadvantages.  The megakernels
+themselves may be comprised of a large amount of code (effectively, everything that the
+renderer needs to do), which can lead to long compilation times depending
+on the sophistication of the ray tracer.  They are further limited to
+finding shared work among the threads in a thread group or, at most, the
+threads running on a single GPU processor. It therefore may not be
+possible to achieve an optimal degree of thread convergence.  Nevertheless,
+the approach is a good one, and is the most common one for real-time ray
+tracers today.
+
+</p>
+<p>The other main GPU ray tracer architecture is termed <em>wavefront</em>.  A
+wavefront ray tracer separates the main operations into separate kernels,
+each one operating on many pixel samples in parallel: for example, there
+might be one kernel that generates camera rays, another that finds ray
+intersections, perhaps one to evaluate diffuse materials and another to
+evaluate dielectrics, and so forth.  The kernels are organized in a
+dataflow architecture, where each one may enqueue additional work to be
+performed in one or more subsequent kernels.
+
+</p>
+<p>A significant advantage of the wavefront approach is that execution in each
+kernel can start out fully converged: the diffuse-material kernel is
+invoked for only the intersection points with a diffuse material, and so
+forth.  While the execution may diverge within the kernel, regularly
+starting out with converged execution can greatly aid performance,
+especially for systems with a wide variety of materials, BSDFs, lights,
+and so forth.
+
+</p>
+<p>Another advantage of the wavefront approach is that different numbers of
+registers can be allocated to different kernels.  Thus, simple kernels can
+use fewer registers and reap benefits in more effective latency hiding, and
+it is only the more complex kernels that incur the costs of that trade-off.  In contrast,
+the register allocation for a megakernel must be made according to the
+worst case across the entire set of rendering computation.
+
+</p>
+<p>However, wavefront ray tracers pay a cost in bandwidth.  Because data does
+not persist on-chip between kernel launches, each kernel must read all of
+its inputs from memory and then write its results back to it.  In
+contrast, megakernels can often keep intermediate information on-chip.  The
+performance of a wavefront ray tracer is more likely than a megakernel to be limited by the
+amount of memory bandwidth and not the GPU&rsquo;s computational
+capabilities.  This is an undesirable state of affairs since it
+is projected that bandwidth will continue to grow more slowly than
+computation in future processor architectures.
+
+</p>
+<p>The recent addition of hardware ray-tracing capabilities to GPUs has led to
+the development of graphics programming interfaces that allow the user to specify which
+kernels to run at various stages of ray tracing.  This gives an alternative
+to the megakernel and wavefront approaches that avoids many of their
+respective disadvantages.  With these APIs, the user not only provides
+single kernels for operations like generating initial rays, but can also
+specify multiple kernels to run at ray intersection points&mdash;where the kernel
+that runs at a given point might be determined based on an object&rsquo;s
+material, for example.  Scheduling computation and orchestrating the flow
+of data between stages is not the user&rsquo;s concern, and the GPU&rsquo;s hardware and
+software has the opportunity to schedule work in a way that is tuned to the
+hardware architecture.  (The semantics of these APIs are discussed further
+in Section&nbsp;<a href="../Wavefront_Rendering_on_GPUs/Path_Tracer_Implementation.html#sec:gpu-intersection-testing">15.3.6</a>.)
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SystemOverview"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:pbrt-gpu-system-overview"></span><span id="SystemOverview"></span><h3>15.1.3  System Overview</h3><p>
+
+
+
+</p>
+<p>This version of <tt>pbrt</tt> adopts the wavefront approach for its GPU rendering
+path, although some of its kernels fuse together multiple stages of
+the ray-tracing computation in order to reduce the amount of memory
+traffic that is used.  We found this approach to be a good fit given the
+variety of materials, <a href="../Reflection_Models/BSDF_Representation.html#BxDF"><tt>BxDF</tt></a>s, and light sources that <tt>pbrt</tt> supports.
+Further, rendering features like volume
+scattering fit in nicely: we can skip the corresponding kernels entirely if
+the scene does not include those effects.
+
+</p>
+<p>
+As with the CPU-targeted <tt>Integrator</tt>s, a
+<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene"><tt>BasicScene</tt></a> parses the scene description and stores
+various entities that represent scene components.  When the wavefront
+integrator is being used, the parsed scene is then
+passed to the <tt>RenderWavefront()</tt><span class="anchor" id="RenderWavefront"></span>
+function, which is defined in the file
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/wavefront/wavefront.cpp"><tt>wavefront/wavefront.cpp</tt></a>.  Beyond some housekeeping, its main
+task is to allocate an instance of the <a href="../Wavefront_Rendering_on_GPUs/Path_Tracer_Implementation.html#WavefrontPathIntegrator"><tt>WavefrontPathIntegrator</tt></a> class
+and to call its
+<tt>Render()</tt> method.
+Since the housekeeping is not very interesting, we will not include its
+implementation here. 
+
+</p>
+<p>The <tt>WavefrontPathIntegrator</tt> constructor converts many of the
+entities in the <a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#BasicScene"><tt>BasicScene</tt></a> to <tt>pbrt</tt> objects in the same way as is
+done for the CPU renderer: all the lights are converted to corresponding
+instances of the <tt>Light</tt> classes, and similarly for the camera, film,
+sampler, light sampler, media, materials, and textures.
+One important
+difference, however, is that the <a href="../Introduction/Using_and_Understanding_the_Code.html#Allocator"><tt>Allocator</tt></a> that is provided for them
+allocates managed memory so that it can be initialized on the CPU and
+accessed by the GPU.  Another difference is that only some shapes are
+handled with <tt>pbrt</tt>&rsquo;s <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> implementations.  Shapes like triangles that
+have native support from the GPU&rsquo;s ray intersection hardware are instead
+handled using that hardware.  Finally,
+image map textures use a specialized implementation that uses the GPU&rsquo;s
+texturing hardware for texture lookups.
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:gpu-kernels-overview"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha15f02.svg" title=""><img src="pha15f02.svg" width=985 height=477 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 15.2: Overview of Kernels Used in the Wavefront Integrator. <span class="legend">
+Arrows correspond to queues on which kernels may enqueue work for
+subsequent kernels.  After camera rays have been generated, the subsequent
+kernels execute one time for each ray depth up to the maximum depth.
+
+For simplicity, the kernels that handle subsurface scattering are not
+included here.
+
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Once the scene representation is ready, a call to
+<a href="../Wavefront_Rendering_on_GPUs/Path_Tracer_Implementation.html#WavefrontPathIntegrator::Render"><tt>WavefrontPathIntegrator::Render()</tt></a> starts the rendering process.  The
+details of the implementation of that method will be the subject of the
+following sections of this chapter, but Figure&nbsp;<a href="#fig:gpu-kernels-overview">15.2</a> gives an overview of the
+kernels that it launches.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="In describing the
+<tt>WavefrontPathIntegrator</tt> in the remainder of this chapter, we will
+frequently use the terminology of &ldquo;launching kernels&rdquo; to describe its
+operation, even though when it is running on the CPU, &ldquo;launch&rdquo; is just a
+function call, and a kernel is a regular class method.">
+      <sup>&dagger;</sup>
+    </button>
+		  The sequence of
+computations is similar to that of the <a href="../Light_Transport_II_Volume_Rendering/Volume_Scattering_Integrators.html#VolPathIntegrator::Li"><tt>VolPathIntegrator::Li()</tt></a>
+method, though decomposed into kernels. Queues are used to buffer work between
+kernels: each kernel can push work onto one or more queues to
+be processed in subsequent kernels.
+
+</p>
+<p>Rendering starts with a kernel that generates camera rays for a number of
+pixel samples (typically, a million or so).  Given camera rays, the loop up
+to the maximum ray depth can begin.  Each time through the loop, the
+following kernels are executed:
+</p>
+<ul>
+<li> First, samples for use with the ray are generated using the
+<a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a> and stored in memory for use in later kernels.
+
+<li> The closest intersection of each ray is found with the scene
+geometry.  The kernel that finds these intersections
+pushes work onto a variety of queues to
+be processed by other kernels, including a queue for rays that escape the
+scene, one for rays that hit emissive geometry, and another for rays that
+pass through participating media.  Rays that intersect surfaces are pushed
+onto queues that partition work based on material types.
+
+<li> Rays passing through participating media are then processed, possibly
+leading to a shadow ray and an indirect ray being enqueued if the ray
+scatters.  Unscattered rays that were earlier found to have intersected a
+surface are pushed on to the same variety of queues as are used in the
+intersection kernel for rays not passing through media.
+
+<li> Rays that have intersected emissive geometry and rays that have left
+the scene are handled by two kernels that both update rays&rsquo; radiance
+estimates to incorporate the effect of emission found by such rays.
+
+<li> Each material is then handled individually, with separate kernels
+specialized based on the material type.  Textures are evaluated to
+initialize a <a href="../Reflection_Models/BSDF_Representation.html#BSDF"><tt>BSDF</tt></a> and a light is sampled.  This, too, leads to
+indirect and shadow rays being
+
+enqueued.
+
+
+
+<li> A final kernel traces shadow rays and incorporates their
+contributions into the rays&rsquo; radiance estimates, including accounting for
+absorption along rays in participating media.
+</ul><p>
+
+
+</p>
+<p>Until the maximum ray depth, the loop then starts again with the queued
+indirect rays replacing the camera rays as the rays to trace next.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Wavefront_Rendering_on_GPUs/Implementation_Foundations.html">Wavefront Rendering on GPUs / Implementation Foundations</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

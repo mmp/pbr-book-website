@@ -1,0 +1,545 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Spherical Camera</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Cameras_and_Film.html">Cameras and Film</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Spherical Camera</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Cameras_and_Film/Projective_Camera_Models.html">(Previous: Projective Camera Models)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>5.3 Spherical Camera</h2><p>
+
+
+</p>
+<p>One advantage of ray tracing compared to scan line or rasterization-based
+rendering methods is that it is easy to employ unusual image projections.
+We have great freedom in how the image sample positions are mapped into ray
+directions, since the rendering algorithm does not depend on properties
+such as straight lines in the scene always projecting to straight lines in
+the image.
+
+</p>
+<p>In this section, we will describe a camera model that traces rays in all
+directions around a point in the scene, giving a view of everything that
+is visible from that point.  The
+<tt>SphericalCamera</tt> supports two spherical parameterizations from
+Section&nbsp;<a href="../Geometry_and_Transformations/Spherical_Geometry.html#sec:spherical-geometry">3.8</a> to map points
+in the image to associated directions.
+Figure&nbsp;<a href="#fig:envcamera-san-miguel">5.16</a> shows this camera in action with the
+<em>San Miguel</em> model.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SphericalCameraDefinition-0"></span><div class="fragmentname">&lt;&lt;SphericalCamera Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="SphericalCamera"></span>SphericalCamera : public <a href="../Cameras_and_Film/Camera_Interface.html#CameraBase" class="code">CameraBase</a> {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SphericalCamera::MappingDefinition-0">SphericalCamera::Mapping Definition</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-268" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-268"><i></i></a><div id="fragbit-268" class="collapse"><div class="fragmentcode">       enum Mapping { EquiRectangular, EqualArea };</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SphericalCameraPublicMethods-0">SphericalCamera Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-269" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-269"><i></i></a><div id="fragbit-269" class="collapse"><div class="fragmentcode">       SphericalCamera(<a href="../Cameras_and_Film/Camera_Interface.html#CameraBaseParameters" class="code">CameraBaseParameters</a> baseParameters, Mapping mapping)
+           : <a href="../Cameras_and_Film/Camera_Interface.html#CameraBase" class="code">CameraBase</a>(baseParameters), mapping(mapping) {
+           &lt;&lt;<span class="fragmentname">Compute minimum differentials for <tt>SphericalCamera</tt></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-270" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-270"><i></i></a><div id="fragbit-270" class="collapse"><div class="fragmentcode">              FindMinimumDifferentials(this);</div></div>
+       }
+       static SphericalCamera *Create(const ParameterDictionary &amp;parameters,
+                                      const <a href="../Cameras_and_Film/Camera_Interface.html#CameraTransform" class="code">CameraTransform</a> &amp;cameraTransform,
+                                      <a href="../Cameras_and_Film/Film_and_Imaging.html#Film" class="code">Film</a> film, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium,
+                                      const FileLoc *loc, Allocator alloc = {});
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;<a href="../Cameras_and_Film/Camera_Interface.html#CameraRay" class="code">CameraRay</a>&gt; GenerateRay(<a href="../Cameras_and_Film/Camera_Interface.html#CameraSample" class="code">CameraSample</a> sample,
+                                             <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;<a href="../Cameras_and_Film/Camera_Interface.html#CameraRayDifferential" class="code">CameraRayDifferential</a>&gt; GenerateRayDifferential(
+           <a href="../Cameras_and_Film/Camera_Interface.html#CameraSample" class="code">CameraSample</a> sample, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const {
+           return <a href="../Cameras_and_Film/Camera_Interface.html#CameraBase" class="code">CameraBase</a>::GenerateRayDifferential(this, sample, lambda);
+       }
+       
+       PBRT_CPU_GPU
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> We(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda,
+                          <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> *pRaster2 = nullptr) const {
+           LOG_FATAL("We() unimplemented for SphericalCamera");
+           return {};
+       }
+       
+       PBRT_CPU_GPU
+       void PDF_We(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;ray, Float *pdfPos, Float *pdfDir) const {
+           LOG_FATAL("PDF_We() unimplemented for SphericalCamera");
+       }
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;CameraWiSample&gt; SampleWi(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;ref, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u,
+                                               <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const {
+           LOG_FATAL("SampleWi() unimplemented for SphericalCamera");
+           return {};
+       }
+       
+       std::string ToString() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SphericalCameraPrivateMembers-0">SphericalCamera Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-271" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-271"><i></i></a><div id="fragbit-271" class="collapse"><div class="fragmentcode">       Mapping mapping;</div></div>
+};</div><p>
+
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:envcamera-san-miguel"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+</p>
+
+<div class="card-img-top" style="display:block; width: 100%; padding-top: 52.000%;  position:relative;">
+<div id="xa_Equirectangular_Mapping8" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0;"></div></div>
+<script>
+Jeri.renderViewer(document.getElementById('xa_Equirectangular_Mapping8'), {
+  title: '(a)_Equirectangular_Mapping8', children: [
+ { title: '(a) Equirectangular Mapping', image: 'sanmiguel-equirectangular.png' },  { title: '(b) Equal Area Mapping', image: 'sanmiguel-equalarea.png' }]});
+</script>
+<button data-toggle="tooltip" data-placement="left" class="btn yojeri" title="This image is interactive. Click and drag to pan and use the mouse-wheel to zoom. After clicking on the image to select it, type '?' to see a summary of keyboard controls."><i class="fa fa-snowflake fa-border"></i></button><p>
+
+</p>
+<figcaption class="caption">Figure 5.16: <span class="legend"> The <em>San Miguel</em> scene rendered with the
+<a href="#SphericalCamera"><tt>SphericalCamera</tt></a>, which traces rays in all directions from the camera
+position.  (a)&nbsp;Rendered using an equirectangular mapping.  (b)&nbsp;Rendered
+with an equal-area mapping.
+<em>(Scene courtesy of Guillermo M. Leal Llaguno.)</em>
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p><a href="#SphericalCamera"><tt>SphericalCamera</tt></a> does not derive from <a href="../Cameras_and_Film/Projective_Camera_Models.html#ProjectiveCamera"><tt>ProjectiveCamera</tt></a> since the
+projections that it uses are nonlinear and cannot be captured by a single
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.165ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 2223.9 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">4 times 4</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="722" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="1723" y="0"></use>
+</g>
+</svg> matrix.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SphericalCameraPublicMethods-0"></span><div class="fragmentname">&lt;&lt;SphericalCamera Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">SphericalCamera(<a href="../Cameras_and_Film/Camera_Interface.html#CameraBaseParameters" class="code">CameraBaseParameters</a> baseParameters, Mapping mapping)
+    : <a href="../Cameras_and_Film/Camera_Interface.html#CameraBase" class="code">CameraBase</a>(baseParameters), mapping(mapping) {
+    &lt;&lt;<span class="fragmentname">Compute minimum differentials for <tt>SphericalCamera</tt></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-272" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-272"><i></i></a><div id="fragbit-272" class="collapse"><div class="fragmentcode">       FindMinimumDifferentials(this);</div></div>
+}</div><p>
+
+
+</p>
+<p>The first mapping that <a href="#SphericalCamera"><tt>SphericalCamera</tt></a> supports is the
+equirectangular mapping that was defined in
+Section&nbsp;<a href="../Geometry_and_Transformations/Spherical_Geometry.html#sec:spherical-parameterizations">3.8.3</a>.  In the implementation here,
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 469.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">theta</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="0" y="0"></use>
+</g>
+</svg> values range from&nbsp;0 at the top of the image to&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.325ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 570.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">pi</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="0" y="0"></use>
+</g>
+</svg> at the bottom
+of the image, and&nbsp;<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.385ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 596.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">phi</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D719" d="M573 262c0 -134 -145 -269 -306 -274l-38 -149c-3 -14 -9 -38 -11 -40c-3 -3 -5 -4 -10 -4s-12 1 -12 11c0 3 10 41 22 88l23 94c-122 7 -192 86 -192 181c0 136 147 269 306 274l58 231c4 17 5 20 15 20c12 0 12 -10 12 -10l-3 -14l-56 -227c139 -10 192 -102 192 -181z M349 421c-149 -13 -235 -153 -235 -273c0 -100 72 -135 132 -138zM508 283c0 88 -57 134 -133 138l-103 -411c150 12 236 155 236 273Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D719" x="0" y="0"></use>
+</g>
+</svg> values range from&nbsp;0 to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.487ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 1071 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 pi</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D70B" d="M567 407c0 -34 -36 -34 -49 -34h-114c-11 -52 -18 -106 -18 -159c0 -28 0 -93 29 -165c6 -14 6 -16 6 -22c0 -20 -21 -38 -41 -38c-15 0 -26 6 -36 50c-8 34 -8 61 -8 76c0 67 9 110 42 258h-113l-56 -221c-13 -50 -13 -52 -27 -98c-12 -37 -20 -65 -50 -65 c-13 0 -29 8 -29 27c0 7 0 9 8 24c42 91 96 212 128 333h-57c-20 0 -78 0 -127 -77c-6 -8 -8 -12 -16 -12c-12 0 -12 10 -12 10c0 5 26 51 61 90c44 47 82 47 104 47h335c19 0 40 0 40 -24Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D70B" x="500" y="0"></use>
+</g>
+</svg>, moving from left to
+right across the image.
+
+</p>
+<p>The equirectangular mapping is easy to evaluate and has the advantage that
+lines of constant latitude and longitude on the sphere remain straight.
+However, it preserves neither area nor angles between curves on the sphere
+(i.e., it is not <em>conformal</em>).  These issues are especially evident at
+the top and bottom of the image in
+Figure&nbsp;<a href="#fig:envcamera-san-miguel">5.16</a>(a).
+
+</p>
+<p>Therefore, the <a href="#SphericalCamera"><tt>SphericalCamera</tt></a> also supports the equal-area mapping
+from Section&nbsp;<a href="../Geometry_and_Transformations/Spherical_Geometry.html#sec:equi-area-sphere">3.8.3</a>.
+With this mapping, any finite solid angle of directions on the sphere maps to the same area in
+the image, regardless of where it is on the sphere.  (This mapping is also
+used by the <a href="../Light_Sources/Infinite_Area_Lights.html#ImageInfiniteLight"><tt>ImageInfiniteLight</tt></a>, which is described in
+Section&nbsp;<a href="../Light_Sources/Infinite_Area_Lights.html#sec:image-infinite-light">12.5.2</a>, and so images rendered using this
+camera can be used as light sources.)  The equal-area mapping&rsquo;s use with
+the <tt>SphericalCamera</tt> is shown in
+Figure&nbsp;<a href="#fig:envcamera-san-miguel">5.16</a>(b).
+
+</p>
+<p>An enumeration reflects which mapping should be used.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SphericalCamera::MappingDefinition-0"></span><div class="fragmentname">&lt;&lt;SphericalCamera::Mapping Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">enum <span class="anchor" id="SphericalCamera::Mapping"></span>Mapping { <span class="anchor" id="SphericalCamera::Mapping::EquiRectangular"></span>EquiRectangular, <span class="anchor" id="SphericalCamera::Mapping::EqualArea"></span>EqualArea };</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SphericalCameraPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;SphericalCamera Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Mapping <span class="anchor" id="SphericalCamera::mapping"></span>mapping;</div><p>
+
+
+</p>
+<p>The main task of the <tt>GenerateRay()</tt> method is to apply the requested
+mapping.  The rest of it follows the earlier <tt>GenerateRay()</tt> methods.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SphericalCameraMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;SphericalCamera Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::optional&lt;<a href="../Cameras_and_Film/Camera_Interface.html#CameraRay" class="code">CameraRay</a>&gt; <span class="anchor" id="SphericalCamera::GenerateRay"></span>SphericalCamera::GenerateRay(
+        <a href="../Cameras_and_Film/Camera_Interface.html#CameraSample" class="code">CameraSample</a> sample, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Computesphericalcameraraydirection-0">Compute spherical camera ray direction</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-273" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-273"><i></i></a><div id="fragbit-273" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv(sample.<a href="../Cameras_and_Film/Camera_Interface.html#CameraSample::pFilm" class="code">p</a><a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::film" class="code">film</a>.x / <a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::film" class="code">film</a>.<a href="../Cameras_and_Film/Film_and_Imaging.html#Film::FullResolution" class="code">FullResolution</a>().x,
+                  sample.<a href="../Cameras_and_Film/Camera_Interface.html#CameraSample::pFilm" class="code">p</a><a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::film" class="code">film</a>.y / <a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::film" class="code">film</a>.<a href="../Cameras_and_Film/Film_and_Imaging.html#Film::FullResolution" class="code">FullResolution</a>().y);
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dir;
+       if (<a href="#SphericalCamera::mapping" class="code">mapping</a> == <a href="#SphericalCamera::Mapping::EquiRectangular" class="code">EquiRectangular</a>) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Computeraydirectionusingequirectangularmapping-0">Compute ray direction using equirectangular mapping</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-274" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-274"><i></i></a><div id="fragbit-274" class="collapse"><div class="fragmentcode">              Float theta = Pi * uv[1], phi = 2 * Pi * uv[0];
+              dir = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#SphericalDirection" class="code">SphericalDirection</a>(std::sin(theta), std::cos(theta), phi);</div></div>
+       } else {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Computeraydirectionusingequal-areamapping-0">Compute ray direction using equal-area mapping</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-275" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-275"><i></i></a><div id="fragbit-275" class="collapse"><div class="fragmentcode">              uv = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#WrapEqualAreaSquare" class="code">WrapEqualAreaSquare</a>(uv);
+              dir = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#EqualAreaSquareToSphere" class="code">EqualAreaSquareToSphere</a>(uv);</div></div>
+       }
+       pstd::swap(dir.y, dir.z);</div></div>
+    <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> ray(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(0, 0, 0), dir, <a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::SampleTime" class="code">SampleTime</a>(sample.<a href="../Cameras_and_Film/Camera_Interface.html#CameraSample::time" class="code">time</a>), medium);
+    return <a href="../Cameras_and_Film/Camera_Interface.html#CameraRay" class="code">CameraRay</a>{<a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::RenderFromCamera" class="code">RenderFromCamera</a>(ray)};
+}</div><p>
+
+
+</p>
+<p>For the use of both mappings, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> coordinates in NDC space are found by
+dividing the raster space sample location by the image&rsquo;s overall
+resolution.  Then, after the mapping is applied, the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg>
+coordinates are swapped to account for the fact that both mappings are
+defined with <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.086ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 467.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">z</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D467" d="M467 432c0 -4 -22 -52 -117 -145c-36 -36 -98 -90 -98 -90c-36 -31 -65 -56 -119 -114c9 3 27 3 27 3c21 0 36 -4 70 -17c21 -7 39 -13 59 -13c33 0 97 19 120 84c3 7 5 13 14 13c8 0 12 -5 12 -10c0 -27 -58 -154 -157 -154c-29 0 -47 16 -64 37c-25 29 -35 38 -58 38 c-32 0 -62 -27 -85 -62c-6 -11 -8 -13 -16 -13c0 0 -12 0 -12 10c0 7 35 64 103 131l90 84c19 16 103 88 139 131c-26 0 -37 0 -77 15c-23 8 -42 15 -63 15c-8 0 -66 -1 -85 -47c-2 -6 -4 -11 -13 -11s-12 6 -12 11c0 21 46 114 121 114c33 0 50 -20 69 -43 c15 -17 27 -32 51 -32s45 16 75 64c5 9 8 11 15 11c0 0 11 0 11 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D467" x="0" y="0"></use>
+</g>
+</svg> as the &ldquo;up&rdquo; direction, while <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.139ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 490.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">y</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D466" d="M490 404c0 -7 0 -9 -4 -23l-96 -382c-28 -113 -131 -204 -234 -204c-62 0 -106 37 -106 87c0 49 33 65 56 65c10 0 37 -4 37 -35c0 -19 -10 -32 -20 -41c-14 -12 -27 -12 -43 -12c17 -39 62 -42 76 -42c46 0 84 29 110 63c40 53 52 102 65 154c-28 -28 -62 -45 -101 -45 c-59 0 -122 30 -122 119c0 47 18 104 58 210c7 19 17 45 17 70c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -20 -4 -31 -20 -72c-34 -88 -51 -150 -51 -196c0 -37 11 -81 62 -81 c66 0 109 70 113 85l45 180l20 80c4 18 12 49 14 54c9 15 25 21 35 21c15 0 29 -9 29 -27Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D466" x="0" y="0"></use>
+</g>
+</svg> is &ldquo;up&rdquo; in camera
+space.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computesphericalcameraraydirection-0"></span><div class="fragmentname">&lt;&lt;Compute spherical camera ray direction&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv(sample.<a href="../Cameras_and_Film/Camera_Interface.html#CameraSample::pFilm" class="code">p</a><a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::film" class="code">film</a>.x / <a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::film" class="code">film</a>.<a href="../Cameras_and_Film/Film_and_Imaging.html#Film::FullResolution" class="code">FullResolution</a>().x,
+           sample.<a href="../Cameras_and_Film/Camera_Interface.html#CameraSample::pFilm" class="code">p</a><a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::film" class="code">film</a>.y / <a href="../Cameras_and_Film/Camera_Interface.html#CameraBase::film" class="code">film</a>.<a href="../Cameras_and_Film/Film_and_Imaging.html#Film::FullResolution" class="code">FullResolution</a>().y);
+<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dir;
+if (<a href="#SphericalCamera::mapping" class="code">mapping</a> == <a href="#SphericalCamera::Mapping::EquiRectangular" class="code">EquiRectangular</a>) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Computeraydirectionusingequirectangularmapping-0">Compute ray direction using equirectangular mapping</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-276" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-276"><i></i></a><div id="fragbit-276" class="collapse"><div class="fragmentcode">       Float theta = Pi * uv[1], phi = 2 * Pi * uv[0];
+       dir = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#SphericalDirection" class="code">SphericalDirection</a>(std::sin(theta), std::cos(theta), phi);</div></div>
+} else {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Computeraydirectionusingequal-areamapping-0">Compute ray direction using equal-area mapping</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-277" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-277"><i></i></a><div id="fragbit-277" class="collapse"><div class="fragmentcode">       uv = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#WrapEqualAreaSquare" class="code">WrapEqualAreaSquare</a>(uv);
+       dir = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#EqualAreaSquareToSphere" class="code">EqualAreaSquareToSphere</a>(uv);</div></div>
+}
+pstd::swap(dir.y, dir.z);</div><p>
+
+
+</p>
+<p>For the equirectangular mapping, the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> coordinates are scaled to
+cover the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.319ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2290.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis theta comma phi right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D703" d="M455 500c0 -224 -152 -511 -293 -511c-91 0 -120 111 -120 205c0 229 154 511 293 511c102 0 120 -139 120 -205zM389 562c0 57 -6 121 -55 121c-45 0 -82 -56 -109 -105c-40 -71 -60 -151 -77 -215h209c24 99 32 150 32 199zM348 331h-208c-26 -98 -32 -156 -32 -198 c0 -93 21 -122 54 -122c43 0 81 49 116 117c38 72 59 157 70 203Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D719" d="M573 262c0 -134 -145 -269 -306 -274l-38 -149c-3 -14 -9 -38 -11 -40c-3 -3 -5 -4 -10 -4s-12 1 -12 11c0 3 10 41 22 88l23 94c-122 7 -192 86 -192 181c0 136 147 269 306 274l58 231c4 17 5 20 15 20c12 0 12 -10 12 -10l-3 -14l-56 -227c139 -10 192 -102 192 -181z M349 421c-149 -13 -235 -153 -235 -273c0 -100 72 -135 132 -138zM508 283c0 88 -57 134 -133 138l-103 -411c150 12 236 155 236 273Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D703" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="859" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D719" x="1304" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1900" y="0"></use>
+</g>
+</svg> range and the spherical coordinate formula is
+used to compute the ray direction.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computeraydirectionusingequirectangularmapping-0"></span><div class="fragmentname">&lt;&lt;Compute ray direction using equirectangular mapping&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">Float theta = Pi * uv[1], phi = 2 * Pi * uv[0];
+dir = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#SphericalDirection" class="code">SphericalDirection</a>(std::sin(theta), std::cos(theta), phi);</div><p>
+
+
+</p>
+<p>The <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> values for the <a href="../Cameras_and_Film/Camera_Interface.html#CameraSample"><tt>CameraSample</tt></a> may be slightly outside of
+the range <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.707ex" height="3.009ex" style="vertical-align: -0.838ex;" viewBox="0 -934.9 2457.1 1295.7" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-bracket 0 comma 1 right-bracket squared</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5B" d="M256 -230c0 -11 -9 -20 -20 -20h-122v1000h122c11 0 20 -9 20 -20s-9 -20 -20 -20h-82v-920h82c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-5D" d="M164 -250h-122c-11 0 -20 9 -20 20s9 20 20 20h82v920h-82c-11 0 -20 9 -20 20s9 20 20 20h122v-1000Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-5B" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="278" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1224" y="0"></use>
+<g transform="translate(1724,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-5D" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-32" x="393" y="513"></use>
+</g>
+</g>
+</svg>, due to the pixel sample filter function.  A call to 
+<a href="../Geometry_and_Transformations/Spherical_Geometry.html#WrapEqualAreaSquare"><tt>WrapEqualAreaSquare()</tt></a> takes care of handling the boundary conditions
+before <a href="../Geometry_and_Transformations/Spherical_Geometry.html#EqualAreaSquareToSphere"><tt>EqualAreaSquareToSphere()</tt></a> performs the actual mapping.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computeraydirectionusingequal-areamapping-0"></span><div class="fragmentname">&lt;&lt;Compute ray direction using equal-area mapping&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">uv = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#WrapEqualAreaSquare" class="code">WrapEqualAreaSquare</a>(uv);
+dir = <a href="../Geometry_and_Transformations/Spherical_Geometry.html#EqualAreaSquareToSphere" class="code">EqualAreaSquareToSphere</a>(uv);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Cameras_and_Film/Film_and_Imaging.html">Cameras and Film / Film and Imaging</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

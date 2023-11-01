@@ -1,0 +1,1139 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>User Interaction</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">User Interaction</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities/Mathematical_Infrastructure.html">(Previous: Mathematical Infrastructure)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>B.3 User Interaction</h2><p>
+
+
+</p>
+<p>A number of functions and classes are useful to mediate communicating
+information to the user.  In addition to consolidating functionality like
+printing progress bars, hiding user communication behind a small API like
+the one here also permits easy modification of the communication
+mechanisms.  For example, if <tt>pbrt</tt> were embedded in an application that
+had a graphical user interface, errors might be reported via a dialog box
+or a routine provided by the parent application.  If <tt>printf()</tt> calls
+were strewn throughout the system, it would be more difficult to make the
+two systems work together well.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#WorkingwithFiles"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="WorkingwithFiles"></span><h3>B.3.1  Working with Files</h3><p>
+
+
+</p>
+<p>A few utility routines make it easy to read and write files from disk.
+<tt>ReadFileContents()</tt> returns the contents of a file as a string and
+<tt>ReadDecompressedFileContents()</tt> does the same for files that are
+compressed using the <em>gzip</em> algorithm, decompressing them before
+returning their contents.
+<tt>WriteFileContents()</tt> writes the contents of a string to a file.  Note that
+the use of <tt>std::string</tt> does not impose the requirement that the file
+contents be text: binary data, including null characters, can be stored in
+a <tt>std::string</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-FileandFilenameFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;File and Filename Function Declarations&gt;&gt;=&nbsp;<a href="#fragment-FileandFilenameFunctionDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::string <span class="anchor" id="ReadFileContents"></span>ReadFileContents(std::string filename);
+std::string <span class="anchor" id="ReadDecompressedFileContents"></span>ReadDecompressedFileContents(std::string filename);
+bool <span class="anchor" id="WriteFileContents"></span>WriteFileContents(std::string filename, const std::string &amp;contents);</div><p>
+
+
+</p>
+<p>A number of parts of <tt>pbrt</tt> need to read text files that
+store floating-point values.  Examples include the code that
+reads measured spectral
+
+distributions.
+
+
+The <tt>ReadFloatFile()</tt> function is available for such uses; it parses text files of
+white space-separated numbers, returning the values found in a
+<tt>vector</tt>.  The parsing code ignores all text after a hash mark
+(<tt>#</tt>) to the end of its line to allow comments.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-FileandFilenameFunctionDeclarations-1"></span><div class="fragmentname">&lt;&lt;File and Filename Function Declarations&gt;&gt;+=&nbsp;<a href="#fragment-FileandFilenameFunctionDeclarations-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">std::vector&lt;Float&gt; <span class="anchor" id="ReadFloatFile"></span>ReadFloatFile(std::string filename);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#CharacterEncodingandUnicode"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:character-encoding"></span><span id="CharacterEncodingandUnicode"></span><h3>B.3.2  Character Encoding and Unicode</h3><p>
+
+
+
+</p>
+<p>As a rendering system, <tt>pbrt</tt> is relatively unconcerned with text
+processing.  Yet the scene description is provided as text and the user can
+configure the system by specifying text command-line arguments, including
+those that specify scene description files to be parsed and the filename
+for the final rendered image. Previous versions of <tt>pbrt</tt> have implicitly
+assumed that all text is encoded in ASCII, where each character is
+represented using a single byte.  There are 95 printable ASCII characters.
+In hexadecimal, their values range from <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.201ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1808.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">20 Subscript 16</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+<g transform="translate(1001,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36" x="500" y="0"></use>
+</g>
+</g>
+</svg>, a blank space,
+to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.071ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1752.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">7 normal e Subscript 16</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-37" d="M485 644c0 -21 0 -23 -9 -35l-135 -190c-44 -62 -58 -148 -62 -171c-8 -54 -11 -109 -11 -164v-51c0 -10 0 -55 -46 -55s-46 45 -46 55c0 102 33 241 123 376l112 158h-207c-13 0 -91 0 -98 -6c-13 -12 -22 -75 -25 -91h-25l33 206h25c4 -19 6 -32 128 -32h243Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-37" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-65" x="500" y="0"></use>
+<g transform="translate(945,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36" x="500" y="0"></use>
+</g>
+</g>
+</svg>, a tilde.
+
+</p>
+<p>Adopting ASCII implied that the only letters that can be used in this text are the Latin
+letters from A to Z.  No accented letters were allowed, nor was text written
+in Chinese, Japanese, or the Devanagari script used for Hindi.  (Emoji were
+also not possible, though we are unsure whether being able to directly
+render an image named &#128658;.exr is a feature worth
+devoting attention to.)
+
+</p>
+<p>This version of <tt>pbrt</tt> uses Unicode&nbsp;(<a href="Further_Reading.html#cite:Unicode2020">Unicode Consortium 2020</a>) to represent text.
+At writing, Unicode allows the representation of nearly 150,000 characters,
+drawn from scripts that cover a wide variety of languages.  (In Unicode, a
+<em>script</em> is a collection of letters and symbols used in the writing
+system for a language.)  Fortunately, most of the code that handles text in
+<tt>pbrt</tt> was minimally affected by the change to Unicode, though it is
+important to understand the underlying principles if one is to read or modify
+code in <tt>pbrt</tt> that works with character strings.
+
+</p>
+<p>Unicode associates a unique numeric <em>code point</em> with each character;
+code points are denoted by U+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg>, where <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> is a hexadecimal
+integer.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="For those already familiar with Unicode, we admit that
+our use of the word &ldquo;character&rdquo; in this section is informal;
+Unicode differentiates between <em>abstract characters</em>, <em>coded
+characters</em>, and <em>user-perceived characters</em>, each with distinct
+definitions, and none of them the same as a <em>glyph</em>, which is a shape
+defined by a font for display.  We will generally equate code points with
+characters here, with the caveat that this equivalence is not always so.">
+      <sup>&dagger;</sup>
+    </button>
+		
+The code points for ASCII characters match the ASCII encoding, so
+&ldquo;<tt>~</tt>&rdquo; corresponds to both ASCII <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.071ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1752.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">7 normal e Subscript 16</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-37" d="M485 644c0 -21 0 -23 -9 -35l-135 -190c-44 -62 -58 -148 -62 -171c-8 -54 -11 -109 -11 -164v-51c0 -10 0 -55 -46 -55s-46 45 -46 55c0 102 33 241 123 376l112 158h-207c-13 0 -91 0 -98 -6c-13 -12 -22 -75 -25 -91h-25l33 206h25c4 -19 6 -32 128 -32h243Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-37" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-65" x="500" y="0"></use>
+<g transform="translate(945,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36" x="500" y="0"></use>
+</g>
+</g>
+</svg>
+and U+007e.  The letter &uuml; is
+represented by U+00fc, and the Chinese character &#x5149; is
+U+5149.
+
+</p>
+<p>Unicode also defines a number of <em>encodings</em> that map code points to
+sequences of byte values.  The simplest is UTF-32, which uses 4 bytes (32
+bits) to represent each code point.  UTF-32 has the advantage that all code
+points use the same amount of storage, which makes it easy to perform
+operations like finding the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg>th code point in a string, though it uses
+four times more storage for ASCII characters than ASCII does, which is a
+disadvantage if text is mostly ASCII.
+
+</p>
+<p>UTF-8 uses a variable number of bytes to represent each code point.  ASCII
+characters are represented with a single byte equal to their code point&rsquo;s
+value and thus pure ASCII text is by construction UTF-8 encoded.  
+Code points after U+007f are encoded using 2, 3, or 4 bytes depending on their
+magnitude.  Therefore, finding the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg>th code point requires scanning from
+the start of a string in the absence of auxiliary data structures.  (That
+operation is not important in <tt>pbrt</tt>, however.)
+
+</p>
+<p>UTF-16 occupies an awkward middle ground; it uses two bytes to encode most
+code points, though it requires four for the ones that cannot fit in two.  It
+offers the disadvantages of UTF-32 (wasted space if text is primarily
+ASCII), with few advantages in return.  UTF-16 is used in the Windows APIs,
+however, which requires us to be aware of it.
+
+</p>
+<p>Rather than supporting multiple encodings, <tt>pbrt</tt> standardizes on UTF-8.
+It uses <tt>std::string</tt>s to represent UTF-8-encoded strings, which poses
+no problems since, in C++, <tt>std::string</tt>s are just arrays of bytes.
+It is, however, important to keep in mind that indexing to the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg>th element in a
+<tt>std::string</tt> does not necessarily return the <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg>th character of the
+string and that the <tt>size()</tt> method returns the number of bytes stored
+in the string and not necessarily the number of characters it holds.
+
+</p>
+<p>Given the choice of UTF-8, we must ensure that any input from the user in a
+different encoding is converted to UTF-8 and that any use of strings in
+calls to system library functions is converted to the character encoding
+they use.  For example, OSX and most versions of Linux now set the
+system locale to use a UTF-8 encoding. This causes command shells to encode
+programs&rsquo; command-line arguments as UTF-8.  On those systems, <tt>pbrt</tt> therefore assumes that the <tt>argv</tt> parameters passed to the
+<tt>main()</tt> function are already UTF-8 encoded.  On Windows, however,
+command-line arguments are available in ASCII or UTF-16; <tt>pbrt</tt> takes the
+latter and converts them to UTF-8.
+
+</p>
+<p>The <tt>GetCommandLineArguments()</tt> function handles these details,
+returning the provided command-line arguments in a vector of
+<tt>std::string</tt>s that use the UTF-8 encoding.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Command-lineArgumentUtilityFunctions-0"></span><div class="fragmentname">&lt;&lt;Command-line Argument Utility Functions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::vector&lt;std::string&gt; <span class="anchor" id="GetCommandLineArguments"></span>GetCommandLineArguments(char *argv[]);</div><p>
+
+
+</p>
+<p><tt>pbrt</tt> provides two functions that convert both ways between the UTF-8 and
+UTF-16 encodings, where strings of 16-bit values, <tt>std::u16string</tt>,
+are used for UTF-16.  These are both thin wrappers around functionality
+provided by the C++ standard library.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StringUtilityFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;String Utility Function Declarations&gt;&gt;=&nbsp;<a href="#fragment-StringUtilityFunctionDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::string <span class="anchor" id="UTF8FromUTF16"></span>UTF8FromUTF16(std::u16string str);
+std::u16string <span class="anchor" id="UTF16FromUTF8"></span>UTF16FromUTF8(std::string str);</div><p>
+
+
+</p>
+<p>Windows introduces the additional complication of using the type
+<tt>std::wchar_t</tt> for the elements of UTF-16-encoded strings. On
+Windows, this type is 16 bits, though the C++ standard does not specify its
+size.  Therefore, <tt>pbrt</tt> provides additional functions on Windows to
+convert to and from UTF-16-encoded <tt>std::wstring</tt>s, which store
+elements using <tt>std::wchar_t</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-StringUtilityFunctionDeclarations-1"></span><div class="fragmentname">&lt;&lt;String Utility Function Declarations&gt;&gt;+=&nbsp;<a href="#fragment-StringUtilityFunctionDeclarations-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">#ifdef PBRT_IS_WINDOWS
+std::wstring <span class="anchor" id="WStringFromUTF8"></span>WStringFromUTF8(std::string str);
+std::string <span class="anchor" id="UTF8FromWString"></span>UTF8FromWString(std::wstring str);
+#endif // PBRT_IS_WINDOWS</div><p>
+
+
+</p>
+<p>Filenames also require attention.  On Linux, filenames can be any
+string of bytes, other than the forward slash &ldquo;/&rdquo;, which separates
+path components, and U+0000, which is the end of string marker in C.
+Thus, UTF-8 encoded filenames (slash notwithstanding) are supported with no
+further effort, though filenames that are not valid UTF-8 strings are also
+allowed.  Both OSX and Windows use Unicode for filenames, with the UTF-8
+and UTF-16 encodings, respectively.
+
+</p>
+<p>Both the <a href="#ReadFileContents"><tt>ReadFileContents()</tt></a> and <a href="#WriteFileContents"><tt>WriteFileContents()</tt></a> functions
+introduced earlier therefore handle converting filenames to UTF-16 on Windows,
+allowing callers to directly pass UTF-8 encoded strings to them.  <tt>pbrt</tt> further provides <tt>FOpenRead()</tt><span class="anchor" id="FOpenRead"></span> and
+<tt>FOpenWrite()</tt><span class="anchor" id="FOpenWrite"></span> functions that wrap the
+functionality of <tt>fopen()</tt>.  On Windows, they perform the UTF-16
+filename conversion and then call <tt>_wfopen()</tt> in place of
+<tt>fopen()</tt>.
+
+</p>
+<p>Few further changes were needed for Unicode support in <tt>pbrt</tt> thanks to a
+key component of the UTF-8 design: not only are the ASCII characters
+represented in UTF-8 with a single byte and with the same value, but it is
+also guaranteed that no byte used to encode a non-ASCII code point will be
+equal to an ASCII value.  (Effectively, this means that because the high
+bit of 8-bit ASCII values is unset, the high bit of any byte used for a
+non-ASCII Unicode character in UTF-8 is always set.)
+
+</p>
+<p>To see the value of this part of the design of UTF-8, consider parsing the
+scene description in <tt>pbrt</tt>.  If for example the parser has encountered an
+opening double quotation mark <tt>"</tt>, it then copies all subsequent bytes until the
+closing quote into a <tt>std::string</tt> and issues an error if a newline is
+encountered before the closing quote.  In UTF-8, the quotation mark U+0022
+is encoded as <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.201ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1808.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">22 Subscript 16</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+<g transform="translate(1001,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36" x="500" y="0"></use>
+</g>
+</g>
+</svg> and newline U+000a as <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.201ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1808.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">0 normal a Subscript 16</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-61" d="M483 89c0 -81 -61 -95 -82 -95c-47 0 -74 42 -78 82c-19 -47 -65 -87 -131 -87c-63 0 -160 25 -160 106c0 44 25 96 100 130c63 30 133 33 184 36v37c0 89 -57 128 -106 128c-32 0 -81 -11 -108 -46c46 -1 51 -34 51 -46c0 -26 -18 -46 -46 -46c-26 0 -46 17 -46 47 c0 66 69 113 151 113c48 0 98 -16 137 -55c36 -37 36 -76 36 -118v-200c0 -5 4 -50 37 -50c11 0 36 6 36 64v56h25v-56zM316 140v100c-165 -6 -207 -89 -207 -144c0 -50 41 -85 90 -85c45 0 117 34 117 129Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-61" x="500" y="0"></use>
+<g transform="translate(1001,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36" x="500" y="0"></use>
+</g>
+</g>
+</svg>.
+Because the byte values <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.201ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1808.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">22 Subscript 16</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+<g transform="translate(1001,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36" x="500" y="0"></use>
+</g>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.201ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1808.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">0 normal a Subscript 16</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-61" d="M483 89c0 -81 -61 -95 -82 -95c-47 0 -74 42 -78 82c-19 -47 -65 -87 -131 -87c-63 0 -160 25 -160 106c0 44 25 96 100 130c63 30 133 33 184 36v37c0 89 -57 128 -106 128c-32 0 -81 -11 -108 -46c46 -1 51 -34 51 -46c0 -26 -18 -46 -46 -46c-26 0 -46 17 -46 47 c0 66 69 113 151 113c48 0 98 -16 137 -55c36 -37 36 -76 36 -118v-200c0 -5 4 -50 37 -50c11 0 36 6 36 64v56h25v-56zM316 140v100c-165 -6 -207 -89 -207 -144c0 -50 41 -85 90 -85c45 0 117 34 117 129Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-61" x="500" y="0"></use>
+<g transform="translate(1001,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36" x="500" y="0"></use>
+</g>
+</g>
+</svg> are not
+used to encode any other code points, the parser can be oblivious to Unicode,
+copying bytes into a string just as it did before until it encounters a
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="4.201ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 1808.8 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">22 Subscript 16</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-36" d="M457 204c0 -132 -95 -226 -206 -226c-93 0 -209 71 -209 338c0 221 135 350 263 350c83 0 127 -48 127 -108c0 -39 -30 -48 -46 -48c-22 0 -46 15 -46 46c0 45 40 45 55 45c-22 34 -64 40 -88 40c-51 0 -175 -36 -175 -289v-24c20 48 57 99 125 99 c111 0 200 -96 200 -223zM367 205c0 49 0 100 -18 137c-31 62 -77 62 -93 62c-90 0 -122 -100 -122 -178c0 -18 0 -98 18 -145c6 -15 36 -75 99 -75c23 0 69 5 99 65c17 36 17 86 17 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="500" y="0"></use>
+<g transform="translate(1001,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-36" x="500" y="0"></use>
+</g>
+</g>
+</svg> byte.  It makes no difference to the parsing code whether
+the byte values in the string represent plain ASCII or characters from other
+scripts.
+
+</p>
+<p>More generally, because <tt>pbrt</tt> does not use any non-ASCII characters in the
+definition of its scene description format, the parser can continue to
+operate one byte at a time, without being concerned whether each one is
+part of a multi-byte UTF-8 character.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#PrintingandFormattingStrings"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:pbrt-printf"></span><span id="PrintingandFormattingStrings"></span><h3>B.3.3  Printing and Formatting Strings</h3><p>
+
+
+
+</p>
+<p><tt>Printf()</tt> and <tt>StringPrintf()</tt> respectively provide improvements
+to C&rsquo;s <tt>printf()</tt> and <tt>sprintf()</tt> functions.  Both support all 
+the formatting directives of <tt>printf()</tt> and <tt>sprintf()</tt>, but with
+the following improvements:
+</p>
+<ul>
+<li> When <tt>%f</tt> is used, floating-point values are printed out with a
+sufficient number of digits to exactly specify their value. This is,
+unfortunately, not the default behavior of C&rsquo;s routines.
+<li> The <tt>%d</tt> directive works directly for all integer types; there
+is no need for additional qualifiers for <tt>int64_t</tt> or <tt>size_t</tt>
+values, etc.
+<li> <tt>%s</tt> can be used for any class that provides a
+<tt>ToString()</tt> method, as almost all of <tt>pbrt</tt>&rsquo;s classes do. (It can also
+be used for <tt>std::string</tt>s and many of the container classes in the
+C++ standard library.)
+</ul><p>
+
+We have found the last of these three capabilities to be particularly
+useful for debugging and tracing the system&rsquo;s operation.  These functions
+are implemented in <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/print.h"><tt>util/print.h</tt></a> and
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/print.cpp"><tt>util/print.cpp</tt></a>.
+
+</p>
+<p><tt>StringPrintf()</tt> has the added enhancement that it returns its result
+directly as a <tt>std::string</tt>, freeing the caller from needing to worry
+about allocating a sufficient amount of memory for the result.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-PrintingFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;Printing Function Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename... Args&gt;
+void <span class="anchor" id="Printf"></span>Printf(const char *fmt, Args &amp;&amp;... args);
+template &lt;typename... Args&gt;
+std::string <span class="anchor" id="StringPrintf"></span>StringPrintf(const char *fmt, Args &amp;&amp;... args);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ErrorReporting"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:error-reporting"></span><span id="ErrorReporting"></span><h3>B.3.4  Error Reporting</h3><p>
+
+
+
+</p>
+<p>A few functions are available for communicating with the user, provided via
+the files <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/[EntityList: util/cmd: -:
+error.h]"><tt>[EntityList: util/cmd: -:
+error.h]</tt></a> and <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/error.cpp"><tt>util/error.cpp</tt></a>.  These
+should be used for things like reporting errors in scene description files
+or warnings for cases like scene descriptions that lack any light sources.
+Each of them takes a <tt>FileLoc</tt> pointer; this is the structure that the
+parser uses to record which file and line number a particular token is
+from.  These are passed through to object creation routines as the scene
+description is being initialized so that error messages can include that
+information.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ErrorReportingFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;Error Reporting Function Declarations&gt;&gt;=&nbsp;<a href="#fragment-ErrorReportingFunctionDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="Warning"></span>Warning(const FileLoc *loc, const char *message);
+void <span class="anchor" id="Error"></span>Error(const FileLoc *loc, const char *message);
+[[noreturn]] void <span class="anchor" id="ErrorExit"></span>ErrorExit(const FileLoc *loc, const char *message);</div><p>
+
+
+</p>
+<p>There are variants of all of these that call <a href="#StringPrintf"><tt>StringPrintf()</tt></a> so that
+<tt>printf</tt>-style formatting strings can be used to print the values of
+additional arguments.  Here is the one for <tt>Warning()</tt>:
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ErrorReportingInlineFunctions-0"></span><div class="fragmentname">&lt;&lt;Error Reporting Inline Functions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename... Args&gt;
+void Warning(const FileLoc *loc, const char *fmt, Args &amp;&amp;... args) {
+    Warning(loc, StringPrintf(fmt, std::forward&lt;Args&gt;(args)...).c_str());
+}</div><p>
+
+
+</p>
+<p>For cases where a <tt>FileLoc *</tt> is not available, there are
+corresponding warning and error functions that take just a format string
+and arguments.  (Alternatively, <tt>nullptr</tt> can be passed for the
+<tt>FileLoc *</tt> to the methods declared above.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ErrorReportingFunctionDeclarations-1"></span><div class="fragmentname">&lt;&lt;Error Reporting Function Declarations&gt;&gt;+=&nbsp;<a href="#fragment-ErrorReportingFunctionDeclarations-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">template &lt;typename... Args&gt;
+void Warning(const char *fmt, Args &amp;&amp;... args);
+template &lt;typename... Args&gt;
+void Error(const char *fmt, Args &amp;&amp;... args);
+template &lt;typename... Args&gt;
+[[noreturn]] void ErrorExit(const char *fmt, Args &amp;&amp;... args);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Logging"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:logging"></span><span id="Logging"></span><h3>B.3.5  Logging</h3><p>
+
+
+
+</p>
+<p>Mechanisms for logging program execution are provided in the files
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/log.h"><tt>util/log.h</tt></a> and <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/log.cpp"><tt>util/log.cpp</tt></a>.  These are intended
+to be used for debugging and other programmer-focused tasks; when printed,
+they include information such as the source file and line number of the
+logging call, the date and time that it was made, and which thread made it.
+
+</p>
+<p>The most important of them are <tt>LOG_VERBOSE()</tt>,
+<tt>LOG_ERROR()</tt><span class="anchor" id="LOG_ERROR"></span>, and
+<tt>LOG_FATAL()</tt><span class="anchor" id="LOG_FATAL"></span>.  Each takes a formatting
+string with <tt>printf</tt>-style formatting directives and then a variable
+number of arguments to provide values.  Their implementations all end up
+calling <a href="#StringPrintf"><tt>StringPrintf()</tt></a>, so all the additional capabilities it
+provides can be used.
+
+</p>
+<p>Which messages are printed can be controlled by the <tt>&ndash;log-level</tt>
+command line option to <tt>pbrt</tt>.  The specified logging level is represented
+with the <tt>LogLevel</tt> enumeration, an enumerator of which is stored in a
+global variable.  If the <tt>&ndash;log-file</tt> option is used, a <tt>FILE *</tt>
+is opened to store the logging messages.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LogLevelDefinition-0"></span><div class="fragmentname">&lt;&lt;LogLevel Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">enum class <span class="anchor" id="LogLevel"></span>LogLevel { Verbose, Error, Fatal, Invalid };</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LogLevelGlobalVariableDeclaration-0"></span><div class="fragmentname">&lt;&lt;LogLevel Global Variable Declaration&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">namespace logging {
+extern LogLevel logLevel;
+extern FILE *logFile;
+} // namespace logging</div><p>
+
+
+</p>
+<p>Here is the implementation of <tt>LOG_VERBOSE()</tt>; the other two are
+similar.  There is one trick to note: the macro is carefully written using
+the short-circuit <tt>&amp;&amp;</tt> operator so that not only does it expand to a
+single statement, making it safe to use after an <tt>if</tt> statement
+without braces, but the arguments after the formatting string are also not
+evaluated if verbose logging has not been specified.  In this way, it is
+safe to write logging code that calls functions that may do meaningful
+amounts of computation for the parameter values while not paying the cost
+for them if their results are unneeded.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LoggingMacros-0"></span><div class="fragmentname">&lt;&lt;Logging Macros&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">#define <span class="anchor" id="LOG_VERBOSE"></span>LOG_VERBOSE(...)                                             \
+    (pbrt::LogLevel::Verbose &gt;= logging::logLevel &amp;&amp;                 \
+     (pbrt::Log(LogLevel::Verbose, __FILE__, __LINE__, __VA_ARGS__), \
+      true))</div><p>
+
+
+</p>
+<p>The underlying <tt>Log()</tt> function handles the details of formatting the
+log entry and storing logging messages in a buffer in memory during GPU
+execution; in that case, messages are eventually copied back to the CPU to
+be printed.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#AssertionsandRuntimeErrorChecking"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:assertions"></span><span id="AssertionsandRuntimeErrorChecking"></span><h3>B.3.6  Assertions and Runtime Error Checking</h3><p>
+
+
+
+</p>
+<p>A few capabilities are provided for checking for unexpected values at
+runtime, all defined in the file <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/util/check.h"><tt>util/check.h</tt></a>.  <tt>pbrt</tt> uses
+these in place of the system-provided <tt>assert()</tt> macro as they provide
+more information about which values led to assertion failures, when they
+occur.  These should only be used for errors that the system cannot recover
+from and only for errors that are due to the system&rsquo;s implementation:
+errors in user input and such should be detected and reported using the
+more friendly mechanisms of the <a href="#Warning"><tt>Warning()</tt></a> and <a href="#Error"><tt>Error()</tt></a>
+functions.
+
+</p>
+<p>First, <tt>CHECK()</tt> replaces <tt>assert()</tt>, issuing a fatal error if
+the specified condition is not true.  A
+<tt>DCHECK()</tt><span class="anchor" id="DCHECK"></span> macro, not included here, performs
+similar functionality, though only in debug builds.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CHECKMacroDefinitions-0"></span><div class="fragmentname">&lt;&lt;CHECK Macro Definitions&gt;&gt;=&nbsp;<a href="#fragment-CHECKMacroDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">#define <span class="anchor" id="CHECK"></span>CHECK(x) (!(!(x) &amp;&amp; (LOG_FATAL("Check failed: %s", #x), true)))</div><p>
+
+
+</p>
+<p>A common use of assertions is to check a relationship between two values
+(e.g., that they are equal, or that one is strictly less than another).
+These operations are performed by the following macros, which dispatch to
+another one that they all share.  (There are similarly <tt>D</tt>-prefixed
+variants of these for debug builds only.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CHECKMacroDefinitions-1"></span><div class="fragmentname">&lt;&lt;CHECK Macro Definitions&gt;&gt;+=&nbsp;<a href="#fragment-CHECKMacroDefinitions-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">#define <span class="anchor" id="CHECK_EQ"></span>CHECK_EQ(a, b) CHECK_IMPL(a, b, ==)
+#define <span class="anchor" id="CHECK_NE"></span>CHECK_NE(a, b) CHECK_IMPL(a, b, !=)
+#define <span class="anchor" id="CHECK_GT"></span>CHECK_GT(a, b) CHECK_IMPL(a, b, &gt;)
+#define <span class="anchor" id="CHECK_GE"></span>CHECK_GE(a, b) CHECK_IMPL(a, b, &gt;=)
+#define <span class="anchor" id="CHECK_LT"></span>CHECK_LT(a, b) CHECK_IMPL(a, b, &lt;)
+#define <span class="anchor" id="CHECK_LE"></span>CHECK_LE(a, b) CHECK_IMPL(a, b, &lt;=)</div><p>
+
+
+</p>
+<p>There are three things to see in <tt>CHECK_IMPL()</tt>.  First, it is
+careful to evaluate the provided expressions only once, storing their
+values in the <tt>va</tt> and <tt>vb</tt> variables.  This ensures that they do
+not introduce unexpected behavior if they are invoked with an expression
+that includes side effects (e.g., <tt>var++</tt>). Second, when the check
+fails, the error message includes not just the source code form of the
+check, but also the values that caused the failure.  This
+additional information alone is sometimes enough to debug an issue.
+Finally, it is implemented in terms of a single iteration
+<tt>do</tt>/<tt>while</tt> loop; in this way, it is a single C++ statement and
+therefore can be used with <tt>if</tt> statements without braces.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CHECK_IMPLMacroDefinition-0"></span><div class="fragmentname">&lt;&lt;CHECK_IMPL Macro Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">#define <span class="anchor" id="CHECK_IMPL"></span>CHECK_IMPL(a, b, op)                                              \
+    do {                                                                  \
+        auto va = a;                                                      \
+        auto vb = b;                                                      \
+        if (!(va op vb))                                                  \
+            LOG_FATAL("Check failed: %s " #op " %s with %s = %s, %s = %s",\
+                      #a, #b, #a, va, #b, vb);                            \
+    } while (false) /* swallow semicolon */</div><p>
+
+
+</p>
+<p>When a <tt>CHECK</tt> fails, not only is the error message printed, but
+<tt>pbrt</tt> also prints a stack trace that shows some context of the program&rsquo;s
+state of execution at that point.  In addition, the
+<tt>CheckCallbackScope</tt><span class="anchor" id="CheckCallbackScope"></span> class can be used to provide additional
+information about the current program state that is printed upon a
+<tt>CHECK</tt> failure.
+
+</p>
+<p>
+
+</p>
+<p>The error handling system keeps a list of active <tt>CheckCallbackScope</tt>
+objects.  For each one, it calls the provided callback to get an error
+string if a <tt>CHECK</tt> fails.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CheckCallbackScopePublicMethods-0"></span><div class="fragmentname">&lt;&lt;CheckCallbackScope Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">CheckCallbackScope(std::function&lt;std::string(void)&gt; callback);</div><p>
+
+
+</p>
+<p>Thus, it might be used as
+</p>
+<div class="fragmentcode">    Point2i currentPixel; /* Variable that is updated during rendering */
+    CheckCallbackScope callbackScope([&amp;]() {
+        return StringPrintf("The current pixel is %s", currentPixel);
+    });
+    // Render...</div><p>
+
+to include the current pixel coordinates in the error output. 
+The expectation is that <tt>CheckCallbackScope</tt> objects will be
+stack-allocated, such that when a function returns, for example, then a
+<tt>CheckCallbackScope</tt> that it declared will go out of scope and thence
+be removed from the active callback scopes by its destructor.
+
+</p>
+<p>
+
+</p>
+<p>Especially in systems that extensively use stochastic sampling, there may
+be unusual conditions that are allowed to happen rarely, but where their
+frequent occurrence would be a bug.  (One example that comes up in the
+implementation of microfacet distributions is when the incident
+and outgoing directions are exactly opposite, in which case the half angle
+vector is degenerate.  The renderer needs to handle this case when it
+happens, but it should only happen rarely.)  <tt>pbrt</tt> therefore also provides
+a <tt>CHECK_RARE(freq, cond)</tt><span class="anchor" id="CHECK_RARE"></span> macro that takes
+a maximum frequency of failure and a condition to check.  An error is
+issued at the end of program execution for any of them where the condition
+occurred too frequently.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#DisplayingImages"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="DisplayingImages"></span><h3>B.3.7  Displaying Images</h3><p>
+
+
+</p>
+<p><tt>pbrt</tt> supports a simple
+socket-based protocol that allows it to communicate with external programs
+that can display images, both on the same machine and on a remote system
+from the one that <tt>pbrt</tt> is running on.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Thomas M&uuml;ller&rsquo;s
+<tt>tev</tt> image viewer, available from <em>https://github.com/Tom94/tev</em>,
+supports this protocol.">
+      <sup>&dagger;</sup>
+    </button>
+		  This is the mechanism that is invoked when the
+<tt>&ndash;display-server</tt> option is provided on the command line.
+
+</p>
+<p>
+
+</p>
+<p>If a connection has been made with such a display program, there are a
+number of functions that make it easy to visualize arbitrary image data
+using it.  This can be especially useful for debugging or for understanding
+<tt>pbrt</tt>&rsquo;s execution.
+
+</p>
+<p><tt>DisplayStatic()</tt> causes an image of the specified size to be
+displayed.  The number of specified image channel names determines the
+number of channels in the image.  The provided callback will be called
+repeatedly for tiles of the overall image, where each call is provided a
+separate buffer for each specified image channel.  These buffers should be
+filled with values for the given tile bounds in scanline order.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DisplayServerFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;DisplayServer Function Declarations&gt;&gt;=&nbsp;<a href="#fragment-DisplayServerFunctionDeclarations-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="DisplayStatic"></span>DisplayStatic(std::string title, <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> resolution,
+    std::vector&lt;std::string&gt; channelNames,
+    std::function&lt;void(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2i" class="code">Bounds2i</a>, pstd::span&lt;pstd::span&lt;Float&gt;&gt;)&gt; getValues);</div><p>
+
+
+</p>
+<p><tt>DisplayDynamic()</tt> is similar, but the callback will be called
+repeatedly during program execution to get the latest values for dynamic
+data.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DisplayServerFunctionDeclarations-1"></span><div class="fragmentname">&lt;&lt;DisplayServer Function Declarations&gt;&gt;+=&nbsp;<a href="#fragment-DisplayServerFunctionDeclarations-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-DisplayServerFunctionDeclarations-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="DisplayDynamic"></span>DisplayDynamic(std::string title, <a href="../Geometry_and_Transformations/Points.html#Point2i" class="code">Point2i</a> resolution,
+    std::vector&lt;std::string&gt; channelNames,
+    std::function&lt;void(<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2i" class="code">Bounds2i</a>, pstd::span&lt;pstd::span&lt;Float&gt;&gt;)&gt; getValues);</div><p>
+
+
+</p>
+<p>There are additional convenience functions that take <a href="../Utilities/Images.html#Image"><tt>Image</tt></a>s for both
+static and dynamic display.  Their implementations take care of providing
+the necessary callback routines to copy data from the image to the provided
+buffers.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DisplayServerFunctionDeclarations-2"></span><div class="fragmentname">&lt;&lt;DisplayServer Function Declarations&gt;&gt;+=&nbsp;<a href="#fragment-DisplayServerFunctionDeclarations-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void DisplayStatic(std::string title, const <a href="../Utilities/Images.html#Image" class="code">Image</a> &amp;image,
+                   pstd::optional&lt;<a href="../Utilities/Images.html#ImageChannelDesc" class="code">ImageChannelDesc</a>&gt; channelDesc = {});
+void DisplayDynamic(std::string title, const <a href="../Utilities/Images.html#Image" class="code">Image</a> &amp;image,
+                    pstd::optional&lt;<a href="../Utilities/Images.html#ImageChannelDesc" class="code">ImageChannelDesc</a>&gt; channelDesc = {});</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ReportingProgress"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ReportingProgress"></span><h3>B.3.8  Reporting Progress</h3><p>
+
+
+</p>
+<p>The <a href="#ProgressReporter"><tt>ProgressReporter</tt></a> class gives the user feedback about how much of
+a task has been completed and how much longer it is expected to take.  For
+example, implementations of the various <a href="../Introduction/pbrt_System_Overview.html#Integrator::Render"><tt>Integrator::Render()</tt></a> methods
+generally use a <a href="#ProgressReporter"><tt>ProgressReporter</tt></a> to show rendering progress.  The
+implementation prints a row of plus signs, the elapsed time, and the
+estimated remaining time.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProgressReporterDefinition-0"></span><div class="fragmentname">&lt;&lt;ProgressReporter Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="ProgressReporter"></span>ProgressReporter {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ProgressReporterPublicMethods-0">ProgressReporter Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2743" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2743"><i></i></a><div id="fragbit-2743" class="collapse"><div class="fragmentcode">       ProgressReporter(int64_t totalWork, std::string title, bool quiet,
+                        bool gpu = false);
+       ~ProgressReporter();
+       void Update(int64_t num = 1);
+       void Done();
+       double ElapsedSeconds() const;
+       std::string ToString() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname">ProgressReporter Private Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2744" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2744"><i></i></a><div id="fragbit-2744" class="collapse"><div class="fragmentcode">       void printBar();</div></div>
+    &lt;&lt;<span class="fragmentname">ProgressReporter Private Members</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2745" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2745"><i></i></a><div id="fragbit-2745" class="collapse"><div class="fragmentcode">       int64_t totalWork;
+       std::string title;
+       bool quiet;
+       Timer timer;
+       std::atomic&lt;int64_t&gt; workDone;
+       std::atomic&lt;bool&gt; exitThread;
+       std::thread updateThread;
+       pstd::optional&lt;float&gt; finishTime;
+       
+       #ifdef PBRT_BUILD_GPU_RENDERER
+       std::vector&lt;cudaEvent_t&gt; gpuEvents;
+       std::atomic&lt;size_t&gt; gpuEventsLaunchedOffset;
+       int gpuEventsFinishedOffset;
+       #endif</div></div>
+};
+</div><p>
+
+
+</p>
+<p>The constructor takes the total number of units of work to be done (e.g.,
+the total number of camera rays that will be traced) and a short string
+describing the task being performed.  If the <tt>gpu</tt> parameter is
+<tt>true</tt>, then execution on the GPU is tracked.  In that case, the
+implementation must handle the fact that CPU and GPU operation is
+asynchronous, which it does by adding events to the GPU command stream at
+each <tt>Update()</tt> call and then periodically determining which events
+have been completed to report the appropriate degree of progress.  See the
+source code for details.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProgressReporterPublicMethods-0"></span><div class="fragmentname">&lt;&lt;ProgressReporter Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ProgressReporterPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">ProgressReporter(int64_t totalWork, std::string title, bool quiet,
+                 bool gpu = false);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Once the <tt>ProgressReporter</tt> has been created, each call to its
+<tt>Update()</tt> method signifies that one unit of work has been completed.
+An optional integer value can be passed to indicate that multiple units
+have been done.  A call to <tt>Done()</tt> indicates that all work has been
+completed.  Finally, the elapsed time since the <tt>ProgressReporter</tt> was
+created is available via the <tt>ElapsedSeconds()</tt> method.  This quantity
+must be tracked for the progress updates and is often useful to have
+available.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProgressReporterPublicMethods-1"></span><div class="fragmentname">&lt;&lt;ProgressReporter Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ProgressReporterPublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ProgressReporter::Update"></span>Update(int64_t num = 1);
+void <span class="anchor" id="ProgressReporter::Done"></span>Done();
+double <span class="anchor" id="ProgressReporter::ElapsedSeconds"></span>ElapsedSeconds() const;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Containers_and_Memory_Management.html">Utilities / Containers and Memory Management</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

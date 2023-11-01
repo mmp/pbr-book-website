@@ -1,0 +1,344 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Exercises</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Primitives_and_Intersection_Acceleration.html">Primitives and Intersection Acceleration</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Exercises</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Primitives_and_Intersection_Acceleration/Further_Reading.html">(Previous: Further Reading)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>Exercises</h2><p>
+
+
+</p>
+<p></p>
+<ol>
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> What kinds of scenes are worst-case scenarios for the
+two acceleration structures in <tt>pbrt</tt>?  (Consider specific geometric
+configurations that the approaches will respectively be unable to handle
+well.)  Construct scenes with these characteristics, and measure the
+performance of <tt>pbrt</tt> as you add more primitives.  How does the worst case
+for one behave when rendered with the other?
+
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Implement a hierarchical grid accelerator where cells
+that have an excessive number of primitives overlapping them are refined to
+instead hold a finer subgrid to store its geometry.  (See, for example,
+Jevans and Wyvill (<a href="Further_Reading.html#cite:Jevans89">1989</a>) for one approach to this problem
+and Ize et&nbsp;al. (<a href="Further_Reading.html#cite:Ize07">2007</a>) for effective methods for deciding when
+refinement is worthwhile.)  Compare both accelerator construction
+performance and rendering performance to a non-hierarchical grid as well as
+to <tt>pbrt</tt>&rsquo;s built-in accelerators.
+
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> <em>Smarter overlap tests for building
+aggregates</em>: using objects&rsquo; bounding boxes to determine which sides of a
+kd-tree split they overlap can hurt performance by causing unnecessary
+intersection tests. Therefore, add a <tt>bool Overlaps(const
+Bounds3f &amp;) const</tt> method to the <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> interface that takes a rendering space
+bounding box and determines if the shape truly overlaps the given bound.
+
+A default implementation could get the rendering space bound from
+the shape and use that for the test, and specialized versions could be
+written for frequently used shapes.  Implement this method for
+<tt>Sphere</tt>s and <tt>Triangle</tt>s, and modify <a href="../Primitives_and_Intersection_Acceleration/Aggregates.html#KdTreeAggregate"><tt>KdTreeAggregate</tt></a> to call
+it.  You may find it helpful to read Akenine-M&ouml;ller&rsquo;s paper
+(<a href="Further_Reading.html#cite:Moller01">2001</a>) on fast triangle-box overlap testing.
+Measure the change in <tt>pbrt</tt>&rsquo;s overall performance caused by this change,
+separately accounting for increased time spent building the acceleration
+structure and reduction in ray&ndash;object intersection time due to fewer
+intersections.  For a variety of scenes, determine how many fewer
+intersection tests are performed thanks to this improvement.
+
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Implement &ldquo;split clipping&rdquo; in <tt>pbrt</tt>&rsquo;s BVH
+implementation.  Read one or more papers on this topic, including ones by
+Ernst and Greiner (<a href="Further_Reading.html#cite:Ernst2007">2007</a>), Dammertz and Keller
+(<a href="Further_Reading.html#cite:Dammertz2008a">2008a</a>), Stich et&nbsp;al. (<a href="Further_Reading.html#cite:Stich2009">2009</a>), Karras and
+Aila (<a href="Further_Reading.html#cite:Karras2013">2013</a>), and Ganestam and Doggett
+(<a href="Further_Reading.html#cite:Ganestam2016">2016</a>), and implement one of their approaches to
+subdivide primitives with large bounding boxes relative to their surface
+area into multiple subprimitives for tree construction.  (Doing so will
+probably require modification to the <a href="../Shapes/Basic_Shape_Interface.html#Shape"><tt>Shape</tt></a> interface; you will
+probably want to design a new interface that allows some shapes to indicate
+that they are unable to subdivide themselves, so that you only need to
+implement this method for triangles, for example.)
+
+Measure the improvement for rendering actual scenes; a compelling way to
+gather this data is to do the experiment that Dammertz and Keller did,
+where a scene is rotated around an axis over progressive frames of an
+animation.  Typically, many triangles that are originally axis aligned will
+have very loose bounding boxes as they rotate more, leading to a
+substantial performance degradation if split clipping is not used.
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> The 30-bit Morton codes used for the HLBVH construction
+algorithm in the <a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAggregate"><tt>BVHAggregate</tt></a> may be insufficient for scenes with
+large spatial extents
+because they can only represent <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="10.787ex" height="2.676ex" style="vertical-align: -0.338ex;" viewBox="0 -1006.6 4644.4 1152.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 Superscript 10 Baseline equals 1024</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-34" d="M471 165h-100v-87c0 -36 2 -47 76 -47h21v-31c-41 3 -94 3 -136 3s-94 0 -135 -3v31h21c74 0 76 11 76 47v87h-266v31l307 469c8 12 11 12 20 12c16 0 16 -6 16 -26v-455h100v-31zM300 196v373l-244 -373h244Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+<g transform="translate(500,393)">
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1586" y="0"></use>
+<g transform="translate(2642,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-31"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="1001" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-34" x="1501" y="0"></use>
+</g>
+</g>
+</svg> steps in each dimension.
+Modify the <a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAggregate"><tt>BVHAggregate</tt></a> to use 64-bit integers with 63-bit Morton
+codes for HLBVHs.  Compare the performance of your approach to the original
+one with a variety of scenes. Are there scenes where performance is
+substantially improved?  Are there any where there is a loss of
+performance?
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Investigate alternative SAH cost functions for building
+BVHs or kd-trees.  How much can a poor cost function hurt its performance?
+How much improvement can be had compared to the current one?  (See the
+discussion in the &ldquo;Further Reading&rdquo; section for ideas about how the SAH
+may be improved.)
+
+ <li class="exercise"><span class="exerciseicon">&#9314;</span> The idea of using spatial data structures for ray
+intersection acceleration can be generalized to include spatial data
+structures that themselves hold other spatial data structures rather than
+just primitives.  Not only could we have a grid that has subgrids inside
+the grid cells that have many primitives in them, but we could also have
+the scene organized into a hierarchical bounding volume where the leaf
+nodes are grids that hold smaller collections of spatially nearby
+primitives.  Such hybrid techniques can bring the best of a variety of
+spatial data structure&ndash;based ray intersection acceleration methods.  In
+<tt>pbrt</tt>, because both geometric primitives and intersection accelerators
+implement the <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a> interface and thus provide the same
+interface, it is easy to mix and match in this way.
+
+Modify <tt>pbrt</tt> to build hybrid acceleration structures&mdash;for example, using
+a BVH to coarsely partition the scene geometry and then uniform grids at the
+leaves of the tree to manage dense, spatially local collections of
+geometry.  Measure the running time and memory use for rendering scenes
+with this method compared to the current aggregates.
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Eisemann et&nbsp;al. (<a href="Further_Reading.html#cite:Eisemann2007">2007</a>) described an
+even more efficient ray&ndash;box intersection test than is used in the
+<a href="../Primitives_and_Intersection_Acceleration/Bounding_Volume_Hierarchies.html#BVHAggregate"><tt>BVHAggregate</tt></a>.  It does more computation at the start for each ray but
+makes up for this work with fewer computations to do tests for individual
+bounding boxes.  Implement their method in <tt>pbrt</tt>, and measure the change in
+rendering time for a variety of scenes.  Are there simple scenes where the
+additional upfront work does not pay off?  How does the improvement for
+highly complex scenes compare to the improvement for simpler scenes?
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Although the intersection algorithm implemented in the
+<a href="../Shapes/Triangle_Meshes.html#IntersectTriangle"><tt>IntersectTriangle()</tt></a> function is watertight, a source of inaccuracy in
+ray&ndash;triangle intersections computed in <tt>pbrt</tt> remains: because the
+triangle intersection algorithm shears the vertices of the triangle, it may
+no longer lie in its original bounding box.  In turn, the BVH traversal
+algorithm must be modified to account for this error so that valid
+intersections are not missed.  Read the discussion of this issue in Woop et
+al.&rsquo;s paper (<a href="Further_Reading.html#cite:Woop2013">2013</a>) and modify <tt>pbrt</tt> to fix this issue.  What
+is the performance impact of your fix?  Can you find any scenes where the
+image changes as a result of it?
+
+
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Read the paper by Segovia and Ernst (<a href="Further_Reading.html#cite:Segovia2010">2010</a>) on
+memory-efficient BVHs, and implement their approach in <tt>pbrt</tt>.  How does
+memory usage with their approach compare to that for the <tt>BVHAggregate</tt>? Compare
+rendering performance with your approach to <tt>pbrt</tt>&rsquo;s current
+performance. Discuss how your results compare to the results reported in
+their paper.
+
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Modify <tt>pbrt</tt> to use the &ldquo;mailboxing&rdquo; optimization in
+the <a href="../Primitives_and_Intersection_Acceleration/Aggregates.html#KdTreeAggregate"><tt>KdTreeAggregate</tt></a> to avoid repeated intersections with primitives
+that overlap multiple kd-tree nodes.  Given that <tt>pbrt</tt> is multi-threaded,
+you will probably do best to consider either the hashed mailboxing approach
+suggested by Benthin (<a href="Further_Reading.html#cite:Benthin2006">2006</a>) or the inverse mailboxing
+algorithm of Shevtsov et&nbsp;al. (<a href="Further_Reading.html#cite:Shevtsov07a">2007a</a>).  Measure the
+performance change compared to the current implementation for a variety of
+scenes.  How does the change in running time relate to changes in reported
+statistics about the number of ray&ndash;primitive intersection tests?
+
+
+ <li class="exercise"><span class="exerciseicon">&#9313;</span> Consider a scene with an animated camera that is tracking
+a moving object such that there is no relative motion between the two.  For
+such a scene, it may be more efficient to represent it with the camera and
+object being static and with a corresponding relative animated
+transformation applied to the rest of the scene.  In this way, ray
+intersections with the tracked object will be more efficient since its
+bounding box is not expanded by its motion.
+
+Construct such a scene and then measure the performance of rendering it
+with both ways of representing the motion by making corresponding changes
+to the scene description file.  How is performance affected by the size of
+the tracked object in the image?  Next, modify <tt>pbrt</tt> to automatically
+perform this optimization when this situation occurs.  Can you find a way
+to have these benefits when the motion of the camera and some objects in
+the scene are close but not exactly the same?
+
+ <li class="exercise"><span class="exerciseicon">&#9314;</span> It is often possible to introduce some approximation into
+the computation of shadows from very complex geometry (consider, e.g., the
+branches and leaves of a tree casting a shadow).  Lacewell
+et&nbsp;al. (<a href="Further_Reading.html#cite:Lacewell08">2008</a>) suggested augmenting the acceleration
+structure with a prefiltered directionally varying representation of
+occlusion for regions of space.  As shadow rays pass through these regions,
+an approximate visibility probability can be returned rather than a binary
+result, and the cost of tree traversal and object intersection tests is
+reduced.  Implement such an approach in <tt>pbrt</tt>, and compare its performance
+to the current implementation. Do you see any changes in rendered images?
+
+</ol><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Sampling_and_Reconstruction.html">Sampling and Reconstruction</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

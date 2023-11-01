@@ -1,0 +1,231 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>System Startup, Cleanup, and Options</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">System Startup, Cleanup, and Options</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">(Previous: Utilities)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>B.1 System Startup, Cleanup, and Options</h2><p>
+
+
+</p>
+<p>Two structures that are defined in the <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/options.h"><tt>options.h</tt></a> header represent various
+user-specified options that are generally not part of the scene description
+file but are instead specified using command-line arguments to
+<tt>pbrt</tt>. <tt>pbrt</tt>&rsquo;s <tt>main()</tt> function allocates the structure and then
+overrides its default values as appropriate.
+
+</p>
+<p><tt>BasicPBRTOptions</tt> stores the options that are used in both the CPU
+and GPU rendering pipelines.  How most of them are used should be
+self-evident, though <tt>seed</tt> deserves note: any time an <a href="../Utilities/Mathematical_Infrastructure.html#RNG"><tt>RNG</tt></a> is
+initialized in <tt>pbrt</tt>, the <tt>seed</tt> value in the options should be
+incorporated in the seed passed to its constructor.  In this way, the
+renderer will generate independent images if the user specifies different
+<tt>&ndash;seed</tt> values using command-line arguments.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-BasicPBRTOptionsDefinition-0"></span><div class="fragmentname">&lt;&lt;BasicPBRTOptions Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct <span class="anchor" id="BasicPBRTOptions"></span>BasicPBRTOptions {
+    int <span class="anchor" id="BasicPBRTOptions::seed"></span>seed = 0;
+    bool <span class="anchor" id="BasicPBRTOptions::quiet"></span>quiet = false;
+    bool <span class="anchor" id="BasicPBRTOptions::disablePixelJitter"></span>disablePixelJitter = false, <span class="anchor" id="BasicPBRTOptions::disableWavelengthJitter"></span>disableWavelengthJitter = false;
+    bool <span class="anchor" id="BasicPBRTOptions::disableTextureFiltering"></span>disableTextureFiltering = false;
+    bool <span class="anchor" id="BasicPBRTOptions::forceDiffuse"></span>forceDiffuse = false;
+    bool <span class="anchor" id="BasicPBRTOptions::useGPU"></span>useGPU = false;
+    bool <span class="anchor" id="BasicPBRTOptions::wavefront"></span>wavefront = false;
+    RenderingCoordinateSystem <span class="anchor" id="BasicPBRTOptions::renderingSpace"></span>renderingSpace =
+        RenderingCoordinateSystem::CameraWorld;
+};</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-RenderingCoordinateSystemDefinition-0"></span><div class="fragmentname">&lt;&lt;RenderingCoordinateSystem Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">enum class <span class="anchor" id="RenderingCoordinateSystem"></span>RenderingCoordinateSystem { <span class="anchor" id="RenderingCoordinateSystem::Camera"></span><a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a>, <span class="anchor" id="RenderingCoordinateSystem::CameraWorld"></span>CameraWorld, <span class="anchor" id="RenderingCoordinateSystem::World"></span>World };
+</div><p>
+
+
+</p>
+<p>The <tt>PBRTOptions</tt><span class="anchor" id="PBRTOptions"></span> structure, not included
+here, inherits from <a href="#BasicPBRTOptions"><tt>BasicPBRTOptions</tt></a> and adds a number of additional
+options that are mostly used when processing the scene description and not
+during rendering.  A number of these options are <tt>std::string</tt>s that
+are not accessible in GPU code.  Splitting the options in this way
+allows GPU code to access a <a href="#BasicPBRTOptions"><tt>BasicPBRTOptions</tt></a> instance to get the
+particular option values that are relevant to it.
+
+</p>
+<p>
+
+</p>
+<p>The options are passed to <tt>InitPBRT()</tt>, which should be called before
+any of <tt>pbrt</tt>&rsquo;s other classes or interfaces are used.  It handles
+system-wide initialization and configuration.  When rendering completes,
+<tt>CleanupPBRT()</tt> should be called so that the system can gracefully
+shut down.  Both of these functions are defined in the file <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/pbrt.cpp"><tt>pbrt.cpp</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InitializationandCleanupFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;Initialization and Cleanup Function Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="InitPBRT"></span>InitPBRT(const PBRTOptions &amp;opt);
+void <span class="anchor" id="CleanupPBRT"></span>CleanupPBRT();</div><p>
+
+
+</p>
+<p>In code that only runs on the CPU, the options can be accessed via a global
+variable.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-OptionsGlobalVariableDeclaration-0"></span><div class="fragmentname">&lt;&lt;Options Global Variable Declaration&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">extern PBRTOptions *<span class="anchor" id="Options"></span>Options;</div><p>
+
+
+</p>
+<p>For code that runs on both the CPU and GPU, options must be accessed through
+the <tt>GetOptions()</tt> function, which returns a copy of the options that
+is either stored in CPU or GPU memory, depending on which type of processor
+the code is executing.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-OptionsInlineFunctions-0"></span><div class="fragmentname">&lt;&lt;Options Inline Functions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">const BasicPBRTOptions &amp;<span class="anchor" id="GetOptions"></span>GetOptions();</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Mathematical_Infrastructure.html">Utilities / Mathematical Infrastructure</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

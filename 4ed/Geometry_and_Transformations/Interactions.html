@@ -1,0 +1,1329 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Interactions</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations.html">Geometry and Transformations</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Interactions</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Geometry_and_Transformations/Applying_Transformations.html">(Previous: Applying Transformations)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:interactions"></span><h2>3.11 Interactions</h2><p>
+
+
+
+</p>
+<p> The last abstractions in this chapter, <tt>SurfaceInteraction</tt>
+and <tt>MediumInteraction</tt>,
+respectively represent local information at points on surfaces and in participating media.  For example, the
+ray&ndash;shape intersection routines in Chapter&nbsp;<a href="../Shapes.html#chap:shapes">6</a> return
+information about the local differential geometry at intersection points in
+a <tt>SurfaceInteraction</tt>.  Later, the texturing code in
+Chapter&nbsp;<a href="../Textures_and_Materials.html#chap:texture">10</a> computes material properties using values from
+the <tt>SurfaceInteraction</tt>.  The closely related <a href="#MediumInteraction"><tt>MediumInteraction</tt></a>
+class is used to represent points where light interacts with participating
+media like smoke or clouds.  The implementations
+of all of these classes are in the files
+<tt>interaction.h</tt><span class="anchor" id="interaction.h"></span> and
+<tt>interaction.cpp</tt><span class="anchor" id="interaction.cpp"></span>.
+
+</p>
+<p>Both <tt>SurfaceInteraction</tt> and <a href="#MediumInteraction"><tt>MediumInteraction</tt></a> inherit from a
+generic <tt>Interaction</tt> class that provides common member variables and
+methods, which allows parts of the system for which the differences between
+surface and medium interactions do not matter to be implemented purely in
+terms of <tt>Interaction</tt>s.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionDefinition-0"></span><div class="fragmentname">&lt;&lt;Interaction Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="Interaction"></span>Interaction {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-InteractionPublicMethods-0">Interaction Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-128" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-128"><i></i></a><div id="fragbit-128" class="collapse"><div class="fragmentcode">       <a href="#Interaction" class="code">Interaction</a>() = default;
+       <a href="#Interaction" class="code">Interaction</a>(<a href="../Utilities/Mathematical_Infrastructure.html#Point3fi" class="code">Point3fi</a> <a href="#Interaction::pi" class="code">pi</a>, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> <a href="#Interaction::n" class="code">n</a>, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, Float time)
+           : <a href="#Interaction::pi" class="code">pi</a>(<a href="#Interaction::pi" class="code">pi</a>), <a href="#Interaction::n" class="code">n</a>(<a href="#Interaction::n" class="code">n</a>), uv(uv), wo(Normalize(wo)), time(time) {}
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="#Interaction::p" class="code">p</a>() const { return <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(<a href="#Interaction::pi" class="code">pi</a>); }
+       bool <a href="#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>() const { return <a href="#Interaction::n" class="code">n</a> != <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a>(0, 0, 0); }
+       bool IsMediumInteraction() const { return !<a href="#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>(); }
+       const <a href="#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;AsSurface() const {
+           <a href="../Utilities/User_Interaction.html#CHECK" class="code">CHECK</a>(<a href="#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>());
+           return (const <a href="#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)*this;
+       }
+       <a href="#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;AsSurface() {
+           <a href="../Utilities/User_Interaction.html#CHECK" class="code">CHECK</a>(<a href="#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>());
+           return (<a href="#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)*this;
+       }
+       // used by <a href="#Interaction::medium" class="code">medium</a> ctor
+       PBRT_CPU_GPU
+       <a href="#Interaction" class="code">Interaction</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="#Interaction::p" class="code">p</a>, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, Float time, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> <a href="#Interaction::medium" class="code">medium</a>)
+           : <a href="#Interaction::pi" class="code">pi</a>(<a href="#Interaction::p" class="code">p</a>), time(time), wo(wo), <a href="#Interaction::medium" class="code">medium</a>(<a href="#Interaction::medium" class="code">medium</a>) {}
+       PBRT_CPU_GPU
+       <a href="#Interaction" class="code">Interaction</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="#Interaction::p" class="code">p</a>, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> <a href="#Interaction::n" class="code">n</a>, Float time, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> <a href="#Interaction::medium" class="code">medium</a>)
+           : <a href="#Interaction::pi" class="code">pi</a>(<a href="#Interaction::p" class="code">p</a>), <a href="#Interaction::n" class="code">n</a>(<a href="#Interaction::n" class="code">n</a>), time(time), <a href="#Interaction::medium" class="code">medium</a>(<a href="#Interaction::medium" class="code">medium</a>) {}
+       PBRT_CPU_GPU
+       <a href="#Interaction" class="code">Interaction</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="#Interaction::p" class="code">p</a>, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv)
+           : <a href="#Interaction::pi" class="code">pi</a>(<a href="#Interaction::p" class="code">p</a>), uv(uv) {}
+       PBRT_CPU_GPU
+       <a href="#Interaction" class="code">Interaction</a>(const <a href="../Utilities/Mathematical_Infrastructure.html#Point3fi" class="code">Point3fi</a> &amp;<a href="#Interaction::pi" class="code">pi</a>, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> <a href="#Interaction::n" class="code">n</a>, Float time = 0,
+                   <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv = {})
+           : <a href="#Interaction::pi" class="code">pi</a>(<a href="#Interaction::pi" class="code">pi</a>), <a href="#Interaction::n" class="code">n</a>(<a href="#Interaction::n" class="code">n</a>), uv(uv), time(time) {}
+       PBRT_CPU_GPU
+       <a href="#Interaction" class="code">Interaction</a>(const <a href="../Utilities/Mathematical_Infrastructure.html#Point3fi" class="code">Point3fi</a> &amp;<a href="#Interaction::pi" class="code">pi</a>, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> <a href="#Interaction::n" class="code">n</a>, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv)
+           : <a href="#Interaction::pi" class="code">pi</a>(<a href="#Interaction::pi" class="code">pi</a>), <a href="#Interaction::n" class="code">n</a>(<a href="#Interaction::n" class="code">n</a>), uv(uv) {}
+       PBRT_CPU_GPU
+       <a href="#Interaction" class="code">Interaction</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="#Interaction::p" class="code">p</a>, Float time, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> <a href="#Interaction::medium" class="code">medium</a>)
+           : <a href="#Interaction::pi" class="code">pi</a>(<a href="#Interaction::p" class="code">p</a>), time(time), <a href="#Interaction::medium" class="code">medium</a>(<a href="#Interaction::medium" class="code">medium</a>) {}
+       PBRT_CPU_GPU
+       <a href="#Interaction" class="code">Interaction</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="#Interaction::p" class="code">p</a>, const <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> *<a href="#Interaction::mediumInterface" class="code">mediumInterface</a>)
+           : <a href="#Interaction::pi" class="code">pi</a>(<a href="#Interaction::p" class="code">p</a>), <a href="#Interaction::mediumInterface" class="code">mediumInterface</a>(<a href="#Interaction::mediumInterface" class="code">mediumInterface</a>) {}
+       PBRT_CPU_GPU
+       <a href="#Interaction" class="code">Interaction</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="#Interaction::p" class="code">p</a>, Float time, const <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> *<a href="#Interaction::mediumInterface" class="code">mediumInterface</a>)
+           : <a href="#Interaction::pi" class="code">pi</a>(<a href="#Interaction::p" class="code">p</a>), time(time), <a href="#Interaction::mediumInterface" class="code">mediumInterface</a>(<a href="#Interaction::mediumInterface" class="code">mediumInterface</a>) {}
+       PBRT_CPU_GPU
+       const <a href="#MediumInteraction" class="code">MediumInteraction</a> &amp;AsMedium() const {
+           <a href="../Utilities/User_Interaction.html#CHECK" class="code">CHECK</a>(IsMediumInteraction());
+           return (const <a href="#MediumInteraction" class="code">MediumInteraction</a> &amp;)*this;
+       }
+       PBRT_CPU_GPU
+       <a href="#MediumInteraction" class="code">MediumInteraction</a> &amp;AsMedium() {
+           <a href="../Utilities/User_Interaction.html#CHECK" class="code">CHECK</a>(IsMediumInteraction());
+           return (<a href="#MediumInteraction" class="code">MediumInteraction</a> &amp;)*this;
+       }
+       
+       std::string ToString() const;
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="../Shapes/Managing_Rounding_Error.html#Interaction::OffsetRayOrigin" class="code">OffsetRayOrigin</a>(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w) const {
+           return pbrt::<a href="../Shapes/Managing_Rounding_Error.html#Interaction::OffsetRayOrigin" class="code">OffsetRayOrigin</a>(<a href="#Interaction::pi" class="code">pi</a>, <a href="#Interaction::n" class="code">n</a>, w);
+       }
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <a href="../Shapes/Managing_Rounding_Error.html#Interaction::OffsetRayOrigin" class="code">OffsetRayOrigin</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pt) const {
+           return <a href="../Shapes/Managing_Rounding_Error.html#Interaction::OffsetRayOrigin" class="code">OffsetRayOrigin</a>(pt - <a href="#Interaction::p" class="code">p</a>());
+       }
+       <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> SpawnRay(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>) const {
+           return <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a>(<a href="../Shapes/Managing_Rounding_Error.html#Interaction::OffsetRayOrigin" class="code">OffsetRayOrigin</a>(<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>), <a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>, time, <a href="../Volume_Scattering/Media.html#Interaction::GetMedium" class="code">GetMedium</a>(<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>));
+       }
+       <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> <a href="../Shapes/Managing_Rounding_Error.html#SpawnRayTo" class="code">SpawnRayTo</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p2) const {
+           <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> r = pbrt::<a href="../Shapes/Managing_Rounding_Error.html#SpawnRayTo" class="code">SpawnRayTo</a>(<a href="#Interaction::pi" class="code">pi</a>, <a href="#Interaction::n" class="code">n</a>, time, p2);
+           r.<a href="#Interaction::medium" class="code">medium</a> = <a href="../Volume_Scattering/Media.html#Interaction::GetMedium" class="code">GetMedium</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>);
+           return r;
+       }
+       PBRT_CPU_GPU
+       <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> <a href="../Shapes/Managing_Rounding_Error.html#SpawnRayTo" class="code">SpawnRayTo</a>(const <a href="#Interaction" class="code">Interaction</a> &amp;it) const {
+           <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> r = pbrt::<a href="../Shapes/Managing_Rounding_Error.html#SpawnRayTo" class="code">SpawnRayTo</a>(<a href="#Interaction::pi" class="code">pi</a>, <a href="#Interaction::n" class="code">n</a>, time, it.<a href="#Interaction::pi" class="code">pi</a>, it.<a href="#Interaction::n" class="code">n</a>);
+           r.<a href="#Interaction::medium" class="code">medium</a> = <a href="../Volume_Scattering/Media.html#Interaction::GetMedium" class="code">GetMedium</a>(r.<a href="../Geometry_and_Transformations/Rays.html#Ray::d" class="code">d</a>);
+           return r;
+       }
+       <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> <a href="../Volume_Scattering/Media.html#Interaction::GetMedium" class="code">GetMedium</a>(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w) const {
+           if (<a href="#Interaction::mediumInterface" class="code">mediumInterface</a>)
+               return <a href="../Geometry_and_Transformations/Vectors.html#Dot" class="code">Dot</a>(w, <a href="#Interaction::n" class="code">n</a>) &gt; 0 ? <a href="#Interaction::mediumInterface" class="code">mediumInterface</a>-&gt;outside :
+                                      <a href="#Interaction::mediumInterface" class="code">mediumInterface</a>-&gt;inside;
+           return <a href="#Interaction::medium" class="code">medium</a>;
+       }
+       <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> <a href="../Volume_Scattering/Media.html#Interaction::GetMedium" class="code">GetMedium</a>() const {
+           return <a href="#Interaction::mediumInterface" class="code">mediumInterface</a> ? <a href="#Interaction::mediumInterface" class="code">mediumInterface</a>-&gt;inside : <a href="#Interaction::medium" class="code">medium</a>;
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-InteractionPublicMembers-0">Interaction Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-129" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-129"><i></i></a><div id="fragbit-129" class="collapse"><div class="fragmentcode">       <a href="../Utilities/Mathematical_Infrastructure.html#Point3fi" class="code">Point3fi</a> pi;
+       Float time = 0;
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo;
+       <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> n;
+       <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv;
+       const <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> *mediumInterface = nullptr;
+       <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium = nullptr;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>A variety of <tt>Interaction</tt> constructors are available;
+depending on what sort of interaction is being constructed and what sort of
+information about it is relevant, corresponding sets of parameters are
+accepted.  This one is the most general of them.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMethods-0"></span><div class="fragmentname">&lt;&lt;Interaction Public Methods&gt;&gt;=&nbsp;<a href="#fragment-InteractionPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#Interaction" class="code">Interaction</a>(<a href="../Utilities/Mathematical_Infrastructure.html#Point3fi" class="code">Point3fi</a> pi, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> n, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, Float time)
+    : pi(pi), n(n), uv(uv), wo(Normalize(wo)), time(time) {}</div><p>
+
+
+</p>
+<p>All interactions have a point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> associated with them.  This point is
+stored using the <a href="../Utilities/Mathematical_Infrastructure.html#Point3fi"><tt>Point3fi</tt></a> class, which uses an <a href="../Utilities/Mathematical_Infrastructure.html#Interval"><tt>Interval</tt></a> to
+represent each coordinate value.  Storing a small interval of
+floating-point values rather than a single <a href="../Introduction/pbrt_System_Overview.html#Float"><tt>Float</tt></a> makes it possible to
+represent bounds on the numeric error in the intersection point, as occurs
+when the point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> was computed by a ray intersection calculation.
+This information will be useful for avoiding incorrect self-intersections
+for rays leaving surfaces, as will be discussed in
+Section&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#sec:generating-rays">6.8.6</a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMembers-0"></span><div class="fragmentname">&lt;&lt;Interaction Public Members&gt;&gt;=&nbsp;<a href="#fragment-InteractionPublicMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Utilities/Mathematical_Infrastructure.html#Point3fi" class="code">Point3fi</a> <span class="anchor" id="Interaction::pi"></span>pi;</div><p>
+
+
+</p>
+<p><tt>Interaction</tt> provides a convenience method that returns a regular
+<a href="../Geometry_and_Transformations/Points.html#Point3f"><tt>Point3f</tt></a> for the interaction point for the parts of the system that do
+not need to account for any error in it (e.g., the texture evaluation
+routines).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMethods-1"></span><div class="fragmentname">&lt;&lt;Interaction Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-InteractionPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <span class="anchor" id="Interaction::p"></span>p() const { return <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a>(pi); }</div><p>
+
+
+</p>
+<p>All interactions also have a time associated with them.  Among other uses,
+this value is necessary for setting the time of a spawned ray leaving the
+interaction.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMembers-1"></span><div class="fragmentname">&lt;&lt;Interaction Public Members&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMembers-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-InteractionPublicMembers-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">Float <span class="anchor" id="Interaction::time"></span>time = 0;</div><p>
+
+
+</p>
+<p>For interactions that lie along a ray (either from a ray&ndash;shape
+intersection or from a ray passing through participating media), the
+negative ray direction is stored in the <tt>wo</tt> member variable, which
+corresponds to <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.5ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 1076.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal o</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6F" d="M471 214c0 -127 -101 -225 -222 -225c-117 0 -221 96 -221 225c0 125 97 234 222 234c121 0 221 -106 221 -234zM388 222c0 38 0 96 -26 139s-69 65 -113 65c-40 0 -87 -21 -114 -67c-24 -44 -24 -98 -24 -137c0 -36 0 -97 25 -141c27 -46 71 -67 114 -67 c50 0 94 29 116 74c22 44 22 98 22 134Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6F" x="880" y="-213"></use>
+</g>
+</svg>, the notation we use for the outgoing direction when
+computing lighting at points.  For other types of interaction points where
+the notion of an outgoing direction does not apply (e.g., those found by
+randomly sampling points on the surface of shapes), <tt>wo</tt> has the value
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="7.365ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 3170.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis 0 comma 0 comma 0 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="1335" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1835" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="2280" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2781" y="0"></use>
+</g>
+</svg>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMembers-2"></span><div class="fragmentname">&lt;&lt;Interaction Public Members&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMembers-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-InteractionPublicMembers-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <span class="anchor" id="Interaction::wo"></span>wo;</div><p>
+
+
+</p>
+<p>For interactions on surfaces, <tt>n</tt> stores the surface normal at the
+point and <tt>uv</tt> stores its <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> parametric coordinates.  It is fair 
+to ask, why are these values stored in the base <tt>Interaction</tt>
+class rather than in <tt>SurfaceInteraction</tt>?  The reason is that there
+are some parts of the system that <em>mostly</em> do not care about the
+distinction between surface and medium interactions&mdash;for example, some of
+the routines that sample points on light sources given a point to be
+illuminated.  Those make use of these values if they are available and
+ignore them if they are set to zero.  By accepting the small dissonance of
+having them in the wrong place here, the implementations of those methods
+and the code that calls them is made that much simpler.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMembers-3"></span><div class="fragmentname">&lt;&lt;Interaction Public Members&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMembers-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-InteractionPublicMembers-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> <span class="anchor" id="Interaction::n"></span>n;
+<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> <span class="anchor" id="Interaction::uv"></span>uv;</div><p>
+
+
+</p>
+<p>It is possible to check if a pointer or reference to an <tt>Interaction</tt>
+is one of the two subclasses.  A nonzero surface normal is used as a
+distinguisher for a surface.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMethods-2"></span><div class="fragmentname">&lt;&lt;Interaction Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-InteractionPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="Interaction::IsSurfaceInteraction"></span><a href="#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>() const { return <a href="#Interaction::n" class="code">n</a> != <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a>(0, 0, 0); }
+bool <span class="anchor" id="Interaction::IsMediumInteraction"></span>IsMediumInteraction() const { return !<a href="#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>(); }</div><p>
+
+
+</p>
+<p>Methods are provided to cast to the subclass types as well.  This is a good
+place for a runtime check to ensure that the requested conversion is valid.
+The non-<tt>const</tt> variant of this method as well as corresponding
+<tt>AsMedium()</tt> methods<span class="anchor" id="Interaction::AsMedium"></span> follow
+similarly and are not included in the&nbsp;text.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMethods-3"></span><div class="fragmentname">&lt;&lt;Interaction Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#fragment-InteractionPublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">const <a href="#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;<span class="anchor" id="Interaction::AsSurface"></span>AsSurface() const {
+    <a href="../Utilities/User_Interaction.html#CHECK" class="code">CHECK</a>(<a href="#Interaction::IsSurfaceInteraction" class="code">IsSurfaceInteraction</a>());
+    return (const <a href="#SurfaceInteraction" class="code">SurfaceInteraction</a> &amp;)*this;
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Interactions can also represent either an interface between two types of
+participating media using an instance of the <a href="../Volume_Scattering/Media.html#MediumInterface"><tt>MediumInterface</tt></a> class,
+which is defined in Section&nbsp;<a href="../Volume_Scattering/Media.html#sec:media">11.4</a>, or the properties of the
+scattering medium at their point using a <a href="../Volume_Scattering/Media.html#Medium"><tt>Medium</tt></a>.  Here as
+well, the <tt>Interaction</tt> abstraction leaks: surfaces can represent
+interfaces between media, and at a point inside a medium, there is no
+interface but there is the current medium.  Both of these values are stored
+in <tt>Interaction</tt> for the same reasons of expediency that <tt>n</tt> and
+<tt>uv</tt> were.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-InteractionPublicMembers-4"></span><div class="fragmentname">&lt;&lt;Interaction Public Members&gt;&gt;+=&nbsp;<a href="#fragment-InteractionPublicMembers-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">const <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> <span class="anchor" id="Interaction::mediumInterface"></span>*mediumInterface = nullptr;
+<a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> <span class="anchor" id="Interaction::medium"></span>medium = nullptr;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#SurfaceInteraction"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:surface-interaction"></span><span id="SurfaceInteraction"></span><h3>3.11.1  Surface Interaction</h3><p>
+
+
+
+</p>
+<p>As described earlier, the geometry of a particular point on a surface
+(often a position found by intersecting a ray against the surface) is
+represented by a <tt>SurfaceInteraction</tt>.  Having this abstraction lets
+most of the system work with points on surfaces without needing to consider
+the particular type of geometric shape the points lie on.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SurfaceInteractionDefinition-0"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="SurfaceInteraction"></span>SurfaceInteraction : public <a href="#Interaction" class="code">Interaction</a> {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SurfaceInteractionPublicMethods-0">SurfaceInteraction Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-130" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-130"><i></i></a><div id="fragbit-130" class="collapse"><div class="fragmentcode">       <a href="#SurfaceInteraction" class="code">SurfaceInteraction</a>() = default;
+       <a href="#SurfaceInteraction" class="code">SurfaceInteraction</a>(<a href="../Utilities/Mathematical_Infrastructure.html#Point3fi" class="code">Point3fi</a> pi, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdu,
+               <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdv, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndu, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndv, Float time,
+               bool flipNormal)
+           : <a href="#Interaction" class="code">Interaction</a>(pi, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a>(<a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Geometry_and_Transformations/Vectors.html#Cross" class="code">Cross</a>(dpdu, dpdv))), uv, wo, time),
+             dpdu(dpdu), dpdv(dpdv), dndu(dndu), dndv(dndv) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializeshadinggeometryfromtruegeometry-0">Initialize shading geometry from true geometry</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-131" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-131"><i></i></a><div id="fragbit-131" class="collapse"><div class="fragmentcode">              <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.n = n;
+              <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dpdu = dpdu;
+              <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dpdv = dpdv;
+              <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndu = dndu;
+              <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndv = dndv;</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Adjustnormalbasedonorientationandhandedness-0">Adjust normal based on orientation and handedness</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-132" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-132"><i></i></a><div id="fragbit-132" class="collapse"><div class="fragmentcode">              if (flipNormal) {
+                  <a href="#SurfaceInteraction::shading::n" class="code">n</a> *= -1;
+                  shading.<a href="#SurfaceInteraction::shading::n" class="code">n</a> *= -1;
+              }</div></div>
+       }
+       <a href="#SurfaceInteraction" class="code">SurfaceInteraction</a>(<a href="../Utilities/Mathematical_Infrastructure.html#Point3fi" class="code">Point3fi</a> pi, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo,
+               <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdu, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdv, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndu,
+               <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndv, Float time, bool flipNormal,
+               int faceIndex)
+           : <a href="#SurfaceInteraction" class="code">SurfaceInteraction</a>(pi, uv, wo, dpdu, dpdv, dndu, dndv, time, flipNormal) {
+             this-&gt;faceIndex = faceIndex;
+       }
+       void SetShadingGeometry(<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> ns, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdus, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdvs,
+               <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndus, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndvs, bool orientationIsAuthoritative) {
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Computemonoshading.nformonoSurfaceInteraction-0">Compute <tt>shading.n</tt> for <tt>SurfaceInteraction</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-133" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-133"><i></i></a><div id="fragbit-133" class="collapse"><div class="fragmentcode">              shading.<a href="#Interaction::n" class="code">n</a> = ns;
+              if (orientationIsAuthoritative)
+                  <a href="#Interaction::n" class="code">n</a> = <a href="../Geometry_and_Transformations/Normals.html#FaceForward" class="code">FaceForward</a>(<a href="#Interaction::n" class="code">n</a>, shading.<a href="#Interaction::n" class="code">n</a>);
+              else
+                  shading.<a href="#Interaction::n" class="code">n</a> = <a href="../Geometry_and_Transformations/Normals.html#FaceForward" class="code">FaceForward</a>(shading.<a href="#Interaction::n" class="code">n</a>, <a href="#Interaction::n" class="code">n</a>);</div></div>
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializemonoshadingpartialderivativevalues-0">Initialize <tt>shading</tt> partial derivative values</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-134" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-134"><i></i></a><div id="fragbit-134" class="collapse"><div class="fragmentcode">              <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.<a href="#SurfaceInteraction::shading::dpdu" class="code">dpdu</a> = dpdus;
+              <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.<a href="#SurfaceInteraction::shading::dpdv" class="code">dpdv</a> = dpdvs;
+              <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndu = dndus;
+              <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndv = dndvs;
+              </div></div>
+       }
+       std::string ToString() const;
+       void SetIntersectionProperties(<a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> mtl, <a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a> area,
+               const <a href="../Volume_Scattering/Media.html#MediumInterface" class="code">MediumInterface</a> *primMediumInterface, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> rayMedium) {
+           material = mtl;
+           areaLight = area;
+           &lt;&lt;<span class="fragmentname"><a href="../Volume_Scattering/Media.html#fragment-Setmediumpropertiesatsurfaceintersection-0">Set medium properties at surface intersection</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-135" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-135"><i></i></a><div id="fragbit-135" class="collapse"><div class="fragmentcode">              if (primMediumInterface &amp;&amp; primMediumInterface-&gt;<a href="../Volume_Scattering/Media.html#MediumInterface::IsMediumTransition" class="code">IsMediumTransition</a>())
+                  <a href="#Interaction::mediumInterface" class="code">mediumInterface</a> = primMediumInterface;
+              else
+                  <a href="#Interaction::medium" class="code">medium</a> = rayMedium;</div></div> 
+       }
+       PBRT_CPU_GPU
+       void ComputeDifferentials(const <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> &amp;r, <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a> camera,
+                                 int samplesPerPixel);
+       PBRT_CPU_GPU
+       void SkipIntersection(<a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> *ray, Float t) const;
+       using <a href="#Interaction" class="code">Interaction</a>::SpawnRay;
+       <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> SpawnRay(const <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> &amp;rayi, const <a href="../Reflection_Models/BSDF_Representation.html#BSDF" class="code">BSDF</a> &amp;bsdf,
+                                <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi, int /*<a href="../Reflection_Models/BSDF_Representation.html#BxDFFlags" class="code">BxDFFlags</a>*/ flags, Float eta) const;
+       <a href="../Reflection_Models/BSDF_Representation.html#BSDF" class="code">BSDF</a> GetBSDF(const <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> &amp;ray,
+                    <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda, <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a> camera,
+                    <a href="../Utilities/Containers_and_Memory_Management.html#ScratchBuffer" class="code">ScratchBuffer</a> &amp;scratchBuffer, <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler" class="code">Sampler</a> sampler);
+       BSSRDF GetBSSRDF(const <a href="../Geometry_and_Transformations/Rays.html#RayDifferential" class="code">RayDifferential</a> &amp;ray,
+                    <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda, <a href="../Cameras_and_Film/Camera_Interface.html#Camera" class="code">Camera</a> camera,
+                    <a href="../Utilities/Containers_and_Memory_Management.html#ScratchBuffer" class="code">ScratchBuffer</a> &amp;scratchBuffer);
+       PBRT_CPU_GPU
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Le(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda) const;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-SurfaceInteractionPublicMembers-0">SurfaceInteraction Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-136" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-136"><i></i></a><div id="fragbit-136" class="collapse"><div class="fragmentcode">       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdu, dpdv;
+       <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndu, dndv;
+       struct {
+           <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> n;
+           <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdu, dpdv;
+           <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndu, dndv;
+       } shading;
+       int faceIndex = 0;
+       <a href="../Textures_and_Materials/Material_Interface_and_Implementations.html#Material" class="code">Material</a> material;
+       <a href="../Light_Sources/Light_Interface.html#Light" class="code">Light</a> areaLight;
+       <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdx, dpdy;
+       Float dudx = 0, dvdx = 0, dudy = 0, dvdy = 0;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+In addition to the point <tt>p</tt>, the surface normal <tt>n</tt>, and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg>
+coordinates from the parameterization of the surface from the
+<tt>Interaction</tt> base class, the <tt>SurfaceInteraction</tt> also stores
+the parametric partial derivatives of the point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.509ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2802.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential normal p slash partial-differential u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1143" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1643" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="2230" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.307ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2715.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential normal p slash partial-differential v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1143" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1643" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="2230" y="0"></use>
+</g>
+</svg> and
+the partial derivatives of the surface normal <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.702ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2885.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential bold n Subscript slash partial-differential u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1226" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1726" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="2313" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.5ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2798.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential bold n Subscript slash partial-differential v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1226" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1726" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="2313" y="0"></use>
+</g>
+</svg>. See
+Figure&nbsp;<a href="#fig:differential-geometry">3.30</a> for a depiction of these
+values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SurfaceInteractionPublicMembers-0"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Public Members&gt;&gt;=&nbsp;<a href="#fragment-SurfaceInteractionPublicMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <span class="anchor" id="SurfaceInteraction::dpdu"></span>dpdu, <span class="anchor" id="SurfaceInteraction::dpdv"></span>dpdv;
+<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> <span class="anchor" id="SurfaceInteraction::dndu"></span>dndu, <span class="anchor" id="SurfaceInteraction::dndv"></span>dndv;</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fig:differential-geometry"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha03f31.svg" title=""><img src="pha03f31.svg" width=432 height=336 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 3.30: The Local Differential Geometry
+around a Point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg>. <span class="legend">  The parametric partial
+derivatives of the surface, <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.509ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2802.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential normal p slash partial-differential u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1143" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1643" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="2230" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.307ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2715.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential normal p slash partial-differential v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1143" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1643" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="2230" y="0"></use>
+</g>
+</svg>, lie in the tangent plane
+but are not necessarily orthogonal.  The surface normal <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.485ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 639.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold n Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="0" y="0"></use>
+</g>
+</svg> is given by
+the cross product of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.509ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2802.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential normal p slash partial-differential u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1143" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1643" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="2230" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.307ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2715.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential normal p slash partial-differential v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1143" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1643" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="2230" y="0"></use>
+</g>
+</svg>.  The vectors <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.702ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2885.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential bold n Subscript slash partial-differential u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1226" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1726" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="2313" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="6.5ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2798.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">partial-differential bold n Subscript slash partial-differential v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="586" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="1226" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1726" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="2313" y="0"></use>
+</g>
+</svg>
+record the differential change in surface normal as we move
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.33ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 572.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">u</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="0" y="0"></use>
+</g>
+</svg> and <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.128ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 485.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="0" y="0"></use>
+</g>
+</svg> along the surface.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>
+This representation implicitly assumes that shapes have a parametric
+description&mdash;that for some range of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="5.301ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 2282.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="389" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="962" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="1407" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="1892" y="0"></use>
+</g>
+</svg> values, points on the
+surface are given by some function <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.283ex" height="2.509ex" style="vertical-align: -0.671ex;" viewBox="0 -791.3 552.5 1080.4" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">f</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="0" y="0"></use>
+</g>
+</svg> such that <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="10.975ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4725.2 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">p equals f left-parenthesis u comma v right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D453" d="M552 636c0 -38 -29 -60 -55 -60c-19 0 -37 12 -37 35c0 15 10 50 54 54c-19 18 -45 18 -49 18c-21 0 -38 -15 -47 -34c-6 -12 -20 -83 -24 -104c-11 -58 -10 -56 -21 -114h83c17 0 27 0 27 -11c0 -20 -10 -20 -30 -20h-86l-60 -317c-1 -7 -24 -128 -56 -191 c-18 -38 -58 -97 -113 -97c-41 0 -85 24 -85 69c0 38 29 60 55 60c19 0 37 -12 37 -35c0 -15 -9 -51 -55 -54c19 -18 44 -18 48 -18c52 0 69 91 87 188l75 395h-66c-19 0 -28 0 -28 12c0 19 11 19 30 19h69c24 126 27 136 33 157c30 99 93 117 127 117c41 0 87 -23 87 -69Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="834" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D453" x="1890" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="2443" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="2832" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3405" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="3850" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4335" y="0"></use>
+</g>
+</svg>.  Although
+this is not true for all shapes, all of the shapes that <tt>pbrt</tt> supports do
+have at least a local parametric description, so we will stick with the
+parametric representation since this assumption is helpful elsewhere (e.g.,
+for antialiasing of textures in Chapter&nbsp;<a href="../Textures_and_Materials.html#chap:texture">10</a>).
+
+</p>
+<p>The <a href="#SurfaceInteraction"><tt>SurfaceInteraction</tt></a> constructor takes parameters that set all of
+these values.  It computes the normal as the cross product of the partial
+derivatives.
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SurfaceInteractionPublicMethods-0"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Public Methods&gt;&gt;=&nbsp;<a href="#fragment-SurfaceInteractionPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#SurfaceInteraction" class="code">SurfaceInteraction</a>(<a href="../Utilities/Mathematical_Infrastructure.html#Point3fi" class="code">Point3fi</a> pi, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> uv, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdu,
+        <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdv, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndu, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndv, Float time,
+        bool flipNormal)
+    : <a href="#Interaction" class="code">Interaction</a>(pi, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a>(<a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Geometry_and_Transformations/Vectors.html#Cross" class="code">Cross</a>(dpdu, dpdv))), uv, wo, time),
+      dpdu(dpdu), dpdv(dpdv), dndu(dndu), dndv(dndv) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializeshadinggeometryfromtruegeometry-0">Initialize shading geometry from true geometry</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-137" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-137"><i></i></a><div id="fragbit-137" class="collapse"><div class="fragmentcode">       <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.n = n;
+       <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dpdu = dpdu;
+       <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dpdv = dpdv;
+       <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndu = dndu;
+       <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndv = dndv;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Adjustnormalbasedonorientationandhandedness-0">Adjust normal based on orientation and handedness</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-138" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-138"><i></i></a><div id="fragbit-138" class="collapse"><div class="fragmentcode">       if (flipNormal) {
+           <a href="#SurfaceInteraction::shading::n" class="code">n</a> *= -1;
+           shading.<a href="#SurfaceInteraction::shading::n" class="code">n</a> *= -1;
+       }</div></div>
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>SurfaceInteraction</tt> stores a second instance of a surface normal and
+the various partial derivatives to represent possibly perturbed values of
+these quantities&mdash;as can be generated by bump mapping or interpolated
+per-vertex normals with meshes.  Some parts of the system use this shading
+geometry, while others need to work with the original quantities.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SurfaceInteractionPublicMembers-1"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Public Members&gt;&gt;+=&nbsp;<a href="#fragment-SurfaceInteractionPublicMembers-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-SurfaceInteractionPublicMembers-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">struct {
+    <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> <span class="anchor" id="SurfaceInteraction::shading::n"></span>n;
+    <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> <span class="anchor" id="SurfaceInteraction::shading::dpdu"></span>dpdu, <span class="anchor" id="SurfaceInteraction::shading::dpdv"></span>dpdv;
+    <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> <span class="anchor" id="SurfaceInteraction::shading::dndu"></span>dndu, <span class="anchor" id="SurfaceInteraction::shading::dndv"></span>dndv;
+} <span class="anchor" id="SurfaceInteraction::shading"></span>shading;</div><p>
+
+
+</p>
+<p>The shading geometry values are initialized in the constructor to match the
+original surface geometry.  If shading geometry is present, it generally
+is not computed until some time after the <tt>SurfaceInteraction</tt>
+constructor runs.  The <tt>SetShadingGeometry()</tt> method, to be defined
+shortly, updates the shading geometry.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Initializeshadinggeometryfromtruegeometry-0"></span><div class="fragmentname">&lt;&lt;Initialize shading geometry from true geometry&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.n = n;
+<a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dpdu = dpdu;
+<a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dpdv = dpdv;
+<a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndu = dndu;
+<a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndv = dndv;</div><p>
+
+
+</p>
+<p>The surface normal has special meaning to <tt>pbrt</tt>, which assumes that, for
+closed shapes, the normal is oriented such that it points to the outside of
+the shape.  For geometry used as an area light source, light is by default
+emitted from only the side of the surface that the normal points toward;
+the other side is black.  Because normals have this special meaning, <tt>pbrt</tt> provides a mechanism for the user to reverse the orientation of the normal,
+flipping it to point in the opposite direction. A
+<tt>ReverseOrientation</tt> directive in a <tt>pbrt</tt> input file flips the normal
+to point in the opposite, non-default direction.  Therefore, it is
+necessary to check if the given <tt>Shape</tt> has the corresponding flag set
+and, if so, switch the normal&rsquo;s direction here.
+
+</p>
+<p>However, one other factor plays into the orientation of the normal and must
+be accounted for here as well.  If a shape&rsquo;s transformation matrix
+has switched the handedness of the object coordinate system from <tt>pbrt</tt>&rsquo;s
+default left-handed coordinate system to a right-handed one, we need to
+switch the orientation of the normal as well.  To see why this is so,
+consider a scale matrix <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="10.658ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 4588.8 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold upper S left-parenthesis 1 comma 1 comma negative 1 right-parenthesis</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D412" d="M574 203c0 -101 -62 -214 -227 -214c-41 0 -134 6 -200 55l-46 -46c-8 -7 -10 -9 -19 -9c-18 0 -18 9 -18 28v182c0 23 0 29 24 29c22 0 22 -5 23 -23c8 -149 160 -169 236 -169c104 0 130 69 130 117c0 46 -25 72 -40 87c-22 21 -39 24 -127 43c-109 24 -143 31 -192 80 c-21 22 -54 68 -54 133c0 105 72 201 224 201c48 0 113 -9 171 -55l45 44c11 10 12 11 20 11c18 0 18 -9 18 -28v-183c0 -23 0 -28 -24 -28c-21 0 -21 2 -25 26c-23 136 -124 170 -204 170c-100 0 -128 -62 -128 -105c0 -61 56 -95 96 -104l145 -31 c91 -19 172 -100 172 -211Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D412" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="639" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1029" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1529" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1974" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2475" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2920" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="3698" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4199" y="0"></use>
+</g>
+</svg>.  We would naturally expect
+this scale to switch the direction of the normal, although because we have
+computed the normal by <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="19.982ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 8603.4 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">bold n Subscript Baseline equals partial-differential normal p slash partial-differential u times partial-differential normal p slash partial-differential v</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="917" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="1973" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="2560" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="3116" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="3617" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="4203" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="4942" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="5887" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="6474" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="7030" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="7531" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="8117" y="0"></use>
+</g>
+</svg>,
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="60.643ex" height="13.176ex" style="vertical-align: -6.005ex;" viewBox="0 -3087.6 26109.9 5673" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartLayout 1st Row 1st Column bold upper S left-parenthesis 1 comma 1 comma negative 1 right-parenthesis StartFraction partial-differential normal p Over partial-differential u EndFraction times bold upper S left-parenthesis 1 comma 1 comma negative 1 right-parenthesis StartFraction partial-differential normal p Over partial-differential v EndFraction 2nd Column equals bold upper S left-parenthesis negative 1 comma negative 1 comma 1 right-parenthesis left-parenthesis StartFraction partial-differential normal p Over partial-differential u EndFraction times StartFraction partial-differential normal p Over partial-differential v EndFraction right-parenthesis 2nd Row 1st Column Blank 2nd Column equals bold upper S left-parenthesis negative 1 comma negative 1 comma 1 right-parenthesis bold n Subscript Baseline 3rd Row 1st Column Blank 2nd Column not-equals bold upper S left-parenthesis 1 comma 1 comma negative 1 right-parenthesis bold n Subscript Baseline period EndLayout</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D412" d="M574 203c0 -101 -62 -214 -227 -214c-41 0 -134 6 -200 55l-46 -46c-8 -7 -10 -9 -19 -9c-18 0 -18 9 -18 28v182c0 23 0 29 24 29c22 0 22 -5 23 -23c8 -149 160 -169 236 -169c104 0 130 69 130 117c0 46 -25 72 -40 87c-22 21 -39 24 -127 43c-109 24 -143 31 -192 80 c-21 22 -54 68 -54 133c0 105 72 201 224 201c48 0 113 -9 171 -55l45 44c11 10 12 11 20 11c18 0 18 -9 18 -28v-183c0 -23 0 -28 -24 -28c-21 0 -21 2 -25 26c-23 136 -124 170 -204 170c-100 0 -128 -62 -128 -105c0 -61 56 -95 96 -104l145 -31 c91 -19 172 -100 172 -211Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2202" d="M515 457c36 -143 15 -479 -223 -479c-140 0 -212 116 -228 178c-8 31 -24 124 38 207c59 78 120 94 181 94c78 0 133 -56 158 -118c2 81 -5 132 -14 171c-33 129 -116 181 -189 181c-29 0 -98 -6 -124 -80c16 0 47 0 56 -35c6 -23 -8 -53 -41 -53c-30 0 -43 21 -46 35 c-7 28 6 158 151 158c123 0 241 -100 281 -259zM432 303c-5 20 -35 132 -144 132c-62 0 -103 -32 -128 -89c-26 -60 -16 -200 -10 -227c3 -10 29 -113 139 -113c154 0 161 225 143 297Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D462" d="M543 143c0 0 -13 -63 -30 -99c-16 -32 -39 -55 -74 -55c-43 0 -78 26 -89 67c-17 -22 -53 -67 -119 -67c-54 0 -123 25 -123 120c0 49 21 111 58 210c6 15 17 44 17 68c0 32 -16 33 -25 33c-38 0 -76 -37 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10 c0 9 37 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -17 -63c-26 -69 -54 -148 -54 -204c0 -37 10 -82 62 -82c73 0 113 80 114 84l75 301c8 34 34 35 39 35c15 0 29 -9 29 -27c0 -6 -10 -44 -15 -67c-4 -15 -14 -53 -17 -68l-28 -108c-8 -35 -20 -82 -20 -104 c0 -33 10 -46 31 -46c42 0 61 68 75 124c3 14 4 18 14 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D463" d="M468 372c0 -52 -57 -383 -225 -383c-46 0 -134 16 -134 124c0 43 13 89 57 205c7 18 17 45 17 70c0 32 -17 32 -25 32c-29 0 -72 -23 -101 -124c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -12 -50 c-31 -83 -58 -156 -58 -212c0 -52 23 -87 74 -87c117 0 178 229 178 271c0 36 -13 62 -34 82c-11 11 -16 17 -16 30c0 22 24 48 49 48c18 0 44 -16 44 -70Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE6-28" d="M682 -928c0 -10 -8 -18 -18 -18c-4 0 -8 2 -11 4c-222 167 -427 613 -427 1006v372c0 393 205 839 427 1006c3 2 7 4 11 4c10 0 18 -8 18 -18c0 -6 -3 -11 -7 -14c-213 -160 -361 -603 -361 -978v-372c0 -375 148 -818 361 -978c4 -3 7 -8 7 -14Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNSIZE6-29" d="M510 64c0 -393 -205 -839 -427 -1006c-3 -2 -7 -4 -11 -4c-10 0 -18 8 -18 18c0 6 3 11 7 14c213 160 361 603 361 978v372c0 375 -148 818 -361 978c-4 3 -7 8 -7 14c0 10 8 18 18 18c4 0 8 -2 11 -4c222 -167 427 -613 427 -1006v-372Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D427" d="M615 0l-126 3l-126 -3v47h69v270c0 76 -21 97 -55 97c-63 0 -149 -49 -149 -158v-209h69v-47l-126 3l-126 -3v47h69v309c0 39 -7 39 -69 39v47l172 8v-108c26 51 79 108 175 108c100 0 154 -39 154 -144v-259h69v-47Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2260" d="M722 153c0 -11 -9 -20 -20 -20h-334l-128 -350c-2 -8 -10 -13 -18 -13c-12 0 -20 9 -20 20c0 2 0 5 1 7l122 336h-249c-11 0 -20 9 -20 20s9 20 20 20h264l56 154h-320c-11 0 -20 9 -20 20s9 20 20 20h334l128 350c2 8 10 13 19 13c11 0 20 -9 20 -20c0 -2 -1 -5 -2 -7 l-122 -336h249c11 0 20 -9 20 -20s-9 -20 -20 -20h-264l-56 -154h320c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(167,0)">
+<g transform="translate(-11,0)">
+<g transform="translate(0,1549)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D412" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="639" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1029" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1529" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="1974" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2475" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2920" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="3698" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="4199" y="0"></use>
+<g transform="translate(4588,0)">
+<g transform="translate(120,0)">
+<rect stroke="none" width="1279" height="60" x="0" y="220"></rect>
+<g transform="translate(68,714)">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+</g>
+<g transform="translate(60,-737)">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="586" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="6274" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D412" x="7219" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="7859" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="8248" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="8749" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="9194" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="9694" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="10140" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="10918" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="11419" y="0"></use>
+<g transform="translate(11808,0)">
+<g transform="translate(120,0)">
+<rect stroke="none" width="1263" height="60" x="0" y="220"></rect>
+<g transform="translate(60,714)">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+</g>
+<g transform="translate(95,-737)">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="586" y="0"></use>
+</g>
+</g>
+</g>
+</g>
+</g>
+<g transform="translate(13578,0)">
+<g transform="translate(0,1549)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D412" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1695" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2085" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2863" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3364" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3809" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="4587" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="5088" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="5533" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="6034" y="0"></use>
+<g transform="translate(6590,0)">
+ <use xlink:href="#E1-LATINMODERNSIZE6-28"></use>
+<g transform="translate(736,0)">
+<g transform="translate(120,0)">
+<rect stroke="none" width="1279" height="60" x="0" y="220"></rect>
+<g transform="translate(68,714)">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+</g>
+<g transform="translate(60,-737)">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D462" x="586" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="2422" y="0"></use>
+<g transform="translate(3367,0)">
+<g transform="translate(120,0)">
+<rect stroke="none" width="1263" height="60" x="0" y="220"></rect>
+<g transform="translate(60,714)">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="586" y="0"></use>
+</g>
+<g transform="translate(95,-737)">
+ <use xlink:href="#E1-LATINMODERNMAIN-2202" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D463" x="586" y="0"></use>
+</g>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNSIZE6-29" x="4870" y="0"></use>
+</g>
+</g>
+<g transform="translate(0,-698)">
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D412" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1695" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="2085" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2863" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3364" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3809" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="4587" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="5088" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="5533" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="6034" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="6423" y="0"></use>
+</g>
+<g transform="translate(0,-2247)">
+ <use xlink:href="#E1-LATINMODERNMAIN-2260" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D412" x="1056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="1695" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2085" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="2585" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="3030" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="3531" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3976" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="4755" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="5255" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D427" x="5645" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="6284" y="0"></use>
+</g>
+</g>
+</g>
+</g>
+</svg>
+</div>
+<p>
+
+Therefore, it is also necessary to flip the normal&rsquo;s direction if the
+transformation switches the handedness of the coordinate system, since the flip
+will not be accounted for by the computation of the normal&rsquo;s direction using the
+cross product.  A flag passed by the caller indicates whether this flip is
+necessary.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Adjustnormalbasedonorientationandhandedness-0"></span><div class="fragmentname">&lt;&lt;Adjust normal based on orientation and handedness&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (flipNormal) {
+    <a href="#SurfaceInteraction::shading::n" class="code">n</a> *= -1;
+    shading.<a href="#SurfaceInteraction::shading::n" class="code">n</a> *= -1;
+}</div><p>
+
+
+</p>
+<p><tt>pbrt</tt> also provides the capability to associate an integer index with each
+face of a polygon mesh.  This information is used for certain texture
+mapping operations.  A separate <tt>SurfaceInteraction</tt> constructor
+allows its specification.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SurfaceInteractionPublicMembers-2"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Public Members&gt;&gt;+=&nbsp;<a href="#fragment-SurfaceInteractionPublicMembers-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#fragment-SurfaceInteractionPublicMembers-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">int <span class="anchor" id="SurfaceInteraction::faceIndex"></span>faceIndex = 0;</div><p>
+
+
+</p>
+<p>When a shading coordinate frame is computed, the <tt>SurfaceInteraction</tt>
+is updated via its <tt>SetShadingGeometry()</tt> method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-SurfaceInteractionPublicMethods-1"></span><div class="fragmentname">&lt;&lt;SurfaceInteraction Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-SurfaceInteractionPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#fragment-SurfaceInteractionPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="SurfaceInteraction::SetShadingGeometry"></span>SetShadingGeometry(<a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> ns, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdus, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> dpdvs,
+        <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndus, <a href="../Geometry_and_Transformations/Normals.html#Normal3f" class="code">Normal3f</a> dndvs, bool orientationIsAuthoritative) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Computemonoshading.nformonoSurfaceInteraction-0">Compute <tt>shading.n</tt> for <tt>SurfaceInteraction</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-139" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-139"><i></i></a><div id="fragbit-139" class="collapse"><div class="fragmentcode">       shading.<a href="#Interaction::n" class="code">n</a> = ns;
+       if (orientationIsAuthoritative)
+           <a href="#Interaction::n" class="code">n</a> = <a href="../Geometry_and_Transformations/Normals.html#FaceForward" class="code">FaceForward</a>(<a href="#Interaction::n" class="code">n</a>, shading.<a href="#Interaction::n" class="code">n</a>);
+       else
+           shading.<a href="#Interaction::n" class="code">n</a> = <a href="../Geometry_and_Transformations/Normals.html#FaceForward" class="code">FaceForward</a>(shading.<a href="#Interaction::n" class="code">n</a>, <a href="#Interaction::n" class="code">n</a>);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Initializemonoshadingpartialderivativevalues-0">Initialize <tt>shading</tt> partial derivative values</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-140" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-140"><i></i></a><div id="fragbit-140" class="collapse"><div class="fragmentcode">       <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.<a href="#SurfaceInteraction::shading::dpdu" class="code">dpdu</a> = dpdus;
+       <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.<a href="#SurfaceInteraction::shading::dpdv" class="code">dpdv</a> = dpdvs;
+       <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndu = dndus;
+       <a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndv = dndvs;
+       </div></div>
+}</div><p>
+
+
+</p>
+<p>After performing the same cross product (and possibly flipping the
+orientation of the normal) as before to compute an
+initial shading normal, the implementation then flips either the shading
+normal or the true geometric normal if needed so that the two normals lie
+in the same hemisphere. Since the shading normal generally represents a relatively small
+perturbation of the geometric normal, the two of them should always be in
+the same hemisphere.  Depending on the context, either the geometric normal
+or the shading normal may more authoritatively point toward the correct
+&ldquo;outside&rdquo; of the surface, so the caller passes a Boolean value that
+determines which should be flipped if needed.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computemonoshading.nformonoSurfaceInteraction-0"></span><div class="fragmentname">&lt;&lt;Compute <tt>shading.n</tt> for <tt>SurfaceInteraction</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">shading.<a href="#Interaction::n" class="code">n</a> = ns;
+if (orientationIsAuthoritative)
+    <a href="#Interaction::n" class="code">n</a> = <a href="../Geometry_and_Transformations/Normals.html#FaceForward" class="code">FaceForward</a>(<a href="#Interaction::n" class="code">n</a>, shading.<a href="#Interaction::n" class="code">n</a>);
+else
+    shading.<a href="#Interaction::n" class="code">n</a> = <a href="../Geometry_and_Transformations/Normals.html#FaceForward" class="code">FaceForward</a>(shading.<a href="#Interaction::n" class="code">n</a>, <a href="#Interaction::n" class="code">n</a>);</div><p>
+
+
+</p>
+<p>With the normal set, the various partial derivatives can be copied.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Initializemonoshadingpartialderivativevalues-0"></span><div class="fragmentname">&lt;&lt;Initialize <tt>shading</tt> partial derivative values&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.<a href="#SurfaceInteraction::shading::dpdu" class="code">dpdu</a> = dpdus;
+<a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.<a href="#SurfaceInteraction::shading::dpdv" class="code">dpdv</a> = dpdvs;
+<a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndu = dndus;
+<a href="#SurfaceInteraction::shading::dndv" class="code">shading</a>.dndv = dndvs;
+</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#MediumInteraction"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:medium-interaction"></span><span id="MediumInteraction"></span><h3>3.11.2  Medium Interaction</h3><p>
+
+
+
+</p>
+<p>As described earlier, the <tt>MediumInteraction</tt> class is used to
+represent an interaction at a point in a scattering medium like smoke or
+clouds.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MediumInteractionDefinition-0"></span><div class="fragmentname">&lt;&lt;MediumInteraction Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="MediumInteraction"></span>MediumInteraction : public <a href="#Interaction" class="code">Interaction</a> {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MediumInteractionPublicMethods-0">MediumInteraction Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-141" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-141"><i></i></a><div id="fragbit-141" class="collapse"><div class="fragmentcode">       <a href="#MediumInteraction" class="code">MediumInteraction</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, Float time, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium,
+                         <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction" class="code">PhaseFunction</a> phase)
+           : <a href="#Interaction" class="code">Interaction</a>(p, wo, time, medium), phase(phase) {}
+       std::string ToString() const;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-MediumInteractionPublicMembers-0">MediumInteraction Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-142" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-142"><i></i></a><div id="fragbit-142" class="collapse"><div class="fragmentcode">       <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction" class="code">PhaseFunction</a> phase;</div></div>
+};</div><p>
+
+
+</p>
+<p>In contrast to <tt>SurfaceInteraction</tt>, it adds little to the base
+<a href="#Interaction"><tt>Interaction</tt></a> class.  The only addition is a <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction"><tt>PhaseFunction</tt></a>, which
+describes how the particles in the medium scatter light. Phase functions
+and the <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction"><tt>PhaseFunction</tt></a> class are introduced in
+Section&nbsp;<a href="../Volume_Scattering/Phase_Functions.html#sec:phase-functions">11.3</a>.
+
+</p>
+<p>
+</p>
+<span class="anchor" id="fragment-MediumInteractionPublicMethods-0"></span><div class="fragmentname">&lt;&lt;MediumInteraction Public Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#MediumInteraction" class="code">MediumInteraction</a>(<a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> p, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wo, Float time, <a href="../Volume_Scattering/Media.html#Medium" class="code">Medium</a> medium,
+                  <a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction" class="code">PhaseFunction</a> phase)
+    : <a href="#Interaction" class="code">Interaction</a>(p, wo, time, medium), phase(phase) {}</div><p>
+      
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MediumInteractionPublicMembers-0"></span><div class="fragmentname">&lt;&lt;MediumInteraction Public Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Volume_Scattering/Phase_Functions.html#PhaseFunction" class="code">PhaseFunction</a> <span class="anchor" id="MediumInteraction::phase"></span>phase;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Geometry_and_Transformations/Further_Reading.html">Geometry and Transformations / Further Reading</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

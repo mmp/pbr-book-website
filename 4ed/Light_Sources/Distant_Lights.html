@@ -1,0 +1,519 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Distant Lights</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources.html">Light Sources</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Distant Lights</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Light_Sources/Point_Lights.html">(Previous: Point Lights)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:distant-light"></span><h2>12.3 Distant Lights</h2><p>
+
+
+
+</p>
+<p>Another useful light source type is the <em>distant light</em>, also known as
+a <em>directional light</em>.  It describes an emitter that deposits
+illumination from the same direction at every point in space.  Such a light
+is also called a point light &ldquo;at infinity,&rdquo; since, as a point light
+becomes progressively farther away, it acts more and more like a
+directional light.  For example, the sun (as considered from Earth) can be
+thought of as a directional light source.  Although it is actually an area
+light source, the illumination effectively arrives at Earth in nearly parallel
+beams because it is so far away.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DistantLightDefinition-0"></span><div class="fragmentname">&lt;&lt;DistantLight Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="DistantLight"></span>DistantLight : public <a href="../Light_Sources/Light_Interface.html#LightBase" class="code">LightBase</a> {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-DistantLightPublicMethods-0">DistantLight Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1660" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1660"><i></i></a><div id="fragbit-1660" class="collapse"><div class="fragmentcode">       DistantLight(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> <a href="#DistantLight::Lemit" class="code">Lemit</a>,
+                    Float <a href="#DistantLight::scale" class="code">scale</a>)
+           : LightBase(LightType::DeltaDirection, <a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>, {}),
+             <a href="#DistantLight::Lemit" class="code">Lemit</a>(<a href="../Light_Sources/Light_Interface.html#LightBase::LookupSpectrum" class="code">LookupSpectrum</a>(<a href="#DistantLight::Lemit" class="code">Lemit</a>)), <a href="#DistantLight::scale" class="code">scale</a>(<a href="#DistantLight::scale" class="code">scale</a>) {}
+       static DistantLight *Create(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>,
+                                   const ParameterDictionary &amp;parameters,
+                                   const <a href="../Radiometry,_Spectra,_and_Color/Color.html#RGBColorSpace" class="code">RGBColorSpace</a> *colorSpace, const FileLoc *loc,
+                                   Allocator alloc);
+       
+       
+       <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const;
+       
+       PBRT_CPU_GPU
+       Float PDF_Li(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a>, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>, bool allowIncompletePDF) const {
+           return 0;
+       }
+       
+       PBRT_CPU_GPU
+       pstd::optional&lt;LightLeSample&gt; SampleLe(<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u1, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u2,
+                              <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> &amp;lambda, Float time) const;
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Rays.html#Ray" class="code">Ray</a> &amp;, Float *pdfPos, Float *pdfDir) const;
+       
+       PBRT_CPU_GPU
+       void PDF_Le(const <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a> &amp;, <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> w, Float *pdfPos, Float *pdfDir) const {
+           LOG_FATAL("Shouldn't be called for non-area lights");
+       }
+       
+       pstd::optional&lt;<a href="../Light_Sources/Light_Sampling.html#LightBounds" class="code">LightBounds</a>&gt; Bounds() const { return {}; }
+       
+       std::string ToString() const;
+       void Preprocess(const <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> &amp;sceneBounds) {
+           sceneBounds.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::BoundingSphere" class="code">BoundingSphere</a>(&amp;<a href="#DistantLight::sceneCenter" class="code">sceneCenter</a>, &amp;<a href="#DistantLight::sceneRadius" class="code">sceneRadius</a>);
+       }
+       pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt;
+       SampleLi(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a> ctx, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda,
+                bool allowIncompletePDF) const {
+           <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(0, 0, 1)));
+           <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pOutside = ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>() + wi * (2 * <a href="#DistantLight::sceneRadius" class="code">sceneRadius</a>);
+           return <a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>(<a href="#DistantLight::scale" class="code">scale</a> * <a href="#DistantLight::Lemit" class="code">Lemit</a>-&gt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum::Sample" class="code">Sample</a>(lambda), wi, 1,
+                                <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(pOutside, nullptr));
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-DistantLightPrivateMembers-0">DistantLight Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-1661" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-1661"><i></i></a><div id="fragbit-1661" class="collapse"><div class="fragmentcode">       const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum" class="code">DenselySampledSpectrum</a> *Lemit;
+       Float scale;
+       <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> sceneCenter;
+       Float sceneRadius;</div></div>
+};</div><p>
+
+
+</p>
+<p>The <tt>DistantLight</tt> constructor does not take a <tt>MediumInterface</tt>
+parameter; the only reasonable medium for a distant light to be in is a
+vacuum&mdash;if it was itself in a medium that absorbed any light at all, then
+all of its emission would be absorbed, since it is modeled as being
+infinitely far away.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DistantLightPublicMethods-0"></span><div class="fragmentname">&lt;&lt;DistantLight Public Methods&gt;&gt;=&nbsp;<a href="#fragment-DistantLightPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">DistantLight(const <a href="../Geometry_and_Transformations/Transformations.html#Transform" class="code">Transform</a> &amp;renderFromLight, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#Spectrum" class="code">Spectrum</a> Lemit,
+             Float scale)
+    : LightBase(LightType::DeltaDirection, renderFromLight, {}),
+      Lemit(<a href="../Light_Sources/Light_Interface.html#LightBase::LookupSpectrum" class="code">LookupSpectrum</a>(Lemit)), scale(scale) {}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DistantLightPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;DistantLight Private Members&gt;&gt;=&nbsp;<a href="#fragment-DistantLightPrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">const <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum" class="code">DenselySampledSpectrum</a> *<span class="anchor" id="DistantLight::Lemit"></span>Lemit;
+Float <span class="anchor" id="DistantLight::scale"></span>scale;</div><p>
+
+
+</p>
+<p>Some of the <tt>DistantLight</tt> methods need to know the bounds of the
+scene.  Because <tt>pbrt</tt> creates lights before the scene geometry, these bounds
+are not available when the <tt>DistantLight</tt> constructor executes.
+Therefore, <tt>DistantLight</tt> implements the optional
+<tt>Preprocess()</tt>
+method where it converts the scene&rsquo;s <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f"><tt>Bounds3f</tt></a> to a bounding sphere,
+which will be an
+easier representation to work with in the following.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DistantLightPublicMethods-1"></span><div class="fragmentname">&lt;&lt;DistantLight Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-DistantLightPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-DistantLightPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="DistantLight::Preprocess"></span>Preprocess(const <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3f" class="code">Bounds3f</a> &amp;sceneBounds) {
+    sceneBounds.<a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds3::BoundingSphere" class="code">BoundingSphere</a>(&amp;<a href="#DistantLight::sceneCenter" class="code">sceneCenter</a>, &amp;<a href="#DistantLight::sceneRadius" class="code">sceneRadius</a>);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DistantLightPrivateMembers-1"></span><div class="fragmentname">&lt;&lt;DistantLight Private Members&gt;&gt;+=&nbsp;<a href="#fragment-DistantLightPrivateMembers-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> <span class="anchor" id="DistantLight::sceneCenter"></span>sceneCenter;
+Float <span class="anchor" id="DistantLight::sceneRadius"></span>sceneRadius;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The incident radiance at a point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> due to a distant light can be
+described using a Dirac delta distribution,
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="23.814ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 10253 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript normal i Superscript Baseline left-parenthesis normal p Subscript Baseline comma omega Subscript Baseline right-parenthesis equals upper L Subscript normal e Baseline delta left-parenthesis omega Subscript Baseline minus omega Subscript normal l Baseline right-parenthesis comma</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-69" d="M247 0c-34 1 -69 3 -104 3l-110 -3v31c67 0 78 0 78 45v269c0 49 -9 55 -74 55v31l140 11v-367c0 -39 4 -44 70 -44v-31zM192 604c0 -25 -20 -53 -54 -53c-30 0 -53 26 -53 53c0 25 20 53 54 53c30 0 53 -26 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2C" d="M203 1c0 -117 -80 -194 -91 -194c-5 0 -10 4 -10 11c0 3 0 5 11 16c33 33 68 93 68 167c0 14 -2 15 -2 15s-2 -1 -5 -3c-10 -9 -23 -13 -35 -13c-33 0 -53 26 -53 53c0 28 20 53 53 53c39 0 64 -39 64 -105Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-65" d="M415 119c0 -19 -45 -130 -167 -130c-115 0 -220 97 -220 231c0 125 92 228 208 228c125 0 179 -97 179 -196c0 -21 -3 -21 -25 -21h-279c0 -36 0 -102 30 -150c23 -37 63 -67 113 -67c10 0 100 0 135 103c2 8 4 14 13 14c5 0 13 -2 13 -12zM349 252 c0 39 -10 174 -113 174c-34 0 -118 -25 -124 -174h237Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D6FF" d="M452 667c0 -6 -2 -12 -5 -18c-7 -13 -22 -22 -36 -22c-3 0 -7 1 -11 2c-38 16 -66 48 -111 50c-11 0 -21 -1 -32 -6c-9 -5 -17 -14 -22 -23c-3 -5 -4 -11 -4 -17c0 -45 63 -124 107 -181c28 -35 49 -75 58 -122c2 -15 3 -30 3 -46c0 -33 -5 -68 -14 -102 c-24 -98 -96 -193 -184 -193c-56 0 -103 26 -130 68c-19 29 -28 63 -28 100c0 20 2 40 8 61c14 58 48 115 98 158c35 30 75 51 116 60c-30 56 -61 120 -61 173c0 19 3 36 12 51c7 14 18 26 31 34c14 9 29 13 43 16c8 1 17 2 26 2c36 0 78 -10 115 -19c13 -3 21 -13 21 -26z M330 244c0 17 -1 34 -5 50c-8 42 -26 80 -46 116l-3 5c-31 -9 -62 -29 -86 -55c-40 -42 -60 -95 -73 -147c-7 -28 -13 -57 -13 -84c0 -22 4 -43 12 -61c15 -34 45 -57 86 -57c63 0 99 79 118 152c7 27 10 55 10 81Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6C" d="M255 0l-111 3l-111 -3v31c67 0 78 0 78 45v520c0 49 -8 56 -78 56v31l144 11v-618c0 -45 11 -45 78 -45v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-69" x="963" y="-213"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="978" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="1367" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="1924" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="2369" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="2992" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="3659" y="0"></use>
+<g transform="translate(4715,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-65" x="963" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D6FF" x="5978" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="6430" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="6820" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="7664" y="0"></use>
+<g transform="translate(8665,0)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6C" x="880" y="-213"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="9585" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2C" x="9974" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+where the light&rsquo;s direction is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.135ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 919.4 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">omega Subscript normal l</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D714" d="M604 372c0 -40 -12 -90 -23 -133c-30 -121 -93 -250 -197 -250c-67 0 -102 44 -113 106c-38 -62 -90 -106 -153 -106c-76 0 -105 62 -105 143c0 35 5 74 15 112c16 63 41 127 82 184c5 6 12 9 18 9c3 0 6 0 9 -2c5 -3 9 -8 9 -14c0 -4 -2 -9 -5 -13 c-38 -53 -74 -109 -89 -169c-5 -22 -8 -45 -8 -65c0 -63 26 -113 87 -113c55 0 103 39 136 93c1 29 5 59 13 90c5 22 15 47 34 47c14 0 19 -11 19 -26c0 -8 -2 -17 -4 -26c-7 -30 -17 -60 -30 -88c9 -52 42 -90 98 -90c79 0 137 92 160 183c3 12 4 25 4 37 c0 35 -13 66 -38 88c-7 7 -11 15 -11 25c0 11 5 22 14 32c10 10 23 16 35 16c9 0 17 -3 23 -9c15 -13 20 -35 20 -61Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-6C" d="M255 0l-111 3l-111 -3v31c67 0 78 0 78 45v520c0 49 -8 56 -78 56v31l144 11v-618c0 -45 11 -45 78 -45v-31Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D714" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-6C" x="880" y="-213"></use>
+</g>
+</svg>.
+Given this definition, the implementation of the <tt>SampleLi()</tt> method
+is straightforward: the incident direction and radiance are always the
+same.  The only interesting bit is the initialization of the
+<a href="../Geometry_and_Transformations/Interactions.html#Interaction"><tt>Interaction</tt></a> that provides the second point for the future shadow ray.
+It is set along the distant light&rsquo;s incident direction at a distance of twice
+the radius of the scene&rsquo;s bounding sphere, guaranteeing a second point that
+is outside of the scene&rsquo;s bounds
+(Figure&nbsp;<a href="#fig:distant-light-shadow-ray">12.13</a>).
+
+</p>
+<p> </p>
+<span class="anchor" id="fig:distant-light-shadow-ray"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha12f13.svg" title=""><img src="pha12f13.svg" width=267 height=339 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 12.13: Computing the Second Point for a <tt>DistantLight</tt> Shadow
+Ray. <span class="legend"> Given a sphere that bounds the scene (dashed line) with radius
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.049ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 451.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="0" y="0"></use>
+</g>
+</svg> and given some point in the scene <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg>, if we then
+move a distance of <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="2.211ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 952 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">2 r</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45F" d="M436 377c0 -36 -28 -59 -55 -59s-38 19 -38 35c0 26 22 50 52 55c0 0 -16 12 -42 12c-43 0 -72 -26 -80 -33c-24 -22 -52 -69 -56 -82l-32 -130c-4 -18 -38 -154 -40 -158c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43l58 231c13 52 16 63 16 84 c0 38 -14 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 3 13 63 31 97c9 18 28 57 74 57c47 0 83 -32 91 -77c19 28 63 77 128 77c51 0 83 -30 83 -65Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-32" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45F" x="500" y="0"></use>
+</g>
+</svg> along any vector from <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg>, the resulting point
+must be outside of the scene&rsquo;s bound.  If a shadow ray to such a point is
+unoccluded, then we can be certain that the point <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.293ex" height="2.009ex" style="vertical-align: -0.671ex;" viewBox="0 -576.1 556.5 865.1" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal p Subscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-70" d="M521 216c0 -129 -104 -227 -223 -227c-76 0 -118 54 -123 70v-9v-168c0 -45 11 -45 78 -45v-31l-113 3l-112 -3v31c67 0 78 0 78 45v468c0 44 -7 50 -78 50v31l144 11v-66c20 22 62 66 140 66c112 0 209 -99 209 -226zM438 216c0 113 -61 201 -134 201 c-51 0 -100 -29 -129 -80v-223c0 -20 0 -21 14 -42c27 -41 65 -61 105 -61c74 0 144 84 144 205Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-70" x="0" y="0"></use>
+</g>
+</svg> receives
+illumination from a distant light along the vector&rsquo;s direction.
+</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DistantLightPublicMethods-2"></span><div class="fragmentname">&lt;&lt;DistantLight Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-DistantLightPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">pstd::optional&lt;<a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>&gt;
+<span class="anchor" id="DistantLight::SampleLi"></span>SampleLi(<a href="../Light_Sources/Light_Interface.html#LightSampleContext" class="code">LightSampleContext</a> ctx, <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> u, <a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda,
+         bool allowIncompletePDF) const {
+    <a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a> wi = <a href="../Geometry_and_Transformations/Vectors.html#Normalize" class="code">Normalize</a>(<a href="../Light_Sources/Light_Interface.html#LightBase::renderFromLight" class="code">renderFromLight</a>(<a href="../Geometry_and_Transformations/Vectors.html#Vector3f" class="code">Vector3f</a>(0, 0, 1)));
+    <a href="../Geometry_and_Transformations/Points.html#Point3f" class="code">Point3f</a> pOutside = ctx.<a href="../Light_Sources/Light_Interface.html#LightSampleContext::p" class="code">p</a>() + wi * (2 * <a href="#DistantLight::sceneRadius" class="code">sceneRadius</a>);
+    return <a href="../Light_Sources/Light_Interface.html#LightLiSample" class="code">LightLiSample</a>(<a href="#DistantLight::scale" class="code">scale</a> * <a href="#DistantLight::Lemit" class="code">Lemit</a>-&gt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum::Sample" class="code">Sample</a>(lambda), wi, 1,
+                         <a href="../Geometry_and_Transformations/Interactions.html#Interaction" class="code">Interaction</a>(pOutside, nullptr));
+}</div><p>
+
+
+</p>
+<p>The distant light is different than the lights we have seen so far in that
+the amount of power it emits is related to the spatial extent of the scene.
+In fact, it is proportional to the area of the scene receiving light.  To
+see why this is so, consider a disk of area <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.743ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 750.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper A</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D434" d="M721 20c0 -20 -12 -20 -18 -20c-25 0 -88 3 -113 3c-41 0 -84 -3 -125 -3c0 0 -14 0 -14 11c0 20 10 20 24 20c20 0 72 3 72 33c0 10 -14 146 -16 167h-251c-68 -116 -69 -116 -76 -128c-8 -14 -14 -25 -14 -37c0 -25 24 -33 47 -35c7 0 16 -1 16 -12 c0 -19 -13 -19 -19 -19c-32 0 -67 3 -100 3c-28 0 -59 -3 -86 -3c-8 0 -13 5 -13 11c0 19 9 19 21 20c44 3 83 17 123 84l348 584c6 10 10 17 26 17c17 0 17 -4 19 -24l61 -625c3 -29 3 -36 65 -36c13 0 23 0 23 -11zM528 262l-32 330l-197 -330h229Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D434" x="0" y="0"></use>
+</g>
+</svg> being illuminated by a
+distant light with emitted radiance <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.583ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 681.5 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">upper L Subscript Superscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="0" y="0"></use>
+</g>
+</svg> where the incident light
+arrives along the disk&rsquo;s normal direction.  The total power reaching the
+disk is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="8.102ex" height="2.176ex" style="vertical-align: -0.338ex;" viewBox="0 -791.3 3488.6 936.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal upper Phi equals upper A upper L Subscript Superscript</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3A6" d="M665 341c0 -101 -111 -194 -266 -206v-56c0 -35 0 -48 95 -48h33v-31c-36 3 -129 3 -170 3s-133 0 -169 -3v31h33c95 0 95 14 95 48v56c-149 15 -260 104 -260 207c0 99 107 191 260 206v56c0 35 0 48 -95 48h-33v31c36 -3 129 -3 170 -3s133 0 169 3v-31h-33 c-95 0 -95 -14 -95 -48v-56c152 -12 266 -103 266 -207zM316 158v367c-150 -20 -160 -132 -160 -184c0 -62 18 -164 160 -183zM565 342c0 76 -28 168 -166 184v-369c151 18 166 125 166 185Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D434" d="M721 20c0 -20 -12 -20 -18 -20c-25 0 -88 3 -113 3c-41 0 -84 -3 -125 -3c0 0 -14 0 -14 11c0 20 10 20 24 20c20 0 72 3 72 33c0 10 -14 146 -16 167h-251c-68 -116 -69 -116 -76 -128c-8 -14 -14 -25 -14 -37c0 -25 24 -33 47 -35c7 0 16 -1 16 -12 c0 -19 -13 -19 -19 -19c-32 0 -67 3 -100 3c-28 0 -59 -3 -86 -3c-8 0 -13 5 -13 11c0 19 9 19 21 20c44 3 83 17 123 84l348 584c6 10 10 17 26 17c17 0 17 -4 19 -24l61 -625c3 -29 3 -36 65 -36c13 0 23 0 23 -11zM528 262l-32 330l-197 -330h229Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D43F" d="M643 247c0 0 0 -3 -4 -14l-79 -216c-6 -17 -7 -17 -31 -17h-463c-18 0 -27 0 -27 11c0 20 10 20 27 20c79 0 81 8 91 47l134 537c3 12 4 15 4 19c0 13 -9 14 -27 16c-17 2 -38 2 -38 2c-19 0 -28 0 -28 11c0 20 12 20 19 20l133 -3l148 3c5 0 16 0 16 -12 c0 -19 -8 -19 -38 -19c-94 0 -97 -11 -106 -47l-135 -540c-5 -18 -5 -20 -5 -23c0 -8 3 -9 13 -10c6 -1 8 -1 22 -1h94c173 0 217 114 251 206c7 16 8 21 17 21s12 -7 12 -11Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-3A6" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="1000" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D434" x="2056" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D43F" x="2807" y="0"></use>
+</g>
+</svg>.  As the size of the receiving surface varies,
+power varies proportionally.
+
+</p>
+<p>To find the emitted power for a <a href="#DistantLight"><tt>DistantLight</tt></a>, it is impractical to
+compute the total surface area of the objects that are visible to the
+light.  Instead, we will approximate this area with a disk inside the
+scene&rsquo;s bounding sphere oriented in the light&rsquo;s direction
+(Figure&nbsp;<a href="#fig:scene-bbox-facing-disk">12.14</a>). This will always overestimate
+the actual area but is sufficient for the needs of code elsewhere in
+the system.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:scene-bbox-facing-disk"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha12f14.svg" title=""><img src="pha12f14.svg" width=472 height=246 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 12.14: <span class="legend"> An approximation of the power
+emitted by a distant light into a given scene can be obtained by finding the
+sphere that bounds the scene, computing the area of an inscribed disk, and
+computing the power that arrives on the surface of that disk.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DistantLightMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;DistantLight Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledSpectrum" class="code">SampledSpectrum</a> <span class="anchor" id="DistantLight::Phi"></span>DistantLight::Phi(<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#SampledWavelengths" class="code">SampledWavelengths</a> lambda) const {
+    return <a href="#DistantLight::scale" class="code">scale</a> * <a href="#DistantLight::Lemit" class="code">Lemit</a>-&gt;<a href="../Radiometry,_Spectra,_and_Color/Representing_Spectral_Distributions.html#DenselySampledSpectrum::Sample" class="code">Sample</a>(lambda) * <a href="../Utilities/Mathematical_Infrastructure.html#Pi" class="code">Pi</a> * <a href="../Utilities/Mathematical_Infrastructure.html#Sqr" class="code">Sqr</a>(<a href="#DistantLight::sceneRadius" class="code">sceneRadius</a>);
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Light_Sources/Area_Lights.html">Light Sources / Area Lights</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

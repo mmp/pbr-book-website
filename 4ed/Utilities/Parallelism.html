@@ -1,0 +1,1934 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Parallelism</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Utilities.html">Utilities</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Parallelism</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Utilities/Images.html">(Previous: Images)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:parallelism"></span><h2>B.6 Parallelism</h2><p>
+
+
+
+</p>
+<p>As improvements in the performance of single processing cores have slowed
+over the past fifteen years, it has become increasingly important to write
+parallel programs in order to reach the full computational capabilities of
+a system.  Fortunately, ray tracing offers abundant independent work, which
+makes it easier to distribute work across processing cores.  This section
+discusses some important principles of parallelism, focusing on CPUs, and
+introduces assorted classes and functions that <tt>pbrt</tt> uses for
+parallelism.  (See Section&nbsp;<a href="../Wavefront_Rendering_on_GPUs/Mapping_Path_Tracing_to_the_GPU.html#sec:mapping-path-tracing-to-gpu">15.1</a> for
+discussion of parallelism on GPUs and how <tt>pbrt</tt> is parallelized on those
+processors.)
+
+</p>
+<p>One of the biggest challenges with parallel ray tracing is the impact of
+nonparallel phases of computation.  For example, it is not as easy to
+effectively parallelize the construction of many types of acceleration structure
+while the scene is being constructed as it is to parallelize rendering.
+While this may seem like a minor issue, <em>Amdahl&rsquo;s law</em>, which
+describes the speedup of a workload that has both serial and parallel phases,
+points to the challenge.   Given <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.395ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 600.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">n</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="0" y="0"></use>
+</g>
+</svg> cores performing computation and a
+workload where the fraction <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.09ex" height="1.676ex" style="vertical-align: -0.338ex;" viewBox="0 -576.1 469.5 721.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">s</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="0" y="0"></use>
+</g>
+</svg> of its overall computation is inherently
+serial, the maximum speedup then possible is
+</p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+<div class="displaymath"><svg xmlns:xlink="http://www.w3.org/1999/xlink" width="14.139ex" height="6.509ex" style="vertical-align: -3.171ex;" viewBox="0 -1437.2 6087.5 2802.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">StartStartFraction 1 OverOver s plus StartFraction 1 Over n EndFraction left-parenthesis 1 minus s right-parenthesis EndEndFraction period</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2B" d="M722 250c0 -11 -9 -20 -20 -20h-293v-293c0 -11 -9 -20 -20 -20s-20 9 -20 20v293h-293c-11 0 -20 9 -20 20s9 20 20 20h293v293c0 11 9 20 20 20s20 -9 20 -20v-293h293c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D45B" d="M571 143c0 -8 -37 -154 -131 -154c-47 0 -82 35 -82 82c0 11 1 23 10 46c16 43 65 171 65 233c0 33 -9 70 -54 70c-95 0 -148 -91 -163 -122l-13 -50c-5 -23 -11 -45 -17 -67l-22 -90c-6 -25 -18 -72 -19 -74c-7 -20 -25 -28 -37 -28c-15 0 -29 9 -29 27c0 5 6 28 9 43 l58 231c13 52 16 63 16 84c0 33 -11 46 -31 46c-36 0 -56 -48 -73 -119c-6 -22 -7 -23 -17 -23c0 0 -12 0 -12 10c0 4 14 63 30 97c10 18 29 57 75 57s87 -31 92 -87c17 23 66 87 156 87c72 0 115 -40 115 -107c0 -57 -42 -167 -61 -220c-9 -22 -18 -46 -18 -71 c0 -23 7 -33 24 -33c49 0 82 56 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-28" d="M332 -238c0 -5 -5 -10 -10 -10c-2 0 -4 1 -6 2c-110 83 -215 283 -215 454v84c0 171 105 371 215 454c2 1 4 2 6 2c5 0 10 -5 10 -10c0 -3 -2 -6 -4 -8c-104 -78 -173 -278 -173 -438v-84c0 -160 69 -360 173 -438c2 -2 4 -5 4 -8Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2212" d="M722 250c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-29" d="M288 208c0 -171 -105 -371 -215 -454c-2 -1 -4 -2 -6 -2c-5 0 -10 5 -10 10c0 3 2 6 4 8c104 78 173 278 173 438v84c0 160 -69 360 -173 438c-2 2 -4 5 -4 8c0 5 5 10 10 10c2 0 4 -1 6 -2c110 -83 215 -283 215 -454v-84Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+<g transform="translate(120,0)">
+<rect stroke="none" width="5569" height="60" x="0" y="220"></rect>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2534" y="676"></use>
+<g transform="translate(60,-937)">
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2B" x="691" y="0"></use>
+<g transform="translate(1470,0)">
+<g transform="translate(342,0)">
+<rect stroke="none" width="544" height="60" x="0" y="220"></rect>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNMAIN-31" x="134" y="629"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D45B" x="84" y="-488"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-28" x="2477" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="2866" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2212" x="3589" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="4590" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-29" x="5059" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="5809" y="0"></use>
+</g>
+</svg>
+</div>
+<p>
+
+Thus, even with an infinite number of cores, the maximum speedup is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.415ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 1470.5 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1 slash s</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D460" d="M420 356c0 -39 -24 -56 -46 -56s-31 15 -31 29c0 22 20 44 48 45c-15 39 -65 46 -90 46c-88 0 -112 -61 -112 -90c0 -45 40 -52 76 -60c44 -9 73 -14 100 -42c12 -12 31 -37 31 -73c0 -45 -39 -166 -201 -166c-86 0 -143 40 -143 97c0 45 30 66 56 66c21 0 37 -12 37 -35 c0 -28 -25 -58 -63 -53c23 -53 100 -53 114 -53c120 0 143 84 143 110c0 55 -52 66 -104 76c-29 6 -103 21 -103 99c0 44 37 146 169 146c76 0 119 -41 119 -86Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNNORMAL-1D460" x="1001" y="0"></use>
+</g>
+</svg>.
+If, for example, a seemingly innocuous <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="3.098ex" height="2.343ex" style="vertical-align: -0.338ex;" viewBox="0 -863.1 1334 1008.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">5 percent-sign</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-25" d="M693 730c0 -6 -2 -9 -8 -18l-506 -753c-8 -11 -10 -15 -20 -15s-20 9 -20 20c0 0 0 7 9 20l449 669l-1 1c-6 -4 -57 -35 -133 -35c-36 0 -86 5 -151 42c21 -52 21 -99 21 -113c0 -112 -57 -201 -130 -201c-75 0 -147 81 -147 202c0 117 71 201 147 201 c32 0 53 -15 72 -32c55 -52 117 -77 187 -77c73 0 140 27 190 95c6 7 11 14 21 14c11 0 20 -9 20 -20zM776 145c0 -112 -57 -201 -130 -201c-75 0 -147 81 -147 202c0 117 71 201 147 201c71 0 130 -87 130 -202zM308 549c0 105 -51 179 -104 179c-21 0 -86 -13 -86 -180 c0 -166 66 -179 86 -179c52 0 104 72 104 180zM751 146c0 105 -51 179 -104 179c-21 0 -86 -13 -86 -180c0 -166 66 -179 86 -179c52 0 104 72 104 180Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-25" x="500" y="0"></use>
+</g>
+</svg> of the run time is spent in a
+serial phase of parsing the scene file and building acceleration
+structures, the maximum speedup possible is <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="13.691ex" height="2.843ex" style="vertical-align: -0.838ex;" viewBox="0 -863.1 5894.6 1223.9" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">1 slash 0.05 equals 20 times</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-31" d="M419 0c-35 3 -122 3 -162 3s-127 0 -162 -3v31h32c90 0 93 12 93 48v518c-52 -26 -111 -26 -131 -26v31c32 0 120 0 182 64c23 0 23 -2 23 -26v-561c0 -37 3 -48 93 -48h32v-31Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2F" d="M445 730c0 -2 0 -5 -1 -7l-349 -960c-3 -8 -10 -13 -19 -13c-11 0 -20 9 -20 20c0 2 0 5 1 7l349 960c3 8 10 13 19 13c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-30" d="M460 320c0 -79 -5 -157 -37 -226c-44 -95 -120 -116 -174 -116c-49 0 -122 20 -165 101c-41 76 -45 166 -45 241c0 80 5 158 37 227c41 93 114 119 174 119c42 0 124 -16 170 -112c35 -74 40 -154 40 -234zM377 332c0 63 0 139 -10 195c-19 99 -85 117 -118 117 c-25 0 -100 -9 -119 -128c-8 -54 -8 -120 -8 -184c0 -59 0 -151 11 -211c18 -96 77 -121 116 -121c45 0 102 30 117 125c11 64 11 132 11 207Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-2E" d="M192 53c0 -29 -24 -53 -53 -53s-53 24 -53 53s24 53 53 53s53 -24 53 -53Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-35" d="M449 201c0 -127 -102 -223 -218 -223c-112 0 -181 97 -181 183c0 46 35 53 49 53c33 0 50 -25 50 -49s-17 -49 -50 -49c-11 0 -14 1 -17 2c17 -59 74 -112 147 -112c46 0 83 26 107 65c24 42 24 102 24 137c0 50 -2 89 -18 126c-8 18 -33 64 -85 64 c-81 0 -118 -54 -129 -70c-4 -6 -6 -9 -13 -9c-14 0 -14 8 -14 26v296c0 16 0 24 10 24c0 0 4 0 12 -3c47 -21 93 -28 133 -28c67 0 116 20 136 29c5 3 8 3 8 3c7 0 10 -5 10 -11c0 -13 -70 -104 -193 -104c-32 0 -65 7 -85 13v-195c36 35 79 51 127 51 c108 0 190 -100 190 -219Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-3D" d="M722 347c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20zM722 153c0 -11 -9 -20 -20 -20h-626c-11 0 -20 9 -20 20s9 20 20 20h626c11 0 20 -9 20 -20Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-32" d="M449 174l-28 -174h-371c0 24 0 26 11 37l192 214c55 62 105 141 105 221c0 82 -43 163 -134 163c-58 0 -112 -37 -135 -102c3 1 5 1 13 1c35 0 53 -26 53 -52c0 -41 -35 -53 -52 -53c-3 0 -53 0 -53 56c0 89 74 181 187 181c122 0 212 -80 212 -194 c0 -100 -60 -154 -216 -292l-106 -103h180c22 0 88 0 95 8c10 15 17 59 22 89h25Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNMAIN-D7" d="M624 15c-7 -8 -20 -8 -28 0l-207 207l-207 -207c-8 -8 -21 -8 -28 0c-8 7 -8 20 0 28l207 207l-207 207c-8 8 -8 21 0 28c7 8 20 8 28 0l207 -207l207 207c8 8 21 8 28 0c8 -7 8 -20 0 -28l-207 -207l207 -207c8 -8 8 -21 0 -28Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-31" x="0" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2F" x="500" y="0"></use>
+<g transform="translate(1001,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-30"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-2E" x="500" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="779" y="0"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-35" x="1279" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-3D" x="3058" y="0"></use>
+<g transform="translate(4115,0)">
+ <use xlink:href="#E1-LATINMODERNMAIN-32"></use>
+ <use xlink:href="#E1-LATINMODERNMAIN-30" x="500" y="0"></use>
+</g>
+ <use xlink:href="#E1-LATINMODERNMAIN-D7" x="5116" y="0"></use>
+</g>
+</svg>, no matter
+how quickly the parallel phase executes.
+
+</p>
+<p>We experienced the impact of Amdahl&rsquo;s law as we brought <tt>pbrt</tt>&rsquo;s GPU
+rendering path to life: it was often the case that it took longer to parse
+the scene description and to prepare the scene for rendering than it took
+to render the image, even at high sampling rates!  This led to more
+attention to parallelizing parsing and creating the objects that represent
+the scene. (See Section&nbsp;<a href="../Processing_the_Scene_Description/BasicScene_and_Final_Object_Creation.html#sec:basic-scene">A.3</a> for further discussion of
+this topic.)
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#DataRacesandCoordination"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:atomic-ops"></span><span id="DataRacesandCoordination"></span><h3>B.6.1  Data Races and Coordination</h3><p>
+
+
+
+</p>
+<p>When <tt>pbrt</tt> is running on the CPU, we assume that the computation is running on
+processors that provide <em>coherent shared memory</em>.  The main idea of
+coherent shared memory is that all threads can read and write to a common
+set of memory locations and that changes to memory made by one thread will
+eventually be seen by other threads.  These properties greatly simplify the
+implementation of the system, as there is no need to explicitly communicate
+data between cores.
+
+</p>
+<p>Although coherent shared memory relieves the need for separate threads to
+explicitly communicate data with each other, they still need to
+<em>coordinate</em> their access to shared data; a danger of coherent shared
+memory is <em>data races</em>.  If two threads modify the same memory
+location without coordination between the two of them, the program will
+almost certainly compute incorrect results or even crash.  Consider the
+example of two processors simultaneously running the following
+innocuous-looking code, where <tt>globalCounter</tt> starts with a value of
+two:
+
+</p>
+<p></p>
+<div class="fragmentcode">extern int globalCounter;
+if (--globalCounter == 0)
+    printf("done\n");</div><p>
+ 
+
+</p>
+<p>Because the two threads do not coordinate their reading and writing of
+<tt>globalCounter</tt>, it is possible that &ldquo;done&rdquo; will be printed zero,
+one, or even two times.  For example, if both threads simultaneously load
+<tt>globalCounter</tt>, decrement it in a local register, and then write the
+result simultaneously, both will write a value of&nbsp;1 and &ldquo;done&rdquo; will never
+be printed.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="More generally, C++ defines such uncoordinated access
+to be &ldquo;undefined behavior,&rdquo; which in turn means that what happens in
+subsequent program execution is completely undefined.">
+      <sup>&dagger;</sup>
+    </button>
+		
+
+</p>
+<p>Two main mechanisms are used for this type of
+synchronization: mutual exclusion and atomic operations.  Mutual exclusion
+is implemented with <tt>std::mutex</tt> objects in <tt>pbrt</tt>.  A
+<tt>std::mutex</tt> can be used to protect access to some resource, ensuring
+that only one thread can access it at a time:
+
+</p>
+<p></p>
+<div class="fragmentcode">extern int globalCounter;
+extern std::mutex globalCounterMutex;
+globalCounterMutex.lock();
+if (--globalCounter == 0)
+    printf("done\n");
+globalCounterMutex.unlock();</div><p>
+ 
+
+</p>
+<p><em>Atomic memory operations</em> (or <em>atomics</em>) are the other option
+for correctly performing this type of memory update with multiple threads.
+Atomics are machine instructions that guarantee that their respective
+memory updates will be performed in a single transaction.  (<em>Atomic</em> in
+this case refers to the notion that the memory updates are indivisible.)
+The implementations of atomic operations in <tt>pbrt</tt> are from the C++
+standard library.  Using atomics, the computation above could
+be written to use the <tt>std::atomic&lt;int&gt;</tt> type, which has overloaded
+add, subtract, increment, and decrement operations, as below:
+</p>
+<div class="fragmentcode">extern std::atomic&lt;int&gt; globalCounter;
+if (--globalCounter == 0)
+    printf("done\n");</div><p>
+
+
+</p>
+<p>The <tt>std::atomic</tt> <tt>&ndash;</tt> operator subtracts one from the given
+variable, <tt>globalCounter</tt>, and returns the new value of the variable.
+Using an atomic operation ensures that if two threads simultaneously try to
+update the variable, then not only will the final value of the variable be
+the expected value, but each thread will be returned the value of the
+variable after its update alone.  In this example, then,
+<tt>globalCounter</tt> will end up with a value of zero, as expected, with
+one thread guaranteed to have the value one returned from the atomic
+subtraction and the other thread guaranteed to have zero returned.
+
+</p>
+<p>Another useful atomic operation is &ldquo;compare and swap,&rdquo; which is also
+provided by the C++ standard library. It takes a memory location and the
+value that the caller believes the location currently stores.  If the
+memory location still holds that value when the atomic compare and swap
+executes, then a new value is stored and <tt>true</tt> is returned;
+otherwise, memory is left unchanged and <tt>false</tt> is returned.
+
+</p>
+<p>Compare and swap is a building block that can be used to build many other
+atomic operations.  For example, the code below could be executed by
+multiple threads to compute the maximum of values computed by all the
+threads. (For this particular case, the specialized atomic maximum function
+would be a better choice, but this example helps convey the usage.)
+</p>
+<div class="fragmentcode">std::atomic&lt;int&gt; maxValue;
+int localMax = ...;
+int currentMax = maxValue;
+while (localMax &gt; currentMax) {
+    if (maxValue.compare_exchange_weak(currentMax, localMax))
+        break;
+}</div><p>
+
+
+</p>
+<p> If only a single thread is trying to update the memory location
+and the local value is larger, the loop is successful the first time
+through; the value loaded into <tt>currentMax</tt> is still the value stored
+by <tt>maxValue</tt> when <tt>compare_exchange_weak()</tt> executes and so
+<tt>localMax</tt> is successfully stored and <tt>true</tt> is
+returned.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="The &ldquo;weak&rdquo; in the compare/exchange instruction refers
+to the shared memory model required of the underlying hardware.  For our
+purposes, the lesser requirement of &ldquo;weak&rdquo; is fine, as it can be much
+more efficient than a strongly ordered memory model on some architectures.
+In return for this choice, the compare and exchange may occasionally fail
+incorrectly, so it requires a retry loop as we have implemented here.">
+      <sup>&dagger;</sup>
+    </button>
+		  If
+multiple threads are executing concurrently, then another thread may update
+the value in <tt>maxValue</tt> between the thread&rsquo;s read of <tt>maxValue</tt>
+and the execution of <tt>compare_exchange_weak()</tt>.  In that case, the
+compare and swap fails, memory is not updated, and another pass is taken
+through the loop to try again. In the case of a failure,
+<tt>compare_exchange_weak()</tt> updates <tt>currentMax</tt> with the new
+value of <tt>maxValue</tt>.
+
+</p>
+<p>An important application of atomic compare and swap is for the construction
+of data
+
+structures.
+
+
+Consider, for example, a tree data structure where each node has child
+node pointers initially set to <tt>nullptr</tt>.  If code traversing the tree
+wants to create a new child at a node, code could be written like:
+</p>
+<div class="fragmentcode">// atomic&lt;Type *&gt; node-&gt;firstChild
+if (!node-&gt;firstChild) {
+    Type *newChild = new Type ...
+    Type *current = nullptr;
+    if (node-&gt;firstChild.compare_exchange_weak(current, newChild) == false)
+        delete newChild;
+}
+// node-&gt;firstChild != nullptr now</div><p>
+
+
+</p>
+<p>The idea is that if the child has the value <tt>nullptr</tt>, the thread
+speculatively creates and fully initializes the child node into a local
+variable, not yet visible to the other threads.  Atomic compare and swap is
+then used to try to initialize the child pointer; if it still has the value
+<tt>nullptr</tt>, then the new child is stored and made available to all
+threads.  If the child pointer no longer has the value <tt>nullptr</tt>, then
+another thread has initialized the child in the time between the current
+thread first seeing that it was <tt>nullptr</tt> and later trying to update
+it.  In this case, the work done in the current thread turns out to have
+been wasted, but it can delete the locally created child node and continue
+execution, using the node created by the other thread.
+
+</p>
+<p>This method of tree construction is an example of a <em>lock-free</em>
+algorithm.  This approach has a few advantages compared to, for example,
+using a single mutex to manage updating the tree.  First, there is
+no overhead of acquiring the mutex for regular tree traversal.
+Second, multiple threads can naturally concurrently update different parts
+of the tree.  The &ldquo;Further Reading&rdquo; section at the end of this
+appendix has pointers to more information about lock-free algorithms.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#AtomicFloating-PointValues"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:atomic-fp-ass"></span><span id="AtomicFloating-PointValues"></span><h3>B.6.2  Atomic Floating-Point Values</h3><p>
+
+
+
+</p>
+<p>The <tt>std::atomic</tt> template cannot be used with floating-point
+types. One of the main reasons that atomic operations are not supported
+with it is that floating-point operations are generally not associative: as
+discussed in Section&nbsp;<a href="../Shapes/Managing_Rounding_Error.html#sec:ieee-fp">6.8.1</a>, when computed in floating-point,
+the value of the sum <tt>(a+b)+c</tt> is not necessarily equal to the sum
+<tt>a+(b+c)</tt>.  In turn, if a multi-threaded computation used atomic
+floating-point addition operations to compute some value, then the result
+computed would not be the same across multiple program executions.
+(In contrast, with integer types all the supported operations are
+associative, and so atomic operations give consistent results no matter
+which order threads perform them in.)
+
+</p>
+<p>For <tt>pbrt</tt>&rsquo;s needs, these inconsistencies are generally tolerable, and being
+able to use atomic operations on <tt>Float</tt>s is preferable in some cases
+to using a lock. (One example is splatting pixel contributions in the
+<a href="../Cameras_and_Film/Film_and_Imaging.html#RGBFilm::AddSplat"><tt>RGBFilm::AddSplat()</tt></a> and <tt>GBufferFilm::AddSplat()</tt> methods.)
+For these purposes, we provide a small <tt>AtomicFloat</tt> class.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AtomicFloatDefinition-0"></span><div class="fragmentname">&lt;&lt;AtomicFloat Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="AtomicFloat"></span>AtomicFloat {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AtomicFloatPublicMethods-0">AtomicFloat Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2825" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2825"><i></i></a><div id="fragbit-2825" class="collapse"><div class="fragmentcode">       explicit AtomicFloat(float v = 0) {
+           bits = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(v);
+       }
+       operator float() const {
+           return <a href="../Shapes/Managing_Rounding_Error.html#BitsToFloat" class="code">BitsToFloat</a>(bits);
+       }
+       Float operator=(float v) {
+           bits = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(v);
+           return v;
+       }
+       void Add(float v) {
+           FloatBits oldBits = bits, newBits;
+           do {
+               newBits = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(<a href="../Shapes/Managing_Rounding_Error.html#BitsToFloat" class="code">BitsToFloat</a>(oldBits) + v);
+           } while (!bits.compare_exchange_weak(oldBits, newBits));
+       }
+       std::string ToString() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AtomicFloatPrivateMembers-0">AtomicFloat Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2826" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2826"><i></i></a><div id="fragbit-2826" class="collapse"><div class="fragmentcode">       std::atomic&lt;<a href="../Shapes/Managing_Rounding_Error.html#FloatBits" class="code">FloatBits</a>&gt; bits;
+       </div></div>
+};</div><p>
+
+
+</p>
+<p>An <tt>AtomicFloat</tt> can be initialized from a provided floating-point
+value.  In the implementation here, floating-point values are actually
+represented as their unsigned integer bitwise values, as returned by the
+<a href="../Shapes/Managing_Rounding_Error.html#FloatToBits"><tt>FloatToBits()</tt></a> function.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AtomicFloatPublicMethods-0"></span><div class="fragmentname">&lt;&lt;AtomicFloat Public Methods&gt;&gt;=&nbsp;<a href="#fragment-AtomicFloatPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">explicit AtomicFloat(float v = 0) {
+    bits = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(v);
+}</div><p>
+
+
+</p>
+<p>Using an integer type to represent the value allows us to use a
+<tt>std::atomic</tt> type to store it in memory, which in turn allows the
+compiler to be aware that the value in memory is being updated atomically.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AtomicFloatPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;AtomicFloat Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::atomic&lt;<a href="../Shapes/Managing_Rounding_Error.html#FloatBits" class="code">FloatBits</a>&gt; <span class="anchor" id="AtomicFloat::bits"></span>bits;
+</div><p>
+
+
+</p>
+<p>Assigning the value or returning it as a <tt>Float</tt> is just a matter of
+converting to or from the unsigned integer representation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AtomicFloatPublicMethods-1"></span><div class="fragmentname">&lt;&lt;AtomicFloat Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-AtomicFloatPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-AtomicFloatPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">operator float() const {
+    return <a href="../Shapes/Managing_Rounding_Error.html#BitsToFloat" class="code">BitsToFloat</a>(bits);
+}
+Float operator=(float v) {
+    bits = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(v);
+    return v;
+}</div><p>
+
+
+</p>
+<p>Atomic floating-point addition is implemented via an atomic compare and
+exchange operation.  In the <tt>do</tt> loop below, we convert the in-memory
+bit representation of the value to a <tt>Float</tt>, add the provided
+difference in <tt>v</tt>, and attempt to atomically store the resulting
+bits. If the in-memory value has been changed by another thread since
+the value from <tt>bits</tt> was read from memory, the implementation continues retrying
+until the value in memory matches the expected value (in <tt>oldBits</tt>),
+at which point the atomic update succeeds.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AtomicFloatPublicMethods-2"></span><div class="fragmentname">&lt;&lt;AtomicFloat Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-AtomicFloatPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="AtomicFloat::Add"></span>Add(float v) {
+    FloatBits oldBits = bits, newBits;
+    do {
+        newBits = <a href="../Shapes/Managing_Rounding_Error.html#FloatToBits" class="code">FloatToBits</a>(<a href="../Shapes/Managing_Rounding_Error.html#BitsToFloat" class="code">BitsToFloat</a>(oldBits) + v);
+    } while (!bits.compare_exchange_weak(oldBits, newBits));
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>pbrt</tt> does not currently need to perform any other operations on
+<tt>AtomicFloat</tt>s, so we do not provide any additional methods.  An
+<tt>AtomicDouble</tt><span class="anchor" id="AtomicDouble"></span> class, not included here,
+provides an equivalent <tt>Add()</tt><span class="anchor" id="AtomicDouble::Add"></span> method
+for atomic addition with <tt>double</tt>s.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#MemoryCoherenceModelsandPerformance"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:multi-thread-memory-perf"></span><span id="MemoryCoherenceModelsandPerformance"></span><h3>B.6.3  Memory Coherence Models and Performance</h3><p>
+
+
+
+</p>
+<p>Cache coherence is a feature of all modern multicore CPUs; with it, memory
+writes by one processor are automatically visible to other processors.
+This is an incredibly useful feature; being able to assume it in the
+implementation of a system like <tt>pbrt</tt> is extremely helpful to the
+programmer.  Understanding the subtleties and performance characteristics
+of this feature is important, however.
+
+</p>
+<p>One potential issue is that other processors may not see writes to memory
+in the same order that the processor that performed the writes issued them.
+This can happen for two main reasons: the compiler&rsquo;s optimizer may have
+reordered write operations to improve performance, and the CPU hardware may
+write values to memory in a different order than the stream of executed
+machine instructions.  When only a single thread is running, both of these are
+innocuous; by design, the compiler and hardware, respectively, ensure that
+it is impossible for a single thread of execution running the program to
+detect when these cases happen.  This guarantee is not provided for
+multi-threaded code, however; doing so would impose a significant
+performance penalty, so hardware architectures leave requiring such ordering,
+when it matters, to software.
+
+</p>
+<p><em>Memory barrier</em> instructions can be used to ensure that all write
+instructions before the barrier are visible in memory before any subsequent
+instructions execute.  In practice, we generally do not need to issue memory
+barrier instructions explicitly, since both C++ atomic and the thread
+synchronization calls used to build multi-threaded algorithms can include
+them in their operation.
+
+</p>
+<p>
+
+</p>
+<p>Although cache coherence is helpful to the programmer, it can sometimes
+impose a substantial performance penalty for data that is frequently
+modified and accessed by multiple processors.  Read-only data has little
+penalty; copies of it can be stored in the local caches of all the
+processors that are accessing it, allowing all of them the same performance
+benefits from the caches as in the single-threaded case.  To understand the
+downside of taking too much advantage of cache coherence for read&ndash;write
+data, it is useful to understand how cache coherence is typically
+implemented on processors.
+
+</p>
+<p>CPUs implement a <em>cache coherence protocol</em>, which is responsible for
+tracking the memory transactions issued by all the processors in order
+to provide cache coherence.  A classic such protocol is <em>MESI</em>, where
+the acronym represents the four states that each cache line can be in.
+Each processor stores the current state for each cache line in its local
+caches:
+</p>
+<ul>
+<li> <em>Modified</em>&mdash;The current processor has written to the memory location,
+but the result is only stored in the cache&mdash;it is <em>dirty</em> and has not
+been written to main memory.  No other processor has the location in its
+cache.
+<li> <em>Exclusive</em>&mdash;The current processor is the only one with the data from
+the corresponding memory location in its cache.  The value in the cache
+matches the value in memory.
+<li> <em>Shared</em>&mdash;Multiple processors have the corresponding memory
+location in their caches, but they have only performed read operations.
+<li> <em>Invalid</em>&mdash;The cache line does not hold valid data.
+</ul><p>
+
+At system startup time, the caches are empty and all cache lines are in the
+invalid state.  The first time a processor reads a memory location, the data
+for that location is loaded into cache and its cache line marked as being
+in the &ldquo;exclusive&rdquo; state.  If another processor performs a memory read
+of a location that is in the &ldquo;exclusive&rdquo; state in another cache, then
+both caches record the state for the corresponding memory location to
+instead be &ldquo;shared.&rdquo;
+
+</p>
+<p>When a processor writes to a memory location, the performance of the write
+depends on the state of the corresponding cache line.  If it is in the
+&ldquo;exclusive&rdquo; state and already in the writing processor&rsquo;s cache, then the
+write is cheap; the data is modified in the cache and the cache line&rsquo;s
+state is changed to &ldquo;modified.&rdquo;  (If it was already in the &ldquo;modified&rdquo;
+state, then the write is similarly efficient.)  In these cases, the value
+will eventually be written to main memory, at which point the corresponding
+cache line returns to the &ldquo;exclusive&rdquo; state.  
+
+</p>
+<p>However, if a processor writes to a memory location that is in the
+&ldquo;shared&rdquo; state in its cache or is in the &ldquo;modified&rdquo; or &ldquo;exclusive&rdquo;
+state in another processor&rsquo;s cache, then expensive communication between
+the cores is required.  All of this is handled transparently by the
+hardware, though it still has a performance impact.  In this case, the
+writing processor must issue a <em>read for ownership</em> (RFO), which marks
+the memory location as invalid in the caches of any other processors; RFOs
+can cause stalls of tens or hundreds of cycles&mdash;a substantial penalty for
+a single memory write.
+
+</p>
+<p>In general, we would therefore like to avoid the situation of multiple
+processors concurrently writing to the same memory location as well as
+unnecessarily reading memory that another processor is writing to.  
+An important case to be aware of is &ldquo;false sharing,&rdquo; where a single cache
+line holds some read-only data and some data that is frequently modified.
+In this case, even if only a single processor is writing to the part of the
+cache line that is modified but many are reading from the read-only part,
+the overhead of frequent RFO operations will be unnecessarily incurred.
+<tt>pbrt</tt> uses <tt>alignas</tt> in the declaration of classes that are modified
+during rendering and are susceptible to false sharing in order to ensure
+that they take entire cache lines for themselves.  A macro makes the
+system&rsquo;s cache line size available.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-DefineCacheLineSizeConstant-0"></span><div class="fragmentname">&lt;&lt;Define Cache Line Size Constant&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">#ifdef PBRT_BUILD_GPU_RENDERER
+#define <span class="anchor" id="PBRT_L1_CACHE_LINE_SIZE"></span>PBRT_L1_CACHE_LINE_SIZE 128
+#else
+#define PBRT_L1_CACHE_LINE_SIZE 64
+#endif</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ThreadPoolsandParallelJobs"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="ThreadPoolsandParallelJobs"></span><h3>B.6.4  Thread Pools and Parallel Jobs</h3><p>
+
+
+</p>
+<p>Although C++ provides a portable abstraction for CPU threads via its
+<tt>std::thread</tt> class, creating and then destroying threads each time
+there is parallel work to do is usually not a good approach.  Thread
+creation requires calls to the operating system, which must allocate and
+update data structures to account for each thread; this work consumes
+processing cycles that we would prefer to devote to rendering.  Further,
+unchecked creation of threads can overwhelm the processor with many more
+threads than it is capable of executing concurrently.  Flooding it with
+more work than it can handle may be detrimental to its ability to get
+through it.
+
+</p>
+<p>A widely used solution to both of these issues is <em>thread pools</em>.
+With a thread pool, a fixed number of threads are launched at system
+startup time.  They persist throughout the program&rsquo;s execution, waiting for
+parallel work to help out with and sleeping when there is no work for them
+to do.  In <tt>pbrt</tt>, the call to <a href="../Utilities/System_Startup,_Cleanup,_and_Options.html#InitPBRT"><tt>InitPBRT()</tt></a> creates a pool of worker
+threads (generally, one for each available CPU core).  A further advantage
+of this implementation approach is that providing work to the threads is a
+fairly lightweight operation, which encourages the use of the thread pool
+even for fine-grained tasks.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolDefinition-0"></span><div class="fragmentname">&lt;&lt;ThreadPool Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="ThreadPool"></span>ThreadPool {
+  public:
+    &lt;&lt;<span class="fragmentname">ThreadPool Public Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2827" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2827"><i></i></a><div id="fragbit-2827" class="collapse"><div class="fragmentcode">       explicit ThreadPool(int nThreads);
+       ~ThreadPool();
+       
+       size_t size() const { return threads.size(); }
+       std::unique_lock&lt;std::mutex&gt; AddToJobList(ParallelJob *job);
+       void RemoveFromJobList(ParallelJob *job);
+       void WorkOrWait(std::unique_lock&lt;std::mutex&gt; *lock, bool isEnqueuingThread);
+       bool WorkOrReturn();
+       
+       void Disable();
+       void Reenable();
+       void ForEachThread(std::function&lt;void(void)&gt; func);
+       std::string ToString() const;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname">ThreadPool Private Methods</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2828" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2828"><i></i></a><div id="fragbit-2828" class="collapse"><div class="fragmentcode">       void Worker();</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ThreadPoolPrivateMembers-0">ThreadPool Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2829" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2829"><i></i></a><div id="fragbit-2829" class="collapse"><div class="fragmentcode">       std::vector&lt;std::thread&gt; threads;
+       mutable std::mutex mutex;
+       bool shutdownThreads = false;
+       bool disabled = false;
+       ParallelJob *jobList = nullptr;
+       std::condition_variable jobListCondition;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>pbrt</tt>&rsquo;s main thread of execution also participates in executing parallel
+work, so the <tt>ThreadPool</tt> constructor launches one fewer than the
+requested number of threads.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;ThreadPool Method Definitions&gt;&gt;=&nbsp;<a href="#fragment-ThreadPoolMethodDefinitions-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">ThreadPool::ThreadPool(int nThreads) {
+    for (int i = 0; i &lt; nThreads - 1; ++i)
+        <a href="#ThreadPool::threads" class="code">threads</a>.push_back(std::thread(&amp;ThreadPool::<a href="#ThreadPool::Worker" class="code">Worker</a>, this));
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;ThreadPool Private Members&gt;&gt;=&nbsp;<a href="#fragment-ThreadPoolPrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::vector&lt;std::thread&gt; <span class="anchor" id="ThreadPool::threads"></span>threads;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The worker threads all run the <tt>ThreadPool</tt>&rsquo;s <tt>Worker()</tt>
+method, which acquires a mutex and calls <tt>WorkOrWait()</tt> until system
+shutdown, at which point <tt>shutdownThreads</tt> will be set to <tt>true</tt>
+to signal the worker threads to exit.  When we get to the implementation of
+<tt>WorkOrWait()</tt>, we will see that this mutex is only held briefly,
+until the thread is able to determine whether or not there is more work for
+it to perform. 
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolMethodDefinitions-1"></span><div class="fragmentname">&lt;&lt;ThreadPool Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ThreadPoolMethodDefinitions-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ThreadPoolMethodDefinitions-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ThreadPool::Worker"></span>ThreadPool::Worker() {
+    std::unique_lock&lt;std::<a href="#ThreadPool::mutex" class="code">mutex</a>&gt; lock(<a href="#ThreadPool::mutex" class="code">mutex</a>);
+    while (!<a href="#ThreadPool::shutdownThreads" class="code">shutdownThreads</a>)
+        <a href="#ThreadPool::WorkOrWait" class="code">WorkOrWait</a>(&amp;lock, false);
+}</div><p>
+
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolPrivateMembers-1"></span><div class="fragmentname">&lt;&lt;ThreadPool Private Members&gt;&gt;+=&nbsp;<a href="#fragment-ThreadPoolPrivateMembers-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ThreadPoolPrivateMembers-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">mutable std::mutex <span class="anchor" id="ThreadPool::mutex"></span>mutex;
+bool <span class="anchor" id="ThreadPool::shutdownThreads"></span>shutdownThreads = false;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>Before we get to the implementation of the <tt>WorkOrWait()</tt> method, we
+will discuss the <tt>ParallelJob</tt> class, which specifies an abstract
+interface for work that is executed by the thread pool and defines a few
+member variables that the <tt>ThreadPool</tt> will use to keep track of
+work.  Because it is only used for CPU parallelism and is not used on the
+GPU, we will use regular virtual functions for dynamic dispatch in its
+implementation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelJobDefinition-0"></span><div class="fragmentname">&lt;&lt;ParallelJob Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="ParallelJob"></span>ParallelJob {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParallelJobPublicMethods-0">ParallelJob Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2830" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2830"><i></i></a><div id="fragbit-2830" class="collapse"><div class="fragmentcode">       virtual ~ParallelJob() { DCHECK(removed); }
+       virtual bool <a href="#ParallelJob::HaveWork" class="code">HaveWork</a>() const = 0;
+       virtual void RunStep(std::unique_lock&lt;std::mutex&gt; *lock) = 0;
+       bool Finished() const { return !<a href="#ParallelJob::HaveWork" class="code">HaveWork</a>() &amp;&amp; <a href="#ParallelJob::activeWorkers" class="code">activeWorkers</a> == 0; }
+       virtual std::string ToString() const = 0;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParallelJobPublicMembers-0">ParallelJob Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2831" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2831"><i></i></a><div id="fragbit-2831" class="collapse"><div class="fragmentcode">       static ThreadPool *threadPool;</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParallelJobPrivateMembers-0">ParallelJob Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2832" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2832"><i></i></a><div id="fragbit-2832" class="collapse"><div class="fragmentcode">       friend class ThreadPool;
+       int activeWorkers = 0;
+       ParallelJob *prev = nullptr, *next = nullptr;
+       </div></div>    
+};</div><p>
+
+
+</p>
+<p>All the parallel work in <tt>pbrt</tt> is handled by a single thread pool
+managed by <tt>ParallelJob</tt>. 
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelJobPublicMembers-0"></span><div class="fragmentname">&lt;&lt;ParallelJob Public Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">static ThreadPool *<span class="anchor" id="ParallelJob::threadPool"></span>threadPool;</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Each job may consist of one or more independent tasks.  The two key methods
+that <tt>ParallelJob</tt> implementations must provide are <tt>HaveWork()</tt>
+and <tt>RunStep()</tt>.  The former indicates whether there is any remaining
+work that has not yet commenced, and when the latter is called, some of the
+remaining work should be done.  The implementation can assume that none
+of its methods will be called concurrently by multiple threads&mdash;in other
+words, that the calling code uses a mutex to ensure mutual exclusion.
+
+</p>
+<p><tt>RunStep()</tt> is further passed a pointer to a lock that is already held
+when the method is called.  It should be unlocked at its return.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelJobPublicMethods-0"></span><div class="fragmentname">&lt;&lt;ParallelJob Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ParallelJobPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">virtual bool <span class="anchor" id="ParallelJob::HaveWork"></span>HaveWork() const = 0;
+virtual void <span class="anchor" id="ParallelJob::RunStep"></span>RunStep(std::unique_lock&lt;std::mutex&gt; *lock) = 0;</div><p>
+
+
+</p>
+<p><tt>ParallelJob</tt> carries along a few member variables that are purely for
+the use of the <tt>ThreadPool</tt>.  Including them in the <tt>ParallelJob</tt>
+class here saves the thread pool from needing to dynamically allocate any
+per-job storage.  One is <tt>activeWorkers</tt>, which the thread pool uses
+to track how many threads are currently working on the job.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelJobPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;ParallelJob Private Members&gt;&gt;=&nbsp;<a href="#fragment-ParallelJobPrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">friend class ThreadPool;
+int <span class="anchor" id="ParallelJob::activeWorkers"></span>activeWorkers = 0;</div><p>
+
+
+</p>
+<p>In turn, a job is only finished if there is no more work to be handed
+out and if no threads are currently working on it.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelJobPublicMethods-1"></span><div class="fragmentname">&lt;&lt;ParallelJob Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParallelJobPublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="ParallelJob::Finished"></span>Finished() const { return !<a href="#ParallelJob::HaveWork" class="code">HaveWork</a>() &amp;&amp; <a href="#ParallelJob::activeWorkers" class="code">activeWorkers</a> == 0; }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>Returning to the <a href="#ThreadPool"><tt>ThreadPool</tt></a> implementation now, we will consider how
+work to be done is managed.  The <tt>ThreadPool</tt> maintains a doubly linked list of
+jobs where its <tt>jobList</tt> member variable points to the list&rsquo;s head.  
+<a href="#ThreadPool::mutex"><tt>ThreadPool::mutex</tt></a> must always be held when accessing <tt>jobList</tt> or values
+stored in the <a href="#ParallelJob"><tt>ParallelJob</tt></a> objects held in it.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolPrivateMembers-2"></span><div class="fragmentname">&lt;&lt;ThreadPool Private Members&gt;&gt;+=&nbsp;<a href="#fragment-ThreadPoolPrivateMembers-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ThreadPoolPrivateMembers-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">ParallelJob *<span class="anchor" id="ThreadPool::jobList"></span>jobList = nullptr;</div><p>
+
+
+</p>
+<p>The link pointers are stored as <a href="#ParallelJob"><tt>ParallelJob</tt></a> member variables that are
+just for the use of the <tt>ThreadPool</tt> and should
+not be accessed by the <tt>ParallelJob</tt> implementation.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelJobPrivateMembers-1"></span><div class="fragmentname">&lt;&lt;ParallelJob Private Members&gt;&gt;+=&nbsp;<a href="#fragment-ParallelJobPrivateMembers-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">ParallelJob *<span class="anchor" id="ParallelJob::prev"></span>prev = nullptr, *<span class="anchor" id="ParallelJob::next"></span>next = nullptr;
+</div><p>
+
+
+</p>
+<p><tt>AddToJobList()</tt> acquires the mutex and adds the provided job
+to the work list before using a condition variable to signal the worker
+threads so that they wake up and start taking work from the list.  The
+mutex lock is returned to the caller so that it can do any further
+job-related setup, assured that work will not start until it releases the lock.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolMethodDefinitions-2"></span><div class="fragmentname">&lt;&lt;ThreadPool Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ThreadPoolMethodDefinitions-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ThreadPoolMethodDefinitions-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::unique_lock&lt;std::<a href="#ThreadPool::mutex" class="code">mutex</a>&gt; <span class="anchor" id="ThreadPool::AddToJobList"></span>ThreadPool::AddToJobList(ParallelJob *job) {
+    std::unique_lock&lt;std::<a href="#ThreadPool::mutex" class="code">mutex</a>&gt; lock(<a href="#ThreadPool::mutex" class="code">mutex</a>);
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AddmonojobtoheadofmonojobList-0">Add <tt>job</tt> to head of <tt>jobList</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2833" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2833"><i></i></a><div id="fragbit-2833" class="collapse"><div class="fragmentcode">       if (<a href="#ThreadPool::jobList" class="code">jobList</a>)
+           <a href="#ThreadPool::jobList" class="code">jobList</a>-&gt;<a href="#ParallelJob::prev" class="code">prev</a> = job;
+       job-&gt;<a href="#ParallelJob::next" class="code">next</a> = <a href="#ThreadPool::jobList" class="code">jobList</a>;
+       <a href="#ThreadPool::jobList" class="code">jobList</a> = job;</div></div> 
+    <a href="#ThreadPool::jobListCondition" class="code">jobListCondition</a>.notify_all();
+    return lock;
+}</div><p>
+
+
+</p>
+<p>Jobs are added to the front of the work list. In this way, if some parallel
+work enqueues additional work, the additional work will be processed before
+more is done on the initial work.  This corresponds to depth-first
+processing of the work if dependent jobs are considered as a tree, which
+can avoid an explosion in the number of items in the work list.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AddmonojobtoheadofmonojobList-0"></span><div class="fragmentname">&lt;&lt;Add <tt>job</tt> to head of <tt>jobList</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (<a href="#ThreadPool::jobList" class="code">jobList</a>)
+    <a href="#ThreadPool::jobList" class="code">jobList</a>-&gt;<a href="#ParallelJob::prev" class="code">prev</a> = job;
+job-&gt;<a href="#ParallelJob::next" class="code">next</a> = <a href="#ThreadPool::jobList" class="code">jobList</a>;
+<a href="#ThreadPool::jobList" class="code">jobList</a> = job;</div><p>
+
+
+</p>
+<p>When there is no available work, worker threads wait on the
+<tt>jobListCondition</tt> condition variable.  
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolPrivateMembers-3"></span><div class="fragmentname">&lt;&lt;ThreadPool Private Members&gt;&gt;+=&nbsp;<a href="#fragment-ThreadPoolPrivateMembers-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">std::condition_variable <span class="anchor" id="ThreadPool::jobListCondition"></span>jobListCondition;</div><p>
+
+
+</p>
+<p>We can finally return to the <tt>WorkOrWait()</tt> method that all threads
+execute.  The lock provided to it is of the <tt>mutex</tt> member variable,
+so it is safe to access other <tt>ThreadPool</tt> members as long as it is
+held.  Its second parameter, <tt>isEnqueuingThread</tt>, is used when the
+thread pool has been temporarily disabled to ensure that only the thread
+that submits work performs computation in that case.  (That capability is
+needed for an arcane situation in the implementation of some of <tt>pbrt</tt>&rsquo;s GPU
+code, so it is not discussed further here.)
+
+</p>
+<p>The method implementation starts by walking through the job list in search
+of a <tt>ParallelJob</tt> that still has work left.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolMethodDefinitions-3"></span><div class="fragmentname">&lt;&lt;ThreadPool Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ThreadPoolMethodDefinitions-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ThreadPoolMethodDefinitions-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ThreadPool::WorkOrWait"></span>ThreadPool::WorkOrWait(std::unique_lock&lt;std::mutex&gt; *lock,
+                            bool isEnqueuingThread) {
+    &lt;&lt;<span class="fragmentname">Return if this is a worker thread and the thread pool is disabled</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2834" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2834"><i></i></a><div id="fragbit-2834" class="collapse"><div class="fragmentcode">       if (!isEnqueuingThread &amp;&amp; disabled) {
+           jobListCondition.wait(*lock);
+           return;
+       }</div></div>
+    ParallelJob *job = <a href="#ThreadPool::jobList" class="code">jobList</a>;
+    while (job &amp;&amp; !job-&gt;<a href="#ParallelJob::HaveWork" class="code">HaveWork</a>())
+        job = job-&gt;next;
+    if (job) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Executeworkformonojob-0">Execute work for <tt>job</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2835" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2835"><i></i></a><div id="fragbit-2835" class="collapse"><div class="fragmentcode">           job-&gt;<a href="#ParallelJob::activeWorkers" class="code">activeWorkers</a>++;
+           job-&gt;<a href="#ParallelJob::RunStep" class="code">RunStep</a>(lock);
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Handlepost-job-executiondetails-0">Handle post-job-execution details</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2836" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2836"><i></i></a><div id="fragbit-2836" class="collapse"><div class="fragmentcode">              lock-&gt;lock();
+              job-&gt;<a href="#ParallelJob::activeWorkers" class="code">activeWorkers</a>--;
+              if (job-&gt;<a href="#ParallelJob::Finished" class="code">Finished</a>())
+                  <a href="#ThreadPool::jobListCondition" class="code">jobListCondition</a>.notify_all();</div></div></div></div>
+    } else
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-Waitfornewworktoarriveorthejobtofinish-0">Wait for new work to arrive or the job to finish</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2837" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2837"><i></i></a><div id="fragbit-2837" class="collapse"><div class="fragmentcode">           <a href="#ThreadPool::jobListCondition" class="code">jobListCondition</a>.wait(*lock);</div></div>
+}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>If an unfinished job is found, then its active worker count is incremented
+and its <tt>RunStep()</tt> method is called with the lock passed along.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Executeworkformonojob-0"></span><div class="fragmentname">&lt;&lt;Execute work for <tt>job</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">job-&gt;<a href="#ParallelJob::activeWorkers" class="code">activeWorkers</a>++;
+job-&gt;<a href="#ParallelJob::RunStep" class="code">RunStep</a>(lock);
+&lt;&lt;<span class="fragmentname"><a href="#fragment-Handlepost-job-executiondetails-0">Handle post-job-execution details</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2838" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2838"><i></i></a><div id="fragbit-2838" class="collapse"><div class="fragmentcode">   lock-&gt;lock();
+   job-&gt;<a href="#ParallelJob::activeWorkers" class="code">activeWorkers</a>--;
+   if (job-&gt;<a href="#ParallelJob::Finished" class="code">Finished</a>())
+       <a href="#ThreadPool::jobListCondition" class="code">jobListCondition</a>.notify_all();</div></div></div><p>
+
+
+</p>
+<p>Recall that <tt>RunStep()</tt> methods should release the lock before they do
+their actual work, so the lock will not be held by this thread after that call returns.
+Thus, the lock must be reacquired before this thread can update
+<tt>activeWorkers</tt> and check to see if the job is completed.  If it is, 
+the condition variable must be signaled again: the thread that initially
+spawned the work may be waiting on the condition variable for other threads
+to finish their work on the job.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Handlepost-job-executiondetails-0"></span><div class="fragmentname">&lt;&lt;Handle post-job-execution details&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">lock-&gt;lock();
+job-&gt;<a href="#ParallelJob::activeWorkers" class="code">activeWorkers</a>--;
+if (job-&gt;<a href="#ParallelJob::Finished" class="code">Finished</a>())
+    <a href="#ThreadPool::jobListCondition" class="code">jobListCondition</a>.notify_all();</div><p>
+
+
+</p>
+<p>Threads wait on the condition variable if there is no work to be done.
+The semantics of condition variables are such that the lock is released
+upon the call to <tt>wait()</tt>, but when the call returns due to the thread
+having been woken up, it will again hold the lock.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Waitfornewworktoarriveorthejobtofinish-0"></span><div class="fragmentname">&lt;&lt;Wait for new work to arrive or the job to finish&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#ThreadPool::jobListCondition" class="code">jobListCondition</a>.wait(*lock);</div><p>
+
+
+</p>
+<p>Removing a job from the list just requires rewiring the pointers of
+adjacent list nodes, if present, and updating the list head pointer if the
+job is at the head.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadPoolMethodDefinitions-4"></span><div class="fragmentname">&lt;&lt;ThreadPool Method Definitions&gt;&gt;+=&nbsp;<a href="#fragment-ThreadPoolMethodDefinitions-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="ThreadPool::RemoveFromJobList"></span>ThreadPool::RemoveFromJobList(ParallelJob *job) {
+    if (job-&gt;<a href="#ParallelJob::prev" class="code">prev</a>)
+        job-&gt;<a href="#ParallelJob::prev" class="code">prev</a>-&gt;<a href="#ParallelJob::next" class="code">next</a> = job-&gt;<a href="#ParallelJob::next" class="code">next</a>;
+    else
+        <a href="#ThreadPool::jobList" class="code">jobList</a> = job-&gt;<a href="#ParallelJob::next" class="code">next</a>;
+    if (job-&gt;<a href="#ParallelJob::next" class="code">next</a>)
+        job-&gt;<a href="#ParallelJob::next" class="code">next</a>-&gt;<a href="#ParallelJob::prev" class="code">prev</a> = job-&gt;<a href="#ParallelJob::prev" class="code">prev</a>;
+}</div><p>
+
+
+</p>
+<p>The
+<tt>ThreadPool::WorkOrReturn()</tt><span class="anchor" id="ThreadPool::WorkOrReturn"></span>
+method is very similar to <tt>WorkOrWait()</tt> with the differences that it
+acquires a lock to the mutex itself rather than expecting it to be passed
+in and that it returns if there is no work available.  (Its implementation
+is therefore elided.) This method will be useful with the forthcoming
+<a href="#AsyncJob"><tt>AsyncJob</tt></a> class, which opportunistically helps out with parallel work
+when it would otherwise be blocked.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>The thread pool also provides a
+<tt>ForEachThread()</tt><span class="anchor" id="ForEachThread"></span> function that takes a
+function to be executed on each of the threads in the thread pool as well
+as the main thread.  In <tt>pbrt</tt>, it is used by the statistics system to
+collect statistics that are stored in per-thread variables.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ParallelforLoops"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:parallel-for"></span><span id="ParallelforLoops"></span><h3>B.6.5  Parallel for Loops</h3><p>
+
+
+
+</p>
+<p>Much of the multi-core parallelism when <tt>pbrt</tt> is running on the CPU is
+expressed through parallel <tt>for</tt> loops using the <tt>ParallelFor()</tt>
+and <tt>ParallelFor2D()</tt> functions, which implement the <a href="#ParallelJob"><tt>ParallelJob</tt></a>
+interface.<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Our implementation is based on the parallel <tt>for</tt>
+loop implementation in <em>Halide</em> written by Jonathan Ragan-Kelley,
+Andrew Adams, and Zalman Stern.">
+      <sup>&dagger;</sup>
+    </button>
+		  These functions take the loop body in the
+form of a function that is called for each iteration as well as a count of
+the total number of loop iterations to execute.  Multiple iterations can
+thus run in parallel on different CPU cores. Calls to these functions
+return only after all the loop iterations have finished.
+
+</p>
+<p>Here is an example of using <tt>ParallelFor()</tt>.  The first two
+arguments give the range of values for the loop index and a C++ lambda
+expression is used to define the loop body; the loop index is passed to it
+as an argument.  The lambda has access to the local <tt>array</tt> variable
+and doubles each array element in its body.
+</p>
+<div class="fragmentcode">Float array[1024] = { ... };
+ParallelFor(0, 1024, [array](int index) { array[index] *= 2; });</div><p>
+
+While it is also possible to pass a function pointer to
+<tt>ParallelFor()</tt>, lambdas are generally much more convenient, given
+their ability to capture locally visible variables and make them available
+in their body.
+
+</p>
+<p><tt>ParallelForLoop1D</tt> implements the <tt>ParallelJob</tt> interface, for
+use in the <a href="#ParallelFor"><tt>ParallelFor()</tt></a> functions.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelForLoop1DDefinition-0"></span><div class="fragmentname">&lt;&lt;ParallelForLoop1D Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">class <span class="anchor" id="ParallelForLoop1D"></span>ParallelForLoop1D : public <a href="#ParallelJob" class="code">ParallelJob</a> {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParallelForLoop1DPublicMethods-0">ParallelForLoop1D Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2839" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2839"><i></i></a><div id="fragbit-2839" class="collapse"><div class="fragmentcode">       ParallelForLoop1D(int64_t startIndex, int64_t <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>, int <a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>,
+                         std::function&lt;void(int64_t, int64_t)&gt; <a href="#ParallelForLoop1D::func" class="code">func</a>)
+           : <a href="#ParallelForLoop1D::func" class="code">func</a>(std::move(<a href="#ParallelForLoop1D::func" class="code">func</a>)), <a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a>(startIndex), <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>(<a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>),
+             <a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>(<a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>) {}
+       bool HaveWork() const { return <a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a> &lt; <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>; }
+       void RunStep(std::unique_lock&lt;std::mutex&gt; *lock);
+       std::string ToString() const {
+           return StringPrintf("[ ParallelForLoop1D <a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a>: %d <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>: %d "
+                               "<a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>: %d ]",
+                               <a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a>, <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>, <a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>);
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ParallelForLoop1DPrivateMembers-0">ParallelForLoop1D Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2840" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2840"><i></i></a><div id="fragbit-2840" class="collapse"><div class="fragmentcode">       std::function&lt;void(int64_t, int64_t)&gt; func;
+       int64_t nextIndex, endIndex;
+       int chunkSize;</div></div>
+};</div><p>
+
+
+</p>
+<p>In addition to the callback function for the loop body, the constructor
+takes the range of values the loop should cover via the <tt>startIndex</tt>
+and <tt>endIndex</tt> parameters.  For loops with relatively large iteration
+counts where the work done per iteration is small, it can be worthwhile to
+have the threads running loop iterations do multiple iterations before
+getting more work.  (Doing so helps amortize the overhead of determining
+which iterations should be assigned to a thread.)  Therefore,
+<tt>ParallelFor()</tt> also takes an optional <tt>chunkSize</tt> parameter that
+controls the granularity of the mapping of loop iterations to processing
+threads.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelForLoop1DPublicMethods-0"></span><div class="fragmentname">&lt;&lt;ParallelForLoop1D Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ParallelForLoop1DPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">ParallelForLoop1D(int64_t startIndex, int64_t <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>, int <a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>,
+                  std::function&lt;void(int64_t, int64_t)&gt; <a href="#ParallelForLoop1D::func" class="code">func</a>)
+    : <a href="#ParallelForLoop1D::func" class="code">func</a>(std::move(<a href="#ParallelForLoop1D::func" class="code">func</a>)), <a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a>(startIndex), <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>(<a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>),
+      <a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>(<a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>) {}</div><p>
+
+
+</p>
+<p>The <tt>nextIndex</tt> member variable tracks the next loop index to be
+executed.  It is incremented by workers as they claim loop iterations to
+execute in their threads.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelForLoop1DPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;ParallelForLoop1D Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::function&lt;void(int64_t, int64_t)&gt; <span class="anchor" id="ParallelForLoop1D::func"></span>func;
+int64_t <span class="anchor" id="ParallelForLoop1D::nextIndex"></span>nextIndex, <span class="anchor" id="ParallelForLoop1D::endIndex"></span>endIndex;
+int <span class="anchor" id="ParallelForLoop1D::chunkSize"></span>chunkSize;</div><p>
+
+
+</p>
+<p>The <tt>HaveWork()</tt> method is easily implemented.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelForLoop1DPublicMethods-1"></span><div class="fragmentname">&lt;&lt;ParallelForLoop1D Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ParallelForLoop1DPublicMethods-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="ParallelForLoop1D::HaveWork"></span>HaveWork() const { return <a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a> &lt; <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>; }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p><tt>RunStep()</tt> determines which loop iterations to run and does some
+housekeeping before releasing the provided lock and executing loop
+iterations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelForLoop1DMethodDefinitions-0"></span><div class="fragmentname">&lt;&lt;ParallelForLoop1D Method Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="ParallelForLoop1D::RunStep"></span>ParallelForLoop1D::RunStep(std::unique_lock&lt;std::mutex&gt; *lock) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Determinetherangeofloopiterationstoruninthisstep-0">Determine the range of loop iterations to run in this step</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2841" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2841"><i></i></a><div id="fragbit-2841" class="collapse"><div class="fragmentcode">       int64_t indexStart = <a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a>;
+       int64_t indexEnd = std::min(indexStart + <a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>, <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>);
+       <a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a> = indexEnd;</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Removejobfromlistifallworkhasbeenstarted-0">Remove job from list if all work has been started</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2842" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2842"><i></i></a><div id="fragbit-2842" class="collapse"><div class="fragmentcode">       if (!<a href="#ParallelForLoop1D::HaveWork" class="code">HaveWork</a>())
+           threadPool-&gt;<a href="#ThreadPool::RemoveFromJobList" class="code">RemoveFromJobList</a>(this);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ReleaselockandexecuteloopiterationsinmonoindexStartindexEnd-0">Release lock and execute loop iterations in <tt>[indexStart, indexEnd)</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2843" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2843"><i></i></a><div id="fragbit-2843" class="collapse"><div class="fragmentcode">       lock-&gt;unlock();
+       <a href="#ParallelForLoop1D::func" class="code">func</a>(indexStart, indexEnd);</div></div>
+}</div><p>
+
+
+</p>
+<p>Recall that the <a href="#ThreadPool"><tt>ThreadPool</tt></a> ensures that no other threads will
+concurrently call any of the other <tt>ParallelForLoop1D</tt> methods as long
+as the provided <tt>lock</tt> is held.  Therefore, the method implementation
+here is free to access and modify member variables without needing to worry
+about mutual exclusion or atomic updates.  Here, it is a simple matter to
+determine the range of iterations to run next, given a starting iteration
+and the chunk size.  Note, however, that it is important to copy the
+<tt>nextIndex</tt> member variable into a local variable here while the lock
+is held, as that value will be accessed later when the lock is not held.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Determinetherangeofloopiterationstoruninthisstep-0"></span><div class="fragmentname">&lt;&lt;Determine the range of loop iterations to run in this step&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int64_t indexStart = <a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a>;
+int64_t indexEnd = std::min(indexStart + <a href="#ParallelForLoop1D::chunkSize" class="code">chunkSize</a>, <a href="#ParallelForLoop1D::endIndex" class="code">endIndex</a>);
+<a href="#ParallelForLoop1D::nextIndex" class="code">nextIndex</a> = indexEnd;</div><p>
+
+
+</p>
+<p>If all the work for a job has begun, there is no need for it to be in
+the list of unfinished jobs that the <tt>ThreadPool</tt> maintains.
+Therefore, we immediately remove it from the list in that case.  Note
+that just because a job is not in the work list does not mean
+that its work is completed.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Removejobfromlistifallworkhasbeenstarted-0"></span><div class="fragmentname">&lt;&lt;Remove job from list if all work has been started&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">if (!<a href="#ParallelForLoop1D::HaveWork" class="code">HaveWork</a>())
+    threadPool-&gt;<a href="#ThreadPool::RemoveFromJobList" class="code">RemoveFromJobList</a>(this);</div><p>
+
+
+</p>
+<p>Finally, the thread can release the lock and get to work executing the
+specified loop iterations.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ReleaselockandexecuteloopiterationsinmonoindexStartindexEnd-0"></span><div class="fragmentname">&lt;&lt;Release lock and execute loop iterations in <tt>[indexStart, indexEnd)</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">lock-&gt;unlock();
+<a href="#ParallelForLoop1D::func" class="code">func</a>(indexStart, indexEnd);</div><p>
+
+
+</p>
+<p>The <tt>ParallelFor()</tt> function pulls all the pieces together to create a
+<tt>ParallelForLoop1D</tt> object, provide it to the thread pool, and then
+execute loop iterations in the thread that specified the loop.  This
+function does not return until all the specified loop iterations are
+complete.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelFunctionDefinitions-0"></span><div class="fragmentname">&lt;&lt;Parallel Function Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="ParallelFor"></span>ParallelFor(int64_t start, int64_t end,
+                 std::function&lt;void(int64_t, int64_t)&gt; func) {
+    if (start == end) return;
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Computechunksizeforparallelloop-0">Compute chunk size for parallel loop</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2844" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2844"><i></i></a><div id="fragbit-2844" class="collapse"><div class="fragmentcode">       int64_t chunkSize =
+           std::max&lt;int64_t&gt;(1, (end - start) / (8 * RunningThreads()));</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CreateandenqueuemonoParallelForLoop1Dforthisloop-0">Create and enqueue <tt>ParallelForLoop1D</tt> for this loop</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2845" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2845"><i></i></a><div id="fragbit-2845" class="collapse"><div class="fragmentcode">       ParallelForLoop1D loop(start, end, chunkSize, std::move(func));
+       std::unique_lock&lt;std::mutex&gt; lock =
+           ParallelJob::<a href="#ParallelJob::threadPool" class="code">threadPool</a>-&gt;<a href="#ThreadPool::AddToJobList" class="code">AddToJobList</a>(&amp;loop);</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Helpoutwithparallelloopiterationsinthecurrentthread-0">Help out with parallel loop iterations in the current thread</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2846" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2846"><i></i></a><div id="fragbit-2846" class="collapse"><div class="fragmentcode">       while (!loop.<a href="#ParallelJob::Finished" class="code">Finished</a>())
+           ParallelJob::threadPool-&gt;<a href="#ThreadPool::WorkOrWait" class="code">WorkOrWait</a>(&amp;lock, true);</div></div>
+}</div><p>
+
+
+</p>
+<p>The first step is to compute the chunk size&mdash;how many loop iterations are
+performed each time a thread gets another block of work to do.  On one
+hand, the larger this value is, the less often threads will need to acquire
+the mutex to get more work.  If its value is too small, parallel speedup
+may be inhibited by worker threads being stalled while they wait for other
+threads to release the mutex.  On the other hand, if it is too large, then
+load balancing may be poor: all the threads but one may have finished
+the available work and be stalled, waiting for the last thread still
+working.  Here the value is set inversely proportional to the number of
+threads in an effort to balance these two factors.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Computechunksizeforparallelloop-0"></span><div class="fragmentname">&lt;&lt;Compute chunk size for parallel loop&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int64_t chunkSize =
+    std::max&lt;int64_t&gt;(1, (end - start) / (8 * RunningThreads()));</div><p>
+
+
+</p>
+<p>(The <tt>RunningThreads()</tt><span class="anchor" id="RunningThreads"></span> function, which is
+not included in the book, returns the total number of available threads for
+<tt>pbrt</tt>.)
+
+</p>
+<p>A <tt>ParallelForLoop1D</tt> object can now be initialized and provided to
+the thread pool.  Because this <tt>ParallelFor()</tt> call does not return
+until all work for the loop is done, it is safe to allocate <tt>loop</tt> on
+the stack&mdash;no dynamic memory allocation is required.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CreateandenqueuemonoParallelForLoop1Dforthisloop-0"></span><div class="fragmentname">&lt;&lt;Create and enqueue <tt>ParallelForLoop1D</tt> for this loop&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">ParallelForLoop1D loop(start, end, chunkSize, std::move(func));
+std::unique_lock&lt;std::mutex&gt; lock =
+    ParallelJob::<a href="#ParallelJob::threadPool" class="code">threadPool</a>-&gt;<a href="#ThreadPool::AddToJobList" class="code">AddToJobList</a>(&amp;loop);</div><p>
+
+
+</p>
+<p>After adding the job, the thread that called <tt>ParallelFor()</tt> (be it
+the main thread or one of the worker threads) starts work on
+the loop. By finishing the loop before allowing the thread that submitted
+it to do any more work, the implementation keeps the amount of enqueued
+work limited and allows subsequent code in the caller to proceed knowing
+the loop&rsquo;s work is done after its call to <tt>ParallelFor()</tt> returns.
+
+</p>
+<p>Because a held lock to the <tt>ThreadPool</tt>&rsquo;s <tt>mutex</tt> is returned
+from the call to <tt>AddToJobList()</tt>, it is safe to call both
+<tt>Finished()</tt> and <tt>WorkOrWait()</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Helpoutwithparallelloopiterationsinthecurrentthread-0"></span><div class="fragmentname">&lt;&lt;Help out with parallel loop iterations in the current thread&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">while (!loop.<a href="#ParallelJob::Finished" class="code">Finished</a>())
+    ParallelJob::threadPool-&gt;<a href="#ThreadPool::WorkOrWait" class="code">WorkOrWait</a>(&amp;lock, true);</div><p>
+
+
+</p>
+<p>There is a second variant of <tt>ParallelFor()</tt> that calls a callback
+that only takes a single loop index.  This saves a line or
+two of code in implementations that do not care to know about the
+chunk&rsquo;s <tt>[start, end)</tt> range. 
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ParallelInlineFunctions-0"></span><div class="fragmentname">&lt;&lt;Parallel Inline Functions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <a href="#ParallelFor" class="code">ParallelFor</a>(int64_t start, int64_t end,
+                 std::function&lt;void(int64_t)&gt; func) {
+    <a href="#ParallelFor" class="code">ParallelFor</a>(start, end, [&amp;func](int64_t start, int64_t end) {
+        for (int64_t i = start; i &lt; end; ++i)
+            func(i);
+    });
+}</div><p>
+
+
+</p>
+<p><tt>ParallelFor2D()</tt><span class="anchor" id="ParallelFor2D"></span>, not included here,
+takes a <a href="../Geometry_and_Transformations/Bounding_Boxes.html#Bounds2i"><tt>Bounds2i</tt></a> to specify the loop domain and then calls a function
+that either takes a <tt>Bounds2i</tt> or one that takes a <tt>Point2i</tt>,
+along the lines of the two <tt>ParallelFor()</tt> variants.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#AsynchronousJobs"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:async-jobs-and-futures"></span><span id="AsynchronousJobs"></span><h3>B.6.6  Asynchronous Jobs</h3><p>
+
+
+
+</p>
+<p>Parallel <tt>for</tt> loops are useful when the parallel work is easily
+expressed as a loop of independent iterations; it is just a few lines of changed code
+to parallelize an existing <tt>for</tt> loop.  The fact that
+<tt>ParallelFor()</tt> and <tt>ParallelFor2D()</tt> ensure that all loop
+iterations have finished before they return is also helpful since
+subsequent code can proceed knowing any values set in the loop are
+available.
+ 
+However, not all work fits that form.  Sometimes one thread of execution
+may produce independent work that could be done concurrently by a different
+thread.  In this case, we would like to be able to provide that work to the
+thread pool and then continue on in the current thread, harvesting the
+result of the independent work some time later.  <tt>pbrt</tt> therefore provides
+a second mechanism for parallel execution in the form of <em>asynchronous
+jobs</em> that execute a given function (often, a lambda function).  The
+following code shows an example of their use.
+
+</p>
+<p></p>
+<div class="fragmentcode">extern Result func(float x);
+AsyncJob&lt;Result&gt; *job = RunAsync(func, 0.5f);
+...
+Result r = job-&gt;GetResult();</div><p>
+
+
+</p>
+<p>The <tt>RunAsync()</tt> function takes a function as its first parameter as
+well as any arguments that the function takes.  It returns an
+<tt>AsyncJob</tt> to the caller, which can then continue execution.  When
+the <tt>AsyncJob</tt>&rsquo;s <tt>GetResult()</tt> method is subsequently called, the
+call will only return after the asynchronous function has executed, be it
+by another thread in the thread pool or by the calling thread.  The value
+returned by the asynchronous function is then returned to the caller.
+
+</p>
+<p>The <tt>AsyncJob</tt> class implements the <a href="#ParallelJob"><tt>ParallelJob</tt></a> interface.  It
+is templated on the return type of the function it manages.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AsyncJobDefinition-0"></span><div class="fragmentname">&lt;&lt;AsyncJob Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T&gt;
+class <span class="anchor" id="AsyncJob"></span>AsyncJob : public <a href="#ParallelJob" class="code">ParallelJob</a> {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AsyncJobPublicMethods-0">AsyncJob Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2847" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2847"><i></i></a><div id="fragbit-2847" class="collapse"><div class="fragmentcode">       AsyncJob(std::function&lt;T(void)&gt; w) : func(std::move(w)) {}
+       bool HaveWork() const { return !<a href="#AsyncJob::started" class="code">started</a>; }
+       void RunStep(std::unique_lock&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; *lock) {
+           <a href="#ParallelJob::threadPool" class="code">threadPool</a>-&gt;<a href="#ThreadPool::RemoveFromJobList" class="code">RemoveFromJobList</a>(this);
+           <a href="#AsyncJob::started" class="code">started</a> = true;
+           lock-&gt;unlock();
+           &lt;&lt;<span class="fragmentname"><a href="#fragment-Executeasynchronousworkandnotifywaitingthreadsofitscompletion-0">Execute asynchronous work and notify waiting threads of its completion</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2848" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2848"><i></i></a><div id="fragbit-2848" class="collapse"><div class="fragmentcode">              T r = <a href="#AsyncJob::func" class="code">func</a>();
+              std::unique_lock&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; ul(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+              <a href="#AsyncJob::result" class="code">result</a> = r;
+              <a href="#AsyncJob::cv" class="code">cv</a>.notify_all();</div></div>
+       }
+       bool <a href="#AsyncJob::IsReady" class="code">IsReady</a>() const {
+           std::lock_guard&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; lock(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+           return <a href="#AsyncJob::result" class="code">result</a>.has_value();
+       }
+       T GetResult() {
+           <a href="#AsyncJob::Wait" class="code">Wait</a>();
+           std::lock_guard&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; lock(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+           return *<a href="#AsyncJob::result" class="code">result</a>;
+       }
+       pstd::optional&lt;T&gt; TryGetResult(std::<a href="#AsyncJob::mutex" class="code">mutex</a> *extMutex) {
+          {
+          std::lock_guard&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; lock(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+          if (<a href="#AsyncJob::result" class="code">result</a>)
+              return <a href="#AsyncJob::result" class="code">result</a>;
+          }
+       
+          extMutex-&gt;unlock();
+          <a href="#DoParallelWork" class="code">DoParallelWork</a>();
+          extMutex-&gt;lock();
+          return {};
+       }
+       void <a href="#AsyncJob::Wait" class="code">Wait</a>() {
+           while (!<a href="#AsyncJob::IsReady" class="code">IsReady</a>() &amp;&amp; <a href="#DoParallelWork" class="code">DoParallelWork</a>())
+               ;
+           std::unique_lock&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; lock(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+           if (!<a href="#AsyncJob::result" class="code">result</a>.has_value())
+               cv.wait(lock, [this]() { return <a href="#AsyncJob::result" class="code">result</a>.has_value(); });
+       }
+       void DoWork() {
+           T r = func();
+           std::unique_lock&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; l(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+           <a href="#AsyncJob::result" class="code">result</a> = r;
+           cv.notify_all();
+       }
+       std::string ToString() const { return StringPrintf("[ AsyncJob <a href="#AsyncJob::started" class="code">started</a>: %s ]", <a href="#AsyncJob::started" class="code">started</a>); }</div></div>
+private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-AsyncJobPrivateMembers-0">AsyncJob Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2849" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2849"><i></i></a><div id="fragbit-2849" class="collapse"><div class="fragmentcode">       std::function&lt;T(void)&gt; func;
+       bool started = false;
+       pstd::optional&lt;T&gt; result;
+       mutable std::mutex mutex;
+       std::condition_variable cv;</div></div>
+};</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The constructor, not included here, takes the asynchronous function and
+stores it in the <tt>func</tt> member variable.  <tt>started</tt> is used to
+record whether some thread has begun running the function.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AsyncJobPrivateMembers-0"></span><div class="fragmentname">&lt;&lt;AsyncJob Private Members&gt;&gt;=&nbsp;<a href="#fragment-AsyncJobPrivateMembers-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">std::function&lt;T(void)&gt; <span class="anchor" id="AsyncJob::func"></span>func;
+bool <span class="anchor" id="AsyncJob::started"></span>started = false;</div><p>
+
+
+</p>
+<p>An <tt>AsyncJob</tt> represents a single quantum of work; only one thread can
+help, so once one has started running the function, there is nothing for any
+other thread to do.  Implementation of the <tt>HaveWork()</tt> method for the
+<a href="#ParallelJob"><tt>ParallelJob</tt></a> interface follows.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AsyncJobPublicMethods-0"></span><div class="fragmentname">&lt;&lt;AsyncJob Public Methods&gt;&gt;=&nbsp;<a href="#fragment-AsyncJobPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="AsyncJob::HaveWork"></span>HaveWork() const { return !<a href="#AsyncJob::started" class="code">started</a>; }</div><p>
+
+
+</p>
+<p>The <tt>RunStep()</tt> method starts with some minor bookkeeping before
+calling the provided function; it is worth removing the <tt>AsyncJob</tt>
+from the job list at this point, as there is no reason for other threads to
+consider it when they iterate through the list.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AsyncJobPublicMethods-1"></span><div class="fragmentname">&lt;&lt;AsyncJob Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-AsyncJobPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-AsyncJobPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="AsyncJob::RunStep"></span>RunStep(std::unique_lock&lt;std::mutex&gt; *lock) {
+    <a href="#ParallelJob::threadPool" class="code">threadPool</a>-&gt;<a href="#ThreadPool::RemoveFromJobList" class="code">RemoveFromJobList</a>(this);
+    <a href="#AsyncJob::started" class="code">started</a> = true;
+    lock-&gt;unlock();
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Executeasynchronousworkandnotifywaitingthreadsofitscompletion-0">Execute asynchronous work and notify waiting threads of its completion</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2850" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2850"><i></i></a><div id="fragbit-2850" class="collapse"><div class="fragmentcode">       T r = <a href="#AsyncJob::func" class="code">func</a>();
+       std::unique_lock&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; ul(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+       <a href="#AsyncJob::result" class="code">result</a> = r;
+       <a href="#AsyncJob::cv" class="code">cv</a>.notify_all();</div></div>
+}</div><p>
+
+
+</p>
+<p>The asynchronous function is called without the <tt>AsyncJob</tt>&rsquo;s mutex being held so
+that its execution does not stall other threads that may want to quickly
+check whether the function has finished running; the mutex is only
+acquired when a value is available to store in <tt>result</tt>.
+Note also the use of a condition variable after <tt>result</tt> is
+set: other threads that are waiting for the result wait on this condition
+variable, so it is important that they be notified.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Executeasynchronousworkandnotifywaitingthreadsofitscompletion-0"></span><div class="fragmentname">&lt;&lt;Execute asynchronous work and notify waiting threads of its completion&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">T r = <a href="#AsyncJob::func" class="code">func</a>();
+std::unique_lock&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; ul(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+<a href="#AsyncJob::result" class="code">result</a> = r;
+<a href="#AsyncJob::cv" class="code">cv</a>.notify_all();</div><p>
+
+
+</p>
+<p>Using <tt>optional</tt> to store the function&rsquo;s result simplifies keeping
+track of whether the function has been executed.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AsyncJobPrivateMembers-1"></span><div class="fragmentname">&lt;&lt;AsyncJob Private Members&gt;&gt;+=&nbsp;<a href="#fragment-AsyncJobPrivateMembers-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">pstd::optional&lt;T&gt; <span class="anchor" id="AsyncJob::result"></span>result;
+mutable std::mutex <span class="anchor" id="AsyncJob::mutex"></span>mutex;
+std::condition_variable <span class="anchor" id="AsyncJob::cv"></span>cv;</div><p>
+
+
+</p>
+<p>A convenience <tt>IsReady()</tt> method that indicates whether the function
+has run and its result is available is easily implemented.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AsyncJobPublicMethods-2"></span><div class="fragmentname">&lt;&lt;AsyncJob Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-AsyncJobPublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-AsyncJobPublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">bool <span class="anchor" id="AsyncJob::IsReady"></span>IsReady() const {
+    std::lock_guard&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; lock(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+    return <a href="#AsyncJob::result" class="code">result</a>.has_value();
+}</div><p>
+
+
+</p>
+<p>The <tt>GetResult()</tt> method starts by calling <tt>Wait()</tt>, which only
+returns once the function&rsquo;s return value is available.  The value of
+<tt>*result</tt> can therefore then be returned with no further checks.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AsyncJobPublicMethods-3"></span><div class="fragmentname">&lt;&lt;AsyncJob Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-AsyncJobPublicMethods-2"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-AsyncJobPublicMethods-4"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">T <span class="anchor" id="AsyncJob::GetResult"></span>GetResult() {
+    <a href="#AsyncJob::Wait" class="code">Wait</a>();
+    std::lock_guard&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; lock(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+    return *<a href="#AsyncJob::result" class="code">result</a>;
+}</div><p>
+
+
+</p>
+<p><tt>AsyncJob</tt> also provides a
+<tt>TryGetResult()</tt><span class="anchor" id="AsyncJob::TryGetResult"></span> method that
+takes an already-locked <tt>std::mutex</tt> as a parameter.  It then returns
+the asynchronous function&rsquo;s return value if it is available, with the lock
+still held, or unlocks the lock, performs some work via a call to
+<a href="#DoParallelWork"><tt>DoParallelWork()</tt></a>, and then relocks the mutex.  (The definition of
+<tt>DoParallelWork()</tt><span class="anchor" id="DoParallelWork"></span> is not included in the
+text; it takes a single work item from the parallel job queue, performs the
+associated work, and then returns.)  This variant is useful when multiple
+threads are waiting for the value returned by an asynchronous function,
+since it allows them to perform other useful work rather than stalling as
+they wait.
+
+</p>
+<p>
+
+</p>
+<p>So long as the asynchronous function has not yet finished, <tt>Wait()</tt>
+calls <tt>DoParallelWork()</tt> to help out with work enqueued in the thread
+pool (including, at some point, the current <tt>AsyncJob</tt>, if another
+thread has not yet taken care of it).  If the result is not available and
+there is no work to run, then some other thread must be running the
+asynchronous job; the current thread then waits for the condition variable
+to be signaled.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AsyncJobPublicMethods-4"></span><div class="fragmentname">&lt;&lt;AsyncJob Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-AsyncJobPublicMethods-3"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="AsyncJob::Wait"></span>Wait() {
+    while (!<a href="#AsyncJob::IsReady" class="code">IsReady</a>() &amp;&amp; <a href="#DoParallelWork" class="code">DoParallelWork</a>())
+        ;
+    std::unique_lock&lt;std::<a href="#AsyncJob::mutex" class="code">mutex</a>&gt; lock(<a href="#AsyncJob::mutex" class="code">mutex</a>);
+    if (!<a href="#AsyncJob::result" class="code">result</a>.has_value())
+        cv.wait(lock, [this]() { return <a href="#AsyncJob::result" class="code">result</a>.has_value(); });
+}</div><p>
+
+
+</p>
+<p>For the simplicity of the <tt>AsyncJob</tt> implementation, there is some
+complexity in <tt>RunAsync()</tt>, which takes care of creating an
+<a href="#AsyncJob"><tt>AsyncJob</tt></a> and making it available to the thread pool.  That complexity
+starts with the function using a variadic template to capture the
+function&rsquo;s argument values.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-AsynchronousTaskLaunchFunctionDefinitions-0"></span><div class="fragmentname">&lt;&lt;Asynchronous Task Launch Function Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename F, typename... Args&gt;
+auto <span class="anchor" id="RunAsync"></span>RunAsync(F func, Args &amp;&amp;...args) {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-CreatemonoAsyncJobformonofuncandmonoargs-0">Create <tt>AsyncJob</tt> for <tt>func</tt> and <tt>args</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2851" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2851"><i></i></a><div id="fragbit-2851" class="collapse"><div class="fragmentcode">       auto fvoid = std::bind(func, std::forward&lt;Args&gt;(args)...);
+       using R = typename std::invoke_result_t&lt;F, Args...&gt;;
+       AsyncJob&lt;R&gt; *job = new AsyncJob&lt;R&gt;(std::move(fvoid));</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Enqueuemonojoborrunitimmediately-0">Enqueue <tt>job</tt> or run it immediately</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2852" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2852"><i></i></a><div id="fragbit-2852" class="collapse"><div class="fragmentcode">       std::unique_lock&lt;std::mutex&gt; lock;
+       if (<a href="#RunningThreads" class="code">RunningThreads</a>() == 1)
+           job-&gt;<a href="#AsyncJob::DoWork" class="code">DoWork</a>();
+       else
+           lock = ParallelJob::<a href="#ParallelJob::threadPool" class="code">threadPool</a>-&gt;<a href="#ThreadPool::AddToJobList" class="code">AddToJobList</a>(job);</div></div>
+    return job;
+}</div><p>
+
+
+</p>
+<p>The <tt>AsyncJob</tt> class assumes that the function to execute does not
+take any arguments, though <tt>RunAsync()</tt> allows the provided function
+to take arguments.  Therefore, it starts by using
+<tt>std::bind()</tt> to create a new callable object with the arguments bound
+and no arguments remaining.  An alternative design might generalize
+<tt>AsyncJob</tt> to allow arguments, though at a cost of added complexity
+that we think is better left to <tt>std::bind</tt>.  Given the new
+function <tt>fvoid</tt>, its return type <tt>R</tt> can be found, which allows
+for creating an <tt>AsyncJob</tt> of the correct type.  Dynamic allocation is
+necessary for the <tt>AsyncJob</tt> here since it must outlast the call to
+<tt>RunAsync()</tt>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-CreatemonoAsyncJobformonofuncandmonoargs-0"></span><div class="fragmentname">&lt;&lt;Create <tt>AsyncJob</tt> for <tt>func</tt> and <tt>args</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">auto fvoid = std::bind(func, std::forward&lt;Args&gt;(args)...);
+using R = typename std::invoke_result_t&lt;F, Args...&gt;;
+AsyncJob&lt;R&gt; *job = new AsyncJob&lt;R&gt;(std::move(fvoid));</div><p>
+
+
+</p>
+<p>If there is no thread pool (e.g., due to the user specifying that no
+additional threads should be used), then the work is performed immediately
+via a call to <tt>DoWork()</tt><span class="anchor" id="AsyncJob::DoWork"></span> (the
+implementation of which is not included here), which immediately invokes
+the function and saves its result in <a href="#AsyncJob::result"><tt>AsyncJob::result</tt></a>. Otherwise, it
+is added to the job list.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Enqueuemonojoborrunitimmediately-0"></span><div class="fragmentname">&lt;&lt;Enqueue <tt>job</tt> or run it immediately&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::unique_lock&lt;std::mutex&gt; lock;
+if (<a href="#RunningThreads" class="code">RunningThreads</a>() == 1)
+    job-&gt;<a href="#AsyncJob::DoWork" class="code">DoWork</a>();
+else
+    lock = ParallelJob::<a href="#ParallelJob::threadPool" class="code">threadPool</a>-&gt;<a href="#ThreadPool::AddToJobList" class="code">AddToJobList</a>(job);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Thread-LocalVariables"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Thread-LocalVariables"></span><h3>B.6.7  Thread-Local Variables</h3><p>
+
+
+</p>
+<p>It is often useful to have local data associated with each executing thread
+that it can access without concern of mutual exclusion with other
+threads. For example, per-thread <a href="../Sampling_and_Reconstruction/Sampling_Interface.html#Sampler"><tt>Sampler</tt></a>s and <a href="../Utilities/Containers_and_Memory_Management.html#ScratchBuffer"><tt>ScratchBuffer</tt></a>s
+were used by the <a href="../Introduction/pbrt_System_Overview.html#ImageTileIntegrator"><tt>ImageTileIntegrator</tt></a> in
+Section&nbsp;<a href="../Introduction/pbrt_System_Overview.html#sec:image-tile-integrator">1.3.4</a>.  The <tt>ThreadLocal</tt> template
+class handles the details of such cases, creating per-thread instances of a
+managed object type <tt>T</tt> on demand as threads require them.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadLocalDefinition-0"></span><div class="fragmentname">&lt;&lt;ThreadLocal Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename T&gt;
+class <span class="anchor" id="ThreadLocal"></span>ThreadLocal {
+public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-ThreadLocalPublicMethods-0">ThreadLocal Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2853" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2853"><i></i></a><div id="fragbit-2853" class="collapse"><div class="fragmentcode">       <a href="#ThreadLocal" class="code">ThreadLocal</a>()
+           : hashTable(4 * <a href="#RunningThreads" class="code">RunningThreads</a>()), create([]() { return T(); }) {}
+       <a href="#ThreadLocal" class="code">ThreadLocal</a>(std::function&lt;T(void)&gt; &amp;&amp;c)
+           : hashTable(4 * <a href="#RunningThreads" class="code">RunningThreads</a>()), create(c) {}
+       T &amp;Get();
+       template &lt;typename F&gt;
+       void ForAll(F &amp;&amp;func);</div></div>
+private:
+    &lt;&lt;<span class="fragmentname">ThreadLocal Private Members</span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2854" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2854"><i></i></a><div id="fragbit-2854" class="collapse"><div class="fragmentcode">       struct Entry {
+           std::thread::id tid;
+           T value;
+       };
+       std::shared_mutex mutex;
+       std::vector&lt;pstd::optional&lt;Entry&gt;&gt; hashTable;
+       std::function&lt;T(void)&gt; create;</div></div>
+};</div><p>
+
+
+</p>
+<p><tt>ThreadLocal</tt> uses a hash table to manage the objects.  It allocates a
+fixed-size array for the hash table in order to avoid the complexity of
+resizing the hash table at runtime.  For <tt>pbrt</tt>&rsquo;s use, where the number of
+running threads is fixed, this is a reasonable simplification.  If the caller
+provides a function that returns objects of the type <tt>T</tt>, then it is used to
+create them; otherwise, the object&rsquo;s default constructor is called.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadLocalPublicMethods-0"></span><div class="fragmentname">&lt;&lt;ThreadLocal Public Methods&gt;&gt;=&nbsp;<a href="#fragment-ThreadLocalPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="#ThreadLocal" class="code">ThreadLocal</a>()
+    : hashTable(4 * <a href="#RunningThreads" class="code">RunningThreads</a>()), create([]() { return T(); }) {}
+<a href="#ThreadLocal" class="code">ThreadLocal</a>(std::function&lt;T(void)&gt; &amp;&amp;c)
+    : hashTable(4 * <a href="#RunningThreads" class="code">RunningThreads</a>()), create(c) {}</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>The <tt>Get()</tt> method returns the instance of the object that is
+associated with the calling thread.  It takes care of allocating the object
+and inserting it into the hash table when needed.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadLocalPublicMethods-1"></span><div class="fragmentname">&lt;&lt;ThreadLocal Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ThreadLocalPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-ThreadLocalPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">T &amp;<span class="anchor" id="ThreadLocal::Get"></span>Get();</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>It is useful to be able to iterate over all the per-thread objects
+managed by <tt>ThreadLocal</tt>.
+
+That capability
+is provided by the <tt>ForAll()</tt> method.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ThreadLocalPublicMethods-2"></span><div class="fragmentname">&lt;&lt;ThreadLocal Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-ThreadLocalPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">template &lt;typename F&gt;
+void <span class="anchor" id="ThreadLocal::ForAll"></span>ForAll(F &amp;&amp;func);</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Utilities/Statistics.html">Utilities / Statistics</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>

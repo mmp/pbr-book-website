@@ -1,0 +1,1072 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+
+<!-- all praise to https://realfavicongenerator.net -->
+<link rel="icon" href="/favicon.ico?v=2" /> <!-- force refresh -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+<meta name="msapplication-TileColor" content="#da532c">
+<meta name="theme-color" content="#ffffff">
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="stylesheet" href="/fonts.css">
+  <link rel="stylesheet" href="../pbrstyle.css">
+  <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
+
+  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
+  <script src="/react.min.js"></script>
+  <script src="/react-dom.min.js"></script>
+  <script src="/jeri.min.js"></script>
+  <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
+        
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="/bootstrap.min.css">
+
+  <title>Implementation Foundations</title>
+</head>
+        
+<body>
+
+<nav class="fixed-top-lg-navbar navbar navbar-expand bg-light navbar-light">
+  <ul class="nav navbar-nav">
+    <a class="navbar-brand" href="../contents.html"><img src="../pbr.jpg" width=25 height=25></a>
+    <li class="nav-item"><a class="nav-link" href="../Wavefront_Rendering_on_GPUs.html">Wavefront Rendering on GPUs</a></li>
+    <span class="navbar-text">/</span>
+    <li class="nav-item"><a class="nav-link" href="#">Implementation Foundations</a></li>
+    <span class="navbar-text">&nbsp;&nbsp;</span>
+    <li class="nav-item"><a class="nav-link" href="../Wavefront_Rendering_on_GPUs/Mapping_Path_Tracing_to_the_GPU.html">(Previous: Mapping Path Tracing to the GPU)</a></li>
+  </ul>
+
+  <ul class="nav navbar-nav ml-auto d-none d-md-block">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+  <ul class="nav navbar-nav d-block d-md-none">
+        <li class="nav-item"><div class="gcse-search"></div></li>
+    </ul>
+</nav>
+
+<div class="maincontainer">
+<div class="container-fluid">
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+
+</div>
+<div class="col-md-10 col-lg-8">
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#"><i class="fas fa-link "></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<h2>15.2 Implementation Foundations</h2><p>
+
+
+</p>
+<p>Before we discuss the implementation of the wavefront
+integrator and the details of its kernels, we
+will start by discussing some of the lower-level capabilities that it is
+built upon, as well as the abstractions that we use to hide the details of
+platform-specific APIs.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#ExecutionandMemorySpaceSpecification"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span class="anchor" id="sec:gpu-exec-memory-qualifiers"></span><span id="ExecutionandMemorySpaceSpecification"></span><h3>15.2.1  Execution and Memory Space Specification</h3><p>
+
+
+
+</p>
+<p>If you have perused the <tt>pbrt</tt> source code, you will have noticed that the
+signatures of many functions include a
+<tt>PBRT_CPU_GPU</tt><span class="anchor" id="PBRT_CPU_GPU"></span>.  We have elided
+all of these from the book text thus far in the interests of avoiding
+distraction.  Now we must pay closer attention to them.
+
+</p>
+<p>When <tt>pbrt</tt> is compiled with GPU support, the compiler must know whether
+each function in the system is intended for CPU execution only, GPU
+execution only, or execution on both types of processor.  In some cases, a function may
+only be able to run on one of the two&mdash;for example, if it uses low-level
+functionality that the other type of processor does not support.  In other
+cases, it may be possible for it to run on both, though it may not make sense to
+do so.  For example, an object constructor that does extensive serial
+processing would be unsuited to the GPU.
+
+</p>
+<p><tt>PBRT_CPU_GPU</tt> hides the platform-specific details of how these
+characteristics are indicated.  (With CUDA, it turns into a
+
+
+<tt>__host__</tt> <tt>__device__</tt> specifier.)  There is also a
+
+<tt>PBRT_GPU</tt><span class="anchor" id="PBRT_GPU"></span> macro, which signifies that a
+function can only be called from GPU code.  These macros are all defined in
+the file <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/pbrt.h"><tt>pbrt.h</tt></a>.  If no specifier is provided, a function can
+only be called from code that is running on the CPU.
+
+</p>
+<p>These specifiers can be used with variable declarations as well, to similar
+effect.  <tt>pbrt</tt> only makes occasional use of them for that, mostly using
+managed memory for such purposes.  (There is also a
+<tt>PBRT_CONST</tt><span class="anchor" id="PBRT_CONST"></span> variable qualifier that is used
+to define large constant arrays in a way that makes them accessible from
+both CPU and GPU.) 
+
+</p>
+<p>In addition to informing the compiler of which processors to compile
+functions for, having these specifiers in the signatures of functions
+allows the compiler to determine whether a function call is valid: a
+CPU-only function that directly calls a GPU-only function, or vice versa,
+leads to a compile time error.
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#LaunchingKernelsontheGPU"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="LaunchingKernelsontheGPU"></span><h3>15.2.2  Launching Kernels on the GPU</h3><p>
+
+
+</p>
+<p><tt>pbrt</tt> also provides functions that abstract the platform-specific details
+of launching kernels on the GPU.  These are all defined in the files
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/gpu/util.h"><tt>gpu/util.h</tt></a> and <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/gpu/util.cpp"><tt>gpu/util.cpp</tt></a>.
+
+</p>
+<p>The most important of them is <tt>GPUParallelFor()</tt>, which launches a
+specified number of GPU threads and invokes the provided kernel function
+for each one, passing it an index ranging from zero up to the total number
+of threads.  The index values passed always span a contiguous range for all
+of the threads in a thread group.  This is an important property in that,
+for example, indexing into a <tt>float</tt> array using the index leads to
+contiguous memory accesses.
+
+</p>
+<p>This function is the GPU analog to <a href="../Utilities/Parallelism.html#ParallelFor"><tt>ParallelFor()</tt></a>, with the
+differences that it always starts iteration from zero, rather than taking a
+1D range, and that it takes a description string that describes the
+kernel&rsquo;s functionality.  Its implementation includes code that tracks the
+total time each kernel spends executing on the GPU, which makes it possible
+to print a performance breakdown after rendering completes using the
+provided description string.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GPULaunchFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;GPU Launch Function Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename F&gt;
+void <span class="anchor" id="GPUParallelFor"></span>GPUParallelFor(const char *description, int nItems, F func);</div><p>
+
+
+</p>
+<p>Similar to <tt>ParallelFor()</tt>, all the work from one call to
+<a href="#GPUParallelFor"><tt>GPUParallelFor()</tt></a> finishes before any work from a subsequent call to
+<a href="#GPUParallelFor"><tt>GPUParallelFor()</tt></a> begins, and it, too, is also generally used with
+lambda functions.  A simple example of its usage is below: the callback
+function <tt>func</tt> is invoked with a single integer argument,
+corresponding to the item index that it is responsible for.  Note also that
+a <tt>PBRT_GPU</tt> specifier is necessary for the lambda function to
+indicate that it will be invoked from GPU code.
+</p>
+<div class="fragmentcode">float *array = /* allocate managed memory */;
+GPUParallelFor("Initialize array", 100,
+               [=] PBRT_GPU (int i) { array[i] = i; });</div><p>
+
+
+</p>
+<p>We provide a macro for specifying lambda functions for
+<tt>GPUParallelFor()</tt> and related functions that adds the
+<tt>PBRT_GPU</tt> specifier and also hides some platform-system specific details
+(which are not included in the text here).
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GPUMacroDefinitions-0"></span><div class="fragmentname">&lt;&lt;GPU Macro Definitions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">#define <span class="anchor" id="PBRT_CPU_GPU_LAMBDA"></span>PBRT_CPU_GPU_LAMBDA(...) [=] PBRT_CPU_GPU (__VA_ARGS__)
+</div><p>
+
+
+</p>
+<p>We do not provide a variant analogous to <a href="../Utilities/Parallelism.html#ParallelFor2D"><tt>ParallelFor2D()</tt></a> for
+iterating over a 2D array, though it would be easy to do so; <tt>pbrt</tt> just has no
+need for such functionality.
+
+</p>
+<p>Although execution is serialized between successive calls to
+<tt>GPUParallelFor()</tt>, it is important to be aware that the execution of
+the CPU and GPU are decoupled.  When a call to <tt>GPUParallelFor()</tt>
+returns on the CPU, the corresponding threads on the GPU often will not even have been launched,
+let alone completed.  Work on the GPU proceeds asynchronously.  While this
+execution model thus requires explicit synchronization operations between
+the two processors, it is important for achieving high performance.
+Consider the two alternatives illustrated in Figure&nbsp;<a href="#fig:cpu-gpu-sync-async">15.3</a>;
+automatically synchronizing execution of the two processors would mean that
+only one of them could be running at a given time.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:cpu-gpu-sync-async"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha15f03.svg" title=""><img src="pha15f03.svg" width=488 height=392 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 15.3: Comparison of Synchronous and Asynchronous CPU/GPU Execution. <span class="legend">
+(a)&nbsp;If the two processors are synchronous, only one is ever executing.  The
+CPU stalls after launching a kernel on the GPU, and then the GPU is idle
+after a kernel finishes until the CPU resumes and launches another one.
+(b)&nbsp;With the asynchronous model, the CPU continues execution after
+launching each kernel and is able to enqueue more of them while the GPU
+is working on earlier ones. In turn, the GPU does not need to wait for the
+next batch of work to do.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>An implication of this model is that the CPU must be careful about when it
+reads values  from managed memory that were computed on the GPU.  For
+example, if the implementation had code that tried to read the final image
+immediately after launching the last rendering kernel, it would almost
+certainly read an incomplete result.  We therefore require a mechanism so
+that the CPU can wait for all the previous kernel launches to complete.
+This capability is provided by <tt>GPUWait()</tt>.  Again, the implementation
+is not included here, as it is based on platform-specific functionality.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-GPUSynchronizationFunctionDeclarations-0"></span><div class="fragmentname">&lt;&lt;GPU Synchronization Function Declarations&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">void <span class="anchor" id="GPUWait"></span>GPUWait();</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#Structure-of-ArraysLayout"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="Structure-of-ArraysLayout"></span><h3>15.2.3  Structure-of-Arrays Layout</h3><p>
+
+
+</p>
+<p>As discussed earlier, the thread group execution model of GPUs affects the
+pattern of memory accesses that program execution generates.  A consequence
+is that the way in which data is laid out in memory can have a meaningful
+effect on performance.  To understand the issue, consider the following
+definition of a ray structure:
+</p>
+<div class="fragmentcode">struct SimpleRay {
+    Point3f o;
+    Vector3f d;
+};</div><p>
+
+
+</p>
+<p>Now consider a kernel that takes a queue of <tt>SimpleRay</tt>s as input.
+Such a kernel might be responsible for finding the closest intersection
+along each ray, for example.  A natural representation of the queue would
+be an array of <tt>SimpleRay</tt>s.  (This layout is termed <em>array of
+structures</em>, and is sometimes abbreviated as <em>AOS</em>.) Such a queue
+would be laid out in memory as shown in Figure&nbsp;<a href="#fig:simpleray-aos">15.4</a>, where each
+<tt>SimpleRay</tt> occupies a contiguous region of memory with its
+elements stored in consecutive locations in memory.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:simpleray-aos"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha15f04.svg" title=""><img src="pha15f04.svg" width=651 height=92 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 15.4: Memory Layout of an Array of <tt>SimpleRay</tt> Structures.
+<span class="legend"> The elements of each ray are consecutive in memory.</span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>Now consider what happens when the threads in a thread group read their
+corresponding ray into memory.  If the pointer to the array is <tt>rays</tt>
+and the index passed to each thread&rsquo;s lambda function is <tt>i</tt>, then
+each thread might start out by reading its ray using code like
+</p>
+<div class="fragmentcode">SimpleRay r = rays[i];</div><p>
+
+The generated code would typically load each component of the origins and
+directions individually.  Figure&nbsp;<a href="#fig:memory-layout-read-coherence">15.5</a>(a) illustrates the distribution of
+memory locations accessed when each thread in a thread group loads the
+<tt>x</tt> component of its ray origin.  The locations span many cache lines,
+which in turn incurs a performance cost.
+
+</p>
+<p></p>
+<span class="anchor" id="fig:memory-layout-read-coherence"></span><div class="card outerfigure"><div class="card-body figure"><p>
+
+
+
+</p>
+<div class="figure-row">
+  <a href="pha15f05.svg" title=""><img src="pha15f05.svg" width=612 height=481 style="max-width: 100%;"></a>
+</div>
+<p>
+
+
+</p>
+<figcaption class="caption">Figure 15.5: Effect of Memory Layout on Read Coherence. <span class="legend">
+(a)&nbsp;When the threads in a thread group <svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1.704ex" height="2.343ex" style="vertical-align: -0.671ex;" viewBox="0 -719.6 733.8 1008.6" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">normal t Subscript i</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-LATINMODERNMAIN-74" d="M332 124c0 -64 -28 -135 -99 -135c-36 0 -129 12 -129 135v276h-85v22c98 4 128 111 129 193h25v-184h143v-31h-143v-278c0 -17 0 -108 67 -108c37 0 67 38 67 112v55h25v-57Z"></path>
+<path stroke-width="1" id="E1-LATINMODERNNORMAL-1D456" d="M284 625c0 -30 -30 -53 -53 -53c-24 0 -38 17 -38 36c0 27 27 53 54 53c23 0 37 -16 37 -36zM293 143c0 -9 -37 -154 -131 -154c-48 0 -82 35 -82 82c0 21 13 54 23 80c16 43 61 159 69 185c4 10 11 31 11 52c0 32 -17 32 -25 32c-34 0 -74 -30 -101 -124 c-5 -16 -6 -18 -16 -18c0 0 -12 0 -12 10c0 9 38 154 132 154c50 0 82 -37 82 -82c0 -19 -5 -33 -13 -53c-10 -27 -10 -29 -22 -58l-39 -105c-23 -61 -29 -75 -29 -100c0 -23 7 -33 24 -33c51 0 84 61 102 124c5 15 5 18 15 18c3 0 12 0 12 -10Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-LATINMODERNMAIN-74" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-LATINMODERNNORMAL-1D456" x="550" y="-213"></use>
+</g>
+</svg> load the <tt>x</tt> component of their
+ray origin with an array of structures layout, each thread reads from a
+memory location that is offset by <tt>sizeof(SimpleRay)</tt> from the previous one;
+in this case, 24&nbsp;bytes, assuming 4-byte <tt>Float</tt>s.  Consequently,
+multiple cache lines must be accessed, with corresponding performance cost.
+(b)&nbsp;With structure of arrays layout, the threads in a thread group access contiguous
+locations to read the <tt>x</tt> component, corresponding to&nbsp;1 or at most&nbsp;2
+cache-line accesses, depending on the alignment of the array.  Performance
+is generally much better. </span>
+</figcaption><p>
+
+
+</p>
+</div></div><p>
+
+
+</p>
+<p>An alternative layout is termed <em>structure of arrays</em>, or <em>SOA</em>.
+The idea behind this approach is to effectively transpose the layout of the
+object in memory, storing all the origins&rsquo; <tt>x</tt> components
+contiguously in an array of <tt>Float</tt>s, then all of its origins&rsquo;
+<tt>y</tt> components in another <tt>Float</tt> array, and so forth.  We might
+declare a specialized structure to represent arrays of <tt>SimpleRay</tt>s
+laid out like this:
+</p>
+<div class="fragmentcode">struct SimpleRayArray {
+    Float *ox, *oy, *oz;
+    Float *dx, *dy, *dz;
+};</div><p>
+
+In turn, if the threads in a thread group want to load the <tt>x</tt>
+component of their ray&rsquo;s origin, the expression <tt>rays.ox[i]</tt> suffices
+to load that value.  The locations accessed are contiguous in memory and
+span many fewer cache lines<button style="button" data-toggle="tooltip" data-placement="right" data-html="true" class="btn footnote-button" title="Another alternative,
+<em>array of structures of arrays</em>, or <em>AOSOA</em>, offers a middle
+ground between AOS and SOA by repeatedly applying SOA with fixed-size
+(e.g., 32-element) arrays, collecting those in structures. This provides
+many of SOA&rsquo;s benefits while further improving memory access locality.">
+      <sup>&dagger;</sup>
+    </button>
+		
+(Figure&nbsp;<a href="#fig:memory-layout-read-coherence">15.5</a>(b)).
+
+</p>
+<p>However, this performance benefit comes at a cost of making the code more
+unwieldy.  Loading an entire ray with this approach requires indexing into
+each of the constituent arrays&mdash;for example,
+</p>
+<div class="fragmentcode">SimpleRay r(Point3f(rays.ox[i], rays.oy[i], rays.oz[i]),
+            Vector3f(rays.dx[i], rays.dy[i], rays.dz[i]));</div><p>
+
+Even more verbose manual indexing is required for the task of writing a ray
+out to memory in SOA format; the cleanliness of the AOS array syntax has
+been lost.
+
+</p>
+<p>In order to avoid such complexity, the code in the remainder of this
+chapter makes extensive use of <tt>SOA</tt><span class="anchor" id="SOA"></span> template types
+that make it
+possible to work with SOA data using syntax that is the same as
+array indexing with an array of structures data layout.  For any type that has
+an <tt>SOA</tt> template specialization (e.g., <tt>pbrt</tt>&rsquo;s
+regular <tt>Ray</tt> class), we are able to write code like the following:
+</p>
+<div class="fragmentcode">SOA&lt;Ray&gt; rays(1024, Allocator());
+int index = ...;
+Ray r = rays[index];
+Transform transform = ...;
+rays[index] = transform(r);</div><p>
+
+Both loads from and stores to the array are expressed using regular C++
+array indexing syntax.
+
+</p>
+<p>While it is straightforward programming to implement such <tt>SOA</tt>
+classes, doing so is rather tedious, especially if one has many types to
+lay out in SOA.  Therefore, <tt>pbrt</tt> includes a small utility program,
+<tt>soac</tt> (<em>structure of arrays compiler</em>), that automates this process.  Its source code is in the file
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/cmd/soac.cpp"><tt>cmd/soac.cpp</tt></a> in the <tt>pbrt</tt> distribution.  There is not much to
+be proud of in its implementation, so we will not discuss that here, but we
+will describe its usage as well as the form of the <tt>SOA</tt> type
+definitions that it generates.
+
+</p>
+<p><tt>soac</tt> takes structure specifications in a custom format of the
+following form:
+</p>
+<div class="fragmentcode">flat Float;
+soa Point2f { Float x, y; };</div><p>
+
+Here, <tt>flat</tt> specifies that the following type should be stored
+directly in arrays, while <tt>soa</tt> specifies a structure.  Although not
+shown here, <tt>soa</tt> structures can themselves hold other <tt>soa</tt>
+structure types.  See the files <a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/pbrt.soa"><tt>pbrt.soa</tt></a> and
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/wavefront/workitems.soa"><tt>wavefront/workitems.soa</tt></a> in the <tt>pbrt</tt> source code for more
+examples.
+
+</p>
+<p>This format is easy to parse and is sufficient to provide the information
+necessary to generate <tt>pbrt</tt>&rsquo;s <tt>SOA</tt> type definitions.  A more
+bulletproof solution (and one that would avoid the need for writing the
+code to parse a custom format) would be to modify a C++ compiler to
+optionally emit <tt>SOA</tt> type definitions for types it has already parsed.  Of
+course, that is a more complex approach to implement than <tt>soac</tt> was.
+
+</p>
+<p>When <tt>pbrt</tt> is compiled, <tt>soac</tt> is invoked to generate header files
+based on the <tt>*.soa</tt> specifications.  For example, <tt>pbrt.soa</tt> is
+turned into <tt>pbrt_soa.h</tt>, which can be found in <tt>pbrt</tt>&rsquo;s build
+directory after the system has been compiled.  For each <tt>soa</tt> type
+defined in a specification file, <tt>soac</tt> generates an <tt>SOA</tt>
+template specialization.  Here is the one for <tt>Point2f</tt>.  (Here we
+have taken automatically generated code and brought it into the book text
+for dissection, which is the opposite flow from all the other code in
+the text.)
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Point2fmonoSOADefinition-0"></span><div class="fragmentname">&lt;&lt;Point2f <tt>SOA</tt> Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;&gt; struct SOA&lt;<a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a>&gt; {
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Point2fmonoSOATypes-0">Point2f <tt>SOA</tt> Types</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2412" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2412"><i></i></a><div id="fragbit-2412" class="collapse"><div class="fragmentcode">       struct GetSetIndirector {
+           void operator=(const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;a) {
+               soa-&gt;<a href="#SOAPoint2f::x" class="code">x</a>[i] = a.<a href="#SOAPoint2f::x" class="code">x</a>;
+               soa-&gt;<a href="#SOAPoint2f::y" class="code">y</a>[i] = a.<a href="#SOAPoint2f::y" class="code">y</a>;
+           }
+           SOA *soa;
+           int i;
+       };</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Point2fmonoSOAPublicMethods-0">Point2f <tt>SOA</tt> Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2413" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2413"><i></i></a><div id="fragbit-2413" class="collapse"><div class="fragmentcode">       SOA(int n, Allocator alloc) : nAlloc(n) {
+           this-&gt;<a href="#SOAPoint2f::x" class="code">x</a> = alloc.<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_object" class="code">allocate_object</a>&lt;Float&gt;(n);
+           this-&gt;<a href="#SOAPoint2f::y" class="code">y</a> = alloc.<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_object" class="code">allocate_object</a>&lt;Float&gt;(n);
+       }
+       <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> operator[](int i) const {
+           <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> r;
+           r.<a href="#SOAPoint2f::x" class="code">x</a> = this-&gt;<a href="#SOAPoint2f::x" class="code">x</a>[i];
+           r.<a href="#SOAPoint2f::y" class="code">y</a> = this-&gt;<a href="#SOAPoint2f::y" class="code">y</a>[i];
+           return r;
+       }
+       GetSetIndirector operator[](int i) {
+           return GetSetIndirector{this, i};
+       }</div></div>
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-Point2fmonoSOAPublicMembers-0">Point2f <tt>SOA</tt> Public Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2414" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2414"><i></i></a><div id="fragbit-2414" class="collapse"><div class="fragmentcode">       int nAlloc;
+       Float * PBRT_RESTRICT x;
+       Float * PBRT_RESTRICT y;</div></div>
+};</div><p>
+
+
+</p>
+<p>The constructor uses a provided allocator to allocate space for individual
+arrays for the class member variables.  The use of the <tt>this-&gt;</tt> syntax
+for initializing the member variables may seem gratuitous, though it
+ensures that if one of the member variables has the same name as one of the
+constructor parameters, it is still initialized correctly.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Point2fmonoSOAPublicMethods-0"></span><div class="fragmentname">&lt;&lt;Point2f <tt>SOA</tt> Public Methods&gt;&gt;=&nbsp;<a href="#fragment-Point2fmonoSOAPublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">SOA(int n, Allocator alloc) : nAlloc(n) {
+    this-&gt;x = alloc.<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_object" class="code">allocate_object</a>&lt;Float&gt;(n);
+    this-&gt;y = alloc.<a href="../Introduction/Using_and_Understanding_the_Code.html#std::pmr::polymorphic_allocator::allocate_object" class="code">allocate_object</a>&lt;Float&gt;(n);
+}</div><p>
+
+
+</p>
+<p>The <tt>SOA</tt> class&rsquo;s members store the array size and the individual
+member pointers.  The <tt>PBRT_RESTRICT</tt><span class="anchor" id="PBRT_RESTRICT"></span>
+qualifier informs the compiler that no other pointer will point to these
+arrays, which can allow it to generate more efficient code.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Point2fmonoSOAPublicMembers-0"></span><div class="fragmentname">&lt;&lt;Point2f <tt>SOA</tt> Public Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int <span class="anchor" id="SOAPoint2f::nAlloc"></span>nAlloc;
+Float * PBRT_RESTRICT <span class="anchor" id="SOAPoint2f::x"></span>x;
+Float * PBRT_RESTRICT <span class="anchor" id="SOAPoint2f::y"></span>y;</div><p>
+
+
+</p>
+<p>It is easy to generate a method that allows indexing into the SOA arrays to
+read values.  Note that the generated code requires that the class has a
+default constructor and that it can directly initialize the class&rsquo;s member
+variables.  In the event that they are private, the class should use a
+<tt>friend</tt> declaration to make them available to its <tt>SOA</tt>
+specialization.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Point2fmonoSOAPublicMethods-1"></span><div class="fragmentname">&lt;&lt;Point2f <tt>SOA</tt> Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Point2fmonoSOAPublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-Point2fmonoSOAPublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode"><a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> operator[](int i) const {
+    <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> r;
+    r.<a href="#SOAPoint2f::x" class="code">x</a> = this-&gt;<a href="#SOAPoint2f::x" class="code">x</a>[i];
+    r.<a href="#SOAPoint2f::y" class="code">y</a> = this-&gt;<a href="#SOAPoint2f::y" class="code">y</a>[i];
+    return r;
+}</div><p>
+
+
+</p>
+<p>It is less obvious how to support assignment of values using the regular
+array indexing syntax.  <tt>soac</tt> provides this capability through the
+indirection of an auxiliary class,
+<tt>GetSetIndirector</tt><span class="anchor" id="GetSetIndirector"></span>.  When
+<tt>operator[]</tt> is called with a non-<tt>const</tt> <tt>SOA</tt> object, it
+returns an instance of that class.  It records not only a pointer to the
+<tt>SOA</tt> object but also the index value.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Point2fmonoSOAPublicMethods-2"></span><div class="fragmentname">&lt;&lt;Point2f <tt>SOA</tt> Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-Point2fmonoSOAPublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">GetSetIndirector operator[](int i) {
+    return GetSetIndirector{this, i};
+}</div><p>
+
+
+</p>
+<p>Assignment is handled by the <tt>GetSetIndirector</tt>&rsquo;s
+<tt>operator=</tt> method.  Given a <tt>Point2f</tt> value, it
+is able to perform the appropriate assignments using the <tt>SOA *</tt> and
+the index.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-Point2fmonoSOATypes-0"></span><div class="fragmentname">&lt;&lt;Point2f <tt>SOA</tt> Types&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">struct GetSetIndirector {
+    void operator=(const <a href="../Geometry_and_Transformations/Points.html#Point2f" class="code">Point2f</a> &amp;a) {
+        soa-&gt;<a href="#SOAPoint2f::x" class="code">x</a>[i] = a.<a href="#SOAPoint2f::x" class="code">x</a>;
+        soa-&gt;<a href="#SOAPoint2f::y" class="code">y</a>[i] = a.<a href="#SOAPoint2f::y" class="code">y</a>;
+    }
+    SOA *soa;
+    int i;
+};</div><p>
+
+
+</p>
+<p>Variables of type <tt>GetSetIndirector</tt> should  never be declared
+explicitly.  Rather, the role of this structure is to cause
+an assignment of the form <tt>p[i] = Point2f(...)</tt> to correspond to
+the following code, where the initial parenthesized expression corresponds
+to invoking the <tt>SOA</tt> class&rsquo;s <tt>operator[]</tt> to get a temporary
+<tt>GetSetIndirector</tt> and where the assignment is then handled by its
+<tt>operator=</tt> method.
+</p>
+<div class="fragmentcode">(p.operator[](i)).operator=(Point2f(...));</div><p>
+
+
+</p>
+<p><tt>GetSetIndirector</tt> also provides an <tt>operator Point2f()</tt>
+conversion operator (not included here) that handles the case of an SOA
+array read with a non-<tt>const</tt> <tt>SOA</tt> object.
+
+</p>
+<p>We conclude with a caveat: SOA layout is effective if access is coherent,
+but can be detrimental if it is not.  If threads are accessing an array
+of some structure type in an incoherent fashion, then AOS may be a better
+choice: in that case, although each thread&rsquo;s initial access to the
+structure may incur a cache miss, its subsequent accesses may be efficient if
+nearby values in the structure are still in the cache.  Conversely,
+incoherent access to SOA data may incur a miss for each access to each
+structure member, polluting the cache by bringing in many unnecessary
+values that are not accessed by any other threads.
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+<div class="row">
+<div class="col-md-1 col-lg-2 leftcolumn">
+<a href="#WorkQueues"><i class="fas fa-link h3h4marginlink"></i></a>
+</div>
+<div class="col-md-10 col-lg-8">
+<span id="WorkQueues"></span><h3>15.2.4  Work Queues</h3><p>
+
+
+</p>
+<p>Our last bit of groundwork before getting back into rendering will be to
+define two classes that manage the input and output of kernels
+in the ray-tracing pipeline.  Both are defined in the file
+<a href="https://github.com/mmp/pbrt-v4/tree/master/src/pbrt/wavefront/workqueue.h"><tt>wavefront/workqueue.h</tt></a>.
+
+</p>
+<p>First is <tt>WorkQueue</tt>, which represents a queue of objects of a
+specified type, <tt>WorkItem</tt>.  The items in the queue are stored in SOA
+layout; this is achieved by publicly inheriting from the <tt>SOA</tt>
+template class for the item type.  This inheritance also allows the items
+in the work queue to be indexed using regular array indexing syntax, via
+the <tt>SOA</tt> public methods.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-WorkQueueDefinition-0"></span><div class="fragmentname">&lt;&lt;WorkQueue Definition&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename WorkItem&gt;
+class <span class="anchor" id="WorkQueue"></span>WorkQueue : public <a href="#SOA" class="code">SOA</a>&lt;WorkItem&gt; {
+  public:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-WorkQueuePublicMethods-0">WorkQueue Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2415" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2415"><i></i></a><div id="fragbit-2415" class="collapse"><div class="fragmentcode">       WorkQueue(int n, Allocator alloc) : SOA&lt;WorkItem&gt;(n, alloc) {}
+       int Size() const {
+           return <a href="#WorkQueue::size" class="code">size</a>.load(std::memory_order_relaxed);
+       }
+       void Reset() {
+           <a href="#WorkQueue::size" class="code">size</a>.store(0, std::memory_order_relaxed);
+       }
+       int Push(WorkItem w) {
+           int index = <a href="#WorkQueue::AllocateEntry" class="code">AllocateEntry</a>();
+           (*this)[index] = w;
+           return index;
+       }</div></div>
+  protected:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-WorkQueueProtectedMethods-0">WorkQueue Protected Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2416" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2416"><i></i></a><div id="fragbit-2416" class="collapse"><div class="fragmentcode">       int AllocateEntry() {
+             return <a href="#WorkQueue::size" class="code">size</a>.fetch_add(1, std::memory_order_relaxed);
+       }</div></div>
+  private:
+    &lt;&lt;<span class="fragmentname"><a href="#fragment-WorkQueuePrivateMembers-0">WorkQueue Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2417" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2417"><i></i></a><div id="fragbit-2417" class="collapse"><div class="fragmentcode">       std::atomic&lt;int&gt; size{0};
+       </div></div>
+};</div><p>
+
+
+</p>
+<p>The constructor takes the maximum number of objects that can be stored in
+the queue as well as an allocator, but leaves the actual allocation to the
+<tt>SOA</tt> base class.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-WorkQueuePublicMethods-0"></span><div class="fragmentname">&lt;&lt;WorkQueue Public Methods&gt;&gt;=&nbsp;<a href="#fragment-WorkQueuePublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">WorkQueue(int n, Allocator alloc) : SOA&lt;WorkItem&gt;(n, alloc) {}
+</div><p>
+
+
+</p>
+<p>There is only a single private member variable: the number of objects
+stored in the queue.  It is represented using a platform-specific atomic
+type.  When <tt>WorkQueue</tt>s are used on the CPU, a <tt>std::atomic</tt> is
+sufficient; that case is shown here.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-WorkQueuePrivateMembers-0"></span><div class="fragmentname">&lt;&lt;WorkQueue Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">std::atomic&lt;int&gt; <span class="anchor" id="WorkQueue::size"></span>size{0};
+</div><p>
+
+
+</p>
+<p>Simple methods return the size of the queue and reset it so that
+it stores no items.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-WorkQueuePublicMethods-1"></span><div class="fragmentname">&lt;&lt;WorkQueue Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-WorkQueuePublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-WorkQueuePublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">int <span class="anchor" id="WorkQueue::Size"></span>Size() const {
+    return <a href="#WorkQueue::size" class="code">size</a>.load(std::memory_order_relaxed);
+}
+void <span class="anchor" id="WorkQueue::Reset"></span>Reset() {
+    <a href="#WorkQueue::size" class="code">size</a>.store(0, std::memory_order_relaxed);
+}</div><p>
+
+
+</p>
+<p>An item is added to the queue by finding a slot for it via a call to
+<tt>AllocateEntry()</tt>.  We implement that functionality separately so that
+<tt>WorkQueue</tt> subclasses can implement their own methods for adding items
+to the queue if further processing is needed when doing so.  In this
+case, all that needs to be done is to store the provided value in the
+specified spot using the <tt>SOA</tt> indexing operator.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-WorkQueuePublicMethods-2"></span><div class="fragmentname">&lt;&lt;WorkQueue Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-WorkQueuePublicMethods-1"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">int <span class="anchor" id="WorkQueue::Push"></span>Push(WorkItem w) {
+    int index = <a href="#WorkQueue::AllocateEntry" class="code">AllocateEntry</a>();
+    (*this)[index] = w;
+    return index;
+}</div><p>
+
+
+</p>
+<p>When a slot is claimed for a new item in the queue, the <tt>size</tt> member
+variable is incremented using an atomic operation, and so it is fine if
+multiple threads are concurrently adding items to the queue without any
+further coordination.
+
+</p>
+<p>Returning to how threads access memory, we would do well to allocate
+consecutive slots for all of the threads in a thread group that are adding
+entries to a queue.  Given the SOA layout of the queue, such an allocation
+leads to writes to consecutive memory locations, with corresponding
+performance benefits.  Our use of <tt>fetch_add</tt> here does not provide
+that guarantee, since each thread calls it independently.  However, a common
+way to implement atomic addition in the presence of thread groups is to
+aggregate the operation over all the active threads in the group and to
+perform a single addition for all of them, doling out corresponding
+individual results back to the individual threads.  Our code here assumes
+such an implementation; on a platform where the assumption is incorrect, it
+would be worthwhile to use a different mechanism that did give that result.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-WorkQueueProtectedMethods-0"></span><div class="fragmentname">&lt;&lt;WorkQueue Protected Methods&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">int <span class="anchor" id="WorkQueue::AllocateEntry"></span>AllocateEntry() {
+      return <a href="#WorkQueue::size" class="code">size</a>.fetch_add(1, std::memory_order_relaxed);
+}</div><p>
+
+
+</p>
+<p><tt>ForAllQueued()</tt> makes it easy to apply a function to all
+of the items stored in a <tt>WorkQueue()</tt> in parallel.  The provided
+callback function is passed the <tt>WorkItem</tt> that it is responsible for.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-WorkQueueInlineFunctions-0"></span><div class="fragmentname">&lt;&lt;WorkQueue Inline Functions&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">template &lt;typename F, typename WorkItem&gt;
+void <span class="anchor" id="ForAllQueued"></span>ForAllQueued(const char *desc, const WorkQueue&lt;WorkItem&gt; *q,
+                  int maxQueued, F &amp;&amp;func) {
+    if (<a href="../Utilities/System_Startup,_Cleanup,_and_Options.html#Options" class="code">Options</a>-&gt;<a href="../Utilities/System_Startup,_Cleanup,_and_Options.html#BasicPBRTOptions::useGPU" class="code">useGPU</a>) {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-LaunchGPUthreadstoprocessmonoqusingmonofunc-0">Launch GPU threads to process <tt>q</tt> using <tt>func</tt></a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2418" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2418"><i></i></a><div id="fragbit-2418" class="collapse"><div class="fragmentcode">           <a href="#GPUParallelFor" class="code">GPUParallelFor</a>(desc, maxQueued, [=] PBRT_GPU (int index) mutable {
+               if (index &gt;= q-&gt;<a href="#WorkQueue::Size" class="code">Size</a>())
+                   return;
+               func((*q)[index]);
+           });
+           </div></div>
+    } else {
+        &lt;&lt;<span class="fragmentname"><a href="#fragment-ProcessmonoqusingmonofuncwithCPUthreads-0">Process <tt>q</tt> using <tt>func</tt> with CPU threads</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2419" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2419"><i></i></a><div id="fragbit-2419" class="collapse"><div class="fragmentcode">           <a href="../Utilities/Parallelism.html#ParallelFor" class="code">ParallelFor</a>(0, q-&gt;<a href="#WorkQueue::Size" class="code">Size</a>(), [&amp;](int index) { func((*q)[index]); });</div></div>
+    }
+}</div><p>
+
+
+</p>
+<p>If the GPU is being used, a thread is launched for the maximum
+number of items that could be stored in the queue, rather than only for the
+number that are actually stored there.  This stems from the fact that
+kernels are launched from the CPU but the number of objects actually in the
+queue is stored in managed memory.  Not only would it be inefficient to
+read the actual size of the queue back from GPU memory to the CPU for the
+call to <a href="#GPUParallelFor"><tt>GPUParallelFor()</tt></a>, but retrieving the correct value would
+require synchronization with the GPU, which would further harm performance.
+
+</p>
+<p>Therefore, a number of threads certain to be sufficient are launched and
+those that do not have an item to process exit immediately.  Because thread
+creation is so inexpensive on GPUs, this approach does not introduce a
+meaningful amount of overhead.  If it was a problem, it is also possible to
+launch kernels directly from the GPU, in which case exactly the correct
+number of threads could be launched.  In this case, we adopt the greater
+simplicity of always launching kernels from the CPU.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-LaunchGPUthreadstoprocessmonoqusingmonofunc-0"></span><div class="fragmentname">&lt;&lt;Launch GPU threads to process <tt>q</tt> using <tt>func</tt>&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="#GPUParallelFor" class="code">GPUParallelFor</a>(desc, maxQueued, [=] PBRT_GPU (int index) mutable {
+    if (index &gt;= q-&gt;<a href="#WorkQueue::Size" class="code">Size</a>())
+        return;
+    func((*q)[index]);
+});
+</div><p>
+
+
+</p>
+<p>For CPU processing, there are no concerns about reading the <tt>size</tt>
+field, so precisely the right number of items to process can be passed
+to <a href="../Utilities/Parallelism.html#ParallelFor"><tt>ParallelFor()</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-ProcessmonoqusingmonofuncwithCPUthreads-0"></span><div class="fragmentname">&lt;&lt;Process <tt>q</tt> using <tt>func</tt> with CPU threads&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode"><a href="../Utilities/Parallelism.html#ParallelFor" class="code">ParallelFor</a>(0, q-&gt;<a href="#WorkQueue::Size" class="code">Size</a>(), [&amp;](int index) { func((*q)[index]); });</div><p>
+
+
+</p>
+<p>We will also find it useful to have work queues that support multiple types
+of objects and maintain separate queues, one for each type.  This
+functionality is provided by the <a href="#MultiWorkQueue"><tt>MultiWorkQueue</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MultiWorkQueueDefinition-0"></span><div class="fragmentname">&lt;&lt;MultiWorkQueue Definition&gt;&gt;=&nbsp;<a href="#fragment-MultiWorkQueueDefinition-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt; class <span class="anchor" id="MultiWorkQueue"></span>MultiWorkQueue;</div><p>
+
+
+</p>
+<p>The definition of this class is a <em>variadic template</em> specialization
+that takes all of the types <tt>Ts</tt> it is to manage using
+a <a href="../Utilities/Containers_and_Memory_Management.html#TypePack"><tt>TypePack</tt></a>.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MultiWorkQueueDefinition-1"></span><div class="fragmentname">&lt;&lt;MultiWorkQueue Definition&gt;&gt;+=&nbsp;<a href="#fragment-MultiWorkQueueDefinition-0"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">template &lt;typename... Ts&gt; class MultiWorkQueue&lt;<a href="../Utilities/Containers_and_Memory_Management.html#TypePack" class="code">TypePack</a>&lt;Ts...&gt;&gt; {
+public:
+  &lt;&lt;<span class="fragmentname"><a href="#fragment-MultiWorkQueuePublicMethods-0">MultiWorkQueue Public Methods</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2420" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2420"><i></i></a><div id="fragbit-2420" class="collapse"><div class="fragmentcode">     template &lt;typename T&gt;
+     WorkQueue&lt;T&gt; *<a href="#MultiWorkQueue::Get" class="code">Get</a>() {
+         return &amp;pstd::get&lt;WorkQueue&lt;T&gt;&gt;(<a href="#MultiWorkQueue::queues" class="code">queues</a>);
+     }
+     MultiWorkQueue(int n, Allocator alloc, pstd::span&lt;const bool&gt; haveType) {
+         int index = 0;
+         ((*<a href="#MultiWorkQueue::Get" class="code">Get</a>&lt;Ts&gt;() = WorkQueue&lt;Ts&gt;(haveType[index++] ? n : 1, alloc)), ...);
+     }
+     template &lt;typename T&gt;
+     int <a href="#WorkQueue::Size" class="code">Size</a>() const { return <a href="#MultiWorkQueue::Get" class="code">Get</a>&lt;T&gt;()-&gt;<a href="#WorkQueue::Size" class="code">Size</a>(); }
+     template &lt;typename T&gt;
+     int <a href="#WorkQueue::Push" class="code">Push</a>(const T &amp;value) { return <a href="#MultiWorkQueue::Get" class="code">Get</a>&lt;T&gt;()-&gt;<a href="#WorkQueue::Push" class="code">Push</a>(value); }
+     void <a href="#WorkQueue::Reset" class="code">Reset</a>() { (<a href="#MultiWorkQueue::Get" class="code">Get</a>&lt;Ts&gt;()-&gt;<a href="#WorkQueue::Reset" class="code">Reset</a>(), ...); }</div></div>
+private:
+  &lt;&lt;<span class="fragmentname"><a href="#fragment-MultiWorkQueuePrivateMembers-0">MultiWorkQueue Private Members</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-2421" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-2421"><i></i></a><div id="fragbit-2421" class="collapse"><div class="fragmentcode">     pstd::tuple&lt;WorkQueue&lt;Ts&gt;...&gt; queues;</div></div>
+};</div><p>
+
+
+</p>
+<p>The <a href="#MultiWorkQueue"><tt>MultiWorkQueue</tt></a> internally expands to a set of per-type
+<a href="#WorkQueue"><tt>WorkQueue</tt></a> instances that are stored in a tuple.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MultiWorkQueuePrivateMembers-0"></span><div class="fragmentname">&lt;&lt;MultiWorkQueue Private Members&gt;&gt;=&nbsp;</div>
+<div class="fragmentcode">pstd::tuple&lt;WorkQueue&lt;Ts&gt;...&gt; <span class="anchor" id="MultiWorkQueue::queues"></span>queues;</div><p>
+
+
+</p>
+<p>Note the ellipsis (<tt>...</tt>) in the code fragment above, which is a C++
+<em>template pack expansion</em>. Such an expansion is only valid when it
+contains a template pack (<tt>Ts</tt> in this case), and it simply inserts the
+preceding element once for each specified template argument while replacing
+<tt>Ts</tt> with the corresponding type. For example, a hypothetical
+<tt>MultiWorkQueue&lt;TypePack&lt;A, B&gt;&gt;</tt> would contain a tuple of the form
+<tt>pstd::tuple&lt;WorkQueue&lt;A&gt;, WorkQueue&lt;B&gt;&gt;</tt>. This and the following
+template-based transformations significantly reduce the amount of
+repetitive code that would otherwise be needed to implement equivalent
+functionality.
+
+</p>
+<p>The following template method returns a queue for a particular work item that
+must be one of the <a href="#MultiWorkQueue"><tt>MultiWorkQueue</tt></a> template arguments. The search through
+tuple items is resolved at compile time and so incurs no additional runtime
+cost.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MultiWorkQueuePublicMethods-0"></span><div class="fragmentname">&lt;&lt;MultiWorkQueue Public Methods&gt;&gt;=&nbsp;<a href="#fragment-MultiWorkQueuePublicMethods-1"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+WorkQueue&lt;T&gt; *<span class="anchor" id="MultiWorkQueue::Get"></span>Get() {
+    return &amp;pstd::get&lt;WorkQueue&lt;T&gt;&gt;(<a href="#MultiWorkQueue::queues" class="code">queues</a>);
+}</div><p>
+
+
+</p>
+<p>The <tt>MultiWorkQueue</tt> constructor takes the maximum number of items to
+store in the queue and an allocator. The third argument is a span of
+Boolean values that indicates whether each type is actually present. Saving
+memory for types that are not required in a given execution of the renderer
+is worthwhile when both the maximum number of items is large and the work
+item types themselves are large.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MultiWorkQueuePublicMethods-1"></span><div class="fragmentname">&lt;&lt;MultiWorkQueue Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-MultiWorkQueuePublicMethods-0"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-MultiWorkQueuePublicMethods-2"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">MultiWorkQueue(int n, Allocator alloc, pstd::span&lt;const bool&gt; haveType) {
+    int index = 0;
+    ((*<a href="#MultiWorkQueue::Get" class="code">Get</a>&lt;Ts&gt;() = WorkQueue&lt;Ts&gt;(haveType[index++] ? n : 1, alloc)), ...);
+}</div><p>
+
+
+</p>
+<p>Once more, note the use of the ellipsis in the above fragment, which is a more
+advanced case of a template pack expansion following the pattern <tt>((expr),
+...)</tt>. As before, this expansion will simply repeat the element <tt>(expr)</tt>
+preceding the ellipsis once for every <tt>Ts</tt> with appropriate substitutions.
+In contrast to the previous case, we are now expanding expressions rather than
+types. The actual values of these expressions are ignored because they will be
+joined by the comma operator that ignores the value of the preceding
+expression. Finally, the actual expression being repeated has side effects: it
+initializes each tuple entry with a suitable instance, and it also advances a
+counter <tt>index</tt> that is used to access corresponding elements of the
+<tt>haveType</tt> span.
+
+</p>
+<p>The <tt>Size()</tt> method returns the size of a queue, and <tt>Push()</tt>
+appends an element. Both methods require that the caller specify the
+concrete type <tt>T</tt> of work item, which allows it to directly call the
+corresponding method of the appropriate queue.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MultiWorkQueuePublicMethods-2"></span><div class="fragmentname">&lt;&lt;MultiWorkQueue Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-MultiWorkQueuePublicMethods-1"><span class="fa fa-caret-up"></span></a>&nbsp;<a href="#fragment-MultiWorkQueuePublicMethods-3"><span class="fa fa-caret-down"></span></a></div>
+<div class="fragmentcode">template &lt;typename T&gt;
+int <span class="anchor" id="MultiWorkQueue::Size"></span><a href="#WorkQueue::Size" class="code">Size</a>() const { return <a href="#MultiWorkQueue::Get" class="code">Get</a>&lt;T&gt;()-&gt;<a href="#WorkQueue::Size" class="code">Size</a>(); }
+template &lt;typename T&gt;
+int <span class="anchor" id="MultiWorkQueue::Push"></span><a href="#WorkQueue::Push" class="code">Push</a>(const T &amp;value) { return <a href="#MultiWorkQueue::Get" class="code">Get</a>&lt;T&gt;()-&gt;<a href="#WorkQueue::Push" class="code">Push</a>(value); }</div><p>
+
+
+</p>
+<p>Finally, all queues are reset via a call to <tt>Reset()</tt>.  Once
+again, template pack expansion generates calls to all the individual
+queues&rsquo; <tt>Reset()</tt> methods via the following terse code.
+
+</p>
+<p></p>
+<span class="anchor" id="fragment-MultiWorkQueuePublicMethods-3"></span><div class="fragmentname">&lt;&lt;MultiWorkQueue Public Methods&gt;&gt;+=&nbsp;<a href="#fragment-MultiWorkQueuePublicMethods-2"><span class="fa fa-caret-up"></span></a></div>
+<div class="fragmentcode">void <span class="anchor" id="MultiWorkQueue::Reset"></span><a href="#WorkQueue::Reset" class="code">Reset</a>() { (<a href="#MultiWorkQueue::Get" class="code">Get</a>&lt;Ts&gt;()-&gt;<a href="#WorkQueue::Reset" class="code">Reset</a>(), ...); }</div><p>
+
+
+</p>
+<p>
+
+</p>
+<p>
+
+</p>
+<p></p>
+
+</div> <!-- col-md-10 col-lg-8 -->
+<div class="col-md-1 col-lg-2">
+
+</div> <!-- col-md-1 col-lg-2 -->
+</div>  <!-- row -->
+
+</div>  <!-- container-fluid -->
+</div>  <!-- maincontainer -->
+
+<nav class="navbar navbar-expand-md bg-light navbar-light">
+<div class="container-fluid">
+  <span class="navbar-text"><i>Physically Based Rendering: From Theory To Implementation</i>,<br>
+<a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">&copy; 2004-2023</a> Matt Pharr, Wenzel Jakob, and Greg Humphreys.
+<a href="https://github.com/mmp/pbr-book-website/"><span class="fab fa-github"></span></a><br>
+Purchase a printed copy: <a href="https://www.amazon.com/Physically-Based-Rendering-fourth-Implementation/dp/0262048027?keywords=physically+based+rendering+4th+edition&qid=1671730412&sprefix=physically+based%!C(MISSING)aps%!C(MISSING)145&sr=8-1&linkCode=ll1&tag=pharr-20&linkId=81a816d90f0c7e872617f1f930a51fd6&language=en_US&ref_=as_li_ss_tl"><span class="fab fa-amazon"></span></a>
+<a href="https://mitpress.mit.edu/9780262048026/physically-based-rendering/"><img src="/mitpress.png" width=10 height=16></a>
+</span>
+</div>
+  <div class="container">
+    <ul class="nav navbar-nav ml-auto">
+      <li class="nav-item">Next: <a href="../Wavefront_Rendering_on_GPUs/Path_Tracer_Implementation.html">Wavefront Rendering on GPUs / Path Tracer Implementation</a></li>
+    </ul>
+  </div>
+
+</nav>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script>
+  $(function () {
+    $('[data-toggle="popover"]').popover()
+    $('[data-toggle="tooltip"]').tooltip()
+   })
+</script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+// https://stackoverflow.com/a/17535094
+// The function actually applying the offset
+function offsetAnchor() {
+  if (location.hash.length !== 0) {
+    window.scrollTo(window.scrollX, window.scrollY - window.innerHeight / 8);
+  }
+}
+
+// Captures click events of all <a> elements with href starting with #
+$(document).on('click', 'a[href^="#"]', function(event) {
+  // Click events are captured before hashchanges. Timeout
+  // causes offsetAnchor to be called after the page jump.
+  window.setTimeout(function() {
+    offsetAnchor();
+  }, 500);
+});
+
+// Set the offset when entering page with hash present in the url
+window.setTimeout(offsetAnchor, 1500);
+</script>
+
+</body>
+</html>
