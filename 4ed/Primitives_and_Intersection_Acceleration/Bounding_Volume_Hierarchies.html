@@ -21,12 +21,10 @@
   <link rel="stylesheet" href="../pbrstyle.css">
   <link rel="stylesheet" href="/fontawesome-free-5.15.3-web/css/all.css">
 
-  <script async src="https://cse.google.com/cse.js?cx=003601324460585362024:4xwpwgaitgd"></script>
-  <script src="/react.min.js"></script>
+<script async src="https://cse.google.com/cse.js?cx=22a43cef261a245ea"></script>  <script src="/react.min.js"></script>
   <script src="/react-dom.min.js"></script>
   <script src="/jeri.min.js"></script>
   <link rel="preload" href="/exr.worker.js" as="script" crossorigin="anonymous">
-        
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="/bootstrap.min.css">
 
@@ -287,6 +285,7 @@ node.
              }
              <a href="#BVHAggregate::primitives" class="code">primitives</a>.swap(orderedPrims);</div></div></div></div>
        &lt;&lt;<span class="fragmentname"><a href="#fragment-ConvertBVHintocompactrepresentationinmononodesarray-0">Convert BVH into compact representation in <tt>nodes</tt> array</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-993" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-993"><i></i></a><div id="fragbit-993" class="collapse"><div class="fragmentcode">          bvhPrimitives.resize(0);
+          bvhPrimitives.shrink_to_fit();
           nodes = new LinearBVHNode[totalNodes];
           int offset = 0;
           <a href="#BVHAggregate::flattenBVH" class="code">flattenBVH</a>(root, &amp;offset);
@@ -363,6 +362,7 @@ possible.)
       }
       <a href="#BVHAggregate::primitives" class="code">primitives</a>.swap(orderedPrims);</div></div></div></div>
 &lt;&lt;<span class="fragmentname"><a href="#fragment-ConvertBVHintocompactrepresentationinmononodesarray-0">Convert BVH into compact representation in <tt>nodes</tt> array</a></span>&gt;&gt;&nbsp;<a data-toggle="collapse" href="#fragbit-998" role="button" class="fa codecarat collapsed" aria-expanded="false" aria-controls="fragbit-998"><i></i></a><div id="fragbit-998" class="collapse"><div class="fragmentcode">   bvhPrimitives.resize(0);
+   bvhPrimitives.shrink_to_fit();
    nodes = new LinearBVHNode[totalNodes];
    int offset = 0;
    <a href="#BVHAggregate::flattenBVH" class="code">flattenBVH</a>(root, &amp;offset);
@@ -408,7 +408,7 @@ for (size_t i = 0; i &lt; <a href="#BVHAggregate::primitives" class="code">primi
 
 </p>
 <p>Hierarchy construction can now begin.  In addition to initializing the
-pointer to the root note of the BVH, <tt>root</tt>, an important side effect
+pointer to the root node of the BVH, <tt>root</tt>, an important side effect
 of the tree construction process is that a new array of
 <a href="../Primitives_and_Intersection_Acceleration/Primitive_Interface_and_Geometric_Primitives.html#Primitive"><tt>Primitive</tt></a>s is stored in <tt>orderedPrims</tt>; this array stores
 the primitives ordered so that the primitives in each leaf node occupy
@@ -4148,12 +4148,13 @@ the <tt>flattenBVH()</tt> method, which performs a depth-first
 traversal and stores the nodes in memory in linear order.  It is helpful to
 release the memory in the <tt>bvhPrimitives</tt> array before doing so, since
 that may be a significant amount of storage for complex scenes and is no
-longer needed at this point.  This is handled by the <tt>resize(0)</tt> call.
+longer needed at this point.  This is handled by the <tt>resize(0)</tt> and <tt>shrink_to_fit()</tt> calls.
 
 </p>
 <p></p>
 <span class="anchor" id="fragment-ConvertBVHintocompactrepresentationinmononodesarray-0"></span><div class="fragmentname">&lt;&lt;Convert BVH into compact representation in <tt>nodes</tt> array&gt;&gt;=&nbsp;</div>
 <div class="fragmentcode">bvhPrimitives.resize(0);
+bvhPrimitives.shrink_to_fit();
 nodes = new LinearBVHNode[totalNodes];
 int offset = 0;
 <a href="#BVHAggregate::flattenBVH" class="code">flattenBVH</a>(root, &amp;offset);
