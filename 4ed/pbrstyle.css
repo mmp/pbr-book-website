@@ -286,6 +286,38 @@ div.displaymath {
     max-width: 1280px;
 }
 
+/* ==== Pretext Knuth-Plass layout support ==== */
+/* Hide paragraphs during startup or while they're queued for layout, to avoid
+   a flash of browser-justified text before K-P kicks in. */
+html.pretext-layout-startup-pending .pretext-layout-root p,
+html.pretext-layout-startup-pending .pretext-layout-root li,
+.pretext-layout-root p.pretext-layout-pending,
+.pretext-layout-root li.pretext-layout-pending {
+    visibility: hidden;
+}
+/* When K-P is rendering a paragraph, kill browser justification: spacing is
+   handled explicitly via the inline-space spans below. */
+.pretext-layout-root p.pretext-layout-active,
+.pretext-layout-root li.pretext-layout-active {
+    text-align: left;
+    hyphens: none;
+    word-break: normal;
+}
+.pretext-line {
+    display: block;
+    white-space: nowrap;
+}
+.pretext-inline-space {
+    display: inline-block;
+    white-space: pre;
+}
+.pretext-inline-run {
+    white-space: nowrap;
+}
+.pretext-inline-flow-active {
+    white-space: nowrap;
+}
+
 .cse, .gsc-control-cse {
     background-color: #f8f9fa !important;
     border: none !important;
