@@ -1504,6 +1504,41 @@ function getInlineReplaySnapshot(element, orig) {
     return orig.inlineReplaySnapshot;
 }
 
+// pbrt: Empty elements with ids (e.g., <span class="anchor" id=...>, the
+// targets of links to identifiers' definitions) have no text, so the
+// renderers would otherwise drop them when they rebuild a paragraph. This
+// finds them in the original DOM along with the normalized-text boundary
+// that each one precedes so that they can be put back.
+function getEmptyAnchors(element, orig) {
+    if (orig.emptyAnchors) return orig.emptyAnchors;
+    const anchors = [];
+    let rawOffset = 0;
+    function walk(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            rawOffset += node.length;
+            return;
+        }
+        if (node.nodeType !== Node.ELEMENT_NODE) return;
+        if (isInlineAtomReplacementElement(node)) {
+            rawOffset += 1;
+            return;
+        }
+        if (node.id && !node.querySelector('svg, img') && !/\S/.test(node.textContent)) {
+            let raw = rawOffset;
+            while (raw < orig.rawToNormIndices.length && orig.rawToNormIndices[raw] < 0) raw++;
+            anchors.push({
+                id: node.id,
+                template: node.cloneNode(true),
+                boundary: raw < orig.rawToNormIndices.length ? orig.rawToNormIndices[raw] : orig.text.length
+            });
+        }
+        for (const child of node.childNodes) walk(child);
+    }
+    for (const child of element.childNodes) walk(child);
+    orig.emptyAnchors = anchors;
+    return anchors;
+}
+
 // Collect all descendant text nodes with their cumulative raw-text offsets.
 function buildTextNodeIndex(element) {
     // Offsets here are positions in getRawLayoutText(element). Each inline
@@ -2936,6 +2971,12 @@ function renderLinesIntoElementTreeReplay(element, orig, lines, width, settings,
             }
         }
 
+        const anchorsAtBoundary = new Map();
+        for (const anchor of getEmptyAnchors(element, orig)) {
+            if (!anchorsAtBoundary.has(anchor.boundary)) anchorsAtBoundary.set(anchor.boundary, []);
+            anchorsAtBoundary.get(anchor.boundary).push(anchor);
+        }
+
         const fragment = document.createDocumentFragment();
         const stack = [fragment];
         let activeAtomicEndBoundary = -1;
@@ -2977,6 +3018,9 @@ function renderLinesIntoElementTreeReplay(element, orig, lines, width, settings,
             }
 
             if (breakInfo) currentParent().appendChild(document.createElement('br'));
+
+            for (const anchor of anchorsAtBoundary.get(boundary) || [])
+                currentParent().appendChild(anchor.template.cloneNode(true));
 
             const opens = snapshot.boundaryOpens[boundary];
             for (const descriptor of opens) {
@@ -3083,6 +3127,19 @@ function renderLinesIntoElement(element, orig, lines, width, settings, failureMe
             }
 
             fragment.appendChild(span);
+        }
+
+        // Empty anchors at the start of a line or at a line break aren't
+        // within any line's range; add them at the start of the line that
+        // follows them.
+        const lineSpans = Array.from(fragment.children);
+        const inserted = new Array(lineSpans.length).fill(0);
+        for (const anchor of getEmptyAnchors(element, orig)) {
+            if (fragment.querySelector(`[id="${CSS.escape(anchor.id)}"]`)) continue;
+            const i = lines.findIndex(line => anchor.boundary < line.normEnd);
+            const clone = anchor.template.cloneNode(true);
+            if (i < 0) lineSpans[lineSpans.length - 1].appendChild(clone);
+            else lineSpans[i].insertBefore(clone, lineSpans[i].childNodes[inserted[i]++] || null);
         }
 
         element.replaceChildren(fragment);
