@@ -46,23 +46,35 @@ function setPBRTDisplayModeVars(displayMode)
     document.documentElement.style.setProperty('--text-red', '#ff0000');
 }
 
+function clearPBRTDisplayModeVars()
+{
+    document.documentElement.removeAttribute("style");
+}
+
 function setPBRTDisplayMode()
 {
     var displayMode = localStorage.getItem("displayMode");
-    if(displayMode == "null") {
-        displayMode = 0; // no stored display mode, default to light mode
-        localStorage.setItem("displayMode", displayMode);
+    if(displayMode != null) {
+        setPBRTDisplayModeVars(displayMode);
     }
-    setPBRTDisplayModeVars(displayMode);
 }
 
 function TogglePBRTDisplayMode()
 {
     var displayMode = localStorage.getItem("displayMode");
-    if(displayMode == 0) displayMode = 1;
-    else if(displayMode == 1) displayMode = 0;
-    localStorage.setItem("displayMode", displayMode); // update the stored display mode
-    setPBRTDisplayModeVars(displayMode);
+    if(displayMode == "0")
+        displayMode = "1";
+    else if(displayMode == "1")
+        displayMode = null;
+    else if(displayMode == null)
+        displayMode = "0";
+    if (displayMode != null) {
+        localStorage.setItem("displayMode", displayMode); // update the stored display mode
+        setPBRTDisplayModeVars(displayMode);
+    } else {
+        localStorage.removeItem("displayMode");
+        clearPBRTDisplayModeVars();
+    }
 }
 
 setPBRTDisplayMode();
